@@ -6,6 +6,9 @@
     "gulp-concat": "2.5.2",
     "gulp-cssmin": "0.1.7",
     "gulp-uglify": "1.2.0",
-    "rimraf": "2.2.8"
+    "rimraf": "2.2.8",
+    "typescript": "1.7.5",
+    "gulp-typescript": "2.10.0",
+    "merge2": "0.3.6"
   }
 }

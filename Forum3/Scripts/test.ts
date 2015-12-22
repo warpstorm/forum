@@ -1,0 +1,1 @@
+﻿console.log("Hello from test.ts 123123");

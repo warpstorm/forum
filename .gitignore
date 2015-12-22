@@ -3,9 +3,15 @@
 
 **/bower_components/**
 **/node_modules/**
+
 **/wwwroot/lib/**
 **/wwwroot/css/**
 **/wwwroot/js/**
+
+**/Scripts/**/*.js
+**/Scripts/**/*.js.map
+**/Scripts/build/**
+**/Scripts/def/**
 
 launchSettings.json
 debugSettings.json
