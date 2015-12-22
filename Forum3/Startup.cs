@@ -44,7 +44,13 @@ namespace Forum3
                 .AddDbContext<ApplicationDbContext>(options =>
                     options.UseSqlServer(Configuration["Data:DefaultConnection:ConnectionString"]));
 
-            services.AddIdentity<ApplicationUser, IdentityRole>()
+            services.AddIdentity<ApplicationUser, IdentityRole>(o => {
+				o.Password.RequireDigit = false;
+				o.Password.RequireLowercase = false;
+				o.Password.RequireUppercase = false;
+				o.Password.RequireNonLetterOrDigit = false;
+				o.Password.RequiredLength = 3;
+			})
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
@@ -96,7 +102,7 @@ namespace Forum3
             {
                 routes.MapRoute(
                     name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                    template: "{controller=Message}/{action=Index}/{id?}");
             });
         }
 
