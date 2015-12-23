@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Forum3.Models {
+namespace Forum3.DataModels {
 	public class Message
     {
 		public Message() {

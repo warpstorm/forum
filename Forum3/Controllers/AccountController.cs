@@ -9,7 +9,7 @@ using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.Data.Entity;
 using Microsoft.Extensions.Logging;
-using Forum3.Models;
+using Forum3.DataModels;
 using Forum3.Services;
 using Forum3.ViewModels.Account;
 

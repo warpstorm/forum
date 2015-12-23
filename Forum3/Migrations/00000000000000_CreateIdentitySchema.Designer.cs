@@ -6,7 +6,8 @@ using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Infrastructure;
 using Microsoft.Data.Entity.Metadata;
 using Microsoft.Data.Entity.Migrations;
-using Forum3.Models;
+using Forum3.DataModels;
+using Forum3.Data;
 
 namespace Forum3.Migrations
 {

@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Forum3.DataModels;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.Data.Entity;
 
-namespace Forum3.Models
-{
-    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
+namespace Forum3.Data {
+	public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
 		public DbSet<Message> Messages { get; set; }
 

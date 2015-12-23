@@ -2,11 +2,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
 using Microsoft.Data.Entity;
-using Forum3.Models;
+using Forum3.DataModels;
 using System;
 using Forum3.ViewModels.Message;
+using Microsoft.AspNet.Authorization;
+using Forum3.Data;
 
 namespace Forum3.Controllers {
+	[Authorize]
 	public class MessageController : Controller {
 		private ApplicationDbContext _context;
 
@@ -15,6 +18,7 @@ namespace Forum3.Controllers {
 		}
 
 		// GET: Message
+		[AllowAnonymous]
 		public async Task<IActionResult> Index() {
 			var skip = 0;
 
