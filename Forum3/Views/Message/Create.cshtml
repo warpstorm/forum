@@ -5,25 +5,19 @@
 }
 
 <h2>Create</h2>
+<h4>Message</h4>
 
-<form asp-action="Create">
-    <div class="form-horizontal">
-        <h4>Message</h4>
-        <hr />
-        <div asp-validation-summary="ValidationSummary.ModelOnly" class="text-danger"></div>
-        <div class="form-group">
-            <label asp-for="Body" class="col-md-2 control-label"></label>
-            <div class="col-md-10">
-                <input asp-for="Body" class="form-control" />
-                <span asp-validation-for="Body" class="text-danger" />
-            </div>
-        </div>
-        <div class="form-group">
-            <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Create" class="btn btn-default" />
-            </div>
-        </div>
+<hr />
+
+<div asp-validation-summary="ValidationSummary.ModelOnly" class="text-danger"></div>
+
+<form asp-action="Create" role="form">
+    <div class="form-group">
+        <textarea asp-for="Body" class="form-control"></textarea>
+        <span asp-validation-for="Body" class="text-danger" />
     </div>
+
+    <button type="submit" class="btn btn-default">Create</button>
 </form>
 
 <div>
