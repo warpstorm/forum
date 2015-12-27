@@ -8,6 +8,7 @@ using Forum3.Data;
 using Forum3.DataModels;
 using Forum3.ViewModels.Message;
 using Forum3.Services;
+using System.Security.Claims;
 
 namespace Forum3.Controllers {
 	[Authorize]
@@ -80,9 +81,16 @@ namespace Forum3.Controllers {
 			if (ModelState.IsValid) {
 				var processedMessageBody = await _inputProcessor.ProcessAsync(input.Body);
 
+				var userId = User.GetUserId();
+				var userProfile = _dbContext.Users.Single(u => u.Id == userId);
+
 				var newRecord = new Message {
 					OriginalBody = processedMessageBody.OriginalBody,
 					DisplayBody = processedMessageBody.DisplayBody,
+					TimePosted = DateTime.Now,
+					TimeEdited = DateTime.Now,
+					PostedById = userId,
+					EditedById = userId
 				};
 
 				_dbContext.Messages.Add(newRecord);

@@ -4,11 +4,6 @@ using System.ComponentModel.DataAnnotations;
 namespace Forum3.DataModels {
 	public class Message
     {
-		public Message() {
-			TimePosted = DateTime.Now;
-			TimeEdited = DateTime.Now;
-		}
-
 		public int Id { get; set; }
 
 		/// <summary>
