@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
 
-namespace Forum3.ViewModels.Message {
+namespace Forum3.ViewModels.Topics {
 	public class TopicIndex
     {
 		public int Skip { get; set; }
 		public int Take { get; set; }
 		public bool MoreMessages { get; set; }
-		public List<Topic> Topics { get { return _topics ?? (_topics = new List<Topic>()); } }
-		private List<Topic> _topics;
+		public List<TopicPartial> Topics { get { return _topics ?? (_topics = new List<TopicPartial>()); } }
+		private List<TopicPartial> _topics;
 	}
 }

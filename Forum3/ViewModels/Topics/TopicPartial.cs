@@ -1,7 +1,7 @@
 ﻿using System;
 
-namespace Forum3.ViewModels.Message {
-	public class Topic
+namespace Forum3.ViewModels.Topics {
+	public class TopicPartial
     {
 		public int Id { get; set; }
 		public string Subject { get; set; }

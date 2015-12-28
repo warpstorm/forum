@@ -34,8 +34,11 @@ namespace Forum3.DataModels {
 		public DateTime LastReplyPosted { get; set; }
 
 		public string PostedById { get; set; }
+		public string PostedByName { get; internal set; }
 		public string EditedById { get; set; }
+		public string EditedByName { get; internal set; }
 		public string LastReplyById { get; set; }
+		public string LastReplyByName { get; internal set; }
 
 		public int ParentId { get; set; }
 		public int ReplyId { get; set; }

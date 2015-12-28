@@ -5,19 +5,18 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Forum3.Data;
-using Forum3.ViewModels.Message;
+using Forum3.ViewModels.Messages;
 using HtmlAgilityPack;
 using CodeKicker.BBCode;
 using System.Security.Claims;
 using Microsoft.AspNet.Http;
 
-namespace Forum3.Services
-{
-    public class MessageInputProcessorService {
+namespace Forum3.Services {
+	public class MessageService {
 		private ApplicationDbContext _dbContext;
 		private IHttpContextAccessor _httpContextAccessor;
 
-		public MessageInputProcessorService(ApplicationDbContext dbContext, IHttpContextAccessor httpContextAccessor) {
+		public MessageService(ApplicationDbContext dbContext, IHttpContextAccessor httpContextAccessor) {
 			_dbContext = dbContext;
 			_httpContextAccessor = httpContextAccessor;
 		}
@@ -45,7 +44,7 @@ namespace Forum3.Services
 				return processedMessageInput;
 			});
 		}
-						
+
 		/// <summary>
 		/// Some minor housekeeping on the message before we get into the heavy lifting.
 		/// </summary>
@@ -73,7 +72,7 @@ namespace Forum3.Services
 		/// </summary>
 		private string ParseBBC(ProcessedMessageInput processedMessageInput) {
 			var displayBody = processedMessageInput.DisplayBody;
-			
+
 			// eventually expand this to include all smileys that could have a gt/lt in it.
 			displayBody = displayBody.Replace("<3", "*heartsmiley*");
 

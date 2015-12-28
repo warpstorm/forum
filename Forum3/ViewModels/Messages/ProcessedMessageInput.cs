@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Forum3.ViewModels.Message {
+namespace Forum3.ViewModels.Messages {
 	public class ProcessedMessageInput
     {
 		public string OriginalBody { get; set; }
