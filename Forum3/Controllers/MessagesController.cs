@@ -1,22 +1,16 @@
-using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Mvc;
-using Microsoft.Data.Entity;
-using Forum3.Data;
 using Forum3.ViewModels.Messages;
 using Forum3.Services;
-using System.Security.Claims;
 
 namespace Forum3.Controllers {
 	[Authorize]
 	public class MessagesController : Controller {
-		private ApplicationDbContext _dbContext;
-		private MessageService _messageService;
+		private MessageRepository _messages;
 
-		public MessagesController(ApplicationDbContext dbContext, MessageService messageService) {
-			_dbContext = dbContext;
-			_messageService = messageService;
+		public MessagesController(MessageRepository messageRepo) {
+			_messages = messageRepo;
 		}
 
 		// POST: Messages/Create
@@ -24,30 +18,7 @@ namespace Forum3.Controllers {
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> Create(Input input) {
 			if (ModelState.IsValid) {
-				var processedMessageBody = await _messageService.ProcessAsync(input.Body);
-
-				var userId = User.GetUserId();
-				var userProfile = await _dbContext.Users.SingleAsync(u => u.Id == userId);
-
-				var newRecord = new DataModels.Message {
-					OriginalBody = processedMessageBody.OriginalBody,
-					DisplayBody = processedMessageBody.DisplayBody,
-					ShortPreview = processedMessageBody.ShortPreview,
-					LongPreview = processedMessageBody.LongPreview,
-
-					TimePosted = DateTime.Now,
-					PostedById = userId,
-					PostedByName = userProfile.DisplayName,
-
-					TimeEdited = DateTime.Now,
-					EditedById = userId,
-					EditedByName = userProfile.DisplayName
-				};
-
-				_dbContext.Messages.Add(newRecord);
-
-				await _dbContext.SaveChangesAsync();
-
+				await _messages.CreateAsync(input.Body);
 				return RedirectToAction("Index");
 			}
 
@@ -57,24 +28,18 @@ namespace Forum3.Controllers {
 		// POST: Messages/Edit/5
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Edit(DataModels.Message message) {
+		public async Task<IActionResult> Edit(Input input) {
 			if (ModelState.IsValid) {
-				_dbContext.Update(message);
-
-				await _dbContext.SaveChangesAsync();
+				await _messages.UpdateAsync((int) input.Id, input.Body);
 				return RedirectToAction("Index");
 			}
 
-			return View(message);
+			return View(input);
 		}
 		
 		// GET: Messages/Delete/5
 		public async Task<IActionResult> Delete(int id) {
-			var message = await _dbContext.Messages.SingleAsync(m => m.Id == id);
-
-			_dbContext.Messages.Remove(message);
-
-			await _dbContext.SaveChangesAsync();
+			await _messages.DeleteAsync(id);
 			return RedirectToAction("Index");
 		}
 	}

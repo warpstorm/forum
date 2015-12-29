@@ -10,13 +10,14 @@ using HtmlAgilityPack;
 using CodeKicker.BBCode;
 using System.Security.Claims;
 using Microsoft.AspNet.Http;
+using Microsoft.Data.Entity;
 
 namespace Forum3.Services {
-	public class MessageService {
+	public class MessageRepository {
 		private ApplicationDbContext _dbContext;
 		private IHttpContextAccessor _httpContextAccessor;
 
-		public MessageService(ApplicationDbContext dbContext, IHttpContextAccessor httpContextAccessor) {
+		public MessageRepository(ApplicationDbContext dbContext, IHttpContextAccessor httpContextAccessor) {
 			_dbContext = dbContext;
 			_httpContextAccessor = httpContextAccessor;
 		}
@@ -24,31 +25,95 @@ namespace Forum3.Services {
 		/// <summary>
 		/// Coordinates the overall processing of the message input.
 		/// </summary>
-		public async Task<ProcessedMessageInput> ProcessAsync(string messageBody) {
-			return await Task.Run(() => {
-				var processedMessageInput = new ProcessedMessageInput {
-					OriginalBody = messageBody,
-					DisplayBody = messageBody,
-					MentionedUsers = new List<string>()
-				};
+		public async Task CreateAsync(string messageBody) {
+			var processedMessageInput = ProcessMessageInput(messageBody);
 
-				PreProcessMessageInput(processedMessageInput);
-				ParseBBC(processedMessageInput);
+			var userId = _httpContextAccessor.HttpContext.User.GetUserId();
+			var userProfile = await _dbContext.Users.SingleAsync(u => u.Id == userId);
 
-				// TODO - implement smileys here
+			var newRecord = new DataModels.Message {
+				OriginalBody = processedMessageInput.OriginalBody,
+				DisplayBody = processedMessageInput.DisplayBody,
+				ShortPreview = processedMessageInput.ShortPreview,
+				LongPreview = processedMessageInput.LongPreview,
 
-				ProcessMessageBodyUrls(processedMessageInput);
-				FindMentionedUsers(processedMessageInput);
-				PostProcessMessageInput(processedMessageInput);
+				TimePosted = DateTime.Now,
+				PostedById = userId,
+				PostedByName = userProfile.DisplayName,
 
-				return processedMessageInput;
-			});
+				TimeEdited = DateTime.Now,
+				EditedById = userId,
+				EditedByName = userProfile.DisplayName
+			};
+
+			_dbContext.Messages.Add(newRecord);
+
+			await _dbContext.SaveChangesAsync();
+		}
+
+		public async Task UpdateAsync(int id, string messageBody) {
+			var getCurrentUserTask = _dbContext.Users.SingleAsync(u => u.Id == _httpContextAccessor.HttpContext.User.GetUserId());
+			var getRecordTask = _dbContext.Messages.SingleAsync(m => m.Id == id);
+
+			var processedMessageInput = ProcessMessageInput(messageBody);
+
+			var message = await getRecordTask;
+
+			message.OriginalBody = processedMessageInput.OriginalBody;
+			message.DisplayBody = processedMessageInput.DisplayBody;
+			message.ShortPreview = processedMessageInput.ShortPreview;
+			message.LongPreview = processedMessageInput.LongPreview;
+			message.TimeEdited = DateTime.Now;
+
+			var currentUser = await getCurrentUserTask;
+
+			message.EditedById = currentUser.Id;
+			message.EditedByName = currentUser.DisplayName;
+
+			_dbContext.Update(message);
+
+			await _dbContext.SaveChangesAsync();
+		}
+
+		public async Task DeleteAsync(int id) {
+			var replies = await _dbContext.Messages.Where(m => m.ReplyId == id).ToListAsync();
+
+			foreach (var reply in replies) {
+				reply.ReplyId = 0;
+				_dbContext.Entry(reply).State = EntityState.Modified;
+			}
+
+			var message = await _dbContext.Messages.SingleAsync(m => m.Id == id);
+
+			_dbContext.Messages.Remove(message);
+
+			await _dbContext.SaveChangesAsync();
+		}
+
+		private ProcessedMessageInput ProcessMessageInput(string messageBody) {
+			var processedMessageInput = PreProcessMessageInput(messageBody);
+
+			ParseBBC(processedMessageInput);
+
+			// TODO - implement smileys here
+
+			ProcessMessageBodyUrls(processedMessageInput);
+			FindMentionedUsers(processedMessageInput);
+			PostProcessMessageInput(processedMessageInput);
+
+			return processedMessageInput;
 		}
 
 		/// <summary>
 		/// Some minor housekeeping on the message before we get into the heavy lifting.
 		/// </summary>
-		private void PreProcessMessageInput(ProcessedMessageInput processedMessageInput) {
+		private ProcessedMessageInput PreProcessMessageInput(string messageBody) {
+			var processedMessageInput = new ProcessedMessageInput {
+				OriginalBody = messageBody,
+				DisplayBody = messageBody,
+				MentionedUsers = new List<string>()
+			};
+
 			var displayBody = processedMessageInput.DisplayBody;
 
 			displayBody = displayBody.Trim();
@@ -65,6 +130,8 @@ namespace Forum3.Services {
 
 			// keep this as close to the smiley replacement as possible to prevent HTML-izing the bracket.
 			displayBody = displayBody.Replace("*heartsmiley*", "<3");
+
+			return processedMessageInput;
 		}
 
 		/// <summary>

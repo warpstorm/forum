@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Forum3.Data;
 using Forum3.Helpers;
 using Forum3.Services;
 using Microsoft.AspNet.Authorization;
@@ -8,14 +7,11 @@ using Microsoft.AspNet.Mvc;
 
 namespace Forum3.Controllers {
 	[Authorize]
-	public class TopicsController : Controller
-    {
-		public ApplicationDbContext _dbContext { get; set; }
-		public TopicService _topicService { get; set; }
+	public class TopicsController : Controller {
+		public TopicRepository _topics { get; set; }
 
-		public TopicsController(ApplicationDbContext dbContext, TopicService topicService) {
-			_dbContext = dbContext;
-			_topicService = topicService;
+		public TopicsController(TopicRepository topicRepo) {
+			_topics = topicRepo;
 		}
 
 		// GET: Topics
@@ -31,7 +27,7 @@ namespace Forum3.Controllers {
 			if (HttpContext.Request.Query.ContainsKey("take"))
 				take = Convert.ToInt32(HttpContext.Request.Query["take"]);
 
-			var viewModel = await _topicService.ConstructTopicIndexAsync(skip, take);
+			var viewModel = await _topics.GetTopicIndexAsync(skip, take);
 
 			return View(viewModel);
 		}
@@ -48,9 +44,9 @@ namespace Forum3.Controllers {
 				int take = 15;
 				int skip = (page * take) - take;
 
-				var topic = await _topicService.ConstructTopicAsync(id, page, skip, take, jumpToLatest);
+				var viewModel = await _topics.GetTopicAsync(id, page, skip, take, jumpToLatest);
 
-				return View(topic);
+				return View(viewModel);
 			}
 			catch (ChildMessageException e) {
 				return Redirect(Url.RouteUrl(new {
