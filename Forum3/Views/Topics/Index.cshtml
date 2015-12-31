@@ -1,37 +1,17 @@
 @model Forum3.ViewModels.Topics.TopicIndex
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Topics";
 }
 
-<h2>Index</h2>
+<h2>@ViewData["Title"]</h2>
 
 <p>
     <a asp-action="Create">Create New</a>
 </p>
-<table class="table">
-    <tr>
-        <th>
-        </th>
-        <th>
-        </th>
-        <th>
-        </th>
-    </tr>
 
+<table class="table">
     @foreach (var item in Model.Topics) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Subject)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.LastChildTimePosted)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
+        @Html.Partial("_IndexItem", item)
     }
 </table>

@@ -79,7 +79,11 @@ namespace Forum3.Migrations
 
                     b.Property<string>("EditedById");
 
+                    b.Property<string>("EditedByName");
+
                     b.Property<string>("LastReplyById");
+
+                    b.Property<string>("LastReplyByName");
 
                     b.Property<int>("LastReplyId");
 
@@ -92,6 +96,8 @@ namespace Forum3.Migrations
                     b.Property<int>("ParentId");
 
                     b.Property<string>("PostedById");
+
+                    b.Property<string>("PostedByName");
 
                     b.Property<int>("Replies");
 

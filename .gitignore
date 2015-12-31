@@ -6,7 +6,6 @@
 
 **/wwwroot/lib/**
 **/wwwroot/css/**
-**/wwwroot/js/**
 
 **/Scripts/**/*.js
 **/Scripts/**/*.js.map

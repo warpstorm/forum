@@ -19,7 +19,7 @@ namespace Forum3.Controllers {
 		public async Task<IActionResult> Create(Input input) {
 			if (ModelState.IsValid) {
 				await _messages.CreateAsync(input.Body);
-				return RedirectToAction("Index");
+				return RedirectToAction("Index", "Topics");
 			}
 
 			return View(input);
@@ -40,7 +40,7 @@ namespace Forum3.Controllers {
 		// GET: Messages/Delete/5
 		public async Task<IActionResult> Delete(int id) {
 			await _messages.DeleteAsync(id);
-			return RedirectToAction("Index");
+			return RedirectToAction("Index", "Topics");
 		}
 	}
 }

@@ -1,10 +1,10 @@
 ﻿using System;
 
 namespace Forum3.ViewModels.Topics {
-	public class TopicPartial
+	public class TopicPreview
     {
 		public int Id { get; set; }
-		public string Subject { get; set; }
+		public string ShortPreview { get; set; }
 		public int Views { get; set; }
 		public int Replies { get; set; }
 

@@ -23,9 +23,9 @@ namespace Forum3.Services {
 		public async Task<TopicIndex> GetTopicIndexAsync(int skip, int take) {
 			var messageRecords = _dbContext.Messages.Where(m => m.ParentId == 0).OrderByDescending(m => m.LastReplyPosted);
 
-			var topicList = await messageRecords.Select(m => new TopicPartial {
+			var topicList = await messageRecords.Select(m => new TopicPreview {
 				Id = m.Id,
-				Subject = m.ShortPreview,
+				ShortPreview = m.ShortPreview,
 				LastReplyId = m.LastReplyId,
 				LastReplyById = m.LastReplyById,
 				LastReplyPostedDT = m.LastReplyPosted,
