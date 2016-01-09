@@ -88,6 +88,7 @@ namespace Forum3.Services {
 				Messages = new List<ViewModels.Messages.Message>(),
 				//Boards = new List<IndexBoard>(),
 				//AssignedBoards = new List<IndexBoard>(),
+				IsAuthenticated = currentUser.Identity.IsAuthenticated,
 				CanManage = isAdmin || topicFirstPost.PostedById == currentUser.GetUserId(),
 				CanInvite = isAdmin || topicFirstPost.PostedById == currentUser.GetUserId(),
 				TotalPages = totalPages,
@@ -101,7 +102,7 @@ namespace Forum3.Services {
 			var pagePosters = _dbContext.Users.Where(u => pagePosterIds.Contains(u.Id));
 
 			foreach (var messageRecord in pageMessages) {
-				var postedBy = pagePosters.Single(u => u.Id == messageRecord.PostedById);
+				var postedBy = await pagePosters.SingleAsync(u => u.Id == messageRecord.PostedById);
 
 				Message repliedToMessage = null;
 				ApplicationUser replyPostedBy = null;

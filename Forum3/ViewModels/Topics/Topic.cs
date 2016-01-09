@@ -9,5 +9,6 @@ namespace Forum3.ViewModels.Topics {
 		public bool CanInvite { get; internal set; }
 		public int TotalPages { get; internal set; }
 		public int CurrentPage { get; internal set; }
+		public bool IsAuthenticated { get; internal set; }
 	}
 }

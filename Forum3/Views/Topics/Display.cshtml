@@ -1,2 +1,55 @@
 ﻿@model Forum3.ViewModels.Topics.Topic
 
+@for (var i = 0; i < Model.Messages.Count(); i++) {
+    <section>
+        <span id="message@(Model.Messages[i].Id)"></span>
+        <!-- if unread target = this, then <span id="latest"></span> -->
+
+        @if (Model.IsAuthenticated) {
+            <aside>
+                <span message-id="@Model.Messages[i].Id">
+                    Thought
+                </span>
+
+                <span>
+                    Reply
+                </span>
+
+                @if (Model.Messages[i].CanEdit) {
+                    <span>
+                        Edit
+                    </span>
+
+                    @if (i == 0) {
+                        <a asp-controller="Messages" asp-action="Delete" asp-route-id="@Model.Messages[i].Id" onclick="return confirm('Are you sure you want to remove this ENTIRE topic?');">
+                            Delete
+                        </a>
+                    }
+                    else {
+                        <a asp-controller="Messages" asp-action="Delete" asp-route-id="@Model.Messages[i].Id" asp-route-redirect="%2fMessage%2fTopic%2f@(Model.Id)" onclick="return confirm('Are you sure you want to remove this reply?');">
+                            Delete
+                        </a>
+                    }
+                }
+            </aside>
+        }
+
+        <p class="note">@Model.Messages[i].PostedByName</p>
+        <p class="note">
+            <time>
+                posted @Model.Messages[i].TimePosted
+                @if (Model.Messages[i].TimeEdited != null) {
+                    <span class="mobileHide">| edited @Model.Messages[i].TimeEdited</span>
+                }
+            </time>
+        </p>
+
+        @if (Model.Messages[i].ReplyId != 0) {
+            <blockquote>@Html.Raw(Model.Messages[i].ReplyBody)</blockquote>
+        }
+
+        <p>@Html.Raw(Model.Messages[i].Body)</p>
+
+        <p class="clear"><!-- thoughts here --></p>
+    </section>
+}

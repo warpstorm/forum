@@ -13,7 +13,6 @@ namespace Forum3.Controllers {
 			_messages = messageRepo;
 		}
 
-		// POST: Messages/Create
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> Create(Input input) {
@@ -25,7 +24,6 @@ namespace Forum3.Controllers {
 			return View(input);
 		}
 
-		// POST: Messages/Edit/5
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> Edit(Input input) {
@@ -37,7 +35,6 @@ namespace Forum3.Controllers {
 			return View(input);
 		}
 		
-		// GET: Messages/Delete/5
 		public async Task<IActionResult> Delete(int id) {
 			await _messages.DeleteAsync(id);
 			return RedirectToAction("Index", "Topics");

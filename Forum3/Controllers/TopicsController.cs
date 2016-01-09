@@ -14,7 +14,6 @@ namespace Forum3.Controllers {
 			_topics = topicRepo;
 		}
 
-		// GET: Topics
 		[AllowAnonymous]
 		public async Task<IActionResult> Index() {
 			var skip = 0;
@@ -54,13 +53,8 @@ namespace Forum3.Controllers {
 					id = e.ParentId
 				}) + "#message" + e.ChildId);
 			}
-			catch (Exception e) {
-				ViewBag.Exception = e.Message;
-				return View();
-			}
 		}
 
-		// GET: Topics/Create
 		public IActionResult Create() {
 			return View();
 		}
