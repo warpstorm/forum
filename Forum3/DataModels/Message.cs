@@ -40,9 +40,9 @@ namespace Forum3.DataModels {
 		public string LastReplyById { get; set; }
 		public string LastReplyByName { get; internal set; }
 
-		public int ParentId { get; set; }
-		public int ReplyId { get; set; }
-		public int LastReplyId { get; set; }
+		public int? ParentId { get; set; }
+		public int? ReplyId { get; set; }
+		public int? LastReplyId { get; set; }
 
 		public int Views { get; set; }
 		public int Replies { get; set; }

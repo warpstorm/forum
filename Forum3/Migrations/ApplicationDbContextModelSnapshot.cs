@@ -5,7 +5,7 @@ using Microsoft.Data.Entity.Metadata;
 using Microsoft.Data.Entity.Migrations;
 using Forum3.Data;
 
-namespace Forum3.Migrations
+namespace forum3.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
     partial class ApplicationDbContextModelSnapshot : ModelSnapshot
@@ -85,7 +85,7 @@ namespace Forum3.Migrations
 
                     b.Property<string>("LastReplyByName");
 
-                    b.Property<int>("LastReplyId");
+                    b.Property<int?>("LastReplyId");
 
                     b.Property<DateTime>("LastReplyPosted");
 
@@ -93,7 +93,7 @@ namespace Forum3.Migrations
 
                     b.Property<string>("OriginalBody");
 
-                    b.Property<int>("ParentId");
+                    b.Property<int?>("ParentId");
 
                     b.Property<string>("PostedById");
 
@@ -101,7 +101,7 @@ namespace Forum3.Migrations
 
                     b.Property<int>("Replies");
 
-                    b.Property<int>("ReplyId");
+                    b.Property<int?>("ReplyId");
 
                     b.Property<string>("ShortPreview");
 

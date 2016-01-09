@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Forum3.DataModels;
 using Forum3.Data;
 using Forum3.Services;
+using Glimpse;
 
 namespace Forum3 {
 	public class Startup {
@@ -48,6 +49,8 @@ namespace Forum3 {
 
 			services.AddMvc();
 
+			services.AddGlimpse();
+
 			// Add application services.
 			services.AddTransient<IEmailSender, AuthMessageSender>();
 			services.AddTransient<ISmsSender, AuthMessageSender>();
@@ -85,6 +88,8 @@ namespace Forum3 {
 			app.UseStaticFiles();
 
 			app.UseIdentity();
+
+			app.UseGlimpse();
 
 			// To configure external authentication please see http://go.microsoft.com/fwlink/?LinkID=532715
 

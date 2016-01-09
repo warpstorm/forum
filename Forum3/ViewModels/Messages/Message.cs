@@ -5,8 +5,8 @@ namespace Forum3.ViewModels.Messages {
 		public string Body { get; internal set; }
 		public bool CanEdit { get; internal set; }
 		public int Id { get; internal set; }
-		public int ParentId { get; internal set; }
-		public int ReplyId { get; internal set; }
+		public int? ParentId { get; internal set; }
+		public int? ReplyId { get; internal set; }
 		public string PostedById { get; internal set; }
 		public string PostedByName { get; internal set; }
 		public string ReplyBody { get; internal set; }
@@ -15,5 +15,7 @@ namespace Forum3.ViewModels.Messages {
 		public string TimeEdited { get; internal set; }
 		public string TimePosted { get; internal set; }
 		public DateTime RecordTime { get; internal set; }
+		public DateTime TimePostedDT { get; internal set; }
+		public DateTime TimeEditedDT { get; internal set; }
 	}
 }
