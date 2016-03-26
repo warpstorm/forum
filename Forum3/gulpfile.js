@@ -1,4 +1,4 @@
-﻿/// <binding Clean='clean' />
+﻿/// <binding AfterBuild='min' Clean='clean' />
 "use strict";
 
 var gulp = require("gulp"),
@@ -29,10 +29,9 @@ gulp.task("clean:css", function (cb) {
 gulp.task("clean", ["clean:js", "clean:css"]);
 
 gulp.task("min:js", function () {
-    return gulp.src([paths.js, "!" + paths.minJs], { base: "." })
-        .pipe(concat(paths.concatJsDest))
+    return gulp.src([paths.js, "!" + paths.minJs])
         .pipe(uglify())
-        .pipe(gulp.dest("."));
+        .pipe(gulp.dest(paths.minJs));
 });
 
 gulp.task("min:css", function () {

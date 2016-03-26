@@ -38,13 +38,13 @@
         <p class="note">
             <time>
                 posted @Model.Messages[i].TimePosted
-                @if (Model.Messages[i].TimeEdited != null) {
+                @if (Model.Messages[i].TimeEdited != Model.Messages[i].TimePosted) {
                     <span class="mobileHide">| edited @Model.Messages[i].TimeEdited</span>
                 }
             </time>
         </p>
 
-        @if (Model.Messages[i].ReplyId != 0) {
+        @if (Model.Messages[i].ReplyId != null) {
             <blockquote>@Html.Raw(Model.Messages[i].ReplyBody)</blockquote>
         }
 

@@ -1,0 +1,12 @@
+﻿@model Forum3.ViewModels.Messages.Input
+
+<div asp-validation-summary="ValidationSummary.ModelOnly" class="text-danger"></div>
+
+<form asp-action="Create" asp-controller="Messages" role="form">
+    <div class="form-group">
+        <textarea asp-for="Body" class="form-control"></textarea>
+        <span asp-validation-for="Body" class="text-danger" />
+    </div>
+
+    <button type="submit" class="btn btn-default">Create</button>
+</form>
