@@ -1,5 +1,66 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
-}
+﻿@model Forum3.ViewModels.Messages.Message
+
+<section>
+	<span id="message@(Model.Id)"></span>
+	<!-- TODO - if unread target = this, then <span id="latest"></span> -->
+
+	<aside>
+		@if (Model.CanThought) {
+			<span message-id="@Model.Id">
+				Thought
+			</span>
+		}
+
+		@if (Model.CanReply) {
+			<span>
+				Reply
+			</span>
+		}
+
+		@if (Model.CanEdit) {
+			<span>
+				Edit
+			</span>
+		}
+
+		@if (Model.CanDelete) {
+			@if (Model.ParentId == null || Model.ParentId == 0) {
+				<a asp-controller="Messages" asp-action="Delete" asp-route-id="@Model.Id" onclick="return confirm('Are you sure you want to remove this ENTIRE topic?');">
+					Delete
+				</a>
+				}
+				else {
+				<a asp-controller="Messages" asp-action="Delete" asp-route-id="@Model.Id" asp-route-redirect="%2fMessage%2fTopic%2f@(Model.ParentId)" onclick="return confirm('Are you sure you want to remove this reply?');">
+					Delete
+				</a>
+				}
+		}
+	</aside>
+
+
+	<p class="note">@Model.PostedByName</p>
+	<p class="note">
+		<time>
+			posted @Model.TimePosted
+			@if (Model.TimeEdited != Model.TimePosted) {
+				<span class="mobileHide">| edited @Model.TimeEdited</span>
+			}
+		</time>
+	</p>
+
+	@if (Model.ReplyId != null) {
+		<blockquote>@Html.Raw(Model.ReplyBody)</blockquote>
+	}
+
+	<p>@Html.Raw(Model.Body)</p>
+	<p>
+		Edit:
+		@Html.Partial("_CreateMessageForm", new Forum3.ViewModels.Messages.Input { Id = Model.Id, Body = Model.OriginalBody })
+	</p>
+	<p>
+		Direct Reply:
+		@Html.Partial("_CreateMessageForm", new Forum3.ViewModels.Messages.Input { ReplyId = Model.Id })
+	</p>
+
+	<p class="clear"><!-- thoughts here --></p>
+</section>

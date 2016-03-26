@@ -72,6 +72,7 @@ namespace Forum3.Services {
 			//		ReplyPreview = r?.LongPreview,
 			//		ReplyPostedBy = r?.PostedByName,
 			//		Body = m.DisplayBody,
+			//		OriginalBody = record.m.OriginalBody,
 			//		PostedByName = m.PostedByName,
 			//		PostedById = m.PostedById,
 			//		TimePostedDT = m.TimePosted,
@@ -84,6 +85,9 @@ namespace Forum3.Services {
 			//	message.TimePosted = message.TimePostedDT.ToPassedTimeString();
 			//	message.TimeEdited = message.TimeEditedDT.ToPassedTimeString();
 			//	message.CanEdit = isAdmin || (currentUser.Identity.IsAuthenticated && currentUser.GetUserId() == message.PostedById);
+			//	message.CanDelete = isAdmin || (currentUser.Identity.IsAuthenticated && currentUser.GetUserId() == record.m.PostedById);
+			//	message.CanReply = currentUser.Identity.IsAuthenticated;
+			//	message.CanThought = currentUser.Identity.IsAuthenticated;
 			//}
 
 			var messages = await (from m in _dbContext.Messages
@@ -109,7 +113,8 @@ namespace Forum3.Services {
 				CurrentPage = currentPage
 			};
 
-			// TEMP FIX - REPLACE THIS LOOP WITH THE COMMENTED BLOCK ABOVE WHEN EF7 LOJ ARE FIXED.
+			// TEMP FIX - REMOVE THIS LOOP AND UNCOMMENT BLOCK ABOVE WHEN EF7 LOJ ARE FIXED.
+			// MAKE SURE YOU INCLUDE CHANGES TO THIS LOOP IN BLOCK ABOVE TOO!!
 
 			foreach (var record in messages)	{
 				topic.Messages.Add(new ViewModels.Messages.Message {
@@ -120,6 +125,7 @@ namespace Forum3.Services {
 					ReplyPreview = record.r?.LongPreview,
 					ReplyPostedBy = record.r?.PostedByName,
 					Body = record.m.DisplayBody,
+					OriginalBody = record.m.OriginalBody,
 					PostedByName = record.m.PostedByName,
 					PostedById = record.m.PostedById,
 					TimePostedDT = record.m.TimePosted,
@@ -127,7 +133,10 @@ namespace Forum3.Services {
 					RecordTime = record.m.TimeEdited,
 					TimePosted = record.m.TimePosted.ToPassedTimeString(),
 					TimeEdited = record.m.TimeEdited.ToPassedTimeString(),
-					CanEdit = isAdmin || (currentUser.Identity.IsAuthenticated && currentUser.GetUserId() == record.m.PostedById)
+					CanEdit = isAdmin || (currentUser.Identity.IsAuthenticated && currentUser.GetUserId() == record.m.PostedById),
+					CanDelete = isAdmin || (currentUser.Identity.IsAuthenticated && currentUser.GetUserId() == record.m.PostedById),
+					CanReply = currentUser.Identity.IsAuthenticated,
+					CanThought = currentUser.Identity.IsAuthenticated
 				});
 			}
 
