@@ -9,8 +9,8 @@ namespace Forum3.ViewModels.Messages {
 		public bool CanReply { get; internal set; }
 		public bool CanDelete { get; internal set; }
 		public int Id { get; internal set; }
-		public int? ParentId { get; internal set; }
-		public int? ReplyId { get; internal set; }
+		public int ParentId { get; internal set; }
+		public int ReplyId { get; internal set; }
 		public string PostedById { get; internal set; }
 		public string PostedByName { get; internal set; }
 		public string ReplyBody { get; internal set; }

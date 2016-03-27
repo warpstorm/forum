@@ -20,12 +20,12 @@ namespace Forum3.Services {
 
 		public async Task<TopicIndex> GetTopicIndexAsync(int skip, int take) {
 			var messageRecords = await (from m in _dbContext.Messages
-										where m.ParentId == null
+										where m.ParentId == 0
 										orderby m.LastReplyPosted descending
 										select new TopicPreview {
 											Id = m.Id,
 											ShortPreview = m.ShortPreview,
-											LastReplyId = m.LastReplyId ?? m.Id,
+											LastReplyId = m.LastReplyId == 0 ? m.Id : m.LastReplyId,
 											LastReplyById = m.LastReplyById,
 											LastReplyPostedDT = m.LastReplyPosted,
 											Views = m.Views,
@@ -47,7 +47,7 @@ namespace Forum3.Services {
 			if (topicFirstPost == null)
 				throw new Exception("No topic found with that ID.");
 
-			if (topicFirstPost.ParentId != null)
+			if (topicFirstPost.ParentId > 0)
 				throw new ChildMessageException(topicFirstPost.Id, topicFirstPost.ParentId);
 
 			topicFirstPost.Views++;
@@ -94,6 +94,7 @@ namespace Forum3.Services {
 						   join im in _dbContext.Messages on m.ReplyId equals im.Id into Replies
 						   from r in Replies.DefaultIfEmpty()
 						   where m.Id == id || m.ParentId == id
+						   orderby m.Id
 						   select new { m, r }).ToListAsync();
 
 			var topic = new Topic {

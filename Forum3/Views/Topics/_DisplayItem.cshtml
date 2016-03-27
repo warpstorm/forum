@@ -24,16 +24,16 @@
 		}
 
 		@if (Model.CanDelete) {
-			@if (Model.ParentId == null || Model.ParentId == 0) {
+			@if (Model.ParentId == 0) {
 				<a asp-controller="Messages" asp-action="Delete" asp-route-id="@Model.Id" onclick="return confirm('Are you sure you want to remove this ENTIRE topic?');">
 					Delete
 				</a>
-				}
-				else {
+			}
+			else {
 				<a asp-controller="Messages" asp-action="Delete" asp-route-id="@Model.Id" asp-route-redirect="%2fMessage%2fTopic%2f@(Model.ParentId)" onclick="return confirm('Are you sure you want to remove this reply?');">
 					Delete
 				</a>
-				}
+			}
 		}
 	</aside>
 
@@ -48,19 +48,17 @@
 		</time>
 	</p>
 
-	@if (Model.ReplyId != null) {
+	@if (Model.ReplyId > 0) {
 		<blockquote>@Html.Raw(Model.ReplyBody)</blockquote>
 	}
 
 	<p>@Html.Raw(Model.Body)</p>
-	<p>
-		Edit:
-		@Html.Partial("_CreateMessageForm", new Forum3.ViewModels.Messages.Input { Id = Model.Id, Body = Model.OriginalBody })
-	</p>
-	<p>
-		Direct Reply:
-		@Html.Partial("_CreateMessageForm", new Forum3.ViewModels.Messages.Input { ReplyId = Model.Id })
-	</p>
+
+	<p>Edit:</p>
+	@Html.Partial("_CreateMessageForm", new Forum3.ViewModels.Messages.Input { Id = Model.Id, Body = Model.OriginalBody })
+
+	<p>Direct Reply:</p>
+	@Html.Partial("_CreateMessageForm", new Forum3.ViewModels.Messages.Input { ParentId = Model.ParentId, ReplyId = Model.Id })
 
 	<p class="clear"><!-- thoughts here --></p>
 </section>

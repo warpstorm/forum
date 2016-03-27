@@ -25,7 +25,7 @@ namespace Forum3.Services {
 		/// <summary>
 		/// Coordinates the overall processing of the message input.
 		/// </summary>
-		public async Task CreateAsync(string messageBody) {
+		public async Task CreateAsync(string messageBody, int parentId = 0, int replyId = 0) {
 			var processedMessageInput = ProcessMessageInput(messageBody);
 
 			var userId = _httpContextAccessor.HttpContext.User.GetUserId();
@@ -43,7 +43,10 @@ namespace Forum3.Services {
 
 				TimeEdited = DateTime.Now,
 				EditedById = userId,
-				EditedByName = userProfile.DisplayName
+				EditedByName = userProfile.DisplayName,
+
+				ParentId = parentId,
+				ReplyId = replyId,
 			};
 
 			_dbContext.Messages.Add(newRecord);
