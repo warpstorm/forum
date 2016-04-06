@@ -21,5 +21,7 @@ namespace Forum3.ViewModels.Messages {
 		public DateTime RecordTime { get; internal set; }
 		public DateTime TimePostedDT { get; internal set; }
 		public DateTime TimeEditedDT { get; internal set; }
+		public Input EditInput { get; set; }
+		public Input ReplyInput { get; set; }
 	}
 }

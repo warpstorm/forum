@@ -9,9 +9,11 @@ namespace Forum3.Controllers {
 	[Authorize]
 	public class TopicsController : Controller {
 		public TopicRepository _topics { get; set; }
+		public MessageRepository _messages { get; set; }
 
-		public TopicsController(TopicRepository topicRepo) {
+		public TopicsController(TopicRepository topicRepo, MessageRepository messageRepo) {
 			_topics = topicRepo;
+			_messages = messageRepo;
 		}
 
 		[AllowAnonymous]
@@ -32,31 +34,26 @@ namespace Forum3.Controllers {
 		}
 
 		public async Task<IActionResult> Display(int id, int page = 1) {
-			try {
-				var jumpToLatest = false;
+			var jumpToLatest = false;
 
-				if (page == 0) {
-					page = 1;
-					jumpToLatest = true;
-				}
-
-				int take = 15;
-				int skip = (page * take) - take;
-
-				var viewModel = await _topics.GetTopicAsync(id, page, skip, take, jumpToLatest);
-
-				return View(viewModel);
+			if (page == 0) {
+				page = 1;
+				jumpToLatest = true;
 			}
-			catch (ChildMessageException e) {
-				return Redirect(Url.RouteUrl(new {
-					action = "Topic",
-					id = e.ParentId
-				}) + "#message" + e.ChildId);
-			}
-		}
 
-		public IActionResult Create() {
-			return View();
+			int take = 15;
+			int skip = (page * take) - take;
+
+			var message = _messages.Find(id);
+
+			if (message.ParentId > 0) {
+				var actionUrl = Url.Action("Display", "Topics", new { id = message.ParentId });
+				return new RedirectResult(actionUrl + "#message" + id);
+			}
+
+			var viewModel = await _topics.GetTopicAsync(message, page, skip, take, jumpToLatest);
+
+			return View(viewModel);
 		}
 	}
 }

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Forum3.Helpers;
 using Microsoft.AspNet.Mvc;
 
 namespace Forum3.ViewModels.Messages {
@@ -7,13 +8,10 @@ namespace Forum3.ViewModels.Messages {
 		[HiddenInput]
 		public int Id { get; set; }
 
-		[HiddenInput]
-		public int ParentId { get; set; }
-
-		[HiddenInput]
-		public int ReplyId { get; set; }
-
+		[Required]
 		[DataType(DataType.MultilineText)]
 		public string Body { get; set; }
+
+		public string FormAction { get; set; }
 	}
 }

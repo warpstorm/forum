@@ -55,10 +55,10 @@
 	<p>@Html.Raw(Model.Body)</p>
 
 	<p>Edit:</p>
-	@Html.Partial("_CreateMessageForm", new Forum3.ViewModels.Messages.Input { Id = Model.Id, Body = Model.OriginalBody })
+	@Html.Partial("_CreateMessageForm", Model.EditInput)
 
-	<p>Direct Reply:</p>
-	@Html.Partial("_CreateMessageForm", new Forum3.ViewModels.Messages.Input { ParentId = Model.ParentId, ReplyId = Model.Id })
+	<p>Reply:</p>
+	@Html.Partial("_CreateMessageForm", Model.ReplyInput)
 
 	<p class="clear"><!-- thoughts here --></p>
 </section>

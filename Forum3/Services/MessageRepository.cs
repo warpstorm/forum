@@ -93,6 +93,15 @@ namespace Forum3.Services {
 			await _dbContext.SaveChangesAsync();
 		}
 
+		public DataModels.Message Find(int id) {
+			var message = _dbContext.Messages.SingleOrDefault(m => m.Id == id);
+
+			if (message == null)
+				throw new Exception("No message found with that ID.");
+
+			return message;
+		}
+
 		private ProcessedMessageInput ProcessMessageInput(string messageBody) {
 			var processedMessageInput = PreProcessMessageInput(messageBody);
 
