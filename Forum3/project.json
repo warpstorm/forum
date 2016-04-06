@@ -34,7 +34,7 @@
   },
 
   "frameworks": {
-    "dnx451": {
+    "dnx46": {
       "dependencies": {
         "CodeKicker.BBCode": "1.0.0-*",
         "HtmlAgilityPack": "1.4.9"
