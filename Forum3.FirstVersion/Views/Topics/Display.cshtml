@@ -10,7 +10,9 @@
 @Html.Partial("_CreateMessageForm", Model.ReplyInput)
 
 @section scripts {
-	<environment names="Development">
-		<script src="~/js/TopicDisplay.js" asp-append-version="true"></script>
-	</environment>
+	<script src="~/js/TopicDisplay.js" asp-append-version="true"></script>
+}
+
+@section styles {
+	<link rel="stylesheet" href="~/css/TopicDisplay.css" asp-append-version="true" />
 }

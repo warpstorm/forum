@@ -85,7 +85,7 @@ namespace forum3.Migrations
 
                     b.Property<string>("LastReplyByName");
 
-                    b.Property<int?>("LastReplyId");
+                    b.Property<int>("LastReplyId");
 
                     b.Property<DateTime>("LastReplyPosted");
 
@@ -93,7 +93,7 @@ namespace forum3.Migrations
 
                     b.Property<string>("OriginalBody");
 
-                    b.Property<int?>("ParentId");
+                    b.Property<int>("ParentId");
 
                     b.Property<string>("PostedById");
 
@@ -101,7 +101,7 @@ namespace forum3.Migrations
 
                     b.Property<int>("Replies");
 
-                    b.Property<int?>("ReplyId");
+                    b.Property<int>("ReplyId");
 
                     b.Property<string>("ShortPreview");
 

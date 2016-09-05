@@ -6,19 +6,19 @@
 
 	<aside>
 		@if (Model.CanThought) {
-			<span message-id="@Model.Id">
+			<span class="thoughtButton pointer" message-id="@Model.Id">
 				Thought
 			</span>
 		}
 
 		@if (Model.CanReply) {
-			<span>
+			<span class="replyButton pointer">
 				Reply
 			</span>
 		}
 
 		@if (Model.CanEdit) {
-			<span>
+			<span class="editButton pointer">
 				Edit
 			</span>
 		}
@@ -37,7 +37,6 @@
 		}
 	</aside>
 
-
 	<p class="note">@Model.PostedByName</p>
 	<p class="note">
 		<time>
@@ -54,11 +53,15 @@
 
 	<p>@Html.Raw(Model.Body)</p>
 
-	<p>Edit:</p>
-	@Html.Partial("_CreateMessageForm", Model.EditInput)
+	<div class="editControl hide">
+		<p>Edit:</p>
+		@Html.Partial("_CreateMessageForm", Model.EditInput)
+	</div>
 
-	<p>Reply:</p>
-	@Html.Partial("_CreateMessageForm", Model.ReplyInput)
+	<div class="replyControl hide">
+		<p>Reply:</p>
+		@Html.Partial("_CreateMessageForm", Model.ReplyInput)
+	</div>
 
-	<p class="clear"><!-- thoughts here --></p>
+	<p><!-- thoughts here --></p>
 </section>

@@ -15,10 +15,14 @@
     z-index: 10 !important;
 }
 
-    .carousel-caption p {
-        font-size: 20px;
-        line-height: 1.4;
-    }
+.carousel-caption p {
+    font-size: 20px;
+    line-height: 1.4;
+}
+
+.pointer {
+	cursor: pointer;
+}
 
 @media (min-width: 768px) {
     .carousel-caption {

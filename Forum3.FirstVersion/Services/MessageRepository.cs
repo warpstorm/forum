@@ -26,6 +26,15 @@ namespace Forum3.Services {
 		/// Coordinates the overall processing of the message input.
 		/// </summary>
 		public async Task CreateAsync(string messageBody, int parentId = 0, int replyId = 0) {
+			if (replyId > 0) {
+				var replyMessage = _dbContext.Messages.FirstOrDefault(m => m.Id == replyId);
+
+				if (replyMessage == null)
+					throw new Exception("Target message for reply doesn't exist.");
+
+				parentId = replyMessage.ParentId;
+			}
+
 			var processedMessageInput = ProcessMessageInput(messageBody);
 
 			var userId = _httpContextAccessor.HttpContext.User.GetUserId();
@@ -79,14 +88,25 @@ namespace Forum3.Services {
 		}
 
 		public async Task DeleteAsync(int id) {
+			var getCurrentUserTask = _dbContext.Users.SingleAsync(u => u.Id == _httpContextAccessor.HttpContext.User.GetUserId());
+
+			var message = await _dbContext.Messages.SingleAsync(m => m.Id == id);
 			var replies = await _dbContext.Messages.Where(m => m.ReplyId == id).ToListAsync();
 
+			var currentUser = await getCurrentUserTask;
+
 			foreach (var reply in replies) {
+				reply.OriginalBody =
+					"[quote]" +
+					message.OriginalBody +
+					"\n" + 
+					"Message deleted by " + currentUser.DisplayName +
+					" on " + DateTime.Now.ToString("MMMM dd, yyyy") +
+					"[/quote]" + 
+					reply.OriginalBody;
 				reply.ReplyId = 0;
 				_dbContext.Entry(reply).State = EntityState.Modified;
 			}
-
-			var message = await _dbContext.Messages.SingleAsync(m => m.Id == id);
 
 			_dbContext.Messages.Remove(message);
 
