@@ -1,61 +1,72 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace CodeKicker.BBCode.SyntaxTree {
+﻿namespace CodeKicker.BBCode.SyntaxTree {
 	public class SyntaxTreeVisitor {
 		public SyntaxTreeNode Visit(SyntaxTreeNode node) {
-			if (node == null) return null;
+			if (node == null)
+				return null;
+
 			return node.AcceptVisitor(this);
 		}
+
 		protected internal virtual SyntaxTreeNode Visit(SequenceNode node) {
 			if (node == null) return null;
 
 			var modifiedSubNodes = GetModifiedSubNodes(node);
 
 			if (modifiedSubNodes == null)
-				return node; //unmodified
+				//unmodified
+				return node;
 			else
-				return node.SetSubNodes(modifiedSubNodes); //subnodes were modified
+				//subnodes were modified
+				return node.SetSubNodes(modifiedSubNodes);
 		}
+
 		protected internal virtual SyntaxTreeNode Visit(TagNode node) {
 			if (node == null) return null;
 
 			var modifiedSubNodes = GetModifiedSubNodes(node);
 
 			if (modifiedSubNodes == null)
-				return node; //unmodified
+				//unmodified
+				return node;
 			else
-				return node.SetSubNodes(modifiedSubNodes); //subnodes were modified
+				//subnodes were modified
+				return node.SetSubNodes(modifiedSubNodes);
 		}
+
 		protected internal virtual SyntaxTreeNode Visit(TextNode node) {
 			return node;
 		}
 
 		SyntaxTreeNodeCollection GetModifiedSubNodes(SyntaxTreeNode node) {
-			SyntaxTreeNodeCollection modifiedSubNodes = null; //lazy
+			//lazy init
+			SyntaxTreeNodeCollection modifiedSubNodes = null;
 
 			for (int i = 0; i < node.SubNodes.Count; i++) {
 				var subNode = node.SubNodes[i];
 
 				var replacement = Visit(subNode);
+
 				if (replacement != subNode) {
-					if (modifiedSubNodes == null) //lazy init
-					{
+					//lazy init
+					if (modifiedSubNodes == null) {
 						modifiedSubNodes = new SyntaxTreeNodeCollection();
-						for (int j = 0; j < i; j++) //copy unmodified nodes
+
+						//copy unmodified nodes
+						for (int j = 0; j < i; j++)
 							modifiedSubNodes.Add(node.SubNodes[j]);
 					}
 
-					if (replacement != null) //insert replacement
+					//insert replacement
+					if (replacement != null)
 						modifiedSubNodes.Add(replacement);
 				}
 				else {
-					if (modifiedSubNodes != null) //only insert unmodified subnode if the lazy collection has been initialized
+					//only insert unmodified subnode if the lazy collection has been initialized
+					if (modifiedSubNodes != null)
 						modifiedSubNodes.Add(subNode);
 				}
 			}
+
 			return modifiedSubNodes;
 		}
 	}

@@ -71,6 +71,8 @@
     <Compile Include="BBCode.cs" />
     <Compile Include="EErrorMode.cs" />
     <Compile Include="MessagesHelper.cs" />
+    <Compile Include="SyntaxTree\ImmutableSyntaxTreeNodeCollection.cs" />
+    <Compile Include="SyntaxTree\ISyntaxTreeNodeCollection.cs" />
     <Compile Include="SyntaxTree\SequenceNode.cs" />
     <Compile Include="BBTag.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
