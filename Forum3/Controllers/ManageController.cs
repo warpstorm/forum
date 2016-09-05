@@ -1,33 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Forum3.ViewModels;
-using Forum3.ViewModels.Manage;
 using Forum3.Services;
+using Forum3.DataModels;
+using Forum3.ViewModels.Manage;
 
-namespace Forum3.Controllers
-{
-    [Authorize]
+namespace Forum3.Controllers {
+	[Authorize]
     public class ManageController : Controller
     {
-        private readonly UserManager<ApplicationUser> _userManager;
-        private readonly SignInManager<ApplicationUser> _signInManager;
-        private readonly IEmailSender _emailSender;
-        private readonly ISmsSender _smsSender;
-        private readonly ILogger _logger;
+        readonly UserManager<ApplicationUser> _userManager;
+        readonly SignInManager<ApplicationUser> _signInManager;
+        readonly IEmailSender _emailSender;
+        readonly ISmsSender _smsSender;
+        readonly ILogger _logger;
 
-        public ManageController(
-        UserManager<ApplicationUser> userManager,
-        SignInManager<ApplicationUser> signInManager,
-        IEmailSender emailSender,
-        ISmsSender smsSender,
-        ILoggerFactory loggerFactory)
-        {
+        public ManageController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IEmailSender emailSender, ISmsSender smsSender, ILoggerFactory loggerFactory) {
             _userManager = userManager;
             _signInManager = signInManager;
             _emailSender = emailSender;

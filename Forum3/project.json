@@ -2,6 +2,8 @@
   "userSecretsId": "aspnet-Forum3-1bc2511d-cdec-43e3-a001-c558cf72400a",
 
   "dependencies": {
+    "BundlerMinifier.Core": "2.2.281",
+    "Glimpse": "2.0.0-beta1",
     "HtmlAgilityPack": "1.4.9.5",
     "Microsoft.AspNetCore.Authentication.Cookies": "1.0.0",
     "Microsoft.AspNetCore.Diagnostics": "1.0.0",

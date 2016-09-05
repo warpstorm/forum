@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -8,13 +6,12 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
-using Forum3.ViewModels;
-using Forum3.ViewModels.Account;
 using Forum3.Services;
+using Forum3.DataModels;
+using Forum3.ViewModels.Account;
 
-namespace Forum3.Controllers
-{
-    [Authorize]
+namespace Forum3.Controllers {
+	[Authorize]
     public class AccountController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
@@ -134,7 +131,7 @@ namespace Forum3.Controllers
         {
             await _signInManager.SignOutAsync();
             _logger.LogInformation(4, "User logged out.");
-            return RedirectToAction(nameof(HomeController.Index), "Home");
+            return RedirectToAction(nameof(TopicsController.Index), "Home");
         }
 
         //
@@ -459,7 +456,7 @@ namespace Forum3.Controllers
             }
             else
             {
-                return RedirectToAction(nameof(HomeController.Index), "Home");
+                return RedirectToAction(nameof(TopicsController.Index), "Home");
             }
         }
 

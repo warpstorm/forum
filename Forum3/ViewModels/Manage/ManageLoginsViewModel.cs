@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.AspNetCore.Identity;
 
-namespace Forum3.ViewModels.Manage
-{
-    public class ManageLoginsViewModel
+namespace Forum3.ViewModels.Manage {
+	public class ManageLoginsViewModel
     {
         public IList<UserLoginInfo> CurrentLogins { get; set; }
 

@@ -12,6 +12,8 @@ using Microsoft.Extensions.Logging;
 using Forum3.Data;
 using Forum3.ViewModels;
 using Forum3.Services;
+using Glimpse;
+using Forum3.DataModels;
 
 namespace Forum3
 {
@@ -43,21 +45,35 @@ namespace Forum3
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
-            services.AddIdentity<ApplicationUser, IdentityRole>()
-                .AddEntityFrameworkStores<ApplicationDbContext>()
-                .AddDefaultTokenProviders();
+			services.AddIdentity<ApplicationUser, IdentityRole>(o => {
+				o.Password.RequireDigit = false;
+				o.Password.RequireLowercase = false;
+				o.Password.RequireUppercase = false;
+				o.Password.RequireNonAlphanumeric = false;
+				o.Password.RequiredLength = 3;
+			})
+				.AddEntityFrameworkStores<ApplicationDbContext>()
+				.AddDefaultTokenProviders();
 
-            services.AddMvc();
+			services.AddGlimpse();
 
-            // Add application services.
-            services.AddTransient<IEmailSender, AuthMessageSender>();
+			services.AddMvc();
+
+			// Add application services.
+			services.AddTransient<IEmailSender, AuthMessageSender>();
             services.AddTransient<ISmsSender, AuthMessageSender>();
-        }
+
+			services.AddScoped<MessageRepository>();
+			services.AddScoped<TopicRepository>();
+		}
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-            loggerFactory.AddConsole(Configuration.GetSection("Logging"));
+			// TODO - Doesn't work for some reason.
+			//app.UseGlimpse();
+
+			loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
             if (env.IsDevelopment())
@@ -68,20 +84,20 @@ namespace Forum3
             }
             else
             {
-                app.UseExceptionHandler("/Home/Error");
+                //app.UseExceptionHandler("/Home/Error");
             }
 
             app.UseStaticFiles();
 
             app.UseIdentity();
 
-            // Add external authentication middleware below. To configure them please see http://go.microsoft.com/fwlink/?LinkID=532715
+			// Add external authentication middleware below. To configure them please see http://go.microsoft.com/fwlink/?LinkID=532715
 
-            app.UseMvc(routes =>
+			app.UseMvc(routes =>
             {
                 routes.MapRoute(
                     name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                    template: "{controller=Topic}/{action=Index}/{id?}");
             });
         }
     }
