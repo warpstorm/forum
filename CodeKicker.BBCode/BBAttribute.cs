@@ -1,19 +1,18 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace CodeKicker.BBCode {
 	public class BBAttribute {
-		public BBAttribute(string id, string name)
-			: this(id, name, null, HtmlEncodingMode.HtmlAttributeEncode) {
-		}
-		public BBAttribute(string id, string name, Func<IAttributeRenderingContext, string> contentTransformer)
-			: this(id, name, contentTransformer, HtmlEncodingMode.HtmlAttributeEncode) {
-		}
+		public BBAttribute(string id, string name) : this(id, name, null, HtmlEncodingMode.HtmlAttributeEncode) { }
+		public BBAttribute(string id, string name, Func<IAttributeRenderingContext, string> contentTransformer) : this(id, name, contentTransformer, HtmlEncodingMode.HtmlAttributeEncode) { }
 		public BBAttribute(string id, string name, Func<IAttributeRenderingContext, string> contentTransformer, HtmlEncodingMode htmlEncodingMode) {
-			if (id == null) throw new ArgumentNullException("id");
-			if (name == null) throw new ArgumentNullException("name");
-			if (!Enum.IsDefined(typeof(HtmlEncodingMode), htmlEncodingMode)) throw new ArgumentException("htmlEncodingMode");
+			if (id == null)
+				throw new ArgumentNullException("id");
+
+			if (name == null)
+				throw new ArgumentNullException("name");
+
+			if (!Enum.IsDefined(typeof(HtmlEncodingMode), htmlEncodingMode))
+				throw new ArgumentException("htmlEncodingMode");
 
 			ID = id;
 			Name = name;

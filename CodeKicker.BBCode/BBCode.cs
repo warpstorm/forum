@@ -22,7 +22,7 @@ namespace CodeKicker.BBCode {
 		}
 
 		static BBCodeParser GetParser() {
-			return new BBCodeParser(ErrorMode.ErrorFree, null, new[]
+			return new BBCodeParser(EErrorMode.ErrorFree, null, new[]
 				{
 					new BBTag("b", "<b>", "</b>"),
 					new BBTag("i", "<span style=\"font-style:italic;\">", "</span>"),
