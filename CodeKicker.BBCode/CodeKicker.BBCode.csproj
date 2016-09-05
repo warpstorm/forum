@@ -79,6 +79,7 @@
     <Compile Include="SyntaxTree\SyntaxTreeVisitor.cs" />
     <Compile Include="SyntaxTree\TagNode.cs" />
     <Compile Include="SyntaxTree\TextNode.cs" />
+    <Compile Include="TextSpanReplaceInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Messages.resx">

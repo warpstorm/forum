@@ -1,2 +1,6 @@
 ﻿In order to use this library, we require a link to http://codekicker.de/ from you.
 Licensed unter the Creative Commons Attribution 3.0 Licence: http://creativecommons.org/licenses/by/3.0/.
+
+* Note - unfortunately the original license note (which was scattered all throughout the code) does not specify whether 
+a link to the site is required on the public display page, or just in the source code. As this library is half a decade 
+old now, I think a link in the code will suffice - Jim
