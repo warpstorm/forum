@@ -132,7 +132,8 @@ namespace CodeKicker.BBCode {
 					return repl;
 				}).ToList();
 
-				if (fixedSubNodes.SequenceEqual(node.SubNodes, ReferenceEqualityComparer<SyntaxTreeNode>.Instance)) return node;
+				if (fixedSubNodes.SequenceEqual(node.SubNodes, ReferenceEqualityComparer<SyntaxTreeNode>.Instance))
+					return node;
 
 				return node.SetSubNodes(fixedSubNodes);
 			}

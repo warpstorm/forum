@@ -1,4 +1,4 @@
-﻿{
+{
   "userSecretsId": "aspnet-Forum3-1bc2511d-cdec-43e3-a001-c558cf72400a",
 
   "dependencies": {
@@ -56,7 +56,13 @@
   },
 
   "frameworks": {
-    "net461": { }
+    "net461": {
+        "dependencies": {
+            "CodeKicker.BBCode": {
+                "target": "project"
+            }
+        }
+    }
   },
 
   "buildOptions": {

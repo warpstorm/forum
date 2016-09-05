@@ -69,10 +69,13 @@
     <Compile Include="BBCodeParser.cs" />
     <Compile Include="BBCodeParsingException.cs" />
     <Compile Include="BBCode.cs" />
-    <Compile Include="EErrorMode.cs" />
+    <Compile Include="Enums\EErrorMode.cs" />
+    <Compile Include="Enums\EBBTagClosingStyle.cs" />
+    <Compile Include="Enums\EHtmlEncodingMode.cs" />
+    <Compile Include="Interfaces\IAttributeRenderingContext.cs" />
     <Compile Include="MessagesHelper.cs" />
     <Compile Include="SyntaxTree\ImmutableSyntaxTreeNodeCollection.cs" />
-    <Compile Include="SyntaxTree\ISyntaxTreeNodeCollection.cs" />
+    <Compile Include="Interfaces\ISyntaxTreeNodeCollection.cs" />
     <Compile Include="SyntaxTree\SequenceNode.cs" />
     <Compile Include="BBTag.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

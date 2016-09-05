@@ -107,8 +107,8 @@ namespace CodeKicker.BBCode.SyntaxTree {
 				effectiveValue = "";
 
 			var encodedValue =
-				attribute.HtmlEncodingMode == HtmlEncodingMode.HtmlAttributeEncode ? HttpUtility.HtmlAttributeEncode(effectiveValue)
-					: attribute.HtmlEncodingMode == HtmlEncodingMode.HtmlEncode ? HttpUtility.HtmlEncode(effectiveValue)
+				attribute.HtmlEncodingMode == EHtmlEncodingMode.HtmlAttributeEncode ? HttpUtility.HtmlAttributeEncode(effectiveValue)
+					: attribute.HtmlEncodingMode == EHtmlEncodingMode.HtmlEncode ? HttpUtility.HtmlEncode(effectiveValue)
 						  : effectiveValue;
 
 			output = output.Replace(placeholderStr, encodedValue);

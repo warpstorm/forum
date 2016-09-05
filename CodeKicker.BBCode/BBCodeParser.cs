@@ -167,7 +167,7 @@ namespace CodeKicker.BBCode {
 			stack.Peek().SubNodes.Add(tag);
 
 			//leaf elements have no content - they are closed immediately
-			if (tag.Tag.TagClosingStyle != BBTagClosingStyle.LeafElementWithoutContent)
+			if (tag.Tag.TagClosingStyle != EBBTagClosingStyle.LeafElementWithoutContent)
 				stack.Push(tag);
 
 			pos = end;

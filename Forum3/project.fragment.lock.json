@@ -1,0 +1,22 @@
+{
+  "version": 2,
+  "exports": {
+    "CodeKicker.BBCode/1.0.0": {
+      "type": "project",
+      "framework": ".NETFramework,Version=v4.6.1",
+      "compile": {
+        "bin/Debug/CodeKicker.BBCode.dll": {}
+      },
+      "runtime": {
+        "bin/Debug/CodeKicker.BBCode.dll": {}
+      },
+      "contentFiles": {
+        "bin/Debug/CodeKicker.BBCode.pdb": {
+          "buildAction": "None",
+          "codeLanguage": "any",
+          "copyToOutput": true
+        }
+      }
+    }
+  }
+}
