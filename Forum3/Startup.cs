@@ -10,7 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Forum3.Data;
-using Forum3.Models;
+using Forum3.ViewModels;
 using Forum3.Services;
 
 namespace Forum3

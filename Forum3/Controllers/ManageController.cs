@@ -6,8 +6,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Forum3.Models;
-using Forum3.Models.ManageViewModels;
+using Forum3.ViewModels;
+using Forum3.ViewModels.Manage;
 using Forum3.Services;
 
 namespace Forum3.Controllers

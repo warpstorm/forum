@@ -1,4 +1,4 @@
-﻿using Forum3.DataModels;
+﻿using Forum3.ViewModels;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.Data.Entity;
 

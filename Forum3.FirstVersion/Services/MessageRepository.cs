@@ -40,7 +40,7 @@ namespace Forum3.Services {
 			var userId = _httpContextAccessor.HttpContext.User.GetUserId();
 			var userProfile = await _dbContext.Users.SingleAsync(u => u.Id == userId);
 
-			var newRecord = new DataModels.Message {
+			var newRecord = new ViewModels.Message {
 				OriginalBody = processedMessageInput.OriginalBody,
 				DisplayBody = processedMessageInput.DisplayBody,
 				ShortPreview = processedMessageInput.ShortPreview,
@@ -113,7 +113,7 @@ namespace Forum3.Services {
 			await _dbContext.SaveChangesAsync();
 		}
 
-		public DataModels.Message Find(int id) {
+		public ViewModels.Message Find(int id) {
 			var message = _dbContext.Messages.SingleOrDefault(m => m.Id == id);
 
 			if (message == null)

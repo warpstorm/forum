@@ -7,7 +7,7 @@ using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Mvc;
 using Microsoft.Extensions.Logging;
-using Forum3.DataModels;
+using Forum3.ViewModels;
 using Forum3.Services;
 using Forum3.ViewModels.Manage;
 

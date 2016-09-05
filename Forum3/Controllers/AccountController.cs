@@ -8,8 +8,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
-using Forum3.Models;
-using Forum3.Models.AccountViewModels;
+using Forum3.ViewModels;
+using Forum3.ViewModels.Account;
 using Forum3.Services;
 
 namespace Forum3.Controllers

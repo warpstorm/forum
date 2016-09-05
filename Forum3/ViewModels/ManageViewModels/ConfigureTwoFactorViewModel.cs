@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
-namespace Forum3.Models.ManageViewModels
+namespace Forum3.ViewModels.Manage
 {
     public class ConfigureTwoFactorViewModel
     {

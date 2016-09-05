@@ -4,7 +4,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Forum3.Data;
-using Forum3.DataModels;
+using Forum3.ViewModels;
 using Forum3.Helpers;
 using Forum3.ViewModels.Topics;
 using Microsoft.AspNet.Http;
