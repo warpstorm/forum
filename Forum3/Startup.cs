@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -10,14 +6,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Forum3.Data;
-using Forum3.ViewModels;
 using Forum3.Services;
-using Glimpse;
 using Forum3.DataModels;
 
-namespace Forum3
-{
-    public class Startup
+namespace Forum3 {
+	public class Startup
     {
         public Startup(IHostingEnvironment env)
         {
@@ -55,8 +48,6 @@ namespace Forum3
 				.AddEntityFrameworkStores<ApplicationDbContext>()
 				.AddDefaultTokenProviders();
 
-			services.AddGlimpse();
-
 			services.AddMvc();
 
 			// Add application services.
@@ -70,9 +61,6 @@ namespace Forum3
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-			// TODO - Doesn't work for some reason.
-			//app.UseGlimpse();
-
 			loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
