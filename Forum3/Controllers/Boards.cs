@@ -9,13 +9,9 @@ namespace Forum3.Controllers {
 	[RequireRemoteHttps]
 	public class Boards : Controller {
 		public BoardService BoardService { get; }
-		public TopicService TopicService { get; }
-		public MessageService MessageService { get; }
 
-		public Boards(BoardService boardService, TopicService topicService, MessageService messageService) {
+		public Boards(BoardService boardService) {
 			BoardService = boardService;
-			TopicService = topicService;
-			MessageService = messageService;
 		}
 
 		[AllowAnonymous]
