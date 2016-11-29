@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Forum3.Services;
+using Forum3.ViewModels.Messages;
 
 namespace Forum3.Controllers {
 	[Authorize]
@@ -16,6 +17,7 @@ namespace Forum3.Controllers {
 		}
 
 		[AllowAnonymous]
+		[HttpGet]
 		public async Task<IActionResult> Index() {
 			var skip = 0;
 
@@ -32,6 +34,7 @@ namespace Forum3.Controllers {
 			return View(viewModel);
 		}
 
+		[HttpGet]
 		public async Task<IActionResult> Display(int id, int page = 1) {
 			var jumpToLatest = false;
 
@@ -53,6 +56,62 @@ namespace Forum3.Controllers {
 			var viewModel = await TopicService.GetTopic(message, page, skip, take, jumpToLatest);
 
 			return View(viewModel);
+		}
+
+		[HttpGet]
+		public IActionResult Create() {
+			return View(new TopicFirstPost());
+		}
+
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> Create(TopicFirstPost input) {
+			if (ModelState.IsValid) {
+				await MessageService.Create(input.Body);
+				return RedirectToAction(nameof(Index), nameof(Topics));
+			}
+
+			return View(input);
+		}
+
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> Edit(EditPost input) {
+			if (ModelState.IsValid) {
+				await MessageService.Update(input.Id, input.Body);
+				return RedirectToAction(nameof(Display), nameof(Topics), new { Id = input.Id });
+			}
+
+			// TODO - replace this by returning back to the Display view, or doing web api.
+			return View(input);
+		}
+
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> TopicReply(TopicReplyPost input) {
+			if (ModelState.IsValid) {
+				await MessageService.Create(input.Body, parentId: input.Id);
+				return RedirectToAction(nameof(Display), nameof(Topics), new { Id = input.Id });
+			}
+
+			return View(input);
+		}
+
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> DirectReply(DirectReplyPost input) {
+			if (ModelState.IsValid) {
+				await MessageService.Create(input.Body, replyId: input.Id);
+				return RedirectToAction(nameof(Display), new { Id = input.Id });
+			}
+
+			return View(input);
+		}
+
+		[HttpGet]
+		public async Task<IActionResult> Delete(int id) {
+			await MessageService.Delete(id);
+			return RedirectToAction(nameof(Index), nameof(Topics));
 		}
 	}
 }
