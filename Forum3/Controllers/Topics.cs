@@ -4,9 +4,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Forum3.Services;
 using Forum3.ViewModels.Messages;
+using Forum3.Annotations;
 
 namespace Forum3.Controllers {
 	[Authorize]
+	[RequireRemoteHttps]
 	public class Topics : Controller {
 		public TopicService TopicService { get; }
 		public MessageService MessageService { get; }
@@ -43,8 +45,8 @@ namespace Forum3.Controllers {
 				jumpToLatest = true;
 			}
 
-			int take = 15;
-			int skip = (page * take) - take;
+			var take = 15;
+			var skip = (page * take) - take;
 
 			var message = MessageService.Find(id);
 

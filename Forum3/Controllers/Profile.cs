@@ -7,9 +7,11 @@ using Microsoft.Extensions.Logging;
 using Forum3.DataModels;
 using Forum3.ViewModels.Profile;
 using Forum3.Interfaces.Users;
+using Forum3.Annotations;
 
 namespace Forum3.Areas.Users.Controllers {
 	[Authorize]
+	[RequireRemoteHttps]
     public class Profile : Controller
     {
         UserManager<ApplicationUser> UserManager { get; }

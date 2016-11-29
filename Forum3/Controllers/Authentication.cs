@@ -10,10 +10,12 @@ using Forum3.DataModels;
 using Forum3.ViewModels.Authentication;
 using Forum3.Controllers;
 using Forum3.Interfaces.Users;
+using Forum3.Annotations;
 
 namespace Forum3.Areas.Users.Controllers {
 	[Authorize]
-    public class Authentication : Controller
+	[RequireRemoteHttps]
+	public class Authentication : Controller
     {
         UserManager<ApplicationUser> UserManager { get; }
 		SignInManager<ApplicationUser> SignInManager { get; }
