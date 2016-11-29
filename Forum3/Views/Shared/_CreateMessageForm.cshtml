@@ -3,7 +3,7 @@
 <div>
 	<div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-	<form asp-action="@Model.FormAction" asp-controller="Messages" role="form">
+	<form asp-action="@Model.FormAction" asp-controller="Topics" role="form">
 		<div class="form-group">
 			<textarea asp-for="Body" class="form-control"></textarea>
 			<span asp-validation-for="Body" class="text-danger" />

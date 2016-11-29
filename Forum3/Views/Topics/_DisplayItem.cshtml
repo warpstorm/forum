@@ -25,12 +25,12 @@
 
 		@if (Model.CanDelete) {
 			@if (Model.ParentId == 0) {
-				<a asp-controller="Messages" asp-action="Delete" asp-route-id="@Model.Id" onclick="return confirm('Are you sure you want to remove this ENTIRE topic?');">
+				<a asp-controller="Topics" asp-action="Delete" asp-route-id="@Model.Id" onclick="return confirm('Are you sure you want to remove this ENTIRE topic?');">
 					Delete
 				</a>
 			}
 			else {
-				<a asp-controller="Messages" asp-action="Delete" asp-route-id="@Model.Id" asp-route-redirect="%2fMessage%2fTopic%2f@(Model.ParentId)" onclick="return confirm('Are you sure you want to remove this reply?');">
+				<a asp-controller="Topics" asp-action="Delete" asp-route-id="@Model.Id" asp-route-redirect="%2fMessage%2fTopic%2f@(Model.ParentId)" onclick="return confirm('Are you sure you want to remove this reply?');">
 					Delete
 				</a>
 			}
