@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Forum3.Data;
-using Forum3.Enums;
 
 namespace Forum3.Data.Migrations
 {

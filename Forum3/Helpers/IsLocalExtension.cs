@@ -10,10 +10,15 @@ namespace Forum3.Helpers {
 			var connection = request.HttpContext.Connection;
 
 			if (connection.RemoteIpAddress != null) {
-				if (connection.LocalIpAddress != null)
-					return connection.RemoteIpAddress.Equals(connection.LocalIpAddress);
-				else
-					return IPAddress.IsLoopback(connection.RemoteIpAddress);
+				if (IPAddress.IsLoopback(connection.RemoteIpAddress))
+					return true;
+
+				var remoteAddress = connection.RemoteIpAddress.MapToIPv4();
+
+				if (connection.LocalIpAddress != null) {
+					var localAddress = connection.LocalIpAddress.MapToIPv4();
+					return remoteAddress.Equals(localAddress);
+				}
 			}
 
 			// for in memory TestServer or when dealing with default connection info

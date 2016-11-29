@@ -1,11 +1,11 @@
-﻿@model Forum3.ViewModels.Topics.TopicPreview
+﻿@model Forum3.ViewModels.Messages.MessagePreview
 
 <tr>
     <td clickableLinkParent>
         <a asp-action="Display" asp-route-id="@Model.Id">@Model.ShortPreview</a>
     </td>
     <td>
-        @Model.LastChildTimePosted
+        @Model.LastReplyPosted
     </td>
     <td>
         <a asp-action="Delete" asp-controller="Topics" asp-route-id="@Model.Id">Delete</a>
