@@ -7,21 +7,21 @@ using Microsoft.AspNetCore.Authorization;
 namespace Forum3.Controllers {
 	[Authorize]
 	public class MessagesController : Controller {
-		private MessageRepository _messages;
+		MessageService Messages { get; }
 
-		public MessagesController(MessageRepository messageRepo) {
-			_messages = messageRepo;
+		public MessagesController(MessageService messageService) {
+			Messages = messageService;
 		}
 
 		public IActionResult Create() {
-			return View(new Input { FormAction = "Create" });
+			return View(new TopicFirstPost { FormAction = "Create" });
 		}
 
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Create(Input input) {
+		public async Task<IActionResult> Create(TopicFirstPost input) {
 			if (ModelState.IsValid) {
-				await _messages.CreateAsync(input.Body);
+				await Messages.CreateAsync(input.Body);
 				return RedirectToAction("Index", "Topics");
 			}
 
@@ -30,9 +30,9 @@ namespace Forum3.Controllers {
 
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Edit(Input input) {
+		public async Task<IActionResult> Edit(EditPost input) {
 			if (ModelState.IsValid) {
-				await _messages.UpdateAsync(input.Id, input.Body);
+				await Messages.UpdateAsync(input.Id, input.Body);
 				return RedirectToAction("Display", "Topics", new { Id = input.Id });
 			}
 
@@ -41,9 +41,9 @@ namespace Forum3.Controllers {
 
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> TopicReply(Input input) {
+		public async Task<IActionResult> TopicReply(TopicReplyPost input) {
 			if (ModelState.IsValid) {
-				await _messages.CreateAsync(input.Body, parentId: input.Id);
+				await Messages.CreateAsync(input.Body, parentId: input.Id);
 				return RedirectToAction("Display", "Topics", new { Id = input.Id });
 			}
 
@@ -52,9 +52,9 @@ namespace Forum3.Controllers {
 
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> DirectReply(Input input) {
+		public async Task<IActionResult> DirectReply(DirectReplyPost input) {
 			if (ModelState.IsValid) {
-				await _messages.CreateAsync(input.Body, replyId: input.Id);
+				await Messages.CreateAsync(input.Body, replyId: input.Id);
 				return RedirectToAction("Display", "Topics", new { Id = input.Id });
 			}
 
@@ -62,7 +62,7 @@ namespace Forum3.Controllers {
 		}
 
 		public async Task<IActionResult> Delete(int id) {
-			await _messages.DeleteAsync(id);
+			await Messages.DeleteAsync(id);
 			return RedirectToAction("Index", "Topics");
 		}
 	}

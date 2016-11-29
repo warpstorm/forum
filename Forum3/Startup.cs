@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Forum3.Data;
 using Forum3.Services;
 using Forum3.DataModels;
+using Forum3.Interfaces.Users;
 
 namespace Forum3 {
 	public class Startup
@@ -79,13 +80,14 @@ namespace Forum3 {
 
             app.UseIdentity();
 
-			// Add external authentication middleware below. To configure them please see http://go.microsoft.com/fwlink/?LinkID=532715
-
 			app.UseMvc(routes =>
             {
-                routes.MapRoute(
+				routes.MapRoute(name: "areaRoute",
+					template: "{area:exists}/{controller}/{action}");
+
+				routes.MapRoute(
                     name: "default",
-                    template: "{controller=Topic}/{action=Index}/{id?}");
+                    template: "{controller=Topics}/{action=Index}/{id?}");
             });
         }
     }

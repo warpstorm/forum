@@ -19,13 +19,13 @@ namespace Forum3.Controllers {
 		public async Task<IActionResult> Index() {
 			var skip = 0;
 
-			if (HttpContext.Request.Query.ContainsKey("skip"))
-				skip = Convert.ToInt32(HttpContext.Request.Query["skip"]);
+			if (Request.Query.ContainsKey("skip"))
+				skip = Convert.ToInt32(Request.Query["skip"]);
 
 			var take = 15;
 
-			if (HttpContext.Request.Query.ContainsKey("take"))
-				take = Convert.ToInt32(HttpContext.Request.Query["take"]);
+			if (Request.Query.ContainsKey("take"))
+				take = Convert.ToInt32(Request.Query["take"]);
 
 			var viewModel = await Topics.GetTopicIndexAsync(skip, take);
 
@@ -46,7 +46,7 @@ namespace Forum3.Controllers {
 			var message = Messages.Find(id);
 
 			if (message.ParentId > 0) {
-				var actionUrl = Url.Action("Display", "Topics", new { id = message.ParentId });
+				var actionUrl = Url.Action(nameof(Display), new { id = message.ParentId });
 				return new RedirectResult(actionUrl + "#message" + id);
 			}
 

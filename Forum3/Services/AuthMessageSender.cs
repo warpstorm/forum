@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using Forum3.Interfaces.Accounts;
+using Forum3.Interfaces.Users;
 
 namespace Forum3.Services {
 	// This class is used by the application to send Email and SMS
