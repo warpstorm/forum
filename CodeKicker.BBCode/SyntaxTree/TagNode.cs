@@ -1,8 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Data;
-using System.Web;
+using System.Net;
 
 namespace CodeKicker.BBCode.SyntaxTree {
 	public sealed class TagNode : SyntaxTreeNode {
@@ -107,8 +106,8 @@ namespace CodeKicker.BBCode.SyntaxTree {
 				effectiveValue = "";
 
 			var encodedValue =
-				attribute.HtmlEncodingMode == EHtmlEncodingMode.HtmlAttributeEncode ? HttpUtility.HtmlAttributeEncode(effectiveValue)
-					: attribute.HtmlEncodingMode == EHtmlEncodingMode.HtmlEncode ? HttpUtility.HtmlEncode(effectiveValue)
+				attribute.HtmlEncodingMode == EHtmlEncodingMode.HtmlAttributeEncode ? WebUtility.HtmlEncode(effectiveValue)
+					: attribute.HtmlEncodingMode == EHtmlEncodingMode.HtmlEncode ? WebUtility.HtmlEncode(effectiveValue)
 						  : effectiveValue;
 
 			output = output.Replace(placeholderStr, encodedValue);

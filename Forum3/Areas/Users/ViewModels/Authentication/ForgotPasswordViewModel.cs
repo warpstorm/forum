@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Forum3.ViewModels.Account {
-	public class ExternalLoginConfirmationViewModel
+namespace Forum3.Areas.Users.ViewModels.Authentication {
+	public class ForgotPasswordViewModel
     {
         [Required]
         [EmailAddress]

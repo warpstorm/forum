@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
-namespace Forum3.ViewModels.Account {
+namespace Forum3.Areas.Users.ViewModels.Authentication {
 	public class SendCodeViewModel
     {
         public string SelectedProvider { get; set; }

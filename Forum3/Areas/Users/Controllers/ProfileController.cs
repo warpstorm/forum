@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Forum3.DataModels;
-using Forum3.ViewModels.Manage;
+using Forum3.Areas.Users.ViewModels.Profile;
 using Forum3.Interfaces.Users;
 
 namespace Forum3.Areas.Users.Controllers {

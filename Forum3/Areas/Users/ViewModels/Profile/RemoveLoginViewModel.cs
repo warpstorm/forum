@@ -1,4 +1,4 @@
-﻿namespace Forum3.ViewModels.Manage {
+﻿namespace Forum3.Areas.Users.ViewModels.Profile {
 	public class RemoveLoginViewModel
     {
         public string LoginProvider { get; set; }

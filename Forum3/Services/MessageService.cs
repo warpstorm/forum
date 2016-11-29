@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -12,6 +13,8 @@ using CodeKicker.BBCode;
 using Forum3.DataModels;
 using Forum3.Data;
 using Forum3.ViewModels.Messages;
+using System.Security.Authentication;
+using System.Threading;
 
 namespace Forum3.Services {
 	public class MessageService {
@@ -269,29 +272,29 @@ namespace Forum3.Services {
 
 			HtmlDocument document = null;
 
-			// An attempt to fix the random errors that Icy gets from posting links to Reddit
-			ServicePointManager.Expect100Continue = false;
-			ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
-
 			var client = new HtmlWeb();
 
-			client.PreRequest += request => {
-				request.UserAgent = "MOZILLA/5.0 (WINDOWS NT 6.1; WOW64) APPLEWEBKIT/537.1 (KHTML, LIKE GECKO) CHROME/21.0.1180.75 SAFARI/537.1";
-				request.CookieContainer = new CookieContainer();
-				request.Timeout = 5000;
-				request.AllowAutoRedirect = true;
-				request.ProtocolVersion = HttpVersion.Version11;
-				request.Headers[HttpRequestHeader.AcceptEncoding] = "gzip, deflate";
-				request.AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip;
+			client.UserAgent = "MOZILLA/5.0 (WINDOWS NT 6.1; WOW64) APPLEWEBKIT/537.1 (KHTML, LIKE GECKO) CHROME/21.0.1180.75 SAFARI/537.1";
+
+			client.PreRequest += (handler, request) => {
+				request.Headers.ExpectContinue = false;
+
+				handler.CookieContainer = new CookieContainer();
+				handler.AllowAutoRedirect = true;
+				handler.SslProtocols = SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12;
+				handler.MaxAutomaticRedirections = 3;
+				handler.AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip;
+
+				//request.Timeout = 5000;
 				return true;
 			};
 
-			try {
-				// If URL is malformed, this will fail
-				document = client.Load(siteWithoutHash);
-			}
-			catch (Exception e) {
-				returnResult.Card = e.Message;
+			Task.Run(async () => {
+				document = await client.LoadFromWebAsync(siteWithoutHash);
+			}).Wait(3000);
+
+			if (document == null) {
+				returnResult.Card = "Remote page request timed out.";
 				return returnResult;
 			}
 

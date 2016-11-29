@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Forum3.ViewModels.Account {
+namespace Forum3.Areas.Users.ViewModels.Authentication {
 	public class LoginViewModel
     {
         [Required]

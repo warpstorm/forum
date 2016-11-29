@@ -1,0 +1,16 @@
+﻿{
+  "copyright": "In order to use this library, we require a link to http://codekicker.de/ from you. Licensed unter the Creative Commons Attribution 3.0 Licence: http://creativecommons.org/licenses/by/3.0/.",
+  "description": "This is our BBCode-implementation at http://codekicker.de/. It is extremely stable as ist has been tested with Microsoft Pex. Is is also quite performant.",
+  "title": "CodeKicker.BBCode.NetCore",
+  "version": "5.0.0-NetCore",
+
+  "dependencies": {
+    "NETStandard.Library": "1.6.0"
+  },
+
+  "frameworks": {
+    "netstandard1.6": {
+      "imports": "dnxcore50"
+    }
+  }
+}

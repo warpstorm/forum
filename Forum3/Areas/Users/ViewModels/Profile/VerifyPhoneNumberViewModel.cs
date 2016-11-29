@@ -1,8 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Forum3.ViewModels.Manage {
-	public class AddPhoneNumberViewModel
+namespace Forum3.Areas.Users.ViewModels.Profile {
+	public class VerifyPhoneNumberViewModel
     {
+        [Required]
+        public string Code { get; set; }
+
         [Required]
         [Phone]
         [Display(Name = "Phone number")]

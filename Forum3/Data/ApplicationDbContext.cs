@@ -6,7 +6,9 @@ namespace Forum3.Data {
 	public class ApplicationDbContext : IdentityDbContext<ApplicationUser> {
 		public DbSet<Message> Messages { get; set; }
 
-		public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
+		public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+			: base(options) {
+		}
 
 		protected override void OnModelCreating(ModelBuilder builder) {
 			base.OnModelCreating(builder);

@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
 using Forum3.DataModels;
-using Forum3.ViewModels.Account;
+using Forum3.Areas.Users.ViewModels.Authentication;
 using Forum3.Controllers;
 using Forum3.Interfaces.Users;
 

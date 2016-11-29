@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
+using System.Net;
 
 namespace CodeKicker.BBCode.SyntaxTree {
 	public sealed class TextNode : SyntaxTreeNode {
@@ -18,7 +18,7 @@ namespace CodeKicker.BBCode.SyntaxTree {
 		}
 
 		public override string ToHtml() {
-			return HtmlTemplate == null ? HttpUtility.HtmlEncode(Text) : HtmlTemplate.Replace("${content}", HttpUtility.HtmlEncode(Text));
+			return HtmlTemplate == null ? WebUtility.HtmlEncode(Text) : HtmlTemplate.Replace("${content}", WebUtility.HtmlEncode(Text));
 		}
 
 		public override string ToBBCode() {
