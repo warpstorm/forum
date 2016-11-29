@@ -1,4 +1,5 @@
 ﻿using System;
+using Forum3.Interfaces.Messages;
 
 namespace Forum3.ViewModels.Messages {
 	public class Message {
@@ -21,7 +22,7 @@ namespace Forum3.ViewModels.Messages {
 		public DateTime RecordTime { get; internal set; }
 		public DateTime TimePostedDT { get; internal set; }
 		public DateTime TimeEditedDT { get; internal set; }
-		public EditPost EditInput { get; set; }
-		public DirectReplyPost ReplyInput { get; set; }
+		public IMessageInput EditInput { get; set; }
+		public IMessageInput ReplyInput { get; set; }
 	}
 }

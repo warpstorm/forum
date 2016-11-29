@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -45,10 +41,11 @@ namespace Forum3 {
 				o.Password.RequireUppercase = false;
 				o.Password.RequireNonAlphanumeric = false;
 				o.Password.RequiredLength = 3;
+				o.Cookies.ApplicationCookie.LoginPath = "/Authentication/Login";
 			})
 				.AddEntityFrameworkStores<ApplicationDbContext>()
 				.AddDefaultTokenProviders();
-
+				
 			services.AddMvc();
 
 			// Add application services.

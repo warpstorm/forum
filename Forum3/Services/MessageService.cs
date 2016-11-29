@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
+using System.Security.Authentication;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -13,27 +13,25 @@ using CodeKicker.BBCode;
 using Forum3.DataModels;
 using Forum3.Data;
 using Forum3.ViewModels.Messages;
-using System.Security.Authentication;
-using System.Threading;
 
 namespace Forum3.Services {
 	public class MessageService {
-		readonly ApplicationDbContext _dbContext;
-		readonly IHttpContextAccessor _httpContextAccessor;
-		readonly UserManager<ApplicationUser> _userManager;
+		ApplicationDbContext DbContext { get; }
+		IHttpContextAccessor HttpContextAccessor { get; }
+		UserManager<ApplicationUser> UserManager { get; }
 
 		public MessageService(ApplicationDbContext dbContext, IHttpContextAccessor httpContextAccessor, UserManager<ApplicationUser> userManager) {
-			_dbContext = dbContext;
-			_httpContextAccessor = httpContextAccessor;
-			_userManager = userManager;
+			DbContext = dbContext;
+			HttpContextAccessor = httpContextAccessor;
+			UserManager = userManager;
 		}
 
 		/// <summary>
 		/// Coordinates the overall processing of the message input.
 		/// </summary>
-		public async Task CreateAsync(string messageBody, int parentId = 0, int replyId = 0) {
+		public async Task Create(string messageBody, int parentId = 0, int replyId = 0) {
 			if (replyId > 0) {
-				var replyMessage = _dbContext.Messages.FirstOrDefault(m => m.Id == replyId);
+				var replyMessage = DbContext.Messages.FirstOrDefault(m => m.Id == replyId);
 
 				if (replyMessage == null)
 					throw new Exception("Target message for reply doesn't exist.");
@@ -43,7 +41,7 @@ namespace Forum3.Services {
 
 			var processedMessageInput = ProcessMessageInput(messageBody);
 
-			var currentUser = await _userManager.GetUserAsync(_httpContextAccessor.HttpContext.User);
+			var currentUser = await UserManager.GetUserAsync(HttpContextAccessor.HttpContext.User);
 
 			var newRecord = new DataModels.Message {
 				OriginalBody = processedMessageInput.OriginalBody,
@@ -63,15 +61,15 @@ namespace Forum3.Services {
 				ReplyId = replyId,
 			};
 
-			_dbContext.Messages.Add(newRecord);
+			DbContext.Messages.Add(newRecord);
 
-			await _dbContext.SaveChangesAsync();
+			await DbContext.SaveChangesAsync();
 		}
 
-		public async Task UpdateAsync(int id, string messageBody) {
-			var currentUser = await _userManager.GetUserAsync(_httpContextAccessor.HttpContext.User);
+		public async Task Update(int id, string messageBody) {
+			var currentUser = await UserManager.GetUserAsync(HttpContextAccessor.HttpContext.User);
 
-			var getRecordTask = _dbContext.Messages.SingleAsync(m => m.Id == id);
+			var getRecordTask = DbContext.Messages.SingleAsync(m => m.Id == id);
 
 			var processedMessageInput = ProcessMessageInput(messageBody);
 
@@ -86,16 +84,16 @@ namespace Forum3.Services {
 			message.EditedById = currentUser.Id;
 			message.EditedByName = currentUser.DisplayName;
 
-			_dbContext.Update(message);
+			DbContext.Update(message);
 
-			await _dbContext.SaveChangesAsync();
+			await DbContext.SaveChangesAsync();
 		}
 
-		public async Task DeleteAsync(int id) {
-			var currentUser = await _userManager.GetUserAsync(_httpContextAccessor.HttpContext.User);
+		public async Task Delete(int id) {
+			var currentUser = await UserManager.GetUserAsync(HttpContextAccessor.HttpContext.User);
 
-			var message = await _dbContext.Messages.SingleAsync(m => m.Id == id);
-			var replies = await _dbContext.Messages.Where(m => m.ReplyId == id).ToListAsync();
+			var message = await DbContext.Messages.SingleAsync(m => m.Id == id);
+			var replies = await DbContext.Messages.Where(m => m.ReplyId == id).ToListAsync();
 
 			foreach (var reply in replies) {
 				reply.OriginalBody =
@@ -107,16 +105,16 @@ namespace Forum3.Services {
 					"[/quote]" + 
 					reply.OriginalBody;
 				reply.ReplyId = 0;
-				_dbContext.Entry(reply).State = EntityState.Modified;
+				DbContext.Entry(reply).State = EntityState.Modified;
 			}
 
-			_dbContext.Messages.Remove(message);
+			DbContext.Messages.Remove(message);
 
-			await _dbContext.SaveChangesAsync();
+			await DbContext.SaveChangesAsync();
 		}
 
 		public DataModels.Message Find(int id) {
-			var message = _dbContext.Messages.SingleOrDefault(m => m.Id == id);
+			var message = DbContext.Messages.SingleOrDefault(m => m.Id == id);
 
 			if (message == null)
 				throw new Exception("No message found with that ID.");
@@ -344,18 +342,18 @@ namespace Forum3.Services {
 		/// Searches a post for references to other users
 		/// </summary>
 		async void FindMentionedUsers(ProcessedMessageInput processedMessageInput) {
-			var currentUser = await _userManager.GetUserAsync(_httpContextAccessor.HttpContext.User);
+			var currentUser = await UserManager.GetUserAsync(HttpContextAccessor.HttpContext.User);
 
 			var regexUsers = new Regex(@"@(\S+)");
 
 			foreach (Match regexMatch in regexUsers.Matches(processedMessageInput.DisplayBody)) {
 				var matchedTag = regexMatch.Groups[1].Value;
 
-				var user = _dbContext.Users.Single(u => u.UserName.ToLower() == matchedTag.ToLower());
+				var user = DbContext.Users.Single(u => u.UserName.ToLower() == matchedTag.ToLower());
 
 				// try to guess what they meant
 				if (user == null)
-					user = _dbContext.Users.Single(u => u.UserName.ToLower().Contains(matchedTag.ToLower()));
+					user = DbContext.Users.Single(u => u.UserName.ToLower().Contains(matchedTag.ToLower()));
 
 				if (user != null) {
 					if (user.Id != currentUser.Id)

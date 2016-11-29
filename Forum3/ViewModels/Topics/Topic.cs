@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Forum3.Interfaces.Messages;
 using Forum3.ViewModels.Messages;
 
 namespace Forum3.ViewModels.Topics {
@@ -11,6 +12,6 @@ namespace Forum3.ViewModels.Topics {
 		public int TotalPages { get; internal set; }
 		public int CurrentPage { get; internal set; }
 		public bool IsAuthenticated { get; internal set; }
-		public TopicReplyPost ReplyInput { get; set; }
+		public IMessageInput ReplyInput { get; set; }
 	}
 }

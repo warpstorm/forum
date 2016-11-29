@@ -5,6 +5,6 @@ namespace Forum3.ViewModels.Messages {
     {
 		public int Id { get; set; }
 		public string Body { get; set; }
-		public string FormAction { get; set; }
+		public string FormAction { get; } = "TopicReply";
 	}
 }

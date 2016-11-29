@@ -21,7 +21,7 @@ namespace Forum3.Services {
 			UserManager = userManager;
 		}
 
-		public async Task<TopicIndex> GetTopicIndexAsync(int skip, int take) {
+		public async Task<TopicIndex> GetTopicIndex(int skip, int take) {
 			var messageRecords = await (from m in DbContext.Messages
 										where m.ParentId == 0
 										orderby m.LastReplyPosted descending
@@ -44,7 +44,7 @@ namespace Forum3.Services {
 			};
 		}
 
-		public async Task<Topic> GetTopicAsync(Message parentMessage, int currentPage, int skip, int take, bool jumpToLatest) {
+		public async Task<Topic> GetTopic(Message parentMessage, int currentPage, int skip, int take, bool jumpToLatest) {
 			parentMessage.Views++;
 			DbContext.Entry(parentMessage).State = EntityState.Modified;
 			DbContext.SaveChanges();
@@ -85,15 +85,13 @@ namespace Forum3.Services {
 			//	message.CanReply = isAuthenticated;
 			//	message.CanThought = isAuthenticated;
 
-			//	message.EditInput = new ViewModels.Messages.Input {
+			//	message.EditInput = new ViewModels.Messages.EditPost {
 			//		Id = message.Id,
 			//		Body = message.OriginalBody,
-			//		FormAction = "Edit"
 			//	};
 
-			//	message.ReplyInput = new ViewModels.Messages.Input {
+			//	message.ReplyInput = new ViewModels.Messages.DirectReplyPost {
 			//		Id = message.Id,
-			//		FormAction = "DirectReply"
 			//	};
 			//}
 
@@ -120,8 +118,7 @@ namespace Forum3.Services {
 				TotalPages = take == 0 || messages.Count == 0 ? 1 : Convert.ToInt32(Math.Ceiling((double)messages.Count / take)),
 				CurrentPage = currentPage,
 				ReplyInput = new ViewModels.Messages.TopicReplyPost {
-					Id = parentMessage.Id,
-					FormAction = "TopicReply"
+					Id = parentMessage.Id
 				}
 			};
 
@@ -151,12 +148,10 @@ namespace Forum3.Services {
 					CanThought = isAuthenticated,
 					EditInput = new ViewModels.Messages.EditPost {
 						Id = record.m.Id,
-						Body = record.m.OriginalBody,
-						FormAction = "Edit"
+						Body = record.m.OriginalBody
 					},
 					ReplyInput = new ViewModels.Messages.DirectReplyPost {
-						Id = record.m.Id,
-						FormAction = "DirectReply"
+						Id = record.m.Id
 					}
 				});
 			}
