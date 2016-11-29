@@ -12,8 +12,8 @@ namespace Forum3.ViewModels.Messages {
 
 		public int LastReplyId { get; set; }
 		public string LastReplyById { get; set; }
-		public string LastChildByName { get; set; }
-		public string LastChildTimePosted { get; set; }
+		public string LastReplyByName { get; set; }
+		public string LastReplyPosted { get; set; }
 		public DateTime LastReplyPostedDT { get; set; }
 	}
 }
