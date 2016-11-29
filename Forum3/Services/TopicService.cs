@@ -2,27 +2,27 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Forum3.Data;
 using Forum3.DataModels;
 using Forum3.ViewModels.Topics;
-using Microsoft.AspNetCore.Http;
 
 namespace Forum3.Services {
-	public class TopicRepository {
-		private ApplicationDbContext _dbContext;
-		readonly IHttpContextAccessor _httpContextAccessor;
-		readonly UserManager<ApplicationUser> _userManager;
+	public class TopicService {
+		ApplicationDbContext DbContext { get; }
+		IHttpContextAccessor HttpContextAccessor { get; }
+		UserManager<ApplicationUser> UserManager { get; }
 
-		public TopicRepository(ApplicationDbContext dbContext, IHttpContextAccessor httpContextAccessor, UserManager<ApplicationUser> userManager) {
-			_dbContext = dbContext;
-			_httpContextAccessor = httpContextAccessor;
-			_userManager = userManager;
+		public TopicService(ApplicationDbContext dbContext, IHttpContextAccessor httpContextAccessor, UserManager<ApplicationUser> userManager) {
+			DbContext = dbContext;
+			HttpContextAccessor = httpContextAccessor;
+			UserManager = userManager;
 		}
 
 		public async Task<TopicIndex> GetTopicIndexAsync(int skip, int take) {
-			var messageRecords = await (from m in _dbContext.Messages
+			var messageRecords = await (from m in DbContext.Messages
 										where m.ParentId == 0
 										orderby m.LastReplyPosted descending
 										select new TopicPreview {
@@ -46,12 +46,12 @@ namespace Forum3.Services {
 
 		public async Task<Topic> GetTopicAsync(Message parentMessage, int currentPage, int skip, int take, bool jumpToLatest) {
 			parentMessage.Views++;
-			_dbContext.Entry(parentMessage).State = EntityState.Modified;
-			_dbContext.SaveChanges();
+			DbContext.Entry(parentMessage).State = EntityState.Modified;
+			DbContext.SaveChanges();
 
-			var currentUser = await _userManager.GetUserAsync(_httpContextAccessor.HttpContext.User);
-			var isAuthenticated = _httpContextAccessor.HttpContext.User.Identity.IsAuthenticated;
-			var isAdmin = isAuthenticated && _httpContextAccessor.HttpContext.User.IsInRole("Admin");
+			var currentUser = await UserManager.GetUserAsync(HttpContextAccessor.HttpContext.User);
+			var isAuthenticated = HttpContextAccessor.HttpContext.User.Identity.IsAuthenticated;
+			var isAdmin = isAuthenticated && HttpContextAccessor.HttpContext.User.IsInRole("Admin");
 
 			// TEMP FIX BECAUSE EF7 LEFT OUTER JOINS ARE BROKEN. http://stackoverflow.com/a/34211463/2621693
 
@@ -97,8 +97,8 @@ namespace Forum3.Services {
 			//	};
 			//}
 
-			var messages = await(from m in _dbContext.Messages
-							 join im in _dbContext.Messages on m.ReplyId equals im.Id into Replies
+			var messages = await(from m in DbContext.Messages
+							 join im in DbContext.Messages on m.ReplyId equals im.Id into Replies
 							 from r in Replies.DefaultIfEmpty()
 							 where m.Id == parentMessage.Id || m.ParentId == parentMessage.Id
 							 orderby m.Id

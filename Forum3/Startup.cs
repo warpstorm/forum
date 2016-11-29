@@ -54,8 +54,8 @@ namespace Forum3 {
 			services.AddTransient<IEmailSender, AuthMessageSender>();
             services.AddTransient<ISmsSender, AuthMessageSender>();
 
-			services.AddScoped<MessageRepository>();
-			services.AddScoped<TopicRepository>();
+			services.AddScoped<MessageService>();
+			services.AddScoped<TopicService>();
 		}
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

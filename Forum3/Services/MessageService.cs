@@ -4,22 +4,22 @@ using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Forum3.Data;
-using Forum3.ViewModels.Messages;
-using HtmlAgilityPack;
-using CodeKicker.BBCode;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using HtmlAgilityPack;
+using CodeKicker.BBCode;
 using Forum3.DataModels;
+using Forum3.Data;
+using Forum3.ViewModels.Messages;
 
 namespace Forum3.Services {
-	public class MessageRepository {
+	public class MessageService {
 		readonly ApplicationDbContext _dbContext;
 		readonly IHttpContextAccessor _httpContextAccessor;
 		readonly UserManager<ApplicationUser> _userManager;
 
-		public MessageRepository(ApplicationDbContext dbContext, IHttpContextAccessor httpContextAccessor, UserManager<ApplicationUser> userManager) {
+		public MessageService(ApplicationDbContext dbContext, IHttpContextAccessor httpContextAccessor, UserManager<ApplicationUser> userManager) {
 			_dbContext = dbContext;
 			_httpContextAccessor = httpContextAccessor;
 			_userManager = userManager;

@@ -7,12 +7,12 @@ using Forum3.Services;
 namespace Forum3.Controllers {
 	[Authorize]
 	public class TopicsController : Controller {
-		public TopicRepository _topics { get; set; }
-		public MessageRepository _messages { get; set; }
+		public TopicService Topics { get; }
+		public MessageService Messages { get; }
 
-		public TopicsController(TopicRepository topicRepo, MessageRepository messageRepo) {
-			_topics = topicRepo;
-			_messages = messageRepo;
+		public TopicsController(TopicService topicService, MessageService messageService) {
+			Topics = topicService;
+			Messages = messageService;
 		}
 
 		[AllowAnonymous]
@@ -27,7 +27,7 @@ namespace Forum3.Controllers {
 			if (HttpContext.Request.Query.ContainsKey("take"))
 				take = Convert.ToInt32(HttpContext.Request.Query["take"]);
 
-			var viewModel = await _topics.GetTopicIndexAsync(skip, take);
+			var viewModel = await Topics.GetTopicIndexAsync(skip, take);
 
 			return View(viewModel);
 		}
@@ -43,14 +43,14 @@ namespace Forum3.Controllers {
 			int take = 15;
 			int skip = (page * take) - take;
 
-			var message = _messages.Find(id);
+			var message = Messages.Find(id);
 
 			if (message.ParentId > 0) {
 				var actionUrl = Url.Action("Display", "Topics", new { id = message.ParentId });
 				return new RedirectResult(actionUrl + "#message" + id);
 			}
 
-			var viewModel = await _topics.GetTopicAsync(message, page, skip, take, jumpToLatest);
+			var viewModel = await Topics.GetTopicAsync(message, page, skip, take, jumpToLatest);
 
 			return View(viewModel);
 		}
