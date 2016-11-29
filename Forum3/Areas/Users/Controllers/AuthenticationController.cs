@@ -14,7 +14,7 @@ using Forum3.Interfaces.Users;
 namespace Forum3.Areas.Users.Controllers {
 	[Authorize]
 	[Area("Users")]
-    public class AccountController : Controller
+    public class AuthenticationController : Controller
     {
         UserManager<ApplicationUser> UserManager { get; }
 		SignInManager<ApplicationUser> SignInManager { get; }
@@ -22,7 +22,7 @@ namespace Forum3.Areas.Users.Controllers {
 		ISmsSender SmsSender { get; }
 		ILogger Logger { get; }
 
-        public AccountController(
+        public AuthenticationController(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
             IEmailSender emailSender,
@@ -33,7 +33,7 @@ namespace Forum3.Areas.Users.Controllers {
             SignInManager = signInManager;
             EmailSender = emailSender;
             SmsSender = smsSender;
-            Logger = loggerFactory.CreateLogger<AccountController>();
+            Logger = loggerFactory.CreateLogger<AuthenticationController>();
         }
 
         //
@@ -314,12 +314,12 @@ namespace Forum3.Areas.Users.Controllers {
             if (user == null)
             {
                 // Don't reveal that the user does not exist
-                return RedirectToAction(nameof(AccountController.ResetPasswordConfirmation), "Account");
+                return RedirectToAction(nameof(AuthenticationController.ResetPasswordConfirmation), "Account");
             }
             var result = await UserManager.ResetPasswordAsync(user, model.Code, model.Password);
             if (result.Succeeded)
             {
-                return RedirectToAction(nameof(AccountController.ResetPasswordConfirmation), "Account");
+                return RedirectToAction(nameof(AuthenticationController.ResetPasswordConfirmation), "Account");
             }
             AddErrors(result);
             return View();

@@ -11,7 +11,7 @@ using Forum3.Interfaces.Users;
 namespace Forum3.Areas.Users.Controllers {
 	[Authorize]
 	[Area("Users")]
-    public class ManageController : Controller
+    public class ProfileController : Controller
     {
         UserManager<ApplicationUser> UserManager { get; }
         SignInManager<ApplicationUser> SignInManager { get; }
@@ -19,12 +19,12 @@ namespace Forum3.Areas.Users.Controllers {
         ISmsSender SmsSender { get; }
         ILogger Logger { get; }
 
-        public ManageController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IEmailSender emailSender, ISmsSender smsSender, ILoggerFactory loggerFactory) {
+        public ProfileController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IEmailSender emailSender, ISmsSender smsSender, ILoggerFactory loggerFactory) {
             UserManager = userManager;
             SignInManager = signInManager;
             EmailSender = emailSender;
             SmsSender = smsSender;
-            Logger = loggerFactory.CreateLogger<ManageController>();
+            Logger = loggerFactory.CreateLogger<ProfileController>();
         }
 
         //
