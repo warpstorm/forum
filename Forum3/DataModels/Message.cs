@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Forum3.DataModels {
+	[Table("Messages")]
 	public class Message {
 		public int Id { get; set; }
 
@@ -33,11 +36,16 @@ namespace Forum3.DataModels {
 		public DateTime LastReplyPosted { get; set; }
 
 		public string PostedById { get; set; }
-		public string PostedByName { get; internal set; }
+		public string PostedByName { get; set; }
+		public ApplicationUser PostedBy { get; set; }
+
 		public string EditedById { get; set; }
-		public string EditedByName { get; internal set; }
+		public string EditedByName { get; set; }
+		public ApplicationUser EditedBy { get; set; }
+
 		public string LastReplyById { get; set; }
-		public string LastReplyByName { get; internal set; }
+		public string LastReplyByName { get; set; }
+		public ApplicationUser LastReplyBy { get; set; }
 
 		public int ParentId { get; set; }
 		public int ReplyId { get; set; }
@@ -45,5 +53,7 @@ namespace Forum3.DataModels {
 
 		public int Views { get; set; }
 		public int Replies { get; set; }
+
+		public List<MessageThought> Thoughts { get; set; }
 	}
 }
