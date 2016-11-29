@@ -1,8 +1,7 @@
 ﻿using System.Collections.Generic;
 
-namespace Forum3.ViewModels.Messages {
-	public class ProcessedMessageInput
-    {
+namespace Forum3.DataModels {
+	public class ProcessedMessageInput {
 		public string OriginalBody { get; set; }
 		public string DisplayBody { get; set; }
 		public string ShortPreview { get; set; }

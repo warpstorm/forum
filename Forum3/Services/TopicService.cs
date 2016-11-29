@@ -25,7 +25,7 @@ namespace Forum3.Services {
 			var messageRecords = await (from m in DbContext.Messages
 										where m.ParentId == 0
 										orderby m.LastReplyPosted descending
-										select new TopicPreview {
+										select new ViewModels.Messages.MessagePreview {
 											Id = m.Id,
 											ShortPreview = m.ShortPreview,
 											LastReplyId = m.LastReplyId == 0 ? m.Id : m.LastReplyId,

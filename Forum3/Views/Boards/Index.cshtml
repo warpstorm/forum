@@ -1,0 +1,17 @@
+@model Forum3.ViewModels.Topics.TopicIndex
+
+@{
+    ViewData["Title"] = "Boards";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<p>
+    <a asp-action="Create" asp-controller="Boards">Create New</a>
+</p>
+
+<table class="table">
+    @foreach (var item in Model.Topics) {
+        @Html.Partial("_IndexItem", item)
+    }
+</table>
