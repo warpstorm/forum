@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Forum3.Annotations;
 using Forum3.Services;
+using System.Threading.Tasks;
 
 namespace Forum3.Controllers {
 	[Authorize(Roles = "Admin")]
@@ -18,34 +19,8 @@ namespace Forum3.Controllers {
 		}
 
 		[AllowAnonymous]
-		public ActionResult Index() {
-			var boards = BoardTree.Create(Db.Boards.ToList(), Db);
-			var onlineUsers = OnlineUsers.Load(Db);
-
-			var birthdays = Db.UserProfiles.Select(u => new Birthday {
-				Date = u.Birthday,
-				DisplayName = u.DisplayName
-			}).ToList();
-
-			var todayBirthdayNames = new List<string>();
-
-			if (birthdays.Count > 0) {
-				var todayBirthdays = birthdays.Where(u => new DateTime(DateTime.Now.Year, u.Date.Month, u.Date.Day).Date == DateTime.Now.Date);
-
-				foreach (var item in todayBirthdays) {
-					DateTime now = DateTime.Today;
-					int age = now.Year - item.Date.Year;
-					if (item.Date > now.AddYears(-age)) age--;
-
-					todayBirthdayNames.Add(item.DisplayName + " (" + age + ")");
-				}
-			}
-
-			var viewModel = new Models.View.Boards.Index {
-				Birthdays = todayBirthdayNames.ToArray(),
-				Boards = boards,
-				OnlineUsers = onlineUsers
-			};
+		public async Task<IActionResult> Index() {
+			var viewModel = await BoardService.GetBoardIndex();
 
 			return View("Index", viewModel);
 		}

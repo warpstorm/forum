@@ -54,6 +54,8 @@ namespace Forum3 {
 
 			services.AddScoped<MessageService>();
 			services.AddScoped<TopicService>();
+			services.AddScoped<SiteSettingsService>();
+			services.AddScoped<UserService>();
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

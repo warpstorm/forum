@@ -2,7 +2,7 @@
 
 namespace Forum3.ViewModels.Boards {
 	public class OnlineUser {
-		public int Id { get; set; }
+		public string Id { get; set; }
 		public string Name { get; set; }
 		public bool Online { get; set; }
 		public string LastOnlineString { get; set; }

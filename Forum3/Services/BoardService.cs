@@ -5,20 +5,36 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Forum3.Data;
 using Forum3.Enums;
+using System;
 
 namespace Forum3.Services {
 	public class BoardService {
 		ApplicationDbContext DbContext { get; }
 		IHttpContextAccessor HttpContextAccessor { get; }
 		UserManager<DataModels.ApplicationUser> UserManager { get; }
+		UserService UserService { get; }
 
-		public BoardService(ApplicationDbContext dbContext, IHttpContextAccessor httpContextAccessor, UserManager<DataModels.ApplicationUser> userManager) {
+		public BoardService(ApplicationDbContext dbContext, IHttpContextAccessor httpContextAccessor, UserManager<DataModels.ApplicationUser> userManager, UserService userService) {
 			DbContext = dbContext;
 			HttpContextAccessor = httpContextAccessor;
 			UserManager = userManager;
+			UserService = userService;
 		}
 
-		public async Task<List<ViewModels.Boards.IndexBoard>> GetBoardIndex(int? targetBoard = null) {
+		public async Task<ViewModels.Boards.Index> GetBoardIndex() {
+			var boards = await GetBoardTree();
+			var onlineUsers = UserService.GetOnlineUsers();
+			
+			var viewModel = new ViewModels.Boards.Index {
+				Birthdays = UserService.GetBirthdays().ToArray(),
+				Boards = boards,
+				OnlineUsers = onlineUsers
+			};
+
+			return viewModel;
+		}
+
+		async Task<List<ViewModels.Boards.IndexBoard>> GetBoardTree(int? targetBoard = null) {
 			List<DataModels.Board> boardRecordList = null;
 			List<DataModels.Message> lastMessages = null;
 			List<ViewModels.Boards.IndexUser> lastMessagesBy = null;
@@ -106,6 +122,5 @@ namespace Forum3.Services {
 
 			return indexBoard;
 		}
-
 	}
 }
