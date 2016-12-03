@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Forum3.Data;
+using Forum3.Helpers;
 using Forum3.ViewModels.Boards;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;

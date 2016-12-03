@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Forum3.Data;
 using Forum3.DataModels;
 using Forum3.ViewModels.Topics;
+using Forum3.Helpers;
 
 namespace Forum3.Services {
 	public class TopicService {
