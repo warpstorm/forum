@@ -6,9 +6,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Forum3.Data;
-using Forum3.Services;
-using Forum3.Interfaces.Users;
 using Forum3.DataModels;
+using Forum3.Helpers;
 
 namespace Forum3 {
 	public class Startup {
@@ -31,7 +30,6 @@ namespace Forum3 {
 
 		// This method gets called by the runtime. Use this method to add services to the container.
 		public void ConfigureServices(IServiceCollection services) {
-			// Add framework services.
 			services.AddDbContext<ApplicationDbContext>(options =>
 				options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
@@ -47,15 +45,7 @@ namespace Forum3 {
 				.AddDefaultTokenProviders();
 				
 			services.AddMvc();
-
-			// Add application services.
-			services.AddTransient<IEmailSender, AuthMessageSender>();
-			services.AddTransient<ISmsSender, AuthMessageSender>();
-
-			services.AddScoped<MessageService>();
-			services.AddScoped<TopicService>();
-			services.AddScoped<SiteSettingsService>();
-			services.AddScoped<UserService>();
+			services.AddForum();
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

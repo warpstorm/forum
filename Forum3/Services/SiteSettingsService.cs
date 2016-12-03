@@ -8,7 +8,9 @@ namespace Forum3.Services {
 	public class SiteSettingsService {
 		ApplicationDbContext DbContext { get; }
 
-		public SiteSettingsService(ApplicationDbContext dbContext) {
+		public SiteSettingsService(
+			ApplicationDbContext dbContext
+		) {
 			DbContext = dbContext;
 		}
 

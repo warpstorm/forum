@@ -14,10 +14,16 @@ namespace Forum3.Services {
 		UserManager<DataModels.ApplicationUser> UserManager { get; }
 		SiteSettingsService SiteSettingsService { get; }
 
-		public UserService(ApplicationDbContext dbContext, IHttpContextAccessor httpContextAccessor, UserManager<DataModels.ApplicationUser> userManager, SiteSettingsService siteSettingsService) {
+		public UserService(
+			ApplicationDbContext dbContext,
+			IHttpContextAccessor httpContextAccessor,
+			UserManager<DataModels.ApplicationUser> userManager,
+			SiteSettingsService siteSettingsService
+		) {
 			DbContext = dbContext;
 			HttpContextAccessor = httpContextAccessor;
 			UserManager = userManager;
+			SiteSettingsService = siteSettingsService;
 		}
 
 		public List<OnlineUser> GetOnlineUsers() {

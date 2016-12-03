@@ -1,4 +1,4 @@
-@model Forum3.ViewModels.Topics.TopicIndex
+@model Forum3.ViewModels.Boards.Index
 
 @{
     ViewData["Title"] = "Boards";
@@ -11,7 +11,7 @@
 </p>
 
 <table class="table">
-    @foreach (var item in Model.Topics) {
+    @foreach (var item in Model.Boards) {
         @Html.Partial("_IndexItem", item)
     }
 </table>

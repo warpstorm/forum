@@ -3,9 +3,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Forum3.Data;
 using Forum3.Enums;
-using System;
 using Forum3.Helpers;
 
 namespace Forum3.Services {
@@ -15,7 +15,12 @@ namespace Forum3.Services {
 		UserManager<DataModels.ApplicationUser> UserManager { get; }
 		UserService UserService { get; }
 
-		public BoardService(ApplicationDbContext dbContext, IHttpContextAccessor httpContextAccessor, UserManager<DataModels.ApplicationUser> userManager, UserService userService) {
+		public BoardService(
+			ApplicationDbContext dbContext,
+			IHttpContextAccessor httpContextAccessor,
+			UserManager<DataModels.ApplicationUser> userManager,
+			UserService userService
+		) {
 			DbContext = dbContext;
 			HttpContextAccessor = httpContextAccessor;
 			UserManager = userManager;
@@ -33,6 +38,37 @@ namespace Forum3.Services {
 			};
 
 			return viewModel;
+		}
+
+		public async Task Create(ViewModels.Boards.Create input, ModelStateDictionary modelState) {
+			if (DbContext.Boards.Any(b => b.Name == input.Name))
+				modelState.AddModelError(nameof(input.Name), "A board with that name already exists");
+
+			DataModels.Board parentRecord = null;
+
+			if (!string.IsNullOrEmpty(input.Parent)) {
+				parentRecord = DbContext.Boards.FirstOrDefault(b => b.Name == input.Parent);
+
+				if (parentRecord == null)
+					modelState.AddModelError(nameof(input.Parent), "No parent was found with this name.");
+			}
+
+			if (!modelState.IsValid)
+				return;
+
+			var boardRecord = new DataModels.Board {
+				Name = input.Name,
+				InviteOnly = input.InviteOnly,
+				VettedOnly = input.VettedOnly
+			};
+
+			if (parentRecord != null)
+				boardRecord.ParentId = parentRecord.Id;
+
+			if (modelState.IsValid) {
+				await DbContext.Boards.AddAsync(boardRecord);
+				await DbContext.SaveChangesAsync();
+			}
 		}
 
 		async Task<List<ViewModels.Boards.IndexBoard>> GetBoardTree(int? targetBoard = null) {
