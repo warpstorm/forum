@@ -3,10 +3,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Forum3.Annotations;
 using Forum3.Services;
+using Forum3.ViewModels.Boards.Pages;
 
 namespace Forum3.Controllers {
 	[RequireRemoteHttps]
-	[Authorize(Roles = "Admin")]
+//	[Authorize(Roles = "Admin")]
 	public class Boards : Controller {
 		public BoardService BoardService { get; }
 
@@ -24,13 +25,13 @@ namespace Forum3.Controllers {
 
 		[HttpGet]
 		public IActionResult Create() {
-			var viewModel = new ViewModels.Boards.Create();
+			var viewModel = new CreatePage();
 
 			return View(viewModel);
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> Create(ViewModels.Boards.Create input) {
+		public async Task<IActionResult> Create(CreatePage input) {
 			if (ModelState.IsValid)
 				await BoardService.Create(input, ModelState);
 
@@ -38,6 +39,12 @@ namespace Forum3.Controllers {
 				return RedirectToAction(nameof(Index));
 
 			return View(input);
+		}
+
+		public async Task<IActionResult> Manage() {
+			var viewModel = await BoardService.GetBoardTree();
+
+			return View(viewModel);
 		}
 	}
 }

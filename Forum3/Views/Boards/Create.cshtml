@@ -1,0 +1,37 @@
+﻿@model CreatePage
+
+@{
+    ViewBag.Title = "Create Board";
+}
+
+<div class="roundedBox">
+    <div class="roundedBoxHead">@ViewBag.Title</div>
+
+    <div class="roundedBoxContent">
+        @using (Html.BeginForm()) {
+            @Html.AntiForgeryToken()
+            @Html.ValidationSummary(true)
+
+            <p>
+                @Html.LabelFor(model => model.Name)
+                @Html.EditorFor(model => model.Name)
+                @Html.ValidationMessageFor(model => model.Name)
+            </p>
+
+            <p>
+                Vetted Only:
+                @Html.EditorFor(model => model.VettedOnly)
+            </p>
+
+            <p>
+                @Html.LabelFor(m => m.Parent)
+                @Html.EditorFor(m => m.Parent)
+                @Html.ValidationMessageFor(m => m.Parent)
+            </p>
+
+            <p><button id="pickParent">Parent Picker</button></p>
+
+            <p><input type="submit" value="Create" /></p>
+        }
+    </div>
+</div>

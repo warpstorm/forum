@@ -1,0 +1,19 @@
+﻿@model List<IndexBoardSummary>
+
+@{
+    ViewBag.Title = "Board Management";
+}
+
+<h2>@ViewBag.Title</h2>
+
+@Html.ValidationSummary()
+
+<table>
+    @foreach (var board in Model) {
+        @Html.Partial("_ManageItem", board)
+    }
+</table>
+
+@section PageActions {
+    <li><a asp-controller="Boards" asp-action="Create" class="button">Create Board</a></li>
+}

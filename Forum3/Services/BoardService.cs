@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Forum3.Data;
 using Forum3.Enums;
 using Forum3.Helpers;
+using PageViewModels = Forum3.ViewModels.Boards.Pages;
+using ItemViewModels = Forum3.ViewModels.Boards.Items;
 
 namespace Forum3.Services {
 	public class BoardService {
@@ -27,11 +29,11 @@ namespace Forum3.Services {
 			UserService = userService;
 		}
 
-		public async Task<ViewModels.Boards.Index> GetBoardIndex() {
+		public async Task<PageViewModels.IndexPage> GetBoardIndex() {
 			var boards = await GetBoardTree();
 			var onlineUsers = UserService.GetOnlineUsers();
 			
-			var viewModel = new ViewModels.Boards.Index {
+			var viewModel = new PageViewModels.IndexPage {
 				Birthdays = UserService.GetBirthdays().ToArray(),
 				Boards = boards,
 				OnlineUsers = onlineUsers
@@ -40,7 +42,7 @@ namespace Forum3.Services {
 			return viewModel;
 		}
 
-		public async Task Create(ViewModels.Boards.Create input, ModelStateDictionary modelState) {
+		public async Task Create(PageViewModels.CreatePage input, ModelStateDictionary modelState) {
 			if (DbContext.Boards.Any(b => b.Name == input.Name))
 				modelState.AddModelError(nameof(input.Name), "A board with that name already exists");
 
@@ -71,10 +73,10 @@ namespace Forum3.Services {
 			}
 		}
 
-		async Task<List<ViewModels.Boards.IndexBoard>> GetBoardTree(int? targetBoard = null) {
+		public async Task<List<ItemViewModels.IndexBoardSummary>> GetBoardTree(int? targetBoard = null) {
 			List<DataModels.Board> boardRecordList = null;
 			List<DataModels.Message> lastMessages = null;
-			List<ViewModels.Boards.IndexUser> lastMessagesBy = null;
+			List<ItemViewModels.IndexUser> lastMessagesBy = null;
 			List<DataModels.ViewLog> boardViewLogs = null;
 
 			var currentUser = await UserManager.GetUserAsync(HttpContextAccessor.HttpContext.User);
@@ -93,7 +95,7 @@ namespace Forum3.Services {
 
 				var lastMessagesByIds = lastMessages.Select(m => m.LastReplyById);
 
-				lastMessagesBy = DbContext.Users.Where(r => lastMessagesByIds.Contains(r.Id)).Select(r => new ViewModels.Boards.IndexUser {
+				lastMessagesBy = DbContext.Users.Where(r => lastMessagesByIds.Contains(r.Id)).Select(r => new ItemViewModels.IndexUser {
 					Id = r.Id,
 					Name = r.DisplayName
 				}).ToList();
@@ -102,7 +104,7 @@ namespace Forum3.Services {
 					boardViewLogs = DbContext.ViewLogs.Where(r => r.UserId == currentUser.Id && r.TargetType == EViewLogTargetType.Board).ToList();
 			}
 
-			var boards = new List<ViewModels.Boards.IndexBoard>();
+			var boards = new List<ItemViewModels.IndexBoardSummary>();
 
 			foreach (var board in boardRecordList.Where(r => r.ParentId == null).OrderBy(r => r.DisplayOrder).ToList()) {
 				if (!board.VettedOnly || isVetted) {
@@ -113,12 +115,12 @@ namespace Forum3.Services {
 			return boards;
 		}
 
-		ViewModels.Boards.IndexBoard LoadBoard(int? targetBoard, DataModels.Board board, List<DataModels.Board> boards, List<DataModels.Message> lastMessages = null, List<ViewModels.Boards.IndexUser> lastMessagesBy = null, List<DataModels.ViewLog> boardViewLogs = null) {
+		ItemViewModels.IndexBoardSummary LoadBoard(int? targetBoard, DataModels.Board board, List<DataModels.Board> boards, List<DataModels.Message> lastMessages = null, List<ItemViewModels.IndexUser> lastMessagesBy = null, List<DataModels.ViewLog> boardViewLogs = null) {
 			var isAuthenticated = HttpContextAccessor.HttpContext.User.Identity.IsAuthenticated;
 			var isAdmin = isAuthenticated && HttpContextAccessor.HttpContext.User.IsInRole("Admin");
 			var isVetted = isAuthenticated && HttpContextAccessor.HttpContext.User.IsInRole("Vetted");
 
-			var indexBoard = new ViewModels.Boards.IndexBoard {
+			var indexBoard = new ItemViewModels.IndexBoardSummary {
 				Id = board.Id,
 				Name = board.Name,
 				DisplayOrder = board.DisplayOrder,
@@ -127,7 +129,7 @@ namespace Forum3.Services {
 				InviteOnly = board.InviteOnly,
 				Unread = false,
 				Selected = targetBoard != null && targetBoard == board.Id,
-				Children = new List<ViewModels.Boards.IndexBoard>()
+				Children = new List<ItemViewModels.IndexBoardSummary>()
 			};
 
 			if (lastMessages != null && lastMessagesBy != null) {

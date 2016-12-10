@@ -27,6 +27,13 @@
             @await Html.PartialAsync("_LoginPartial")
         </div>
     </div>
+
+    <nav class="actions">
+        <ul>
+            @RenderSection("PageActions", required: false)
+        </ul>
+    </nav>
+
     <div class="container body-content">
         @RenderBody()
     </div>
