@@ -19,22 +19,12 @@
 <body>
     <div class="navbar">
         <div class="container">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <a asp-controller="Home" asp-action="Index" class="navbar-brand">Forum3</a>
-            </div>
-            <div class="navbar-collapse collapse">
-                <ul class="nav navbar-nav">
-                    <li><a asp-controller="Boards" asp-action="Index">Boards</a></li>
-                    <li><a asp-controller="Topics" asp-action="Index">Topics</a></li>
-                </ul>
-                @await Html.PartialAsync("_LoginPartial")
-            </div>
+            <span class="navbar-brand">Forum3</span>
+            <ul class="nav navbar-nav">
+                <li><a asp-controller="Boards" asp-action="Index">Boards</a></li>
+                <li><a asp-controller="Topics" asp-action="Index">Topics</a></li>
+            </ul>
+            @await Html.PartialAsync("_LoginPartial")
         </div>
     </div>
     <div class="container body-content">
