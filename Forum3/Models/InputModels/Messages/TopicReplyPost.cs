@@ -1,6 +1,6 @@
 ﻿using Forum3.Interfaces.Messages;
 
-namespace Forum3.ViewModels.Messages {
+namespace Forum3.InputModels.Messages {
 	public class TopicReplyPost : IMessageInput
     {
 		public int Id { get; set; }

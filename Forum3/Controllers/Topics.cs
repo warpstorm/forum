@@ -2,9 +2,9 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Forum3.Services;
-using Forum3.ViewModels.Messages;
 using Forum3.Annotations;
+using Forum3.Services;
+using Forum3.InputModels.Messages;
 
 namespace Forum3.Controllers {
 	[Authorize]

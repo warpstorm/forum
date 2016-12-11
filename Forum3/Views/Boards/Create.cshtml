@@ -1,13 +1,11 @@
 ﻿@model CreatePage
 
-@{
-    ViewBag.Title = "Create Board";
-}
+@{ ViewBag.Title = "Create Board"; }
 
-<div class="roundedBox">
-    <div class="roundedBoxHead">@ViewBag.Title</div>
+<div>
+    <h1>@ViewBag.Title</h1>
 
-    <div class="roundedBoxContent">
+    <div>
         @using (Html.BeginForm()) {
             @Html.AntiForgeryToken()
             @Html.ValidationSummary(true)
@@ -23,13 +21,13 @@
                 @Html.EditorFor(model => model.VettedOnly)
             </p>
 
+            <p>Parent:</p>
             <p>
-                @Html.LabelFor(m => m.Parent)
-                @Html.EditorFor(m => m.Parent)
-                @Html.ValidationMessageFor(m => m.Parent)
+                <select asp-for="Parent" asp-items="Model.Parents">
+                    <option value="" disabled selected style="display: none;">Please select a parent</option>
+                </select>
+                @Html.ValidationMessageFor(model => model.Parent)
             </p>
-
-            <p><button id="pickParent">Parent Picker</button></p>
 
             <p><input type="submit" value="Create" /></p>
         }

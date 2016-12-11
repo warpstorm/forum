@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Forum3.Data;
 using Forum3.Enums;
 using Forum3.Helpers;
@@ -13,24 +13,18 @@ using ItemViewModels = Forum3.ViewModels.Boards.Items;
 namespace Forum3.Services {
 	public class BoardService {
 		ApplicationDbContext DbContext { get; }
-		IHttpContextAccessor HttpContextAccessor { get; }
-		UserManager<DataModels.ApplicationUser> UserManager { get; }
 		UserService UserService { get; }
 
 		public BoardService(
 			ApplicationDbContext dbContext,
-			IHttpContextAccessor httpContextAccessor,
-			UserManager<DataModels.ApplicationUser> userManager,
 			UserService userService
 		) {
 			DbContext = dbContext;
-			HttpContextAccessor = httpContextAccessor;
-			UserManager = userManager;
 			UserService = userService;
 		}
 
-		public async Task<PageViewModels.IndexPage> GetBoardIndex() {
-			var boards = await GetBoardTree();
+		public PageViewModels.IndexPage GetIndexPage() {
+			var boards = LoadBoardSummaries();
 			var onlineUsers = UserService.GetOnlineUsers();
 			
 			var viewModel = new PageViewModels.IndexPage {
@@ -42,17 +36,39 @@ namespace Forum3.Services {
 			return viewModel;
 		}
 
-		public async Task Create(PageViewModels.CreatePage input, ModelStateDictionary modelState) {
+		public PageViewModels.CreatePage GetCreatePage(InputModels.Boards.Create input = null) {
+			var viewModel = new PageViewModels.CreatePage();
+			viewModel.Parents = GetBoardPickList();
+
+			if (input != null) {
+				viewModel.Name = input.Name;
+				viewModel.VettedOnly = input.VettedOnly;
+
+				if (!string.IsNullOrEmpty(input.Parent))
+					viewModel.Parents.First(item => item.Value == input.Parent).Selected = true;
+			}
+
+			return viewModel;
+		}
+
+		public async Task Create(InputModels.Boards.Create input, ModelStateDictionary modelState) {
 			if (DbContext.Boards.Any(b => b.Name == input.Name))
 				modelState.AddModelError(nameof(input.Name), "A board with that name already exists");
 
 			DataModels.Board parentRecord = null;
 
 			if (!string.IsNullOrEmpty(input.Parent)) {
-				parentRecord = DbContext.Boards.FirstOrDefault(b => b.Name == input.Parent);
+				try {
+					var parentId = Convert.ToInt32(input.Parent);
 
-				if (parentRecord == null)
-					modelState.AddModelError(nameof(input.Parent), "No parent was found with this name.");
+					parentRecord = DbContext.Boards.Find(parentId);
+
+					if (parentRecord == null)
+						modelState.AddModelError(nameof(input.Parent), "No parent was found with this name.");
+				}
+				catch (FormatException) {
+					modelState.AddModelError(nameof(input.Parent), "Invalid parent ID");
+				}
 			}
 
 			if (!modelState.IsValid)
@@ -60,7 +76,6 @@ namespace Forum3.Services {
 
 			var boardRecord = new DataModels.Board {
 				Name = input.Name,
-				InviteOnly = input.InviteOnly,
 				VettedOnly = input.VettedOnly
 			};
 
@@ -73,24 +88,43 @@ namespace Forum3.Services {
 			}
 		}
 
-		public async Task<List<ItemViewModels.IndexBoardSummary>> GetBoardTree(int? targetBoard = null) {
-			List<DataModels.Board> boardRecordList = null;
+		public List<SelectListItem> GetBoardPickList(int depth = 0, int? parentId = null, List<SelectListItem> pickList = null, List<DataModels.Board> boardRecords = null) {
+			if (pickList == null)
+				pickList = new List<SelectListItem>();
+
+			if (boardRecords == null)
+				boardRecords = DbContext.Boards.ToList();
+
+			foreach (var board in boardRecords.Where(r => r.ParentId == parentId).OrderBy(r => r.DisplayOrder).ToList()) {
+				if (board.VettedOnly && UserService.ContextUser.IsVetted)
+					continue;
+
+				var padding = "";
+
+				for (int i = 0; i < depth; i++)
+					padding += " ";
+
+				var selectListItem = new SelectListItem();
+				selectListItem.Text = padding + board.Name;
+				selectListItem.Value = board.Id.ToString();
+
+				pickList.Add(selectListItem);
+			}
+
+			foreach (var board in boardRecords.Where(r => r.ParentId == parentId).OrderBy(r => r.DisplayOrder).ToList())
+				GetBoardPickList(depth + 1, board.Id, pickList, boardRecords);
+
+			return pickList;
+		}
+
+		public List<ItemViewModels.IndexBoardSummary> LoadBoardSummaries(int? targetBoard = null) {
+			List<DataModels.Board> boardRecords = DbContext.Boards.ToList();
 			List<DataModels.Message> lastMessages = null;
 			List<ItemViewModels.IndexUser> lastMessagesBy = null;
 			List<DataModels.ViewLog> boardViewLogs = null;
 
-			var currentUser = await UserManager.GetUserAsync(HttpContextAccessor.HttpContext.User);
-			var isAuthenticated = HttpContextAccessor.HttpContext.User.Identity.IsAuthenticated;
-			var isAdmin = isAuthenticated && HttpContextAccessor.HttpContext.User.IsInRole("Admin");
-			var isVetted = isAuthenticated && HttpContextAccessor.HttpContext.User.IsInRole("Vetted");
-
-			if (isAuthenticated)
-				boardRecordList = DbContext.Boards.ToList();
-			else
-				boardRecordList = DbContext.Boards.Where(b => !b.InviteOnly).ToList();
-
 			if (DbContext != null) {
-				var lastMessageIds = boardRecordList.Select(r => r.LastMessageId).ToList();
+				var lastMessageIds = boardRecords.Select(r => r.LastMessageId).ToList();
 				lastMessages = DbContext.Messages.Where(r => lastMessageIds.Contains(r.Id)).ToList();
 
 				var lastMessagesByIds = lastMessages.Select(m => m.LastReplyById);
@@ -100,15 +134,15 @@ namespace Forum3.Services {
 					Name = r.DisplayName
 				}).ToList();
 
-				if (isAuthenticated)
-					boardViewLogs = DbContext.ViewLogs.Where(r => r.UserId == currentUser.Id && r.TargetType == EViewLogTargetType.Board).ToList();
+				if (UserService.ContextUser.IsAuthenticated)
+					boardViewLogs = DbContext.ViewLogs.Where(r => r.UserId == UserService.ContextUser.Id && r.TargetType == EViewLogTargetType.Board).ToList();
 			}
 
 			var boards = new List<ItemViewModels.IndexBoardSummary>();
 
-			foreach (var board in boardRecordList.Where(r => r.ParentId == null).OrderBy(r => r.DisplayOrder).ToList()) {
-				if (!board.VettedOnly || isVetted) {
-					boards.Add(LoadBoard(targetBoard, board, boardRecordList, lastMessages, lastMessagesBy, boardViewLogs));
+			foreach (var board in boardRecords.Where(r => r.ParentId == null).OrderBy(r => r.DisplayOrder).ToList()) {
+				if (!board.VettedOnly || UserService.ContextUser.IsVetted) {
+					boards.Add(LoadBoard(targetBoard, board, boardRecords, lastMessages, lastMessagesBy, boardViewLogs));
 				}
 			}
 
@@ -116,17 +150,12 @@ namespace Forum3.Services {
 		}
 
 		ItemViewModels.IndexBoardSummary LoadBoard(int? targetBoard, DataModels.Board board, List<DataModels.Board> boards, List<DataModels.Message> lastMessages = null, List<ItemViewModels.IndexUser> lastMessagesBy = null, List<DataModels.ViewLog> boardViewLogs = null) {
-			var isAuthenticated = HttpContextAccessor.HttpContext.User.Identity.IsAuthenticated;
-			var isAdmin = isAuthenticated && HttpContextAccessor.HttpContext.User.IsInRole("Admin");
-			var isVetted = isAuthenticated && HttpContextAccessor.HttpContext.User.IsInRole("Vetted");
-
 			var indexBoard = new ItemViewModels.IndexBoardSummary {
 				Id = board.Id,
 				Name = board.Name,
 				DisplayOrder = board.DisplayOrder,
 				Parent = board.ParentId,
 				VettedOnly = board.VettedOnly,
-				InviteOnly = board.InviteOnly,
 				Unread = false,
 				Selected = targetBoard != null && targetBoard == board.Id,
 				Children = new List<ItemViewModels.IndexBoardSummary>()
@@ -156,7 +185,7 @@ namespace Forum3.Services {
 			var boardChildren = boards.Where(r => r.ParentId == board.Id).OrderBy(r => r.DisplayOrder).ToList();
 
 			foreach (var childRecord in boardChildren)
-				if (!childRecord.VettedOnly || isVetted)
+				if (!childRecord.VettedOnly || UserService.ContextUser.IsVetted)
 					indexBoard.Children.Add(LoadBoard(targetBoard, childRecord, boards, lastMessages, lastMessagesBy, boardViewLogs));
 
 			return indexBoard;

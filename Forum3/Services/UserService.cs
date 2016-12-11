@@ -1,23 +1,38 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Forum3.Data;
-using Forum3.Helpers;
-using Forum3.ViewModels.Shared;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Forum3.Data;
+using Forum3.DataModels;
+using Forum3.Helpers;
+using Forum3.ViewModels.Shared;
+using Forum3.ServiceModels;
 
 namespace Forum3.Services {
 	public class UserService {
+		public ContextUser ContextUser {
+			get {
+				if (_ContextUser == null)
+					LoadContextUser();
+
+				return _ContextUser;
+			}
+			private set {
+				_ContextUser = value;
+			}
+		}
+		ContextUser _ContextUser;
+
 		ApplicationDbContext DbContext { get; }
 		IHttpContextAccessor HttpContextAccessor { get; }
-		UserManager<DataModels.ApplicationUser> UserManager { get; }
+		UserManager<ApplicationUser> UserManager { get; }
 		SiteSettingsService SiteSettingsService { get; }
 
 		public UserService(
 			ApplicationDbContext dbContext,
 			IHttpContextAccessor httpContextAccessor,
-			UserManager<DataModels.ApplicationUser> userManager,
+			UserManager<ApplicationUser> userManager,
 			SiteSettingsService siteSettingsService
 		) {
 			DbContext = dbContext;
@@ -64,6 +79,25 @@ namespace Forum3.Services {
 			}
 
 			return todayBirthdayNames;
+		}
+
+		void LoadContextUser() {
+			var contextUser = new ContextUser();
+
+			var currentPrincipal = HttpContextAccessor.HttpContext.User;
+
+			// TODO - This is a blocking call. Find a better solution like a UserServiceFactory or something.
+			var currentUser = UserManager.GetUserAsync(currentPrincipal).Result;
+
+			contextUser.Id = currentUser.Id;
+
+			if (currentPrincipal.Identity.IsAuthenticated) {
+				contextUser.IsAuthenticated = true;
+				contextUser.IsAdmin = currentPrincipal.IsInRole("Admin");
+				contextUser.IsVetted = currentPrincipal.IsInRole("Vetted");
+			}
+
+			ContextUser = contextUser;
 		}
 
 		class Birthday {

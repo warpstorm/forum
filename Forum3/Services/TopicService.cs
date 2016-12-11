@@ -9,6 +9,7 @@ using Forum3.Data;
 using Forum3.DataModels;
 using Forum3.ViewModels.Topics;
 using Forum3.Helpers;
+using Forum3.InputModels.Messages;
 
 namespace Forum3.Services {
 	public class TopicService {
@@ -118,7 +119,7 @@ namespace Forum3.Services {
 				CanInvite = isAdmin || parentMessage.PostedById == currentUser.Id,
 				TotalPages = take == 0 || messages.Count == 0 ? 1 : Convert.ToInt32(Math.Ceiling((double)messages.Count / take)),
 				CurrentPage = currentPage,
-				ReplyInput = new ViewModels.Messages.TopicReplyPost {
+				ReplyInput = new TopicReplyPost {
 					Id = parentMessage.Id
 				}
 			};
@@ -147,11 +148,11 @@ namespace Forum3.Services {
 					CanDelete = isAdmin || (isAuthenticated && currentUser.Id == record.m.PostedById),
 					CanReply = isAuthenticated,
 					CanThought = isAuthenticated,
-					EditInput = new ViewModels.Messages.EditPost {
+					EditInput = new EditPost {
 						Id = record.m.Id,
 						Body = record.m.OriginalBody
 					},
-					ReplyInput = new ViewModels.Messages.DirectReplyPost {
+					ReplyInput = new DirectReplyPost {
 						Id = record.m.Id
 					}
 				});

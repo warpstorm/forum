@@ -8,7 +8,6 @@ namespace Forum3.ViewModels.Boards.Items {
 		public string Name { get; set; }
 		public int DisplayOrder { get; set; }
 		public bool VettedOnly { get; set; }
-		public bool InviteOnly { get; set; }
 		public bool Unread { get; set; }
 		public bool Selected { get; set; }
 		public List<IndexBoardSummary> Children { get; set; }
