@@ -12,7 +12,7 @@ using HtmlAgilityPack;
 using CodeKicker.BBCode;
 using Forum3.DataModels;
 using Forum3.Data;
-using Forum3.ViewModels.Messages;
+using Forum3.Models.ServiceModels;
 
 namespace Forum3.Services {
 	public class MessageService {
@@ -29,14 +29,16 @@ namespace Forum3.Services {
 		/// <summary>
 		/// Coordinates the overall processing of the message input.
 		/// </summary>
-		public async Task Create(string messageBody, int parentId = 0, int replyId = 0) {
-			if (replyId > 0) {
-				var replyMessage = DbContext.Messages.FirstOrDefault(m => m.Id == replyId);
+		public async Task Create(string messageBody, int replyTargetId = 0) {
+			var parentId = 0;
+
+			if (replyTargetId > 0) {
+				var replyMessage = DbContext.Messages.FirstOrDefault(m => m.Id == replyTargetId);
 
 				if (replyMessage == null)
 					throw new Exception("Target message for reply doesn't exist.");
 
-				parentId = replyMessage.ParentId;
+				parentId = replyMessage.ParentId == 0 ? replyTargetId : replyMessage.ParentId;
 			}
 
 			var processedMessageInput = ProcessMessageInput(messageBody);
@@ -58,7 +60,7 @@ namespace Forum3.Services {
 				EditedByName = currentUser.DisplayName,
 
 				ParentId = parentId,
-				ReplyId = replyId,
+				ReplyId = replyTargetId,
 			};
 
 			DbContext.Messages.Add(newRecord);
@@ -397,17 +399,6 @@ namespace Forum3.Services {
 				return "No text";
 
 			return preview;
-		}
-
-		class RemotePageDetails {
-			public string Title { get; set; }
-			public string Card { get; set; }
-		}
-
-		class RemoteUrlReplacement {
-			public Regex Regex { get; set; }
-			public string ReplacementText { get; set; }
-			public string FollowOnText { get; set; }
-		}
+		}				
 	}
 }

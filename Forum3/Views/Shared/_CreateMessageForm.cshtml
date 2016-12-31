@@ -1,17 +1,20 @@
-﻿@model Forum3.Interfaces.Messages.IMessageInput
+﻿@model Forum3.Interfaces.Models.ViewModels.IMessageViewModel
 
 <div>
 	<div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-	<form asp-action="@Model.FormAction" asp-controller="Topics" role="form">
-		<div class="form-group">
-			<textarea asp-for="Body" class="form-control"></textarea>
-			<span asp-validation-for="Body" class="text-danger" />
-		</div>
+    <form asp-action="@Model.FormAction" asp-controller="Topics" role="form">
+        <div class="form-group">
+            <textarea asp-for="Body" class="form-control"></textarea>
+            <span asp-validation-for="Body" class="text-danger" />
+        </div>
 
-		<input type="hidden" name="Id" value="@Model.Id" />
+        <input type="hidden" name="Id" value="@Model.Id" />
 
-		<button type="submit" class="btn btn-default">Save</button>
-		<span class="cancelButton button">Cancel</span>
-	</form>
+        <button type="submit" class="btn btn-default">Save</button>
+
+        @if (Model.AllowCancel) {
+            <span class="cancelButton button">Cancel</span>
+        }
+    </form>
 </div>

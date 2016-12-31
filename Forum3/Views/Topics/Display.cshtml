@@ -1,4 +1,4 @@
-﻿@model Forum3.ViewModels.Topics.Topic
+﻿@model TopicDisplayPage
 
 <div asp-validation-summary="All" class="text-danger"></div>
 
@@ -7,12 +7,22 @@
 }
 
 <p>Reply to Thread:</p>
-@Html.Partial("_CreateMessageForm", Model.ReplyInput)
+@Html.Partial("_CreateMessageForm", Model.ReplyForm)
 
 @section scripts {
-	<script src="~/js/TopicDisplay.js" asp-append-version="true"></script>
+    <environment names="Development">
+        <script src="~/js/TopicDisplay.js" asp-append-version="true"></script>
+    </environment>
+    <environment names="Staging,Production">
+        <script src="~/js/TopicDisplay.min.js" asp-append-version="true"></script>
+    </environment>
 }
 
 @section styles {
-	<link rel="stylesheet" href="~/css/TopicDisplay.css" asp-append-version="true" />
+    <environment names="Development">
+        <link rel="stylesheet" href="~/css/TopicDisplay.css" />
+    </environment>
+    <environment names="Staging,Production">
+        <link rel="stylesheet" href="~/css/TopicDisplay.min.css" asp-append-version="true" />
+    </environment>
 }

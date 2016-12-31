@@ -1,24 +1,30 @@
-﻿// Configure bundling and minification for the project.
-// More info at https://go.microsoft.com/fwlink/?LinkId=808241
-[
+﻿[
+  // STYLES
   {
-    "outputFileName": "wwwroot/css/site.min.css",
-    // An array of relative input file paths. Globbing patterns supported
-    "inputFiles": [
-      "wwwroot/css/site.css"
-    ]
+    "outputFileName": "wwwroot/css/Global.min.css",
+    "inputFiles": [ "wwwroot/css/Global.css" ]
   },
   {
-    "outputFileName": "wwwroot/js/site.min.js",
-    "inputFiles": [
-      "wwwroot/js/site.js"
-    ],
-    // Optionally specify minification options
+    "outputFileName": "wwwroot/css/TopicDisplay.min.css",
+    "inputFiles": [ "wwwroot/css/TopicDisplay.css" ]
+  },
+  // SCRIPTS
+  {
+    "outputFileName": "wwwroot/js/Global.min.js",
+    "inputFiles": [ "wwwroot/js/Global.js" ],
     "minify": {
       "enabled": true,
       "renameLocals": true
     },
-    // Optinally generate .map file
+    "sourceMap": false
+  },
+  {
+    "outputFileName": "wwwroot/js/TopicDisplay.min.js",
+    "inputFiles": [ "wwwroot/js/TopicDisplay.js" ],
+    "minify": {
+      "enabled": true,
+      "renameLocals": true
+    },
     "sourceMap": false
   }
 ]

@@ -1,10 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Forum3.Interfaces.Messages {
-	public interface IMessageInput
-    {
-		[HiddenInput]
+namespace Forum3.Interfaces.Models.ViewModels {
+	public interface IMessageViewModel {
 		int Id { get; }
 
 		[Required]
@@ -12,5 +10,7 @@ namespace Forum3.Interfaces.Messages {
 		string Body { get; set; }
 
 		string FormAction { get; }
+
+		bool AllowCancel { get; }
 	}
 }

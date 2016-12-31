@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using Forum3.ViewModels.Boards.Items;
-using Forum3.ViewModels.Shared;
 
 namespace Forum3.ViewModels.Boards.Pages {
 	public class IndexPage {

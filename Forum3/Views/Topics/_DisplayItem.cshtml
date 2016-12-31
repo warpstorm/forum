@@ -1,4 +1,4 @@
-﻿@model Forum3.ViewModels.Messages.Message
+﻿@model Forum3.ViewModels.Topics.Items.Message
 
 <section>
 	<span id="message@(Model.Id)"></span>
@@ -55,12 +55,12 @@
 
 	<div class="editControl hide">
 		<p>Edit:</p>
-		@Html.Partial("_CreateMessageForm", Model.EditInput)
+		@Html.Partial("_CreateMessageForm", Model.EditForm)
 	</div>
 
 	<div class="replyControl hide">
 		<p>Reply:</p>
-		@Html.Partial("_CreateMessageForm", Model.ReplyInput)
+		@Html.Partial("_CreateMessageForm", Model.ReplyForm)
 	</div>
 
 	<p><!-- thoughts here --></p>

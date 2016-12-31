@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
-using Forum3.Interfaces.Messages;
-using Forum3.ViewModels.Messages;
+using Forum3.Interfaces.Models.ViewModels;
+using Forum3.ViewModels.Topics.Items;
 
-namespace Forum3.ViewModels.Topics {
-	public class Topic {
+namespace Forum3.ViewModels.Topics.Pages {
+	public class TopicDisplayPage {
 		public int Id { get; internal set; }
 		public TopicHeader TopicHeader { get; internal set; }
 		public List<Message> Messages { get; internal set; }
@@ -12,6 +12,6 @@ namespace Forum3.ViewModels.Topics {
 		public int TotalPages { get; internal set; }
 		public int CurrentPage { get; internal set; }
 		public bool IsAuthenticated { get; internal set; }
-		public IMessageInput ReplyInput { get; set; }
+		public IMessageViewModel ReplyForm { get; set; }
 	}
 }

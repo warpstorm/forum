@@ -4,7 +4,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Forum3.Annotations;
 using Forum3.Services;
-using Forum3.InputModels.Messages;
+using Forum3.ViewModels.Topics.Items;
+using Forum3.InputModels;
 
 namespace Forum3.Controllers {
 	[Authorize]
@@ -67,7 +68,7 @@ namespace Forum3.Controllers {
 
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Create(TopicFirstPost input) {
+		public async Task<IActionResult> Create(MessageInput input) {
 			if (ModelState.IsValid) {
 				await MessageService.Create(input.Body);
 				return RedirectToAction(nameof(Index), nameof(Topics));
@@ -92,7 +93,7 @@ namespace Forum3.Controllers {
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> TopicReply(TopicReplyPost input) {
 			if (ModelState.IsValid) {
-				await MessageService.Create(input.Body, parentId: input.Id);
+				await MessageService.Create(input.Body, input.Id);
 				return RedirectToAction(nameof(Display), nameof(Topics), new { Id = input.Id });
 			}
 
@@ -103,7 +104,7 @@ namespace Forum3.Controllers {
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> DirectReply(DirectReplyPost input) {
 			if (ModelState.IsValid) {
-				await MessageService.Create(input.Body, replyId: input.Id);
+				await MessageService.Create(input.Body, input.Id);
 				return RedirectToAction(nameof(Display), new { Id = input.Id });
 			}
 

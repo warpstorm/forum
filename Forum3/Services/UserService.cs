@@ -6,8 +6,8 @@ using Microsoft.AspNetCore.Identity;
 using Forum3.Data;
 using Forum3.DataModels;
 using Forum3.Helpers;
-using Forum3.ViewModels.Shared;
 using Forum3.ServiceModels;
+using Forum3.ViewModels.Boards.Items;
 
 namespace Forum3.Services {
 	public class UserService {
@@ -83,15 +83,13 @@ namespace Forum3.Services {
 
 		void LoadContextUser() {
 			var contextUser = new ContextUser();
-
 			var currentPrincipal = HttpContextAccessor.HttpContext.User;
 
-			// TODO - This is a blocking call. Find a better solution like a UserServiceFactory or something.
-			var currentUser = UserManager.GetUserAsync(currentPrincipal).Result;
-
-			contextUser.Id = currentUser.Id;
-
 			if (currentPrincipal.Identity.IsAuthenticated) {
+				// TODO - This is a blocking call. Find a better solution like a UserServiceFactory or something.
+				var currentUser = UserManager.GetUserAsync(currentPrincipal).Result;
+
+				contextUser.Id = currentUser.Id;
 				contextUser.IsAuthenticated = true;
 				contextUser.IsAdmin = currentPrincipal.IsInRole("Admin");
 				contextUser.IsVetted = currentPrincipal.IsInRole("Vetted");

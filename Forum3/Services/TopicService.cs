@@ -7,9 +7,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Forum3.Data;
 using Forum3.DataModels;
-using Forum3.ViewModels.Topics;
 using Forum3.Helpers;
-using Forum3.InputModels.Messages;
+using PageModels = Forum3.ViewModels.Topics.Pages;
+using ItemModels = Forum3.ViewModels.Topics.Items;
 
 namespace Forum3.Services {
 	public class TopicService {
@@ -23,11 +23,11 @@ namespace Forum3.Services {
 			UserManager = userManager;
 		}
 
-		public async Task<TopicIndex> GetTopicIndex(int skip, int take) {
+		public async Task<PageModels.TopicIndexPage> GetTopicIndex(int skip, int take) {
 			var messageRecords = await (from m in DbContext.Messages
 										where m.ParentId == 0
 										orderby m.LastReplyPosted descending
-										select new ViewModels.Messages.MessagePreview {
+										select new ViewModels.Topics.Items.MessagePreview {
 											Id = m.Id,
 											ShortPreview = m.ShortPreview,
 											LastReplyId = m.LastReplyId == 0 ? m.Id : m.LastReplyId,
@@ -39,14 +39,14 @@ namespace Forum3.Services {
 									.Skip(skip).Take(take)
 									.ToListAsync();
 
-			return new TopicIndex {
+			return new PageModels.TopicIndexPage {
 				Skip = skip + take,
 				Take = take,
 				Topics = messageRecords
 			};
 		}
 
-		public async Task<Topic> GetTopic(Message parentMessage, int currentPage, int skip, int take, bool jumpToLatest) {
+		public async Task<PageModels.TopicDisplayPage> GetTopic(DataModels.Message parentMessage, int currentPage, int skip, int take, bool jumpToLatest) {
 			parentMessage.Views++;
 			DbContext.Entry(parentMessage).State = EntityState.Modified;
 			DbContext.SaveChanges();
@@ -62,7 +62,7 @@ namespace Forum3.Services {
 			//	join im in _dbContext.Messages on m.ReplyId equals im.Id into Replies
 			//	from r in Replies.DefaultIfEmpty()
 			//	where m.Id == id || m.ParentId == id
-			//	select new ViewModels.Messages.Message {
+			//	select new ViewModels.Topics.Items.Message {
 			//		Id = m.Id,
 			//		ParentId = m.ParentId,
 			//		ReplyId = m.ReplyId,
@@ -87,12 +87,12 @@ namespace Forum3.Services {
 			//	message.CanReply = isAuthenticated;
 			//	message.CanThought = isAuthenticated;
 
-			//	message.EditInput = new ViewModels.Messages.EditPost {
+			//	message.EditInput = new ViewModels.Topics.Items.EditPost {
 			//		Id = message.Id,
 			//		Body = message.OriginalBody,
 			//	};
 
-			//	message.ReplyInput = new ViewModels.Messages.DirectReplyPost {
+			//	message.ReplyInput = new ViewModels.Topics.Items.DirectReplyPost {
 			//		Id = message.Id,
 			//	};
 			//}
@@ -104,14 +104,14 @@ namespace Forum3.Services {
 							 orderby m.Id
 							 select new { m, r }).ToListAsync();
 
-			var topic = new Topic {
+			var topic = new PageModels.TopicDisplayPage {
 				Id = parentMessage.Id,
-				TopicHeader = new TopicHeader {
+				TopicHeader = new ItemModels.TopicHeader {
 					StartedById = parentMessage.PostedById,
 					Subject = parentMessage.ShortPreview,
 					Views = parentMessage.Views,
 				},
-				Messages = new List<ViewModels.Messages.Message>(),
+				Messages = new List<ViewModels.Topics.Items.Message>(),
 				//Boards = new List<IndexBoard>(),
 				//AssignedBoards = new List<IndexBoard>(),
 				IsAuthenticated = isAuthenticated,
@@ -119,7 +119,7 @@ namespace Forum3.Services {
 				CanInvite = isAdmin || parentMessage.PostedById == currentUser.Id,
 				TotalPages = take == 0 || messages.Count == 0 ? 1 : Convert.ToInt32(Math.Ceiling((double)messages.Count / take)),
 				CurrentPage = currentPage,
-				ReplyInput = new TopicReplyPost {
+				ReplyForm = new ItemModels.TopicReplyPost {
 					Id = parentMessage.Id
 				}
 			};
@@ -128,7 +128,7 @@ namespace Forum3.Services {
 			// MAKE SURE YOU INCLUDE CHANGES TO THIS LOOP IN BLOCK ABOVE TOO!!
 
 			foreach (var record in messages) {
-				topic.Messages.Add(new ViewModels.Messages.Message {
+				topic.Messages.Add(new ViewModels.Topics.Items.Message {
 					Id = record.m.Id,
 					ParentId = record.m.ParentId,
 					ReplyId = record.m.ReplyId,
@@ -148,11 +148,11 @@ namespace Forum3.Services {
 					CanDelete = isAdmin || (isAuthenticated && currentUser.Id == record.m.PostedById),
 					CanReply = isAuthenticated,
 					CanThought = isAuthenticated,
-					EditInput = new EditPost {
+					EditForm = new ItemModels.EditPost {
 						Id = record.m.Id,
 						Body = record.m.OriginalBody
 					},
-					ReplyInput = new DirectReplyPost {
+					ReplyForm = new ItemModels.DirectReplyPost {
 						Id = record.m.Id
 					}
 				});

@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Forum3.ViewModels.Messages;
+using Forum3.ViewModels.Topics.Items;
 
 namespace Forum3.ViewModels.Boards.Items {
 	public class IndexBoardSummary {

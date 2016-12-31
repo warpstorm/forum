@@ -3,10 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Forum3.Annotations;
 using Forum3.Services;
-using Forum3.ViewModels.Boards.Pages;
-using Forum3.InputModels.Boards;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using System.Linq;
+using Forum3.InputModels;
 
 namespace Forum3.Controllers {
 	[RequireRemoteHttps]
@@ -38,7 +35,7 @@ namespace Forum3.Controllers {
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> Create(Create input) {
+		public async Task<IActionResult> Create(BoardInput input) {
 			if (ModelState.IsValid)
 				await BoardService.Create(input, ModelState);
 

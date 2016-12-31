@@ -36,7 +36,7 @@ namespace Forum3.Services {
 			return viewModel;
 		}
 
-		public PageViewModels.CreatePage GetCreatePage(InputModels.Boards.Create input = null) {
+		public PageViewModels.CreatePage GetCreatePage(InputModels.BoardInput input = null) {
 			var viewModel = new PageViewModels.CreatePage();
 			viewModel.Parents = GetBoardPickList();
 
@@ -51,7 +51,7 @@ namespace Forum3.Services {
 			return viewModel;
 		}
 
-		public async Task Create(InputModels.Boards.Create input, ModelStateDictionary modelState) {
+		public async Task Create(InputModels.BoardInput input, ModelStateDictionary modelState) {
 			if (DbContext.Boards.Any(b => b.Name == input.Name))
 				modelState.AddModelError(nameof(input.Name), "A board with that name already exists");
 
@@ -165,7 +165,7 @@ namespace Forum3.Services {
 				var lastMessage = lastMessages.FirstOrDefault(r => r.Id == board.LastMessageId);
 
 				if (lastMessage != null) {
-					indexBoard.LastMessage = new ViewModels.Messages.MessagePreview {
+					indexBoard.LastMessage = new ViewModels.Topics.Items.MessagePreview {
 						Id = lastMessage.Id,
 						ShortPreview = lastMessage.ShortPreview,
 						LastReplyByName = lastMessagesBy.First(r => r.Id == lastMessage.LastReplyById).Name,

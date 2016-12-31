@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Forum3.ViewModels.Shared {
+namespace Forum3.ViewModels.Boards.Items {
 	public class OnlineUser {
 		public string Id { get; set; }
 		public string Name { get; set; }
