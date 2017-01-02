@@ -1,4 +1,4 @@
-﻿namespace Forum3.ViewModels.Boards {
+﻿namespace Forum3.Models.ViewModels.Boards {
 	public class EditPage {
 		public int Id { get; set; }
 		public string Name { get; set; }

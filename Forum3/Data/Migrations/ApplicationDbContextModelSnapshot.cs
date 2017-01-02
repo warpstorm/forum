@@ -17,7 +17,7 @@ namespace Forum3.Data.Migrations
                 .HasAnnotation("ProductVersion", "1.1.0-rtm-22752")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-            modelBuilder.Entity("Forum3.DataModels.ApplicationUser", b =>
+            modelBuilder.Entity("Forum3.Models.DataModels.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
@@ -75,7 +75,7 @@ namespace Forum3.Data.Migrations
                     b.ToTable("AspNetUsers");
                 });
 
-            modelBuilder.Entity("Forum3.DataModels.Board", b =>
+            modelBuilder.Entity("Forum3.Models.DataModels.Board", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -97,7 +97,7 @@ namespace Forum3.Data.Migrations
                     b.ToTable("Boards");
                 });
 
-            modelBuilder.Entity("Forum3.DataModels.BoardRelationship", b =>
+            modelBuilder.Entity("Forum3.Models.DataModels.BoardRelationship", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -115,7 +115,7 @@ namespace Forum3.Data.Migrations
                     b.ToTable("BoardRelationships");
                 });
 
-            modelBuilder.Entity("Forum3.DataModels.Message", b =>
+            modelBuilder.Entity("Forum3.Models.DataModels.Message", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -167,7 +167,7 @@ namespace Forum3.Data.Migrations
                     b.ToTable("Messages");
                 });
 
-            modelBuilder.Entity("Forum3.DataModels.MessageBoard", b =>
+            modelBuilder.Entity("Forum3.Models.DataModels.MessageBoard", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -189,7 +189,7 @@ namespace Forum3.Data.Migrations
                     b.ToTable("MessageBoards");
                 });
 
-            modelBuilder.Entity("Forum3.DataModels.MessageThought", b =>
+            modelBuilder.Entity("Forum3.Models.DataModels.MessageThought", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -211,7 +211,7 @@ namespace Forum3.Data.Migrations
                     b.ToTable("MessageThoughts");
                 });
 
-            modelBuilder.Entity("Forum3.DataModels.Notification", b =>
+            modelBuilder.Entity("Forum3.Models.DataModels.Notification", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -237,7 +237,7 @@ namespace Forum3.Data.Migrations
                     b.ToTable("Notifications");
                 });
 
-            modelBuilder.Entity("Forum3.DataModels.Participant", b =>
+            modelBuilder.Entity("Forum3.Models.DataModels.Participant", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -251,7 +251,7 @@ namespace Forum3.Data.Migrations
                     b.ToTable("Participants");
                 });
 
-            modelBuilder.Entity("Forum3.DataModels.Pin", b =>
+            modelBuilder.Entity("Forum3.Models.DataModels.Pin", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -267,7 +267,7 @@ namespace Forum3.Data.Migrations
                     b.ToTable("Pins");
                 });
 
-            modelBuilder.Entity("Forum3.DataModels.SiteSetting", b =>
+            modelBuilder.Entity("Forum3.Models.DataModels.SiteSetting", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -283,7 +283,7 @@ namespace Forum3.Data.Migrations
                     b.ToTable("SiteSettings");
                 });
 
-            modelBuilder.Entity("Forum3.DataModels.Smiley", b =>
+            modelBuilder.Entity("Forum3.Models.DataModels.Smiley", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -301,7 +301,7 @@ namespace Forum3.Data.Migrations
                     b.ToTable("Smileys");
                 });
 
-            modelBuilder.Entity("Forum3.DataModels.ViewLog", b =>
+            modelBuilder.Entity("Forum3.Models.DataModels.ViewLog", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -426,76 +426,76 @@ namespace Forum3.Data.Migrations
                     b.ToTable("AspNetUserTokens");
                 });
 
-            modelBuilder.Entity("Forum3.DataModels.Board", b =>
+            modelBuilder.Entity("Forum3.Models.DataModels.Board", b =>
                 {
-                    b.HasOne("Forum3.DataModels.Board", "Parent")
+                    b.HasOne("Forum3.Models.DataModels.Board", "Parent")
                         .WithMany()
                         .HasForeignKey("ParentId");
 
-                    b.HasOne("Forum3.DataModels.Message", "LastMessage")
+                    b.HasOne("Forum3.Models.DataModels.Message", "LastMessage")
                         .WithMany()
                         .HasForeignKey("ParentId");
                 });
 
-            modelBuilder.Entity("Forum3.DataModels.BoardRelationship", b =>
+            modelBuilder.Entity("Forum3.Models.DataModels.BoardRelationship", b =>
                 {
-                    b.HasOne("Forum3.DataModels.Board", "Child")
+                    b.HasOne("Forum3.Models.DataModels.Board", "Child")
                         .WithMany()
                         .HasForeignKey("ChildId");
 
-                    b.HasOne("Forum3.DataModels.Board", "Parent")
+                    b.HasOne("Forum3.Models.DataModels.Board", "Parent")
                         .WithMany()
                         .HasForeignKey("ParentId");
                 });
 
-            modelBuilder.Entity("Forum3.DataModels.Message", b =>
+            modelBuilder.Entity("Forum3.Models.DataModels.Message", b =>
                 {
-                    b.HasOne("Forum3.DataModels.ApplicationUser", "EditedBy")
+                    b.HasOne("Forum3.Models.DataModels.ApplicationUser", "EditedBy")
                         .WithMany()
                         .HasForeignKey("EditedById");
 
-                    b.HasOne("Forum3.DataModels.ApplicationUser", "LastReplyBy")
+                    b.HasOne("Forum3.Models.DataModels.ApplicationUser", "LastReplyBy")
                         .WithMany()
                         .HasForeignKey("LastReplyById");
 
-                    b.HasOne("Forum3.DataModels.ApplicationUser", "PostedBy")
+                    b.HasOne("Forum3.Models.DataModels.ApplicationUser", "PostedBy")
                         .WithMany()
                         .HasForeignKey("PostedById");
                 });
 
-            modelBuilder.Entity("Forum3.DataModels.MessageBoard", b =>
+            modelBuilder.Entity("Forum3.Models.DataModels.MessageBoard", b =>
                 {
-                    b.HasOne("Forum3.DataModels.Board", "Board")
+                    b.HasOne("Forum3.Models.DataModels.Board", "Board")
                         .WithMany()
                         .HasForeignKey("BoardId");
 
-                    b.HasOne("Forum3.DataModels.Message", "Message")
+                    b.HasOne("Forum3.Models.DataModels.Message", "Message")
                         .WithMany()
                         .HasForeignKey("MessageId");
                 });
 
-            modelBuilder.Entity("Forum3.DataModels.MessageThought", b =>
+            modelBuilder.Entity("Forum3.Models.DataModels.MessageThought", b =>
                 {
-                    b.HasOne("Forum3.DataModels.Message", "Message")
+                    b.HasOne("Forum3.Models.DataModels.Message", "Message")
                         .WithMany("Thoughts")
                         .HasForeignKey("MessageId");
 
-                    b.HasOne("Forum3.DataModels.Smiley", "Smiley")
+                    b.HasOne("Forum3.Models.DataModels.Smiley", "Smiley")
                         .WithMany()
                         .HasForeignKey("SmileyId");
 
-                    b.HasOne("Forum3.DataModels.ApplicationUser", "User")
+                    b.HasOne("Forum3.Models.DataModels.ApplicationUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId");
                 });
 
-            modelBuilder.Entity("Forum3.DataModels.Notification", b =>
+            modelBuilder.Entity("Forum3.Models.DataModels.Notification", b =>
                 {
-                    b.HasOne("Forum3.DataModels.Message", "Message")
+                    b.HasOne("Forum3.Models.DataModels.Message", "Message")
                         .WithMany()
                         .HasForeignKey("MessageId");
 
-                    b.HasOne("Forum3.DataModels.ApplicationUser", "TargetUser")
+                    b.HasOne("Forum3.Models.DataModels.ApplicationUser", "TargetUser")
                         .WithMany()
                         .HasForeignKey("TargetUserId");
                 });
@@ -510,7 +510,7 @@ namespace Forum3.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("Forum3.DataModels.ApplicationUser")
+                    b.HasOne("Forum3.Models.DataModels.ApplicationUser")
                         .WithMany("Claims")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
@@ -518,7 +518,7 @@ namespace Forum3.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("Forum3.DataModels.ApplicationUser")
+                    b.HasOne("Forum3.Models.DataModels.ApplicationUser")
                         .WithMany("Logins")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
@@ -531,7 +531,7 @@ namespace Forum3.Data.Migrations
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("Forum3.DataModels.ApplicationUser")
+                    b.HasOne("Forum3.Models.DataModels.ApplicationUser")
                         .WithMany("Roles")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);

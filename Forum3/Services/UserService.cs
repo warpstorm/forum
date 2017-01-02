@@ -4,10 +4,10 @@ using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Forum3.Data;
-using Forum3.DataModels;
+using Forum3.Models.DataModels;
 using Forum3.Helpers;
-using Forum3.ServiceModels;
-using Forum3.ViewModels.Boards.Items;
+using Forum3.Models.ServiceModels;
+using Forum3.Models.ViewModels.Boards.Items;
 
 namespace Forum3.Services {
 	public class UserService {
@@ -86,13 +86,13 @@ namespace Forum3.Services {
 			var currentPrincipal = HttpContextAccessor.HttpContext.User;
 
 			if (currentPrincipal.Identity.IsAuthenticated) {
-				// TODO - This is a blocking call. Find a better solution like a UserServiceFactory or something.
-				var currentUser = UserManager.GetUserAsync(currentPrincipal).Result;
-
-				contextUser.Id = currentUser.Id;
 				contextUser.IsAuthenticated = true;
 				contextUser.IsAdmin = currentPrincipal.IsInRole("Admin");
 				contextUser.IsVetted = currentPrincipal.IsInRole("Vetted");
+
+				// NOTE - This is a blocking call, required because this method is called from a property and can't be async.
+				// TODO - Find a better solution like a UserServiceFactory or something.
+				contextUser.ApplicationUser = UserManager.GetUserAsync(currentPrincipal).Result;
 			}
 
 			ContextUser = contextUser;

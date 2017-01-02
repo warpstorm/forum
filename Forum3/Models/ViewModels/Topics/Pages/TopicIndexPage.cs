@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using Forum3.ViewModels.Topics.Items;
+using Forum3.Models.ViewModels.Topics.Items;
 
-namespace Forum3.ViewModels.Topics.Pages {
+namespace Forum3.Models.ViewModels.Topics.Pages {
 	public class TopicIndexPage {
 		public int Skip { get; set; }
 		public int Take { get; set; }

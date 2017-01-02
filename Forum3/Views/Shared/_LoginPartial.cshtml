@@ -1,5 +1,5 @@
-﻿@inject SignInManager<Forum3.DataModels.ApplicationUser> SignInManager
-@inject UserManager<Forum3.DataModels.ApplicationUser> UserManager
+﻿@inject SignInManager<Forum3.Models.DataModels.ApplicationUser> SignInManager
+@inject UserManager<Forum3.Models.DataModels.ApplicationUser> UserManager
 
 @if (SignInManager.IsSignedIn(User))
 {

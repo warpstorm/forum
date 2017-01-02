@@ -1,0 +1,22 @@
+﻿@model Forum3.Interfaces.Models.ViewModels.IMessageViewModel
+
+<div>
+	<div asp-validation-summary="ModelOnly"></div>
+
+    <form asp-action="@Model.FormAction" asp-controller="@Model.FormController">
+        <input type="hidden" name="Id" value="@Model.Id" />
+
+        <div>
+            <p><textarea asp-for="Body"></textarea></p>
+            <p><span asp-validation-for="Body" /></p>
+        </div>
+
+        <p>
+            <button>Save</button>
+
+            @if (!string.IsNullOrEmpty(Model.CancelPath)) {
+                <a asp-action="Go" asp-controller="Redirect" asp-route-path="@Model.CancelPath">Cancel</a>
+            }
+        </p>
+    </form>
+</div>

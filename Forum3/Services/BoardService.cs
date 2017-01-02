@@ -7,8 +7,10 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Forum3.Data;
 using Forum3.Enums;
 using Forum3.Helpers;
-using PageViewModels = Forum3.ViewModels.Boards.Pages;
-using ItemViewModels = Forum3.ViewModels.Boards.Items;
+using DataModels = Forum3.Models.DataModels;
+using InputModels = Forum3.Models.InputModels;
+using PageViewModels = Forum3.Models.ViewModels.Boards.Pages;
+using ItemViewModels = Forum3.Models.ViewModels.Boards.Items;
 
 namespace Forum3.Services {
 	public class BoardService {
@@ -135,7 +137,7 @@ namespace Forum3.Services {
 				}).ToList();
 
 				if (UserService.ContextUser.IsAuthenticated)
-					boardViewLogs = DbContext.ViewLogs.Where(r => r.UserId == UserService.ContextUser.Id && r.TargetType == EViewLogTargetType.Board).ToList();
+					boardViewLogs = DbContext.ViewLogs.Where(r => r.UserId == UserService.ContextUser.ApplicationUser.Id && r.TargetType == EViewLogTargetType.Board).ToList();
 			}
 
 			var boards = new List<ItemViewModels.IndexBoardSummary>();
@@ -165,7 +167,7 @@ namespace Forum3.Services {
 				var lastMessage = lastMessages.FirstOrDefault(r => r.Id == board.LastMessageId);
 
 				if (lastMessage != null) {
-					indexBoard.LastMessage = new ViewModels.Topics.Items.MessagePreview {
+					indexBoard.LastMessage = new Models.ViewModels.Topics.Items.MessagePreview {
 						Id = lastMessage.Id,
 						ShortPreview = lastMessage.ShortPreview,
 						LastReplyByName = lastMessagesBy.First(r => r.Id == lastMessage.LastReplyById).Name,

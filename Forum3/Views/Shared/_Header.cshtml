@@ -1,0 +1,59 @@
+﻿@*@{
+    if (Request.IsAuthenticated) {
+        var notifications = (NotificationList) ViewBag.Notifications;
+
+        ViewBag.NotificationCount = notifications.NotificationCount;
+        ViewBag.NotificationButtonClasses = "smallButton";
+
+        if (notifications.NotificationCount > 0) {
+            ViewBag.NotificationButtonClasses += " highlight";
+        }
+    }
+}*@
+
+@*<header id="pageHeader">
+    <div id="pageTitle"><a href="/"><img src=@ViewBag.LogoPath alt="Warpstorm" /></a></div>
+    <nav>
+        <div id="headerNavContents">
+            <ul class="mobileHide">
+                <li><a href="https://discord.gg/0v2CstEMYtuyGw1w" target="_blank" class="smallButton discordButton"><img src="~/Content/Images/discord.png" /> Discord</a></li>
+                @if (Request.IsAuthenticated) {
+                    <li>@Html.ActionLink("Boards", "Index", "Board", null, new { @class = "smallButton" })</li>
+                    <li>@Html.ActionLink("Topics", "Index", "Message", new { id = "" }, new { @class = "smallButton" })</li>
+
+				if (WebSecurity.UserExists(Context.User.Identity.Name) && Context.User.IsInRole("Admin")) {
+                        <li><a href="@Url.Action("Dashboard", "Admin")" class="smallButton highlight"><span class="icon-wrench"></span> Admin</a></li>
+}
+
+                    <li><a href="javascript:document.getElementById('logoutForm').submit()" class="smallButton" onclick="return confirm('Are you sure you want to logout?');"><span class="icon-exit"></span> Log off</a></li>}
+                else {
+                    <li><a href="@Url.Action("Register", "Account")" class="smallButton highlight"><span class="icon-sun"></span> Register</a></li>
+                    <li><a href="@Url.Action("Login", "Account")" class="smallButton"><span class="icon-enter"></span> Log in</a></li>}
+            </ul>
+            <ul class="mobileOnly">
+                @if (Request.IsAuthenticated) {
+                    <li><a href="javascript:document.getElementById('logoutForm').submit()" class="smallButton" onclick="return confirm('Are you sure you want to logout?');">Log off</a></li>if (WebSecurity.UserExists(Context.User.Identity.Name) && Context.User.IsInRole("Admin")) {
+                        <li>@Html.ActionLink("Admin", "Dashboard", "Admin", null, new { @class = "smallButton" })</li>
+}
+
+                    <li>@Html.ActionLink("Boards", "Index", "Board", null, new { @class = "smallButton" })</li>
+                    <li>@Html.ActionLink("Topics", "Index", "Message", new { id = "" }, new { @class = "smallButton" })</li>
+                    <li><a href="@Url.Action("Index", "Notification")" class="@ViewBag.NotificationButtonClasses"><span class="icon-flag"></span> @ViewBag.NotificationCount</a></li>}
+                else {
+                    <li>@Html.ActionLink("Register", "Register", "Account", null, new { @class = "smallButton" })</li>
+                    <li>@Html.ActionLink("Log in", "Login", "Account", null, new { @class = "smallButton" })</li>}
+            </ul>
+            <div id="login" class="mobileHide">
+                @if (Request.IsAuthenticated) {
+                    <span>Welcome back, @Html.ActionLink(User.Identity.Name, "Manage", "Account").</span>
+                    <a href="@Url.Action("Index", "Notification")" class="@ViewBag.NotificationButtonClasses"><span class="icon-flag"></span> @ViewBag.NotificationCount</a>using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm" })) {
+                        // This form gets submitted by javascript above.
+                        @Html.AntiForgeryToken()
+}
+                }
+                else {
+                    <span>Welcome Guest! Please @Html.ActionLink("Register", "Register", "Account") or @Html.ActionLink("log in", "Login", "Account").</span>}
+            </div>
+        </div>
+    </nav>
+</header>*@

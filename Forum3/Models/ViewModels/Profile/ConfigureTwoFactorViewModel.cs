@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
-namespace Forum3.ViewModels.Profile {
+namespace Forum3.Models.ViewModels.Profile {
 	public class ConfigureTwoFactorViewModel
     {
         public string SelectedProvider { get; set; }

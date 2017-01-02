@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Forum3.DataModels;
+using Forum3.Models.DataModels;
 using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace Forum3.Data {

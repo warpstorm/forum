@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
-namespace Forum3.ViewModels.Boards.Pages {
+namespace Forum3.Models.ViewModels.Boards.Pages {
 	public class CreatePage {
 		public string Name { get; set; }
 		public string Parent { get; set; }

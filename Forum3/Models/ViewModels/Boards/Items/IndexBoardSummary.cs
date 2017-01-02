@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using Forum3.ViewModels.Topics.Items;
+using Forum3.Models.ViewModels.Topics.Items;
 
-namespace Forum3.ViewModels.Boards.Items {
+namespace Forum3.Models.ViewModels.Boards.Items {
 	public class IndexBoardSummary {
 		public int Id { get; set; }
 		public int? Parent { get; set; }

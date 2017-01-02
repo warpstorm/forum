@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Forum3.DataModels {
+namespace Forum3.Models.DataModels {
     [Table("Participants")]
 	public class Participant {
 		public int Id { get; set; }

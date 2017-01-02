@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Forum3.ViewModels.Profile {
+namespace Forum3.Models.ViewModels.Profile {
 	public class ChangePasswordViewModel
     {
         [Required]

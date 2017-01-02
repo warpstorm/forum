@@ -6,7 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Forum3.Data;
-using Forum3.DataModels;
+using Forum3.Models.DataModels;
 using Forum3.Helpers;
 
 namespace Forum3 {
@@ -45,6 +45,8 @@ namespace Forum3 {
 				.AddDefaultTokenProviders();
 				
 			services.AddMvc();
+			services.AddDistributedMemoryCache();
+			services.AddSession();
 			services.AddForum();
 		}
 
@@ -66,13 +68,12 @@ namespace Forum3 {
 
 			app.UseIdentity();
 
-			app.UseMvc(routes => {
-				routes.MapRoute(name: "areaRoute",
-					template: "{area:exists}/{controller}/{action}");
+			app.UseSession();
 
+			app.UseMvc(routes => {
 				routes.MapRoute(
 					name: "default",
-					template: "{controller=Topics}/{action=Index}/{id?}");
+					template: "{controller=Topics}/{action=Index}/{id?}/{page?}/{target?}");
 			});
 		}
 	}

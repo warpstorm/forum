@@ -1,7 +1,7 @@
 ﻿using System;
 using Forum3.Interfaces.Models.ViewModels;
 
-namespace Forum3.ViewModels.Topics.Items {
+namespace Forum3.Models.ViewModels.Topics.Items {
 	public class Message {
 		public string Body { get; internal set; }
 		public string OriginalBody { get; internal set; }
@@ -22,7 +22,6 @@ namespace Forum3.ViewModels.Topics.Items {
 		public DateTime RecordTime { get; internal set; }
 		public DateTime TimePostedDT { get; internal set; }
 		public DateTime TimeEditedDT { get; internal set; }
-		public IMessageViewModel EditForm { get; set; }
 		public IMessageViewModel ReplyForm { get; set; }
 	}
 }

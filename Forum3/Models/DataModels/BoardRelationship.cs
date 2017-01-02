@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Forum3.DataModels {
+namespace Forum3.Models.DataModels {
 	[Table("BoardRelationships")]
 	public class BoardRelationship {
 		public int Id { get; set; }

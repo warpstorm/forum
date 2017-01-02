@@ -1,6 +1,8 @@
-﻿using Forum3.Interfaces.Users;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Routing;
+using Forum3.Interfaces.Users;
 using Forum3.Services;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Forum3.Helpers {
 	public static class ForumServiceRegistrationExtension {
@@ -13,6 +15,9 @@ namespace Forum3.Helpers {
 			services.AddScoped<TopicService>();
 			services.AddScoped<SiteSettingsService>();
 			services.AddScoped<UserService>();
+
+			services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
+			services.AddSingleton<IUrlHelperFactory, UrlHelperFactory>();
 
 			return services;
 		}

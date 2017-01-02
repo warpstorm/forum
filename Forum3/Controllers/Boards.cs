@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Forum3.Annotations;
 using Forum3.Services;
-using Forum3.InputModels;
+using Forum3.Models.InputModels;
 
 namespace Forum3.Controllers {
 	[RequireRemoteHttps]

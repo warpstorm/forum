@@ -1,12 +1,11 @@
-﻿using System.Security.Claims;
+﻿using Forum3.Models.DataModels;
 
-namespace Forum3.ServiceModels {
+namespace Forum3.Models.ServiceModels {
 	public class ContextUser {
-		public string Id { get; set; }
 		public bool IsAuthenticated { get; set; }
 		public bool IsAdmin { get; set; }
 		public bool IsVetted { get; set; }
 
-		ClaimsPrincipal CurrentPrinicipal { get; set; }
+		public ApplicationUser ApplicationUser { get; set; }
 	}
 }

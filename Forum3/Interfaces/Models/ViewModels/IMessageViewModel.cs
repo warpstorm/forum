@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Mvc;
 
 namespace Forum3.Interfaces.Models.ViewModels {
 	public interface IMessageViewModel {
@@ -10,7 +9,8 @@ namespace Forum3.Interfaces.Models.ViewModels {
 		string Body { get; set; }
 
 		string FormAction { get; }
+		string FormController { get; }
 
-		bool AllowCancel { get; }
+		string CancelPath { get; set; }
 	}
 }

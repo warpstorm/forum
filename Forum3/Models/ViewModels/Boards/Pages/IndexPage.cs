@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using Forum3.ViewModels.Boards.Items;
+using Forum3.Models.ViewModels.Boards.Items;
 
-namespace Forum3.ViewModels.Boards.Pages {
+namespace Forum3.Models.ViewModels.Boards.Pages {
 	public class IndexPage {
 		public string[] Birthdays { get; set; }
 		public List<IndexBoardSummary> Boards { get; set; }

@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
-namespace Forum3.DataModels {
+namespace Forum3.Models.DataModels {
 	public class ApplicationUser : IdentityUser {
 		public string DisplayName { get; set; }
 		public DateTime Birthday { get; set; }

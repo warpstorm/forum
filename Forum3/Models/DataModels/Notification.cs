@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using Forum3.Enums;
 
-namespace Forum3.DataModels {
+namespace Forum3.Models.DataModels {
 	[Table("Notifications")]
 	public class Notification {
 		public int Id { get; set; }

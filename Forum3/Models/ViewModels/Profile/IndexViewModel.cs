@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Microsoft.AspNetCore.Identity;
 
-namespace Forum3.ViewModels.Profile {
+namespace Forum3.Models.ViewModels.Profile {
 	public class IndexViewModel
     {
         public bool HasPassword { get; set; }

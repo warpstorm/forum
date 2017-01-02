@@ -2,42 +2,56 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Forum3.Data;
-using Forum3.DataModels;
 using Forum3.Helpers;
-using PageModels = Forum3.ViewModels.Topics.Pages;
-using ItemModels = Forum3.ViewModels.Topics.Items;
+using PageModels = Forum3.Models.ViewModels.Topics.Pages;
+using ItemModels = Forum3.Models.ViewModels.Topics.Items;
+using Microsoft.AspNetCore.Mvc;
+using Forum3.Controllers;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Routing;
 
 namespace Forum3.Services {
 	public class TopicService {
-		ApplicationDbContext DbContext { get; }
-		IHttpContextAccessor HttpContextAccessor { get; }
-		UserManager<ApplicationUser> UserManager { get; }
+		const int MSG_PER_PAGE = 15;
 
-		public TopicService(ApplicationDbContext dbContext, IHttpContextAccessor httpContextAccessor, UserManager<ApplicationUser> userManager) {
+		ApplicationDbContext DbContext { get; }
+		UserService UserService { get; set; }
+
+		IUrlHelperFactory UrlHelperFactory { get; set; }
+		IActionContextAccessor ActionContextAccessor { get; set; }
+
+		public TopicService(
+			ApplicationDbContext dbContext,
+			UserService userService,
+			IActionContextAccessor actionContextAccessor,
+			IUrlHelperFactory urlHelperFactory
+		) {
 			DbContext = dbContext;
-			HttpContextAccessor = httpContextAccessor;
-			UserManager = userManager;
+			UserService = userService;
+			ActionContextAccessor = actionContextAccessor;
+			UrlHelperFactory = urlHelperFactory;
 		}
 
-		public async Task<PageModels.TopicIndexPage> GetTopicIndex(int skip, int take) {
-			var messageRecords = await (from m in DbContext.Messages
-										where m.ParentId == 0
-										orderby m.LastReplyPosted descending
-										select new ViewModels.Topics.Items.MessagePreview {
-											Id = m.Id,
-											ShortPreview = m.ShortPreview,
-											LastReplyId = m.LastReplyId == 0 ? m.Id : m.LastReplyId,
-											LastReplyById = m.LastReplyById,
-											LastReplyPostedDT = m.LastReplyPosted,
-											Views = m.Views,
-											Replies = m.Replies,
-										})
-									.Skip(skip).Take(take)
-									.ToListAsync();
+		public async Task<PageModels.TopicIndexPage> IndexPage(int page) {
+			var take = MSG_PER_PAGE;
+			var skip = (page * take) - take;
+
+			var messageRecordQuery = from m in DbContext.Messages
+									 where m.ParentId == 0
+									 orderby m.LastReplyPosted descending
+									 select new ItemModels.MessagePreview {
+										 Id = m.Id,
+										 ShortPreview = m.ShortPreview,
+										 LastReplyId = m.LastReplyId == 0 ? m.Id : m.LastReplyId,
+										 LastReplyById = m.LastReplyById,
+										 LastReplyPostedDT = m.LastReplyPosted,
+										 Views = m.Views,
+										 Replies = m.Replies,
+									 };
+
+			var messageRecords = await messageRecordQuery.Skip(skip).Take(take).ToListAsync();
 
 			return new PageModels.TopicIndexPage {
 				Skip = skip + take,
@@ -46,119 +60,114 @@ namespace Forum3.Services {
 			};
 		}
 
-		public async Task<PageModels.TopicDisplayPage> GetTopic(DataModels.Message parentMessage, int currentPage, int skip, int take, bool jumpToLatest) {
-			parentMessage.Views++;
-			DbContext.Entry(parentMessage).State = EntityState.Modified;
+		public async Task<PageModels.TopicDisplayPage> DisplayPage(int messageId, int page = 1, int target = 0) {
+			var record = await DbContext.Messages.FindAsync(messageId);
+
+			if (record == null)
+				throw new Exception($"A record does not exist with ID '{messageId}'");
+
+			var parentId = messageId;
+
+			if (record.ParentId > 0)
+				parentId = record.ParentId;
+
+			var messageIds = await DbContext.Messages.Where(m => m.Id == parentId || m.ParentId == parentId).Select(m => m.Id).ToListAsync();
+
+			if (parentId != messageId)
+				return GetRedirectViewModel(messageId, record.ParentId, messageIds);
+
+			var take = MSG_PER_PAGE;
+			var skip = take * (page - 1);
+			var totalPages = Convert.ToInt32(Math.Ceiling(messageIds.Count / take * 1.0));
+
+			var pageMessageIds = messageIds.Skip(skip).Take(take);
+
+			record.Views++;
+			DbContext.Entry(record).State = EntityState.Modified;
 			DbContext.SaveChanges();
 
-			var currentUser = await UserManager.GetUserAsync(HttpContextAccessor.HttpContext.User);
-			var isAuthenticated = HttpContextAccessor.HttpContext.User.Identity.IsAuthenticated;
-			var isAdmin = isAuthenticated && HttpContextAccessor.HttpContext.User.IsInRole("Admin");
+			var currentUser = UserService.ContextUser;
 
-			// TEMP FIX BECAUSE EF7 LEFT OUTER JOINS ARE BROKEN. http://stackoverflow.com/a/34211463/2621693
+			var messageQuery = from m in DbContext.Messages
+							   join im in DbContext.Messages on m.ReplyId equals im.Id into Replies
+							   from r in Replies.DefaultIfEmpty()
+							   where pageMessageIds.Contains(m.Id)
+							   select new ItemModels.Message {
+								   Id = m.Id,
+								   ParentId = m.ParentId,
+								   ReplyId = m.ReplyId,
+								   ReplyBody = r == null ? string.Empty : r.DisplayBody,
+								   ReplyPreview = r == null ? string.Empty : r.LongPreview,
+								   ReplyPostedBy = r == null ? string.Empty : r.PostedByName,
+								   Body = m.DisplayBody,
+								   OriginalBody = m.OriginalBody,
+								   PostedByName = m.PostedByName,
+								   PostedById = m.PostedById,
+								   TimePostedDT = m.TimePosted,
+								   TimeEditedDT = m.TimeEdited,
+								   RecordTime = m.TimeEdited
+							   };
 
-			//var messages = await (
-			//	from m in _dbContext.Messages
-			//	join im in _dbContext.Messages on m.ReplyId equals im.Id into Replies
-			//	from r in Replies.DefaultIfEmpty()
-			//	where m.Id == id || m.ParentId == id
-			//	select new ViewModels.Topics.Items.Message {
-			//		Id = m.Id,
-			//		ParentId = m.ParentId,
-			//		ReplyId = m.ReplyId,
-			//		ReplyBody = r == null ? string.Empty : r.DisplayBody,
-			//		ReplyPreview = r == null ? string.Empty : r.LongPreview,
-			//		ReplyPostedBy = r == null ? string.Empty : r.PostedByName,
-			//		Body = m.DisplayBody,
-			//		OriginalBody = m.OriginalBody,
-			//		PostedByName = m.PostedByName,
-			//		PostedById = m.PostedById,
-			//		TimePostedDT = m.TimePosted,
-			//		TimeEditedDT = m.TimeEdited,
-			//		RecordTime = m.TimeEdited
-			//	}
-			//).Skip(skip).Take(take).ToListAsync();
+			var messages = await messageQuery.ToListAsync();
 
-			//foreach (var message in messages) {
-			//	message.TimePosted = message.TimePostedDT.ToPassedTimeString();
-			//	message.TimeEdited = message.TimeEditedDT.ToPassedTimeString();
-			//	message.CanEdit = isAdmin || (isAuthenticated && currentUser.Id == message.PostedById);
-			//	message.CanDelete = isAdmin || (isAuthenticated && currentUser.Id == message.PostedById);
-			//	message.CanReply = isAuthenticated;
-			//	message.CanThought = isAuthenticated;
+			foreach (var message in messages) {
+				message.TimePosted = message.TimePostedDT.ToPassedTimeString();
+				message.TimeEdited = message.TimeEditedDT.ToPassedTimeString();
 
-			//	message.EditInput = new ViewModels.Topics.Items.EditPost {
-			//		Id = message.Id,
-			//		Body = message.OriginalBody,
-			//	};
+				message.CanEdit = currentUser.IsAdmin || (currentUser.IsAuthenticated && currentUser.ApplicationUser.Id == message.PostedById);
+				message.CanDelete = currentUser.IsAdmin || (currentUser.IsAuthenticated && currentUser.ApplicationUser.Id == message.PostedById);
+				message.CanReply = currentUser.IsAuthenticated;
+				message.CanThought = currentUser.IsAuthenticated;
 
-			//	message.ReplyInput = new ViewModels.Topics.Items.DirectReplyPost {
-			//		Id = message.Id,
-			//	};
-			//}
-
-			var messages = await(from m in DbContext.Messages
-							 join im in DbContext.Messages on m.ReplyId equals im.Id into Replies
-							 from r in Replies.DefaultIfEmpty()
-							 where m.Id == parentMessage.Id || m.ParentId == parentMessage.Id
-							 orderby m.Id
-							 select new { m, r }).ToListAsync();
-
+				message.ReplyForm = new ItemModels.ReplyForm {
+					Id = message.Id,
+				};
+			}
+			
 			var topic = new PageModels.TopicDisplayPage {
-				Id = parentMessage.Id,
+				Id = record.Id,
 				TopicHeader = new ItemModels.TopicHeader {
-					StartedById = parentMessage.PostedById,
-					Subject = parentMessage.ShortPreview,
-					Views = parentMessage.Views,
+					StartedById = record.PostedById,
+					Subject = record.ShortPreview,
+					Views = record.Views,
 				},
-				Messages = new List<ViewModels.Topics.Items.Message>(),
+				Messages = messages,
 				//Boards = new List<IndexBoard>(),
 				//AssignedBoards = new List<IndexBoard>(),
-				IsAuthenticated = isAuthenticated,
-				CanManage = isAdmin || parentMessage.PostedById == currentUser.Id,
-				CanInvite = isAdmin || parentMessage.PostedById == currentUser.Id,
-				TotalPages = take == 0 || messages.Count == 0 ? 1 : Convert.ToInt32(Math.Ceiling((double)messages.Count / take)),
-				CurrentPage = currentPage,
-				ReplyForm = new ItemModels.TopicReplyPost {
-					Id = parentMessage.Id
+				IsAuthenticated = currentUser.IsAuthenticated,
+				CanManage = currentUser.IsAdmin || record.PostedById == currentUser.ApplicationUser.Id,
+				TotalPages = totalPages,
+				CurrentPage = page,
+				ReplyForm = new ItemModels.ReplyForm {
+					Id = record.Id
 				}
 			};
 
-			// TEMP FIX - REMOVE THIS LOOP AND UNCOMMENT BLOCK ABOVE WHEN EF7 LOJ ARE FIXED.
-			// MAKE SURE YOU INCLUDE CHANGES TO THIS LOOP IN BLOCK ABOVE TOO!!
-
-			foreach (var record in messages) {
-				topic.Messages.Add(new ViewModels.Topics.Items.Message {
-					Id = record.m.Id,
-					ParentId = record.m.ParentId,
-					ReplyId = record.m.ReplyId,
-					ReplyBody = record.r?.DisplayBody,
-					ReplyPreview = record.r?.LongPreview,
-					ReplyPostedBy = record.r?.PostedByName,
-					Body = record.m.DisplayBody,
-					OriginalBody = record.m.OriginalBody,
-					PostedByName = record.m.PostedByName,
-					PostedById = record.m.PostedById,
-					TimePostedDT = record.m.TimePosted,
-					TimeEditedDT = record.m.TimeEdited,
-					RecordTime = record.m.TimeEdited,
-					TimePosted = record.m.TimePosted.ToPassedTimeString(),
-					TimeEdited = record.m.TimeEdited.ToPassedTimeString(),
-					CanEdit = isAdmin || (isAuthenticated && currentUser.Id == record.m.PostedById),
-					CanDelete = isAdmin || (isAuthenticated && currentUser.Id == record.m.PostedById),
-					CanReply = isAuthenticated,
-					CanThought = isAuthenticated,
-					EditForm = new ItemModels.EditPost {
-						Id = record.m.Id,
-						Body = record.m.OriginalBody
-					},
-					ReplyForm = new ItemModels.DirectReplyPost {
-						Id = record.m.Id
-					}
-				});
-			}
-
 			return topic;
+		}
+
+		PageModels.TopicDisplayPage GetRedirectViewModel(int messageId, int parentMessageId, List<int> messageIds) {
+			var viewModel = new PageModels.TopicDisplayPage();
+
+			var routeValues = new {
+				id = parentMessageId,
+				page = GetMessagePage(messageId, messageIds),
+				target = messageId
+			};
+
+			var urlHelper = UrlHelperFactory.GetUrlHelper(ActionContextAccessor.ActionContext);
+
+			viewModel.RedirectPath = urlHelper.Action(nameof(Topics.Display), nameof(Topics), routeValues) + "#message" + messageId;
+
+			return viewModel;
+		}
+
+		int GetMessagePage(int messageId, List<int> messageIds) {
+			var index = 0;
+			while (messageIds[index] != messageId)
+				index++;
+
+			return Convert.ToInt32(Math.Ceiling(index / MSG_PER_PAGE * 1.0));
 		}
 	}
 }

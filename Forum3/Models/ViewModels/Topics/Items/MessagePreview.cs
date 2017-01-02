@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Forum3.ViewModels.Topics.Items {
+namespace Forum3.Models.ViewModels.Topics.Items {
 	public class MessagePreview {
 		public int Id { get; set; }
 		public string ShortPreview { get; set; }

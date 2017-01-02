@@ -5,126 +5,152 @@ using System.Net;
 using System.Security.Authentication;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
-using HtmlAgilityPack;
 using CodeKicker.BBCode;
-using Forum3.DataModels;
+using HtmlAgilityPack;
+using Forum3.Controllers;
 using Forum3.Data;
+using Forum3.Models.DataModels;
+using Forum3.Models.InputModels;
 using Forum3.Models.ServiceModels;
+using Forum3.Models.ViewModels.Messages;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Forum3.Services {
 	public class MessageService {
 		ApplicationDbContext DbContext { get; }
-		IHttpContextAccessor HttpContextAccessor { get; }
-		UserManager<ApplicationUser> UserManager { get; }
+		UserService UserService { get; set; }
+		IUrlHelperFactory UrlHelperFactory { get; set; }
+		IActionContextAccessor ActionContextAccessor { get; set; }
 
-		public MessageService(ApplicationDbContext dbContext, IHttpContextAccessor httpContextAccessor, UserManager<ApplicationUser> userManager) {
+		public MessageService(
+			ApplicationDbContext dbContext,
+			UserService userService,
+			IActionContextAccessor actionContextAccessor,
+			IUrlHelperFactory urlHelperFactory
+		) {
 			DbContext = dbContext;
-			HttpContextAccessor = httpContextAccessor;
-			UserManager = userManager;
+			UserService = userService;
+			ActionContextAccessor = actionContextAccessor;
+			UrlHelperFactory = urlHelperFactory;
 		}
 
-		/// <summary>
-		/// Coordinates the overall processing of the message input.
-		/// </summary>
-		public async Task Create(string messageBody, int replyTargetId = 0) {
-			var parentId = 0;
+		public CreateTopicPage CreatePage() {
+			var viewModel = new CreateTopicPage();
+			return viewModel;
+		}
 
-			if (replyTargetId > 0) {
-				var replyMessage = DbContext.Messages.FirstOrDefault(m => m.Id == replyTargetId);
+		public async Task<EditMessagePage> EditPage(int messageId) {
+			var record = await DbContext.Messages.SingleOrDefaultAsync(m => m.Id == messageId);
 
-				if (replyMessage == null)
-					throw new Exception("Target message for reply doesn't exist.");
+			if (record == null)
+				throw new Exception($"A record does not exist with ID '{messageId}'");
 
-				parentId = replyMessage.ParentId == 0 ? replyTargetId : replyMessage.ParentId;
-			}
-
-			var processedMessageInput = ProcessMessageInput(messageBody);
-
-			var currentUser = await UserManager.GetUserAsync(HttpContextAccessor.HttpContext.User);
-
-			var newRecord = new DataModels.Message {
-				OriginalBody = processedMessageInput.OriginalBody,
-				DisplayBody = processedMessageInput.DisplayBody,
-				ShortPreview = processedMessageInput.ShortPreview,
-				LongPreview = processedMessageInput.LongPreview,
-
-				TimePosted = DateTime.Now,
-				PostedById = currentUser.Id,
-				PostedByName = currentUser.DisplayName,
-
-				TimeEdited = DateTime.Now,
-				EditedById = currentUser.Id,
-				EditedByName = currentUser.DisplayName,
-
-				ParentId = parentId,
-				ReplyId = replyTargetId,
+			var viewModel = new EditMessagePage {
+				Id = messageId,
+				Body = record.OriginalBody
 			};
 
-			DbContext.Messages.Add(newRecord);
-
-			await DbContext.SaveChangesAsync();
+			return viewModel;
 		}
 
-		public async Task Update(int id, string messageBody) {
-			var currentUser = await UserManager.GetUserAsync(HttpContextAccessor.HttpContext.User);
+		public async Task<ServiceResponse> CreateTopic(MessageInput input) {
+			var urlHelper = UrlHelperFactory.GetUrlHelper(ActionContextAccessor.ActionContext);
 
-			var getRecordTask = DbContext.Messages.SingleAsync(m => m.Id == id);
+			var serviceResponse = new ServiceResponse();
 
-			var processedMessageInput = ProcessMessageInput(messageBody);
+			var processedMessage = await ProcessMessageInput(serviceResponse, input.Body); ;
 
-			var message = await getRecordTask;
+			if (!serviceResponse.ModelErrors.Any()) {
+				var record = await CreateMessageRecord(processedMessage, null);
+				serviceResponse.RedirectPath = urlHelper.Action(nameof(Topics.Display), nameof(Topics), new { id = record.Id });
+			}
 
-			message.OriginalBody = processedMessageInput.OriginalBody;
-			message.DisplayBody = processedMessageInput.DisplayBody;
-			message.ShortPreview = processedMessageInput.ShortPreview;
-			message.LongPreview = processedMessageInput.LongPreview;
-			message.TimeEdited = DateTime.Now;
-
-			message.EditedById = currentUser.Id;
-			message.EditedByName = currentUser.DisplayName;
-
-			DbContext.Update(message);
-
-			await DbContext.SaveChangesAsync();
+			return serviceResponse;
 		}
 
-		public async Task Delete(int id) {
-			var currentUser = await UserManager.GetUserAsync(HttpContextAccessor.HttpContext.User);
+		public async Task<ServiceResponse> CreateReply(MessageInput input) {
+			var urlHelper = UrlHelperFactory.GetUrlHelper(ActionContextAccessor.ActionContext);
 
-			var message = await DbContext.Messages.SingleAsync(m => m.Id == id);
-			var replies = await DbContext.Messages.Where(m => m.ReplyId == id).ToListAsync();
+			var serviceResponse = new ServiceResponse();
+
+			if (input.Id == 0)
+				throw new Exception($"No record ID specified.");
+
+			var processedMessageTask = ProcessMessageInput(serviceResponse, input.Body);
+			var replyRecordTask = DbContext.Messages.FirstOrDefaultAsync(m => m.Id == input.Id);
+
+			await Task.WhenAll(replyRecordTask, processedMessageTask);
+
+			var replyRecord = await replyRecordTask;
+			var processedMessage = await processedMessageTask;
+
+			if (replyRecord == null)
+				serviceResponse.ModelErrors.Add(string.Empty, $"A record does not exist with ID '{input.Id}'");
+
+			if (!serviceResponse.ModelErrors.Any()) {
+				var record = await CreateMessageRecord(processedMessage, replyRecord);
+				serviceResponse.RedirectPath = urlHelper.Action(nameof(Topics.Display), nameof(Topics), new { id = record.Id });
+			}
+
+			return serviceResponse;
+		}
+
+		public async Task<ServiceResponse> EditMessage(MessageInput input) {
+			var urlHelper = UrlHelperFactory.GetUrlHelper(ActionContextAccessor.ActionContext);
+
+			var serviceResponse = new ServiceResponse();
+
+			if (input.Id == 0)
+				throw new Exception($"No record ID specified.");
+
+			var processedMessageTask = ProcessMessageInput(serviceResponse, input.Body);
+			var recordTask = DbContext.Messages.FirstOrDefaultAsync(m => m.Id == input.Id);
+
+			await Task.WhenAll(recordTask, processedMessageTask);
+
+			var record = await recordTask;
+			var processedMessage = await processedMessageTask;
+
+			if (!serviceResponse.ModelErrors.Any()) {
+				await UpdateMessageRecord(processedMessage, record);
+				serviceResponse.RedirectPath = urlHelper.Action(nameof(Topics.Display), nameof(Topics), new { id = record.Id });
+			}
+
+			return serviceResponse;
+		}
+
+		public async Task DeleteMessage(int messageId) {
+			var recordTask = DbContext.Messages.SingleAsync(m => m.Id == messageId);
+			var repliesTask = DbContext.Messages.Where(m => m.ReplyId == messageId).ToListAsync();
+
+			await Task.WhenAll(recordTask, repliesTask);
+
+			var record = await recordTask;
+			var replies = await repliesTask;
+
+			if (record == null)
+				throw new Exception($"A record does not exist with ID '{messageId}'");
 
 			foreach (var reply in replies) {
-				reply.OriginalBody =
-					"[quote]" +
-					message.OriginalBody +
-					"\n" + 
-					"Message deleted by " + currentUser.DisplayName +
-					" on " + DateTime.Now.ToString("MMMM dd, yyyy") +
-					"[/quote]" + 
+				reply.OriginalBody = 
+					$"[quote]{record.OriginalBody}\n" +
+					$"Message deleted by {UserService.ContextUser.ApplicationUser.DisplayName} on {DateTime.Now.ToString("MMMM dd, yyyy")}[/quote]" +
 					reply.OriginalBody;
+
 				reply.ReplyId = 0;
+
 				DbContext.Entry(reply).State = EntityState.Modified;
 			}
 
-			DbContext.Messages.Remove(message);
+			DbContext.Messages.Remove(record);
 
 			await DbContext.SaveChangesAsync();
 		}
 
-		public DataModels.Message Find(int id) {
-			var message = DbContext.Messages.SingleOrDefault(m => m.Id == id);
-
-			if (message == null)
-				throw new Exception("No message found with that ID.");
-
-			return message;
-		}
-
-		ProcessedMessageInput ProcessMessageInput(string messageBody) {
+		async Task<ProcessedMessageInput> ProcessMessageInput(ServiceResponse serviceResponse, string messageBody) {
 			var processedMessageInput = PreProcessMessageInput(messageBody);
 
 			ParseBBC(processedMessageInput);
@@ -132,7 +158,7 @@ namespace Forum3.Services {
 			// TODO - implement smileys here
 
 			ProcessMessageBodyUrls(processedMessageInput);
-			FindMentionedUsers(processedMessageInput);
+			await FindMentionedUsers(processedMessageInput);
 			PostProcessMessageInput(processedMessageInput);
 
 			return processedMessageInput;
@@ -143,14 +169,12 @@ namespace Forum3.Services {
 		/// </summary>
 		ProcessedMessageInput PreProcessMessageInput(string messageBody) {
 			var processedMessageInput = new ProcessedMessageInput {
-				OriginalBody = messageBody,
-				DisplayBody = messageBody,
+				OriginalBody = messageBody ?? string.Empty,
+				DisplayBody = messageBody ?? string.Empty,
 				MentionedUsers = new List<string>()
 			};
 
-			var displayBody = processedMessageInput.DisplayBody;
-
-			displayBody = displayBody.Trim();
+			var displayBody = processedMessageInput.DisplayBody.Trim();
 
 			if (string.IsNullOrEmpty(displayBody))
 				throw new Exception("Message body cannot be empty.");
@@ -343,22 +367,20 @@ namespace Forum3.Services {
 		/// <summary>
 		/// Searches a post for references to other users
 		/// </summary>
-		async void FindMentionedUsers(ProcessedMessageInput processedMessageInput) {
-			var currentUser = await UserManager.GetUserAsync(HttpContextAccessor.HttpContext.User);
-
+		async Task FindMentionedUsers(ProcessedMessageInput processedMessageInput) {
 			var regexUsers = new Regex(@"@(\S+)");
 
 			foreach (Match regexMatch in regexUsers.Matches(processedMessageInput.DisplayBody)) {
 				var matchedTag = regexMatch.Groups[1].Value;
 
-				var user = DbContext.Users.Single(u => u.UserName.ToLower() == matchedTag.ToLower());
+				var user = await DbContext.Users.SingleAsync(u => u.UserName.ToLower() == matchedTag.ToLower());
 
 				// try to guess what they meant
 				if (user == null)
-					user = DbContext.Users.Single(u => u.UserName.ToLower().Contains(matchedTag.ToLower()));
+					user = await DbContext.Users.SingleAsync(u => u.UserName.ToLower().Contains(matchedTag.ToLower()));
 
 				if (user != null) {
-					if (user.Id != currentUser.Id)
+					if (user.Id != UserService.ContextUser.ApplicationUser.Id)
 						processedMessageInput.MentionedUsers.Add(user.Id);
 
 					// Eventually link to user profiles
@@ -399,6 +421,93 @@ namespace Forum3.Services {
 				return "No text";
 
 			return preview;
-		}				
+		}
+
+		async Task<Message> CreateMessageRecord(ProcessedMessageInput processedMessage, Message replyRecord) {
+			var parentId = 0;
+			var replyId = 0;
+
+			Message parentMessage = null;
+
+			if (replyRecord != null) {
+				if (replyRecord.ParentId == 0) {
+					parentId = replyRecord.Id;
+					replyId = 0;
+
+					parentMessage = replyRecord;
+				}
+				else {
+					parentId = replyRecord.ParentId;
+					replyId = replyRecord.Id;
+
+					parentMessage = await DbContext.Messages.FindAsync(replyRecord.ParentId);
+
+					if (parentMessage == null)
+						throw new Exception($"Orphan message found with ID {replyRecord.Id}. Unable to load parent with ID {replyRecord.ParentId}.");
+				}
+			}
+
+			var currentTime = DateTime.Now;
+
+			var record = new Message {
+				OriginalBody = processedMessage.OriginalBody,
+				DisplayBody = processedMessage.DisplayBody,
+				ShortPreview = processedMessage.ShortPreview,
+				LongPreview = processedMessage.LongPreview,
+
+				TimePosted = currentTime,
+				TimeEdited = currentTime,
+				LastReplyPosted = currentTime,
+
+				PostedById = UserService.ContextUser.ApplicationUser.Id,
+				PostedByName = UserService.ContextUser.ApplicationUser.DisplayName,
+				EditedById = UserService.ContextUser.ApplicationUser.Id,
+				EditedByName = UserService.ContextUser.ApplicationUser.DisplayName,
+
+				ParentId = parentId,
+				ReplyId = replyId,
+			};
+
+			DbContext.Messages.Add(record);
+
+			await DbContext.SaveChangesAsync();
+
+			if (replyRecord != null) {
+				replyRecord.LastReplyId = record.Id;
+				replyRecord.LastReplyById = UserService.ContextUser.ApplicationUser.Id;
+				replyRecord.LastReplyByName = UserService.ContextUser.ApplicationUser.DisplayName;
+				replyRecord.LastReplyPosted = currentTime;
+
+				DbContext.Entry(replyRecord).State = EntityState.Modified;
+			}
+
+			if (parentMessage != null && parentMessage.Id != replyRecord.Id) {
+				parentMessage.LastReplyId = record.Id;
+				parentMessage.LastReplyById = UserService.ContextUser.ApplicationUser.Id;
+				parentMessage.LastReplyByName = UserService.ContextUser.ApplicationUser.DisplayName;
+				parentMessage.LastReplyPosted = currentTime;
+
+				DbContext.Entry(parentMessage).State = EntityState.Modified;
+			}
+
+			await DbContext.SaveChangesAsync();
+
+			return record;
+		}
+
+		async Task UpdateMessageRecord(ProcessedMessageInput message, Message record) {
+			record.OriginalBody = message.OriginalBody;
+			record.DisplayBody = message.DisplayBody;
+			record.ShortPreview = message.ShortPreview;
+			record.LongPreview = message.LongPreview;
+			record.TimeEdited = DateTime.Now;
+
+			record.EditedById = UserService.ContextUser.ApplicationUser.Id;
+			record.EditedByName = UserService.ContextUser.ApplicationUser.DisplayName;
+
+			DbContext.Update(record);
+
+			await DbContext.SaveChangesAsync();
+		}
 	}
 }

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Forum3.ViewModels.Authentication {
+namespace Forum3.Models.ViewModels.Authentication {
 	public class ForgotPasswordViewModel
     {
         [Required]

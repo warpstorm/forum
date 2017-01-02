@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Forum3.Data;
-using Forum3.DataModels;
+using Forum3.Models.DataModels;
 
 namespace Forum3.Services {
 	public class SiteSettingsService {
