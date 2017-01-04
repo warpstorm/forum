@@ -8,14 +8,14 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
 using Forum3.Models.DataModels;
 using Forum3.Models.ViewModels.Authentication;
-using Forum3.Controllers;
 using Forum3.Interfaces.Users;
 using Forum3.Annotations;
+using Forum3.Services;
+using Forum3.Models.InputModels;
 
-namespace Forum3.Areas.Users.Controllers {
-	[Authorize]
+namespace Forum3.Controllers {
 	[RequireRemoteHttps]
-	public class Authentication : Controller {
+	public class Authentication : ForumController {
 		UserManager<ApplicationUser> UserManager { get; }
 		SignInManager<ApplicationUser> SignInManager { get; }
 		IEmailSender EmailSender { get; }
@@ -27,8 +27,9 @@ namespace Forum3.Areas.Users.Controllers {
 			SignInManager<ApplicationUser> signInManager,
 			IEmailSender emailSender,
 			ISmsSender smsSender,
-			ILoggerFactory loggerFactory
-		) {
+			ILoggerFactory loggerFactory,
+			UserService userService
+		) : base(userService) {
 			UserManager = userManager;
 			SignInManager = signInManager;
 			EmailSender = emailSender;
@@ -37,14 +38,12 @@ namespace Forum3.Areas.Users.Controllers {
 		}
 
 		[HttpGet]
-		[AllowAnonymous]
 		public IActionResult Login(string returnUrl = null) {
 			ViewData["ReturnUrl"] = returnUrl;
 			return View();
 		}
 
 		[HttpPost]
-		[AllowAnonymous]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> Login(LoginViewModel model, string returnUrl = null) {
 			ViewData["ReturnUrl"] = returnUrl;
@@ -77,20 +76,24 @@ namespace Forum3.Areas.Users.Controllers {
 		}
 
 		[HttpGet]
-		[AllowAnonymous]
 		public IActionResult Register(string returnUrl = null) {
 			ViewData["ReturnUrl"] = returnUrl;
 			return View();
 		}
 
 		[HttpPost]
-		[AllowAnonymous]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Register(RegisterViewModel model, string returnUrl = null) {
+		public async Task<IActionResult> Register(RegisterInputModel input, string returnUrl = null) {
 			ViewData["ReturnUrl"] = returnUrl;
+
 			if (ModelState.IsValid) {
-				var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
-				var result = await UserManager.CreateAsync(user, model.Password);
+				var user = new ApplicationUser {
+					DisplayName = input.DisplayName,
+					UserName = input.Email,
+					Email = input.Email
+				};
+
+				var result = await UserManager.CreateAsync(user, input.Password);
 
 				if (result.Succeeded) {
 					// For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=532713
@@ -108,10 +111,11 @@ namespace Forum3.Areas.Users.Controllers {
 			}
 
 			// If we got this far, something failed, redisplay form
-			return View(model);
+			return View(input);
 		}
 
 		[HttpPost]
+		[Authorize]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> LogOff() {
 			await SignInManager.SignOutAsync();
@@ -121,7 +125,6 @@ namespace Forum3.Areas.Users.Controllers {
 		}
 
 		[HttpPost]
-		[AllowAnonymous]
 		[ValidateAntiForgeryToken]
 		public IActionResult ExternalLogin(string provider, string returnUrl = null) {
 			// Request a redirect to the external login provider.
@@ -132,7 +135,6 @@ namespace Forum3.Areas.Users.Controllers {
 		}
 
 		[HttpGet]
-		[AllowAnonymous]
 		public async Task<IActionResult> ExternalLoginCallback(string returnUrl = null, string remoteError = null) {
 			if (remoteError != null) {
 				ModelState.AddModelError(string.Empty, $"Error from external provider: {remoteError}");
@@ -171,7 +173,6 @@ namespace Forum3.Areas.Users.Controllers {
 		}
 
 		[HttpPost]
-		[AllowAnonymous]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> ExternalLoginConfirmation(ExternalLoginConfirmationViewModel model, string returnUrl = null) {
 			if (ModelState.IsValid) {
@@ -203,7 +204,6 @@ namespace Forum3.Areas.Users.Controllers {
 		}
 
 		[HttpGet]
-		[AllowAnonymous]
 		public async Task<IActionResult> ConfirmEmail(string userId, string code) {
 			if (userId == null || code == null)
 				return View("Error");
@@ -219,13 +219,11 @@ namespace Forum3.Areas.Users.Controllers {
 		}
 
 		[HttpGet]
-		[AllowAnonymous]
 		public IActionResult ForgotPassword() {
 			return View();
 		}
 
 		[HttpPost]
-		[AllowAnonymous]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model) {
 			if (ModelState.IsValid) {
@@ -250,19 +248,16 @@ namespace Forum3.Areas.Users.Controllers {
 		}
 
 		[HttpGet]
-		[AllowAnonymous]
 		public IActionResult ForgotPasswordConfirmation() {
 			return View();
 		}
 
 		[HttpGet]
-		[AllowAnonymous]
 		public IActionResult ResetPassword(string code = null) {
 			return code == null ? View("Error") : View();
 		}
 
 		[HttpPost]
-		[AllowAnonymous]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model) {
 			if (!ModelState.IsValid)
@@ -285,13 +280,11 @@ namespace Forum3.Areas.Users.Controllers {
 		}
 
 		[HttpGet]
-		[AllowAnonymous]
 		public IActionResult ResetPasswordConfirmation() {
 			return View();
 		}
 
 		[HttpGet]
-		[AllowAnonymous]
 		public async Task<ActionResult> SendCode(string returnUrl = null, bool rememberMe = false) {
 			var user = await SignInManager.GetTwoFactorAuthenticationUserAsync();
 
@@ -305,7 +298,6 @@ namespace Forum3.Areas.Users.Controllers {
 		}
 
 		[HttpPost]
-		[AllowAnonymous]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> SendCode(SendCodeViewModel model) {
 			if (!ModelState.IsValid)
@@ -333,7 +325,6 @@ namespace Forum3.Areas.Users.Controllers {
 		}
 
 		[HttpGet]
-		[AllowAnonymous]
 		public async Task<IActionResult> VerifyCode(string provider, bool rememberMe, string returnUrl = null) {
 			// Require that the user has already logged in via username/password or external login
 			var user = await SignInManager.GetTwoFactorAuthenticationUserAsync();
@@ -345,7 +336,6 @@ namespace Forum3.Areas.Users.Controllers {
 		}
 
 		[HttpPost]
-		[AllowAnonymous]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> VerifyCode(VerifyCodeViewModel model) {
 			if (!ModelState.IsValid)

@@ -2,7 +2,10 @@
   // STYLES
   {
     "outputFileName": "wwwroot/css/Global.min.css",
-    "inputFiles": [ "wwwroot/css/Global.css" ]
+    "inputFiles": [
+      "wwwroot/css/Global.css",
+      "wwwroot/css/Glyphs.css"
+    ]
   },
   {
     "outputFileName": "wwwroot/css/TopicDisplay.min.css",

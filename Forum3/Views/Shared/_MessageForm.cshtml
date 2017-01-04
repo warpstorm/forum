@@ -3,7 +3,11 @@
 <div>
 	<div asp-validation-summary="ModelOnly"></div>
 
-    <form asp-action="@Model.FormAction" asp-controller="@Model.FormController">
+    <form method="post"
+          asp-action="@Model.FormAction" 
+          asp-controller="@Model.FormController"
+          asp-route-returnurl="@Model.CancelPath">
+
         <input type="hidden" name="Id" value="@Model.Id" />
 
         <div>
@@ -15,7 +19,7 @@
             <button>Save</button>
 
             @if (!string.IsNullOrEmpty(Model.CancelPath)) {
-                <a asp-action="Go" asp-controller="Redirect" asp-route-path="@Model.CancelPath">Cancel</a>
+                <a class="button" href="@Model.CancelPath">Cancel</a>
             }
         </p>
     </form>

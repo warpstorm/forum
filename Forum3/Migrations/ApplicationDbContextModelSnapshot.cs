@@ -6,13 +6,12 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Forum3.Data;
 using Forum3.Enums;
 
-namespace Forum3.Data.Migrations
+namespace Forum3.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20161129150051_MigratedModels")]
-    partial class MigratedModels
+    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
     {
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
             modelBuilder
                 .HasAnnotation("ProductVersion", "1.1.0-rtm-22752")
@@ -30,7 +29,9 @@ namespace Forum3.Data.Migrations
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken();
 
-                    b.Property<string>("DisplayName");
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasMaxLength(64);
 
                     b.Property<string>("Email")
                         .HasMaxLength(256);
@@ -83,11 +84,11 @@ namespace Forum3.Data.Migrations
 
                     b.Property<int>("DisplayOrder");
 
-                    b.Property<bool>("InviteOnly");
-
                     b.Property<int?>("LastMessageId");
 
-                    b.Property<string>("Name");
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(64);
 
                     b.Property<int?>("ParentId");
 
@@ -123,35 +124,48 @@ namespace Forum3.Data.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<string>("DisplayBody");
+                    b.Property<string>("DisplayBody")
+                        .IsRequired();
 
-                    b.Property<string>("EditedById");
+                    b.Property<string>("EditedById")
+                        .IsRequired();
 
-                    b.Property<string>("EditedByName");
+                    b.Property<string>("EditedByName")
+                        .IsRequired()
+                        .HasMaxLength(64);
 
-                    b.Property<string>("LastReplyById");
+                    b.Property<string>("LastReplyById")
+                        .IsRequired();
 
-                    b.Property<string>("LastReplyByName");
+                    b.Property<string>("LastReplyByName")
+                        .IsRequired()
+                        .HasMaxLength(64);
 
                     b.Property<int>("LastReplyId");
 
                     b.Property<DateTime>("LastReplyPosted");
 
-                    b.Property<string>("LongPreview");
+                    b.Property<string>("LongPreview")
+                        .IsRequired();
 
-                    b.Property<string>("OriginalBody");
+                    b.Property<string>("OriginalBody")
+                        .IsRequired();
 
                     b.Property<int>("ParentId");
 
-                    b.Property<string>("PostedById");
+                    b.Property<string>("PostedById")
+                        .IsRequired();
 
-                    b.Property<string>("PostedByName");
+                    b.Property<string>("PostedByName")
+                        .IsRequired()
+                        .HasMaxLength(64);
 
                     b.Property<int>("Replies");
 
                     b.Property<int>("ReplyId");
 
-                    b.Property<string>("ShortPreview");
+                    b.Property<string>("ShortPreview")
+                        .IsRequired();
 
                     b.Property<DateTime>("TimeEdited");
 
@@ -181,7 +195,8 @@ namespace Forum3.Data.Migrations
 
                     b.Property<DateTime>("TimeAdded");
 
-                    b.Property<string>("UserId");
+                    b.Property<string>("UserId")
+                        .IsRequired();
 
                     b.HasKey("Id");
 
@@ -201,7 +216,8 @@ namespace Forum3.Data.Migrations
 
                     b.Property<int>("SmileyId");
 
-                    b.Property<string>("UserId");
+                    b.Property<string>("UserId")
+                        .IsRequired();
 
                     b.HasKey("Id");
 
@@ -221,7 +237,8 @@ namespace Forum3.Data.Migrations
 
                     b.Property<int?>("MessageId");
 
-                    b.Property<string>("TargetUserId");
+                    b.Property<string>("TargetUserId")
+                        .IsRequired();
 
                     b.Property<DateTime>("Time");
 
@@ -229,7 +246,8 @@ namespace Forum3.Data.Migrations
 
                     b.Property<bool>("Unread");
 
-                    b.Property<int>("UserId");
+                    b.Property<string>("UserId")
+                        .IsRequired();
 
                     b.HasKey("Id");
 
@@ -247,7 +265,8 @@ namespace Forum3.Data.Migrations
 
                     b.Property<int>("MessageId");
 
-                    b.Property<string>("UserId");
+                    b.Property<string>("UserId")
+                        .IsRequired();
 
                     b.HasKey("Id");
 
@@ -263,7 +282,8 @@ namespace Forum3.Data.Migrations
 
                     b.Property<DateTime>("Time");
 
-                    b.Property<string>("UserId");
+                    b.Property<string>("UserId")
+                        .IsRequired();
 
                     b.HasKey("Id");
 
@@ -275,11 +295,16 @@ namespace Forum3.Data.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<string>("Name");
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(64);
 
-                    b.Property<string>("UserId");
+                    b.Property<string>("UserId")
+                        .IsRequired();
 
-                    b.Property<string>("Value");
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasMaxLength(64);
 
                     b.HasKey("Id");
 
@@ -291,13 +316,13 @@ namespace Forum3.Data.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<string>("Code");
+                    b.Property<string>("Code")
+                        .IsRequired();
 
                     b.Property<decimal?>("DisplayOrder");
 
-                    b.Property<string>("Path");
-
-                    b.Property<string>("Thought");
+                    b.Property<string>("Path")
+                        .IsRequired();
 
                     b.HasKey("Id");
 
@@ -315,7 +340,8 @@ namespace Forum3.Data.Migrations
 
                     b.Property<int>("TargetType");
 
-                    b.Property<string>("UserId");
+                    b.Property<string>("UserId")
+                        .IsRequired();
 
                     b.HasKey("Id");
 
@@ -500,7 +526,8 @@ namespace Forum3.Data.Migrations
 
                     b.HasOne("Forum3.Models.DataModels.ApplicationUser", "TargetUser")
                         .WithMany()
-                        .HasForeignKey("TargetUserId");
+                        .HasForeignKey("TargetUserId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRoleClaim<string>", b =>

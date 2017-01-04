@@ -1,4 +1,6 @@
-﻿@*@{
+﻿@inject Forum3.Services.UserService UserService
+
+@*@{
     if (Request.IsAuthenticated) {
         var notifications = (NotificationList) ViewBag.Notifications;
 
@@ -11,49 +13,61 @@
     }
 }*@
 
-@*<header id="pageHeader">
-    <div id="pageTitle"><a href="/"><img src=@ViewBag.LogoPath alt="Warpstorm" /></a></div>
+<header id="page-header">
     <nav>
-        <div id="headerNavContents">
-            <ul class="mobileHide">
-                <li><a href="https://discord.gg/0v2CstEMYtuyGw1w" target="_blank" class="smallButton discordButton"><img src="~/Content/Images/discord.png" /> Discord</a></li>
-                @if (Request.IsAuthenticated) {
-                    <li>@Html.ActionLink("Boards", "Index", "Board", null, new { @class = "smallButton" })</li>
-                    <li>@Html.ActionLink("Topics", "Index", "Message", new { id = "" }, new { @class = "smallButton" })</li>
+        <div class="margin-center">
+            <ul class="float-right">
+                @if (UserService.ContextUser.IsAuthenticated) {
+                    <li>
+                        @Html.ActionLink("Boards", "Index", "Board", null, new { @class = "smallButton" })
+                    </li>
+                    <li>
+                        @Html.ActionLink("Topics", "Index", "Message", new { id = "" }, new { @class = "smallButton" })
+                    </li>
 
-				if (WebSecurity.UserExists(Context.User.Identity.Name) && Context.User.IsInRole("Admin")) {
-                        <li><a href="@Url.Action("Dashboard", "Admin")" class="smallButton highlight"><span class="icon-wrench"></span> Admin</a></li>
-}
+                    @if (UserService.ContextUser.IsAdmin) {
+                        <li>
+                            <a href="@Url.Action("Dashboard", "Admin")" class="smallButton highlight">
+                                <span class="icon-wrench"></span> Admin
+                            </a>
+                        </li>}
 
-                    <li><a href="javascript:document.getElementById('logoutForm').submit()" class="smallButton" onclick="return confirm('Are you sure you want to logout?');"><span class="icon-exit"></span> Log off</a></li>}
+                    <li>
+                        <a href="javascript:document.getElementById('logoutForm').submit()" class="smallButton" onclick="return confirm('Are you sure you want to logout?');">
+                            <span class="icon-exit"></span> Log off
+                        </a>
+                    </li>}
                 else {
-                    <li><a href="@Url.Action("Register", "Account")" class="smallButton highlight"><span class="icon-sun"></span> Register</a></li>
-                    <li><a href="@Url.Action("Login", "Account")" class="smallButton"><span class="icon-enter"></span> Log in</a></li>}
+                    <li>
+                        <a class="smallButton" asp-action="@nameof(Forum3.Controllers.Authentication.Register)" asp-controller="@nameof(Forum3.Controllers.Authentication)">
+                            <span class="icon-sun"></span> Register
+                        </a>
+                    </li>
+                    <li>
+                        <a class="smallButton" asp-action="@nameof(Forum3.Controllers.Authentication.Login)" asp-controller="@nameof(Forum3.Controllers.Authentication)">
+                            <span class="icon-enter"></span> Log in
+                        </a>
+                    </li>}
             </ul>
-            <ul class="mobileOnly">
-                @if (Request.IsAuthenticated) {
-                    <li><a href="javascript:document.getElementById('logoutForm').submit()" class="smallButton" onclick="return confirm('Are you sure you want to logout?');">Log off</a></li>if (WebSecurity.UserExists(Context.User.Identity.Name) && Context.User.IsInRole("Admin")) {
-                        <li>@Html.ActionLink("Admin", "Dashboard", "Admin", null, new { @class = "smallButton" })</li>
-}
 
-                    <li>@Html.ActionLink("Boards", "Index", "Board", null, new { @class = "smallButton" })</li>
-                    <li>@Html.ActionLink("Topics", "Index", "Message", new { id = "" }, new { @class = "smallButton" })</li>
-                    <li><a href="@Url.Action("Index", "Notification")" class="@ViewBag.NotificationButtonClasses"><span class="icon-flag"></span> @ViewBag.NotificationCount</a></li>}
+
+            <div id="login">
+                @if (UserService.ContextUser.IsAuthenticated) {
+                    <span><a asp-controller="Profile" asp-action="Manage">Welcome back, @UserService.ContextUser.ApplicationUser.DisplayName</a></span>
+
+                    <a href="@Url.Action("Index", "Notification")" class="@ViewBag.NotificationButtonClasses">
+                        <span class="icon-flag"></span> @ViewBag.NotificationCount
+                    </a>}
                 else {
-                    <li>@Html.ActionLink("Register", "Register", "Account", null, new { @class = "smallButton" })</li>
-                    <li>@Html.ActionLink("Log in", "Login", "Account", null, new { @class = "smallButton" })</li>}
-            </ul>
-            <div id="login" class="mobileHide">
-                @if (Request.IsAuthenticated) {
-                    <span>Welcome back, @Html.ActionLink(User.Identity.Name, "Manage", "Account").</span>
-                    <a href="@Url.Action("Index", "Notification")" class="@ViewBag.NotificationButtonClasses"><span class="icon-flag"></span> @ViewBag.NotificationCount</a>using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm" })) {
-                        // This form gets submitted by javascript above.
-                        @Html.AntiForgeryToken()
-}
-                }
-                else {
-                    <span>Welcome Guest! Please @Html.ActionLink("Register", "Register", "Account") or @Html.ActionLink("log in", "Login", "Account").</span>}
+                    <span>
+                        Welcome Guest! Please
+                        <a asp-action="@nameof(Forum3.Controllers.Authentication.Register)" asp-controller="@nameof(Forum3.Controllers.Authentication)">register</a>
+                        or
+                        <a asp-action="@nameof(Forum3.Controllers.Authentication.Login)" asp-controller="@nameof(Forum3.Controllers.Authentication)">log in</a>.
+                    </span>}
             </div>
+            @using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm" })) {@Html.AntiForgeryToken()}
         </div>
     </nav>
-</header>*@
+    <div id="page-title"><a href="/"><img src=@ViewData["LogoPath"] alt="Warpstorm" /></a></div>
+</header>

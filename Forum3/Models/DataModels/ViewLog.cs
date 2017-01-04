@@ -1,11 +1,12 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 using Forum3.Enums;
 
 namespace Forum3.Models.DataModels {
-	[Table("ViewLogs")]
 	public class ViewLog {
 		public int Id { get; set; }
+
+		[Required]
 		public string UserId { get; set; }
 		public int? TargetId { get; set; }
 		public EViewLogTargetType TargetType { get; set; }

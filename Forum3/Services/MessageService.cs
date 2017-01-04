@@ -463,6 +463,8 @@ namespace Forum3.Services {
 				PostedByName = UserService.ContextUser.ApplicationUser.DisplayName,
 				EditedById = UserService.ContextUser.ApplicationUser.Id,
 				EditedByName = UserService.ContextUser.ApplicationUser.DisplayName,
+				LastReplyById = UserService.ContextUser.ApplicationUser.Id,
+				LastReplyByName = UserService.ContextUser.ApplicationUser.DisplayName,
 
 				ParentId = parentId,
 				ReplyId = replyId,

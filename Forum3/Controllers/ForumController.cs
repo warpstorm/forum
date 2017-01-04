@@ -3,10 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Forum3.Models.ServiceModels;
+using Forum3.Services;
+using Forum3.Annotations;
 
 namespace Forum3.Controllers {
+	[RequireRemoteHttps]
 	public class ForumController : Controller {
-		public void ProcessServiceResponse(ServiceResponse serviceResponse) {
+		UserService UserService { get; set; }
+
+		public ForumController(UserService userService) {
+			UserService = userService;
+		}
+
+		protected void ProcessServiceResponse(ServiceResponse serviceResponse) {
 			if (!string.IsNullOrEmpty(serviceResponse.Message))
 				TempData[Names.Keys.StatusMessage] = serviceResponse.Message;
 
@@ -14,13 +23,42 @@ namespace Forum3.Controllers {
 				ModelState.AddModelError(kvp.Key, kvp.Value);
 		}
 
+		public override ViewResult View(string viewName) {
+			UniversalViewActions();
+			return base.View(viewName);
+		}
+
+		public override ViewResult View(string viewName, object model) {
+			UniversalViewActions();
+			return base.View(viewName, model);
+		}
+
+		void UniversalViewActions() {
+			//if (UserService.ContextUser.IsAuthenticated)
+			//	SetLastOnline();
+
+			//ViewBag.Notifications = Notifications.Create(Db, WebSecurity.CurrentUserId);
+			//ViewBag.SmileyPath = SiteSettings.Get(SiteSettingNames.SmileyPath, Db);
+			//ViewBag.ForumVersion = "Theme "
+			//						+ WebConfigurationManager.AppSettings.Get("Forum:Theme")
+			//						+ " | Code "
+			//						+ WebConfigurationManager.AppSettings.Get("Forum:VersionMajor")
+			//						+ "."
+			//						+ WebConfigurationManager.AppSettings.Get("Forum:VersionFeatureSet")
+			//						+ "."
+			//						+ WebConfigurationManager.AppSettings.Get("Forum:VersionFix");
+
+			ViewData["LogoPath"] = "/images/logos/" + GetLogoPath();
+		}
+
+
 		string GetLogoPath() {
 			var holidayLogos = GetHolidays();
 
 			if (holidayLogos.ContainsKey(DateTime.Now.Date))
 				return holidayLogos[DateTime.Now.Date];
 
-			return "/Content/Images/Logo.png";
+			return "Logo.png";
 		}
 
 		Dictionary<DateTime, string> GetHolidays() {
@@ -75,17 +113,17 @@ namespace Forum3.Controllers {
 			DateTime christmasEve = new DateTime(year, 12, 24).Date;
 			DateTime christmasDay = new DateTime(year, 12, 25).Date;
 
-			holidays.Add(newYearsDate, "/Content/Images/Logo_NewYears.png");
-			holidays.Add(valentinesDay, "/Content/Images/Logo_Valentines.png");
-			//holidays.Add(memorialDay.Date, "/Content/Images/Logo.png");
-			holidays.Add(stPatricksDay, "/Content/Images/Logo_StPatrick.png");
-			holidays.Add(starWarsDay, "/Content/Images/Logo_StarWars.png");
-			holidays.Add(independenceDay, "/Content/Images/Logo_Independence.png");
-			//holidays.Add(laborDay.Date, "/Content/Images/Logo.png");
-			holidays.Add(pirateDay, "/Content/Images/Logo_Pirate.png");
-			holidays.Add(thanksgivingDay.Date, "/Content/Images/Logo_Thanksgiving.png");
-			holidays.Add(christmasEve, "/Content/Images/Logo_Christmas.png");
-			holidays.Add(christmasDay, "/Content/Images/Logo_Christmas.png");
+			holidays.Add(newYearsDate, "Logo_NewYears.png");
+			holidays.Add(valentinesDay, "Logo_Valentines.png");
+			//holidays.Add(memorialDay.Date, "Logo.png");
+			holidays.Add(stPatricksDay, "Logo_StPatrick.png");
+			holidays.Add(starWarsDay, "Logo_StarWars.png");
+			holidays.Add(independenceDay, "Logo_Independence.png");
+			//holidays.Add(laborDay.Date, "Logo.png");
+			holidays.Add(pirateDay, "Logo_Pirate.png");
+			holidays.Add(thanksgivingDay.Date, "Logo_Thanksgiving.png");
+			holidays.Add(christmasEve, "Logo_Christmas.png");
+			holidays.Add(christmasDay, "Logo_Christmas.png");
 
 			return holidays;
 		}

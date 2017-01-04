@@ -2,12 +2,12 @@
 	min-width: 250px;
 	margin: 0;
 	padding: 0;
-	background-color: #071822;
+	background-color: #436c7c;
 }
 
 body {
-	font: 96%/1.4em "Segoe UI", "Segoe UI Web Regular", "Segoe UI Symbol", "Helvetica Neue", Arial, "sans-serif";
-	color: #e6f7ff;
+	font: 500 15px/1.4em "Segoe UI", "Segoe UI Web Regular", "Segoe UI Symbol", "Helvetica Neue", Arial, "sans-serif";
+	color: #000;
 }
 
 table {
@@ -17,7 +17,8 @@ table {
 }
 
 hr {
-	color: #ACD;
+	color: #091d28;
+    clear: both;
 }
 
 h1,
@@ -29,6 +30,9 @@ h4 {
 	line-height: 1.5em;
 }
 
+dl,
+dt,
+dd,
 ul,
 ol,
 li {
@@ -37,117 +41,9 @@ li {
 	list-style: none;
 }
 
-p {
+p, blockquote {
 	margin: 0;
 	padding: 0;
-}
-
-a, a:link {
-	text-decoration: none;
-	border-bottom: 1px dotted #6dc6ff;
-	color: #62c9ff;
-}
-
-a:visited, a.read {
-	text-decoration: none;
-	border-bottom: 1px dotted #69165a;	
-}
-
-input,
-button,
-textarea,
-.button {
-	padding: 4px 10px;
-	margin: 2px;
-	font: 96%/1.4em "Segoe UI", "Segoe UI Web Regular", "Segoe UI Symbol", "Helvetica Neue", Arial, "sans-serif";
-	border: 1px solid #184f6f !important;
-	border-radius: 3px;
-	color: white;	
-}
-
-input,
-textarea {
-   	box-shadow: 0 0 15px 0 #184f6f inset;
-	max-width: 95%;
-	background-color: #0f3549;
-}
-
-textarea {
-	width: 95%;
-	height: 200px;
-}
-
-button,
-.button {
-	white-space: nowrap;
-	background-color: #113950;
-}
-
-.button {
-	display: inline-block;
-}
-
-a.button, a.button:visited {
-	border-bottom-width: 0;
-	color: white;
-}
-
-.smallButton, a.smallButton {
-	margin: 2px 6px 2px 0;
-	padding: 1px 7px;
-	white-space: nowrap;
-	display: inline-block;
-	color: #ACD;
-	border: 1px solid #184f6f !important;
-	border-radius: 3px;
-	background-color: #113950;
-	font-size: 7.5pt;
-    line-height: 12pt;
-    font-weight: bold;
-}
-
-.smallButton:hover, a.smallButton:hover {
-	color: #FFF;
-}
-
-button,
-.button,
-a.button,
-.smallButton,
-a.smallButton {
-	cursor: pointer;
-	box-shadow: 0 -1px 8px 0 #071822 inset;
-}
-
-.subtleButton, a.subtleButton {
-	background-color: #0c2635;
-    box-shadow: none;
-}
-
-.subtleButton {
-	border: 1px solid #000 !important;
-}
-
-a.subtleButton, .subtleButton a {
-	border: 0 !important;
-}
-
-.discordButton {
-	background-color: #306 !important;
-}
-
-a.discordButton {
-	border: 1px solid #509 !important;
-}
-
-.discordButton img {
-	vertical-align: middle;
-	height: 15px;
-	width: 15px;
-}
-
-input:disabled, textarea:disabled, button:disabled {
-	background-color: #490f0f;
 }
 
 br.clear {
@@ -168,6 +64,10 @@ fieldset ol {
     padding: 0;
 }
 
+ol.nav li {
+	display: inline-block;
+}
+
 img {
     border: 0;
 }
@@ -183,14 +83,22 @@ video {
     max-width: 100%;
 }
 
-#pageHeader {
-	clear: both;
-	font-size: .8em;
-	background-image: url("/Content/Images/diagonalAurora.png");
-	background-repeat: repeat-x;
+[class^="icon-"], [class*=" icon-"] {
+    font-size: .9em;
 }
 
-#pageFooter {
+
+
+/*
+    PAGE HEADER
+*/
+
+#page-header {
+	clear: both;
+	font-size: .8em;
+}
+
+#page-footer {
 	margin: 30px 0 0 0;
 	clear: both;
 	text-align: center;
@@ -199,38 +107,38 @@ video {
 	color: #7AB;	
 }
 
-#pageTitle {
+#page-title {
 	height: 99px;
     text-align: center;
 }
 
-#pageTitle img {
+#page-title img {
 	max-width: 100%;
     max-height: 100%;
     vertical-align: middle;
 }
 
-#pageHeader a {
+#page-header a {
 	border: 0;
 }
 
-#pageHeader nav {
-    padding: 0 10px;
-	background-color: #031019;
-    box-shadow: 0 0 7px 1px #031019;
+#page-header > nav {
+    padding: 0 13px;
+    
+    line-height: 2.4em;
+
+    color: #FFF;
+    background-color: #031019;
+    box-shadow: 0 0 10px #081a27;
 }
 
-#pageHeader #welcome {
-	margin: 5px 0 0 0;
+#page-header > nav > div {
+    width:100%;
+	max-width: 1920px;
+	min-width: 250px;
 }
 
-#pageHeader ul {
-	margin: 0;
-    padding: 0;
-	float: right;
-}
-
-#pageHeader li {
+#page-header li {
     display: inline-block;
 }
 
@@ -242,35 +150,6 @@ video {
 	line-height: 2em;
 	font-size: 1.4em;
 	font-weight: bold;
-}
-
-#pageBody, #headerNavContents {
-	width:90%;
-	max-width: 1600px;
-	min-width: 250px;
-	margin: 0 auto;
-	clear: both;
-}
-
-#pageBody, #pageContents {
-	padding: 20px 0;
-}
-
-#pageBody nav.actions {
-	float: right;
-}
-
-#pageBody nav li {
-	display: inline-block;
-}
-
-ol.nav li {
-	display: inline-block;
-}
-
-#profile {
-	margin: 5px 20px 0 0;
-	float: right;
 }
 
 .notifications {
@@ -296,90 +175,27 @@ ol.nav li {
 	border: 0;
 }
 
+
+
+/*
+    PAGE BODY
+*/
+
+div[role="main"] {
+    width:90%;
+	max-width: 1600px;
+	min-width: 250px;
+
+	padding: 20px 0;
+}
+
+#profile {
+	margin: 5px 20px 0 0;
+	float: right;
+}
+
 a.borderless {
 	border-width: 0;
-}
-
-.smallText {
-   	color: #ACD;
-	font-size: 7.5pt;
-    line-height: 12pt;
-    font-weight: bold;
-}
-
-.clear {
-	clear: both;
-}
-
-.floatright {
-	float: right;
-	clear: right;
-}
-
-.floatleft {
-	float: left;
-	clear: left;
-}
-
-.fontsmall {
-	font-size: .7em;
-}
-
-.hidden {
-	display: none !important;
-}
-
-.pointer {
-	cursor: pointer;
-}
-
-.roundedBox {
-	max-width: 90%;
-	margin: 3px auto;
-	clear: both;
-}
-
-.roundedBoxHead {
-	padding: 20px 20px 0 20px;
-	font-size: 1.4em;
-	font-weight: bold;
-	line-height: 1.8em;
-}
-
-.roundedBoxHead ul {
-	width: 100%;
-}
-
-.roundedBoxHead li {
-	padding: 0 15px;
-	display: inline-block;
-	border-top-left-radius: 5px;
-	border-top-right-radius: 5px;
-	border-top: 1px solid #113950;
-	color: #7AB;
-	background-color: #010609;
-}
-
-.roundedBoxHead li.active {
-	background: #113950;
-	color: #FFF;
-	border-color: #FFF;
-}
-
-.roundedBoxHead li:hover, .roundedBoxHead li:hover a {
-	color: #FFF;
-}
-
-.roundedBoxContent {
-	padding: 19px;
-	border: 1px solid #113950;
-	border-top-width: 2px;
-	border-radius: 5px;
-	background-color: #010609;
-}
-
-.roundedBoxFooter {
-	padding: 6px 20px;
 }
 
 .dynamicSelectionList li {
@@ -392,24 +208,192 @@ a.borderless {
 	text-decoration: underline;
 }
 
-.note, a.note {
-	padding: 4px;
-	color: #badff1;
-	font-size: 8pt;
-	line-height: 12pt;
-    border: 0;
-}
-
-.largeNote {
-	padding: 0 10px;
-	color: #badff1;
-	font-size: 1em;
-	line-height: 2em;
-}
-
 .user {
 	cursor: pointer;
 	color: #badff1;
+}
+
+
+
+/*
+    FORMS
+*/
+
+form dl {
+    padding: 10px 0;
+}
+
+form dt {
+    padding: 12px 0 3px 0;
+
+    font-weight: 600;
+    font-size: .9em;
+    line-height: .9em;
+}
+
+form dd {
+    padding-left: 6px;
+}
+
+input,
+textarea {
+	padding: 4px 10px;
+	margin: 2px;
+
+	font: 96%/1.4em "Segoe UI", "Segoe UI Web Regular", "Segoe UI Symbol", "Helvetica Neue", Arial, "sans-serif";
+	border: 1px solid #184f6f !important;
+	border-radius: 2px;
+
+   	box-shadow: #badff1 0 2px 5px 0;
+	max-width: 95%;
+	background-color: #fff;
+}
+
+textarea {
+	min-width: 200px;
+    max-width: 1600px;
+	width: 95%;
+    height: 200px;
+}
+
+input:disabled, textarea:disabled, button:disabled {
+	background-color: #490f0f;
+}
+
+
+
+/*
+    ROUNDED BOX
+*/
+
+main > header {
+	padding: 20px 20px 0 20px;
+	font-size: 1.4em;
+	font-weight: bold;
+	line-height: 1.8em;
+    color: #FFF;
+    text-shadow: #113950 0 0 5px;
+}
+
+main > header ul {
+	width: 100%;
+}
+
+main > header li {
+	padding: 0 15px;
+	display: inline-block;
+	border-top-left-radius: 5px;
+	border-top-right-radius: 5px;
+	border-top: 1px solid #113950;
+}
+
+main > header li.active {
+	border-color: #FFF;
+}
+
+main > footer {
+	padding: 6px 20px;
+}
+
+.main-content {
+	padding: 20px 45px;
+
+	border: 1px solid #7AB;
+	border-radius: 2px;
+	background-color: #f6fcff;
+    box-shadow: #113950 0 3px 8px;
+}
+
+
+
+/*
+    BUTTONS and LINKS
+*/
+
+a, a:link {
+	text-decoration: none;
+	border-bottom: 1px dotted #091d28;
+	color: #031019;
+}
+
+a:visited, a.read {
+	text-decoration: none;
+	border-bottom: 1px dotted #69165a;	
+}
+
+button [class^="icon-"], button [class*=" icon-"],
+.button [class^="icon-"], .button [class*=" icon-"],
+.smallButton [class^="icon-"], .smallButton [class*=" icon-"] {
+	padding-right: 3px;
+}
+
+button,
+.button {
+	padding: 4px 10px;
+	margin: 2px;
+	font: 96%/1.4em "Segoe UI", "Segoe UI Web Regular", "Segoe UI Symbol", "Helvetica Neue", Arial, "sans-serif";
+	color: white;	
+}
+
+a.button, a.button:visited {
+	border-bottom-width: 0;
+	color: white;
+}
+
+.smallButton, a.smallButton {
+	margin: 2px 6px 2px 0;
+	padding: 1px 7px;
+
+	font-size: 7.5pt;
+    line-height: 12pt;
+    font-weight: 600;
+
+	color: #d7ebf5;
+}
+
+.smallButton:hover, a.smallButton:hover {
+	color: #FFF;
+}
+
+button,
+.button,
+a.button,
+.smallButton,
+a.smallButton {
+	display: inline-block;
+
+	white-space: nowrap;
+    letter-spacing: .35px;
+	cursor: pointer;
+
+	background: linear-gradient(0, #113950, #45738e);
+    text-shadow: #000 0 0 5px;
+	border: 1px solid #0f3044 !important;
+	border-radius: 2px;
+}
+
+.subtleButton, a.subtleButton {
+	background-color: #0c2635;
+    box-shadow: none;
+}
+
+.subtleButton {
+	border: 1px solid #000 !important;
+}
+
+a.subtleButton, .subtleButton a {
+	border: 0 !important;
+}
+
+
+
+/*
+    HELPERS
+*/
+
+.error {
+	font-weight: bold;
+	color: #d01d1d;
 }
 
 .highlight {
@@ -419,24 +403,76 @@ a.borderless {
 	border: 1px solid #FFF !important;
 }
 
-[class^="icon-"], [class*=" icon-"] {
-    font-size: .9em;
-}
-
-button [class^="icon-"], button [class*=" icon-"],
-.button [class^="icon-"], .button [class*=" icon-"],
-.smallButton [class^="icon-"], .smallButton [class*=" icon-"] {
-	padding-right: 3px;
-}
-
 .hoverHighlight:hover {
 	color: white;
 	text-decoration: underline;
 }
 
-.field-validation-error, .validation-summary-errors, .error {
-	font-weight: bold;
-	color: #d01d1d;
+.small-text {
+   	color: #ACD;
+	font-size: 7.5pt;
+    line-height: 12pt;
+    font-weight: bold;
+}
+
+.clear {
+	clear: both;
+}
+
+.float-right {
+	float: right;
+	clear: right;
+}
+
+.float-left {
+	float: left;
+	clear: left;
+}
+
+.margin-center {
+    margin: 0 auto;
+}
+
+.align-left {
+    text-align: left;
+}
+
+.align-right {
+    text-align: right;
+}
+
+.align-center {
+    text-align: center;
+}
+
+.align-justify {
+    text-align: justify;
+}
+
+.note, a.note {
+    border: 0;
+	font-size: 8pt;
+	line-height: 12pt;
+	color: #555;
+}
+
+.largeNote {
+	padding: 0 10px;
+	color: #badff1;
+	font-size: 1em;
+	line-height: 2em;
+}
+
+.font-small {
+	font-size: .7em;
+}
+
+.hidden {
+	display: none !important;
+}
+
+.pointer {
+	cursor: pointer;
 }
 
 .inline {
@@ -462,6 +498,8 @@ button [class^="icon-"], button [class*=" icon-"],
 .table-cell {
 	display: table-cell;
 }
+
+
 
 /*
 Selectors and floating lists

@@ -7,35 +7,34 @@ using Microsoft.Extensions.Logging;
 using Forum3.Models.DataModels;
 using Forum3.Models.ViewModels.Profile;
 using Forum3.Interfaces.Users;
-using Forum3.Annotations;
 using Forum3.Enums;
+using Forum3.Models.ViewModels.Profile.Pages;
+using Forum3.Services;
+using InputModels = Forum3.Models.InputModels;
 
-namespace Forum3.Areas.Users.Controllers {
+namespace Forum3.Controllers {
 	[Authorize]
-	[RequireRemoteHttps]
-	public class Profile : Controller {
+	public class Profile : ForumController {
 		UserManager<ApplicationUser> UserManager { get; }
 		SignInManager<ApplicationUser> SignInManager { get; }
 		IEmailSender EmailSender { get; }
-		ISmsSender SmsSender { get; }
 		ILogger Logger { get; }
 
 		public Profile(
 			UserManager<ApplicationUser> userManager,
 			SignInManager<ApplicationUser> signInManager,
 			IEmailSender emailSender,
-			ISmsSender smsSender,
-			ILoggerFactory loggerFactory
-		) {
+			ILoggerFactory loggerFactory,
+			UserService userService
+		) : base(userService) {
 			UserManager = userManager;
 			SignInManager = signInManager;
 			EmailSender = emailSender;
-			SmsSender = smsSender;
 			Logger = loggerFactory.CreateLogger<Profile>();
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> Index(ManageMessageId? message = null) {
+		public async Task<IActionResult> Manage(ManageMessageId? message = null) {
 			ViewData["StatusMessage"] =
 				message == ManageMessageId.ChangePasswordSuccess ? "Your password has been changed."
 				: message == ManageMessageId.SetPasswordSuccess ? "Your password has been set."
@@ -50,15 +49,20 @@ namespace Forum3.Areas.Users.Controllers {
 			if (user == null)
 				return View("Error");
 
-			var model = new IndexViewModel {
+			var model = new ManagePageViewModel {
+				DisplayName = user.DisplayName,
 				HasPassword = await UserManager.HasPasswordAsync(user),
-				PhoneNumber = await UserManager.GetPhoneNumberAsync(user),
-				TwoFactor = await UserManager.GetTwoFactorEnabledAsync(user),
 				Logins = await UserManager.GetLoginsAsync(user),
 				BrowserRemembered = await SignInManager.IsTwoFactorClientRememberedAsync(user)
 			};
 
 			return View(model);
+		}
+
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> Manage(InputModels.ProfileInput input) {
+			return View();
 		}
 
 		[HttpPost]
@@ -74,94 +78,6 @@ namespace Forum3.Areas.Users.Controllers {
 				}
 			}
 			return RedirectToAction(nameof(ManageLogins), new { Message = message });
-		}
-
-		public IActionResult AddPhoneNumber() {
-			return View();
-		}
-
-		[HttpPost]
-		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> AddPhoneNumber(AddPhoneNumberViewModel model) {
-			if (!ModelState.IsValid) {
-				return View(model);
-			}
-			// Generate the token and send it
-			var user = await GetCurrentUserAsync();
-			if (user == null) {
-				return View("Error");
-			}
-			var code = await UserManager.GenerateChangePhoneNumberTokenAsync(user, model.PhoneNumber);
-			await SmsSender.SendSms(model.PhoneNumber, "Your security code is: " + code);
-			return RedirectToAction(nameof(VerifyPhoneNumber), new { PhoneNumber = model.PhoneNumber });
-		}
-
-		[HttpPost]
-		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> EnableTwoFactorAuthentication() {
-			var user = await GetCurrentUserAsync();
-			if (user != null) {
-				await UserManager.SetTwoFactorEnabledAsync(user, true);
-				await SignInManager.SignInAsync(user, isPersistent: false);
-				Logger.LogInformation(1, "User enabled two-factor authentication.");
-			}
-			return RedirectToAction(nameof(Index), "Manage");
-		}
-
-		[HttpPost]
-		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> DisableTwoFactorAuthentication() {
-			var user = await GetCurrentUserAsync();
-			if (user != null) {
-				await UserManager.SetTwoFactorEnabledAsync(user, false);
-				await SignInManager.SignInAsync(user, isPersistent: false);
-				Logger.LogInformation(2, "User disabled two-factor authentication.");
-			}
-			return RedirectToAction(nameof(Index), "Manage");
-		}
-
-		[HttpGet]
-		public async Task<IActionResult> VerifyPhoneNumber(string phoneNumber) {
-			var user = await GetCurrentUserAsync();
-			if (user == null) {
-				return View("Error");
-			}
-			var code = await UserManager.GenerateChangePhoneNumberTokenAsync(user, phoneNumber);
-			// Send an SMS to verify the phone number
-			return phoneNumber == null ? View("Error") : View(new VerifyPhoneNumberViewModel { PhoneNumber = phoneNumber });
-		}
-
-		[HttpPost]
-		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> VerifyPhoneNumber(VerifyPhoneNumberViewModel model) {
-			if (!ModelState.IsValid) {
-				return View(model);
-			}
-			var user = await GetCurrentUserAsync();
-			if (user != null) {
-				var result = await UserManager.ChangePhoneNumberAsync(user, model.PhoneNumber, model.Code);
-				if (result.Succeeded) {
-					await SignInManager.SignInAsync(user, isPersistent: false);
-					return RedirectToAction(nameof(Index), new { Message = ManageMessageId.AddPhoneSuccess });
-				}
-			}
-			// If we got this far, something failed, redisplay the form
-			ModelState.AddModelError(string.Empty, "Failed to verify phone number");
-			return View(model);
-		}
-
-		[HttpPost]
-		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> RemovePhoneNumber() {
-			var user = await GetCurrentUserAsync();
-			if (user != null) {
-				var result = await UserManager.SetPhoneNumberAsync(user, null);
-				if (result.Succeeded) {
-					await SignInManager.SignInAsync(user, isPersistent: false);
-					return RedirectToAction(nameof(Index), new { Message = ManageMessageId.RemovePhoneSuccess });
-				}
-			}
-			return RedirectToAction(nameof(Index), new { Message = ManageMessageId.Error });
 		}
 
 		[HttpGet]
@@ -181,12 +97,12 @@ namespace Forum3.Areas.Users.Controllers {
 				if (result.Succeeded) {
 					await SignInManager.SignInAsync(user, isPersistent: false);
 					Logger.LogInformation(3, "User changed their password successfully.");
-					return RedirectToAction(nameof(Index), new { Message = ManageMessageId.ChangePasswordSuccess });
+					return RedirectToAction(nameof(Manage), new { Message = ManageMessageId.ChangePasswordSuccess });
 				}
 				AddErrors(result);
 				return View(model);
 			}
-			return RedirectToAction(nameof(Index), new { Message = ManageMessageId.Error });
+			return RedirectToAction(nameof(Manage), new { Message = ManageMessageId.Error });
 		}
 
 		[HttpGet]
@@ -206,12 +122,12 @@ namespace Forum3.Areas.Users.Controllers {
 				var result = await UserManager.AddPasswordAsync(user, model.NewPassword);
 				if (result.Succeeded) {
 					await SignInManager.SignInAsync(user, isPersistent: false);
-					return RedirectToAction(nameof(Index), new { Message = ManageMessageId.SetPasswordSuccess });
+					return RedirectToAction(nameof(Manage), new { Message = ManageMessageId.SetPasswordSuccess });
 				}
 				AddErrors(result);
 				return View(model);
 			}
-			return RedirectToAction(nameof(Index), new { Message = ManageMessageId.Error });
+			return RedirectToAction(nameof(Manage), new { Message = ManageMessageId.Error });
 		}
 
 		[HttpGet]
