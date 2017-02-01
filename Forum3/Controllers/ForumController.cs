@@ -4,10 +4,8 @@ using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Forum3.Models.ServiceModels;
 using Forum3.Services;
-using Forum3.Annotations;
 
 namespace Forum3.Controllers {
-	[RequireRemoteHttps]
 	public class ForumController : Controller {
 		UserService UserService { get; set; }
 

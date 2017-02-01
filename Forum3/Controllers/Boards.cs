@@ -6,7 +6,6 @@ using Forum3.Services;
 using Forum3.Models.InputModels;
 
 namespace Forum3.Controllers {
-	[RequireRemoteHttps]
 //	[Authorize(Roles = "Admin")]
 	public class Boards : Controller {
 		public BoardService BoardService { get; }

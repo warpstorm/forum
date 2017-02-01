@@ -14,7 +14,6 @@ using Forum3.Services;
 using Forum3.Models.InputModels;
 
 namespace Forum3.Controllers {
-	[RequireRemoteHttps]
 	public class Authentication : ForumController {
 		UserManager<ApplicationUser> UserManager { get; }
 		SignInManager<ApplicationUser> SignInManager { get; }
@@ -372,7 +371,7 @@ namespace Forum3.Controllers {
 			if (Url.IsLocalUrl(returnUrl))
 				return Redirect(returnUrl);
 			else
-				return RedirectToAction(nameof(Topics.Index), "Home");
+				return RedirectToAction(nameof(Topics.Index), nameof(Topics));
 		}
 	}
 }

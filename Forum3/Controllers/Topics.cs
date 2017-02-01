@@ -1,12 +1,10 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Forum3.Annotations;
 using Forum3.Services;
 
 namespace Forum3.Controllers {
 	[Authorize]
-	[RequireRemoteHttps]
 	public class Topics : ForumController {
 		public TopicService TopicService { get; }
 		public MessageService MessageService { get; }

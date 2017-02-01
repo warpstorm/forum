@@ -15,8 +15,8 @@
 
 <header id="page-header">
     <nav>
-        <div class="margin-center">
-            <ul class="float-right">
+        <div class="marginCenter">
+            <ul class="floatRight">
                 @if (UserService.ContextUser.IsAuthenticated) {
                     <li>
                         @Html.ActionLink("Boards", "Index", "Board", null, new { @class = "smallButton" })
@@ -66,7 +66,16 @@
                         <a asp-action="@nameof(Forum3.Controllers.Authentication.Login)" asp-controller="@nameof(Forum3.Controllers.Authentication)">log in</a>.
                     </span>}
             </div>
-            @using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm" })) {@Html.AntiForgeryToken()}
+            @using (
+                Html.BeginForm(
+                    nameof(Forum3.Controllers.Authentication.LogOff),
+                    nameof(Forum3.Controllers.Authentication),
+                    FormMethod.Post,
+                    new { id = "logoutForm" }
+                )
+            ) {
+                @Html.AntiForgeryToken()
+            }
         </div>
     </nav>
     <div id="page-title"><a href="/"><img src=@ViewData["LogoPath"] alt="Warpstorm" /></a></div>

@@ -263,7 +263,7 @@ input:disabled, textarea:disabled, button:disabled {
 
 
 /*
-    ROUNDED BOX
+    MAIN CONTENT
 */
 
 main > header {
@@ -295,9 +295,8 @@ main > footer {
 	padding: 6px 20px;
 }
 
-.main-content {
+.mainContent {
 	padding: 20px 45px;
-
 	border: 1px solid #7AB;
 	border-radius: 2px;
 	background-color: #f6fcff;
@@ -408,44 +407,37 @@ a.subtleButton, .subtleButton a {
 	text-decoration: underline;
 }
 
-.small-text {
-   	color: #ACD;
-	font-size: 7.5pt;
-    line-height: 12pt;
-    font-weight: bold;
-}
-
 .clear {
 	clear: both;
 }
 
-.float-right {
+.floatRight {
 	float: right;
 	clear: right;
 }
 
-.float-left {
+.floatLeft {
 	float: left;
 	clear: left;
 }
 
-.margin-center {
+.marginCenter {
     margin: 0 auto;
 }
 
-.align-left {
+.alignLeft {
     text-align: left;
 }
 
-.align-right {
+.alignRight {
     text-align: right;
 }
 
-.align-center {
+.alignCenter {
     text-align: center;
 }
 
-.align-justify {
+.alignJustify {
     text-align: justify;
 }
 
@@ -458,13 +450,16 @@ a.subtleButton, .subtleButton a {
 
 .largeNote {
 	padding: 0 10px;
-	color: #badff1;
+	color: #ACD;
 	font-size: 1em;
 	line-height: 2em;
 }
 
-.font-small {
+.fontSmall {
+    line-height: 12pt;
 	font-size: .7em;
+    font-weight: bold;
+   	color: #ACD;
 }
 
 .hidden {
@@ -481,6 +476,14 @@ a.subtleButton, .subtleButton a {
 
 .fullWidth {
 	width: 100%;
+}
+
+.gapTop {
+    padding-top: 20px;
+}
+
+.gapBottom {
+    padding-bottom: 20px;
 }
 
 .mobileOnly {

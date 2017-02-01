@@ -8,6 +8,8 @@ using Microsoft.Extensions.Logging;
 using Forum3.Data;
 using Forum3.Models.DataModels;
 using Forum3.Helpers;
+using Microsoft.AspNetCore.Mvc;
+using Forum3.Annotations;
 
 namespace Forum3 {
 	public class Startup {
@@ -43,7 +45,11 @@ namespace Forum3 {
 			})
 				.AddEntityFrameworkStores<ApplicationDbContext>()
 				.AddDefaultTokenProviders();
-				
+
+			services.Configure<MvcOptions>(options => {
+				options.Filters.Add(new RequireRemoteHttpsAttribute());
+			});
+
 			services.AddMvc();
 			services.AddDistributedMemoryCache();
 			services.AddSession();
