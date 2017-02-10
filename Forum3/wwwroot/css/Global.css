@@ -2,7 +2,7 @@
 	min-width: 250px;
 	margin: 0;
 	padding: 0;
-	background-color: #436c7c;
+	background-color: #e4eaed;
 }
 
 body {
@@ -128,7 +128,7 @@ video {
     line-height: 2.4em;
 
     color: #FFF;
-    background-color: #031019;
+    background-color: #526d7e;
     box-shadow: 0 0 10px #081a27;
 }
 
@@ -296,11 +296,10 @@ main > footer {
 }
 
 .mainContent {
-	padding: 20px 45px;
-	border: 1px solid #7AB;
+	border-top: 2px solid #d4dbde;
 	border-radius: 2px;
-	background-color: #f6fcff;
-    box-shadow: #113950 0 3px 8px;
+	background-color: #f3fafc;
+	box-shadow: #e4eaed 0 -3px 8px inset;
 }
 
 
@@ -479,11 +478,31 @@ a.subtleButton, .subtleButton a {
 }
 
 .gapTop {
-    padding-top: 20px;
+    margin-top: 20px;
 }
 
 .gapBottom {
-    padding-bottom: 20px;
+    margin-bottom: 20px;
+}
+
+.pad {
+	padding: 15px 20px;
+}
+
+.padTop {
+	padding-top: 15px;
+}
+
+.padBottom {
+	padding-bottom: 15px;
+}
+
+.padLeft {
+	padding-left: 20px;
+}
+
+.padRight {
+	padding-right: 20px;
 }
 
 .mobileOnly {

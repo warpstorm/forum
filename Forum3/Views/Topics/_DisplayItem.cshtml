@@ -1,49 +1,49 @@
 ﻿@model Message
 
-<section>
+<section class="mainContent pad gapBottom">
 	<span id="message@(Model.Id)"></span>
 	<!-- TODO - if unread target = this, then <span id="latest"></span> -->
 
-    <aside class="floatRight">
-        @if (Model.CanReply) {
-            <span class="smallButton replyButton">
-                Reply
-            </span>
-        }
+	<aside class="floatRight">
+		@if (Model.CanReply) {
+			<span class="smallButton replyButton">
+				Reply
+			</span>
+		}
 
-        @if (Model.CanEdit) {
-            <a class="smallButton"
-               asp-controller="@nameof(Forum3.Controllers.Messages)"
-               asp-action="@nameof(Forum3.Controllers.Messages.Edit)"
-               asp-route-id="@Model.Id">
-                Edit
-            </a>
-        }
+		@if (Model.CanEdit) {
+			<a class="smallButton"
+			   asp-controller="@nameof(Forum3.Controllers.Messages)"
+			   asp-action="@nameof(Forum3.Controllers.Messages.Edit)"
+			   asp-route-id="@Model.Id">
+				Edit
+			</a>
+		}
 
-        @if (Model.CanDelete) {
-            @if (Model.ParentId == 0) {
-                <a class="smallButton"
-                   asp-controller="@nameof(Forum3.Controllers.Messages)"
-                   asp-action="@nameof(Forum3.Controllers.Messages.Delete)"
-                   asp-route-id="@Model.Id"
-                   onclick="return confirm('Are you sure you want to remove this ENTIRE topic?');">
-                    Delete
-                </a>
-}
-            else {
-                <a class="smallButton"
-                   asp-controller="@nameof(Forum3.Controllers.Messages)"
-                   asp-action="@nameof(Forum3.Controllers.Messages.Delete)"
-                   asp-route-id="@Model.Id"
-                   onclick="return confirm('Are you sure you want to remove this reply?');">
-                    Delete
-                </a>
-}
-        }
-    </aside>
+		@if (Model.CanDelete) {
+			@if (Model.ParentId == 0) {
+				<a class="smallButton"
+				   asp-controller="@nameof(Forum3.Controllers.Messages)"
+				   asp-action="@nameof(Forum3.Controllers.Messages.Delete)"
+				   asp-route-id="@Model.Id"
+				   onclick="return confirm('Are you sure you want to remove this ENTIRE topic?');">
+					Delete
+				</a>
+			}
+			else {
+				<a class="smallButton"
+				   asp-controller="@nameof(Forum3.Controllers.Messages)"
+				   asp-action="@nameof(Forum3.Controllers.Messages.Delete)"
+				   asp-route-id="@Model.Id"
+				   onclick="return confirm('Are you sure you want to remove this reply?');">
+					Delete
+				</a>
+			}
+		}
+	</aside>
 
-	<p class="note">@Model.PostedByName</p>
 	<p class="note">
+		@Model.PostedByName
 		<time>
 			posted @Model.TimePosted
 			@if (Model.TimeEdited != Model.TimePosted) {
@@ -56,8 +56,8 @@
 		<blockquote>@Html.Raw(Model.ReplyBody)</blockquote>
 	}
 
-	<p>@Html.Raw(Model.Body)</p>
-    
+	<p class="padLeft">@Html.Raw(Model.Body)</p>
+
 	<div class="hidden replyForm">
 		<p>Reply:</p>
 		@Html.Partial("_MessageForm", Model.ReplyForm)

@@ -6,8 +6,10 @@
 	@Html.Partial("_DisplayItem", Model.Messages[i])
 }
 
-<p>Reply to Thread:</p>
-@Html.Partial("_MessageForm", Model.ReplyForm)
+<p class="gapTop">Reply to Thread:</p>
+<div class="mainContent pad">
+	@Html.Partial("_MessageForm", Model.ReplyForm)
+</div>
 
 @section scripts {
     <environment names="Development">
