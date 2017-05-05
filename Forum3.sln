@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26403.7
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A5991628-1E5C-472E-A176-68D96221BB54}"
 	ProjectSection(SolutionItems) = preProject
@@ -9,9 +9,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "CodeKicker.BBCode", "CodeKicker.BBCode\CodeKicker.BBCode.xproj", "{1FD99D7B-EEA7-4035-A785-E1E67BF220B3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CodeKicker.BBCode", "CodeKicker.BBCode\CodeKicker.BBCode.csproj", "{1FD99D7B-EEA7-4035-A785-E1E67BF220B3}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Forum3", "Forum3\Forum3.xproj", "{2CC9AAA4-3982-4D25-9DF3-C1B1A59F1336}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Forum3", "Forum3\Forum3.csproj", "{2CC9AAA4-3982-4D25-9DF3-C1B1A59F1336}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
