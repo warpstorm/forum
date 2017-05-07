@@ -296,9 +296,9 @@ namespace Forum3.Services {
 
 			HtmlDocument document = null;
 
-			var client = new HtmlWeb();
-
-			client.UserAgent = "MOZILLA/5.0 (WINDOWS NT 6.1; WOW64) APPLEWEBKIT/537.1 (KHTML, LIKE GECKO) CHROME/21.0.1180.75 SAFARI/537.1";
+			var client = new HtmlWeb() {
+				UserAgent = "MOZILLA/5.0 (WINDOWS NT 6.1; WOW64) APPLEWEBKIT/537.1 (KHTML, LIKE GECKO) CHROME/21.0.1180.75 SAFARI/537.1"
+			};
 
 			client.PreRequest += (handler, request) => {
 				request.Headers.ExpectContinue = false;

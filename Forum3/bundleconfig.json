@@ -1,33 +1,33 @@
 ﻿[
-  // STYLES
-  {
-    "outputFileName": "wwwroot/css/Global.min.css",
-    "inputFiles": [
-      "wwwroot/css/Global.css",
-      "wwwroot/css/Glyphs.css"
-    ]
-  },
-  {
-    "outputFileName": "wwwroot/css/TopicDisplay.min.css",
-    "inputFiles": [ "wwwroot/css/TopicDisplay.css" ]
-  },
-  // SCRIPTS
-  {
-    "outputFileName": "wwwroot/js/Global.min.js",
-    "inputFiles": [ "wwwroot/js/Global.js" ],
-    "minify": {
-      "enabled": true,
-      "renameLocals": true
-    },
-    "sourceMap": false
-  },
-  {
-    "outputFileName": "wwwroot/js/TopicDisplay.min.js",
-    "inputFiles": [ "wwwroot/js/TopicDisplay.js" ],
-    "minify": {
-      "enabled": true,
-      "renameLocals": true
-    },
-    "sourceMap": false
-  }
+	// STYLES
+	{
+		"outputFileName": "wwwroot/css/Global.min.css",
+		"inputFiles": [
+			"wwwroot/css/Global.css",
+			"wwwroot/css/Glyphs.css"
+		]
+	},
+	{
+		"outputFileName": "wwwroot/css/TopicDisplay.min.css",
+		"inputFiles": [ "wwwroot/css/TopicDisplay.css" ]
+	},
+	// SCRIPTS
+	{
+		"outputFileName": "wwwroot/js/Global.min.js",
+		"inputFiles": [ "wwwroot/js/Global.js" ],
+		"minify": {
+			"enabled": true,
+			"renameLocals": true
+		},
+		"sourceMap": false
+	},
+	{
+		"outputFileName": "wwwroot/js/TopicDisplay.min.js",
+		"inputFiles": [ "wwwroot/js/TopicDisplay.js" ],
+		"minify": {
+			"enabled": true,
+			"renameLocals": true
+		},
+		"sourceMap": false
+	}
 ]

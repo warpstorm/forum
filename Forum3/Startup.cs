@@ -1,27 +1,26 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Forum3.Data;
-using Forum3.Models.DataModels;
 using Forum3.Helpers;
-using Microsoft.AspNetCore.Mvc;
 using Forum3.Annotations;
+using Forum3.Models.DataModels;
 
 namespace Forum3 {
 	public class Startup {
 		public Startup(IHostingEnvironment env) {
 			var builder = new ConfigurationBuilder()
 				.SetBasePath(env.ContentRootPath)
-				.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+				.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
 				.AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true);
 
 			if (env.IsDevelopment()) {
-				// For more details on using the user secret store see http://go.microsoft.com/fwlink/?LinkID=532709
-				builder.AddUserSecrets();
+				builder.AddUserSecrets<Startup>();
 			}
 
 			builder.AddEnvironmentVariables();
@@ -32,6 +31,7 @@ namespace Forum3 {
 
 		// This method gets called by the runtime. Use this method to add services to the container.
 		public void ConfigureServices(IServiceCollection services) {
+			// Add framework services.
 			services.AddDbContext<ApplicationDbContext>(options =>
 				options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
@@ -51,6 +51,7 @@ namespace Forum3 {
 			});
 
 			services.AddMvc();
+
 			services.AddDistributedMemoryCache();
 			services.AddSession();
 			services.AddForum();

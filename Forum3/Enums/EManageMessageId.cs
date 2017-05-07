@@ -1,5 +1,5 @@
 ﻿namespace Forum3.Enums {
-	public enum ManageMessageId {
+	public enum EManageMessageId {
 		AddPhoneSuccess,
 		AddLoginSuccess,
 		ChangePasswordSuccess,

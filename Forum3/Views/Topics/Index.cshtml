@@ -12,6 +12,6 @@
 
 <table class="table">
     @foreach (var item in Model.Topics) {
-        @Html.Partial("_IndexItem", item)
+        @await Html.PartialAsync("_IndexItem", item)
     }
 </table>

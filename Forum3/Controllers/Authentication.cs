@@ -6,20 +6,22 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Forum3.Models.DataModels;
 using Forum3.Models.ViewModels.Authentication;
 using Forum3.Interfaces.Users;
-using Forum3.Annotations;
 using Forum3.Services;
 using Forum3.Models.InputModels;
 
 namespace Forum3.Controllers {
+	[AllowAnonymous]
 	public class Authentication : ForumController {
 		UserManager<ApplicationUser> UserManager { get; }
 		SignInManager<ApplicationUser> SignInManager { get; }
 		IEmailSender EmailSender { get; }
 		ISmsSender SmsSender { get; }
 		ILogger Logger { get; }
+		string ExternalCookieScheme { get; }
 
 		public Authentication(
 			UserManager<ApplicationUser> userManager,
@@ -27,17 +29,20 @@ namespace Forum3.Controllers {
 			IEmailSender emailSender,
 			ISmsSender smsSender,
 			ILoggerFactory loggerFactory,
+			IOptions<IdentityCookieOptions> identityCookieOptions,
 			UserService userService
 		) : base(userService) {
 			UserManager = userManager;
 			SignInManager = signInManager;
-			EmailSender = emailSender;
-			SmsSender = smsSender;
 			Logger = loggerFactory.CreateLogger<Authentication>();
+			ExternalCookieScheme = identityCookieOptions.Value.ExternalCookieAuthenticationScheme;
 		}
 
 		[HttpGet]
-		public IActionResult Login(string returnUrl = null) {
+		public async Task<IActionResult> Login(string returnUrl = null) {
+			// Clear the existing external cookie to ensure a clean login process
+			await HttpContext.Authentication.SignOutAsync(ExternalCookieScheme);
+
 			ViewData["ReturnUrl"] = returnUrl;
 			return View();
 		}
@@ -46,6 +51,7 @@ namespace Forum3.Controllers {
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> Login(LoginViewModel model, string returnUrl = null) {
 			ViewData["ReturnUrl"] = returnUrl;
+
 			if (ModelState.IsValid) {
 				// This doesn't count login failures towards account lockout
 				// To enable password failures to trigger account lockout, set lockoutOnFailure: true
@@ -116,7 +122,7 @@ namespace Forum3.Controllers {
 		[HttpPost]
 		[Authorize]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> LogOff() {
+		public async Task<IActionResult> Logout() {
 			await SignInManager.SignOutAsync();
 			Logger.LogInformation(4, "User logged out.");
 
@@ -316,9 +322,9 @@ namespace Forum3.Controllers {
 			var message = "Your security code is: " + code;
 
 			if (model.SelectedProvider == "Email")
-				await EmailSender.SendEmail(await UserManager.GetEmailAsync(user), "Security Code", message);
+				await EmailSender.SendEmailAsync(await UserManager.GetEmailAsync(user), "Security Code", message);
 			else if (model.SelectedProvider == "Phone")
-				await SmsSender.SendSms(await UserManager.GetPhoneNumberAsync(user), message);
+				await SmsSender.SendSmsAsync(await UserManager.GetPhoneNumberAsync(user), message);
 
 			return RedirectToAction(nameof(VerifyCode), new { Provider = model.SelectedProvider, ReturnUrl = model.ReturnUrl, RememberMe = model.RememberMe });
 		}
@@ -361,10 +367,6 @@ namespace Forum3.Controllers {
 		void AddErrors(IdentityResult result) {
 			foreach (var error in result.Errors)
 				ModelState.AddModelError(string.Empty, error.Description);
-		}
-
-		Task<ApplicationUser> GetCurrentUserAsync() {
-			return UserManager.GetUserAsync(HttpContext.User);
 		}
 
 		IActionResult RedirectToLocal(string returnUrl) {

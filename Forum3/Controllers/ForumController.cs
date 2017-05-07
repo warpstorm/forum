@@ -21,13 +21,13 @@ namespace Forum3.Controllers {
 				ModelState.AddModelError(kvp.Key, kvp.Value);
 		}
 
-		public override ViewResult View(string viewName) {
+		public override ViewResult View(object model) => View(null, model);
+		public override ViewResult View(string viewName = null, object model = null) {
 			UniversalViewActions();
-			return base.View(viewName);
-		}
 
-		public override ViewResult View(string viewName, object model) {
-			UniversalViewActions();
+			if (model == null)
+				return base.View(viewName);
+			
 			return base.View(viewName, model);
 		}
 
