@@ -1,0 +1,35 @@
+﻿@model RegisterViewModel
+
+<form method="post"
+        asp-controller="Authentication"
+        asp-action="Register"
+        asp-route-returnurl="@ViewData["ReturnUrl"]">
+
+    <div asp-validation-summary="All"></div>
+
+    <dl>
+        <dt>Display Name:</dt>
+        <dd><input asp-for="DisplayName" /></dd>
+        <dd><span asp-validation-for="DisplayName"></span></dd>
+
+        <dt>Email:</dt>
+        <dd><input asp-for="Email" /></dd>
+        <dd><span asp-validation-for="Email"></span></dd>
+        
+        <dt>Password:</dt>
+        <dd><input asp-for="Password" /></dd>
+        <dd><span asp-validation-for="Password"></span></dd>
+
+        <dt>Confirm Password:</dt>
+        <dd><input asp-for="ConfirmPassword" /></dd>
+        <dd><span asp-validation-for="ConfirmPassword"></span></dd>
+    </dl>
+
+    <button>Register</button>
+</form>
+
+@{ViewData["Title"] = "Register";}
+
+@section Header {
+    Register
+}

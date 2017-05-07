@@ -1,0 +1,10 @@
+﻿@model Forum3.Models.ViewModels.Topics.Items.MessagePreview
+
+<tr>
+    <td clickableLinkParent>
+        <a asp-action="Display" asp-route-id="@Model.Id">@Model.ShortPreview</a>
+    </td>
+    <td>
+        @Model.LastReplyPosted
+    </td>
+</tr>

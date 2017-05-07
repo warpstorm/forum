@@ -1,0 +1,82 @@
+﻿@inject Forum3.Services.UserService UserService
+
+@*@{
+    if (Request.IsAuthenticated) {
+        var notifications = (NotificationList) ViewBag.Notifications;
+
+        ViewBag.NotificationCount = notifications.NotificationCount;
+        ViewBag.NotificationButtonClasses = "smallButton";
+
+        if (notifications.NotificationCount > 0) {
+            ViewBag.NotificationButtonClasses += " highlight";
+        }
+    }
+}*@
+
+<header id="page-header">
+    <nav>
+        <div class="marginCenter">
+            <ul class="floatRight">
+                @if (UserService.ContextUser.IsAuthenticated) {
+                    <li>
+                        @Html.ActionLink("Boards", "Index", "Board", null, new { @class = "smallButton" })
+                    </li>
+                    <li>
+                        @Html.ActionLink("Topics", "Index", "Message", new { id = "" }, new { @class = "smallButton" })
+                    </li>
+
+                    @if (UserService.ContextUser.IsAdmin) {
+                        <li>
+                            <a href="@Url.Action("Dashboard", "Admin")" class="smallButton highlight">
+                                <span class="icon-wrench"></span> Admin
+                            </a>
+                        </li>}
+
+                    <li>
+                        <a href="javascript:document.getElementById('logoutForm').submit()" class="smallButton" onclick="return confirm('Are you sure you want to logout?');">
+                            <span class="icon-exit"></span> Log off
+                        </a>
+                    </li>}
+                else {
+                    <li>
+                        <a class="smallButton" asp-action="@nameof(Forum3.Controllers.Authentication.Register)" asp-controller="@nameof(Forum3.Controllers.Authentication)">
+                            <span class="icon-sun"></span> Register
+                        </a>
+                    </li>
+                    <li>
+                        <a class="smallButton" asp-action="@nameof(Forum3.Controllers.Authentication.Login)" asp-controller="@nameof(Forum3.Controllers.Authentication)">
+                            <span class="icon-enter"></span> Log in
+                        </a>
+                    </li>}
+            </ul>
+
+
+            <div id="login">
+                @if (UserService.ContextUser.IsAuthenticated) {
+                    <span><a asp-controller="Profile" asp-action="Manage">Welcome back, @UserService.ContextUser.ApplicationUser.DisplayName</a></span>
+
+                    <a href="@Url.Action("Index", "Notification")" class="@ViewBag.NotificationButtonClasses">
+                        <span class="icon-flag"></span> @ViewBag.NotificationCount
+                    </a>}
+                else {
+                    <span>
+                        Welcome Guest! Please
+                        <a asp-action="@nameof(Forum3.Controllers.Authentication.Register)" asp-controller="@nameof(Forum3.Controllers.Authentication)">register</a>
+                        or
+                        <a asp-action="@nameof(Forum3.Controllers.Authentication.Login)" asp-controller="@nameof(Forum3.Controllers.Authentication)">log in</a>.
+                    </span>}
+            </div>
+            @using (
+                Html.BeginForm(
+                    nameof(Forum3.Controllers.Authentication.Logout),
+                    nameof(Forum3.Controllers.Authentication),
+                    FormMethod.Post,
+                    new { id = "logoutForm" }
+                )
+            ) {
+                @Html.AntiForgeryToken()
+            }
+        </div>
+    </nav>
+    <div id="page-title"><a href="/"><img src=@ViewData["LogoPath"] alt="Warpstorm" /></a></div>
+</header>

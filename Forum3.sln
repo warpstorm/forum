@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CodeKicker.BBCode", "CodeKi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Forum3", "Forum3\Forum3.csproj", "{2CC9AAA4-3982-4D25-9DF3-C1B1A59F1336}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Forum3.Core", "Forum3.Core\Forum3.Core.csproj", "{81D88417-6F3F-493B-B17F-AFCE3D54D3CC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{2CC9AAA4-3982-4D25-9DF3-C1B1A59F1336}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2CC9AAA4-3982-4D25-9DF3-C1B1A59F1336}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2CC9AAA4-3982-4D25-9DF3-C1B1A59F1336}.Release|Any CPU.Build.0 = Release|Any CPU
+		{81D88417-6F3F-493B-B17F-AFCE3D54D3CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{81D88417-6F3F-493B-B17F-AFCE3D54D3CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{81D88417-6F3F-493B-B17F-AFCE3D54D3CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{81D88417-6F3F-493B-B17F-AFCE3D54D3CC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

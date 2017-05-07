@@ -1,0 +1,57 @@
+@model IndexPage
+
+@{
+    ViewBag.Title = "Warpstorm";
+}
+
+<div class="table indexWrapper">
+    <div class="table-row">
+        <div class="table-cell">
+            @if (Model.Birthdays.Count() > 0) {
+                <div class="birthdays">
+                    <img src="/Content/Smileys/birthday.gif" /> Happy birthday @string.Join(", ", Model.Birthdays.ToArray())!
+                </div>}
+
+            @foreach (var board in Model.Boards) {
+                @Html.Partial("_IndexItem", board)
+			}
+        </div>
+
+        <div id="onlineUsersIndex" class="table-cell mobileHide lowResHide">
+            <h4>Who's online this week</h4>
+            <ul>
+                @foreach (var onlineUser in Model.OnlineUsers) {
+                    <li>
+                        @if (onlineUser.Online) {
+                            <span class="jellybeanOnline"></span>
+}
+                        <span>@onlineUser.Name</span>
+                        <time>@onlineUser.LastOnlineString</time>
+                    </li>}
+            </ul>
+        </div>
+    </div>
+</div>
+
+@*@section Breadcrumbs {
+    @if (WebSecurity.IsAuthenticated) {
+        <a href="@Url.Action("Index", "Message", new { filter = "" })" class="smallButton">All</a>
+        <a href="@Url.Action("Index", "Message", new { filter = "unread" })" class="smallButton">Unread</a>
+        <a href="@Url.Action("Index", "Message", new { filter = "replies" })" class="smallButton">Replies</a>
+    }
+}
+
+@section PageActions {
+    @if (WebSecurity.IsAuthenticated) {
+        <li><a href="@Url.Action("CreateTopic", "Message")" class="button"><span class="icon-sun"></span> New Topic</a></li>
+        <li><a href="@Url.Action("MarkAllRead", "Message")" class="button" onclick="return confirm('Are you sure you want to mark all topics as read?');"><span class="icon-eye"></span> Mark All Read</a></li>
+    }
+}
+
+@section Styles {
+    @Styles.Render("~/ForumStyles/11/BoardIndex")
+}
+
+@section scripts {
+    @Scripts.Render("~/ForumScripts/11/BoardIndex")
+}*@

@@ -1,0 +1,17 @@
+@model TopicIndexPage
+
+@{
+    ViewData["Title"] = "Topics";
+}
+
+@if (User.Identity.IsAuthenticated) {
+    <p>
+        <a class="button" asp-action="Create" asp-controller="Messages">Create a new Topic</a>
+    </p>
+}
+
+<table class="table">
+    @foreach (var item in Model.Topics) {
+        @await Html.PartialAsync("_IndexItem", item)
+    }
+</table>

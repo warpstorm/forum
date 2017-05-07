@@ -1,0 +1,71 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+
+    <title>@Html.Raw(ViewData["Title"])</title>
+
+	<environment names="Development">
+		<link rel="stylesheet" href="~/css/Global.css" asp-append-version="true" />
+		<link rel="stylesheet" href="~/css/Glyphs.css" asp-append-version="true" />
+	</environment>
+	<environment names="Staging,Production">
+		<link rel="stylesheet" href="~/css/Global.min.css" asp-append-version="true" />
+	</environment>
+</head>
+<body>
+	@await Html.PartialAsync("_Header")
+
+	<nav>
+		<ul>
+			@RenderSection("PageActions", required: false)
+		</ul>
+	</nav>
+
+	<div role="main" class="marginCenter">
+		<main class="alignCenter">
+			<header>
+				@RenderSection("Header", required: false)
+			</header>
+			<div class="alignLeft">
+				@RenderBody()
+			</div>
+			<footer>
+				@RenderSection("Footer", required: false)
+			</footer>
+		</main>
+	</div>
+
+	<footer class="alignCenter note">
+		<p><a href="https://github.com/jyarbro/forum">Theme 12 | Code 3.0.0</a></p>
+		<p>Bringing disorder to chaos for 17 years.</p>
+	</footer>
+
+	@RenderSection("Styles", required: false)
+
+    <environment names="Development">
+		<script src="~/lib/jquery/dist/jquery.js"></script>
+		<script src="~/lib/jquery-validation/dist/jquery.validate.js"></script>
+		<script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js"></script>
+		<script src="~/js/Global.js" asp-append-version="true"></script>
+	</environment>
+    <environment names="Staging,Production">
+        <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-2.2.0.min.js"
+                asp-fallback-src="~/lib/jquery/dist/jquery.min.js"
+                asp-fallback-test="window.jQuery"
+                crossorigin="anonymous"
+                integrity="sha384-K+ctZQ+LL8q6tP7I94W+qzQsfRV2a+AfHIi9k8z8l9ggpc8X+Ytst4yBo/hH+8Fk">
+        </script>
+		<script src="https://ajax.aspnetcdn.com/ajax/jquery.validate/1.15.0/jquery.validate.min.js"
+				asp-fallback-src="~/lib/jquery-validation/dist/jquery.validate.min.js"
+				asp-fallback-test="window.jQuery && window.jQuery.validator"></script>
+		<script src="https://ajax.aspnetcdn.com/ajax/mvc/5.2.3/jquery.validate.unobtrusive.min.js"
+				asp-fallback-src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"
+				asp-fallback-test="window.jQuery && window.jQuery.validator && window.jQuery.validator.unobtrusive"></script>
+		<script src="~/js/Global.min.js" asp-append-version="true"></script>
+    </environment>
+
+    @RenderSection("Scripts", required: false)
+</body>
+</html>
