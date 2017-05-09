@@ -31,7 +31,11 @@ namespace Forum3 {
 
 		// This method gets called by the runtime. Use this method to add services to the container.
 		public void ConfigureServices(IServiceCollection services) {
-			var connectionString = Configuration.GetConnectionString("DefaultConnection");
+			// Uncomment to use the DefaultConnection string in appsettings.json
+			//var connectionString = Configuration.GetConnectionString("DefaultConnection");
+
+			// Loads from the user-secrets store
+			var connectionString = Configuration["DefaultConnection"];
 
 			// Add framework services.
 			services.AddDbContext<ApplicationDbContext>(options =>

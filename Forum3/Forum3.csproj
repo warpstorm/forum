@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <UserSecretsId>aspnet-Forum3.Core-59c28352-542a-4c8f-8941-48f1c7dacee8</UserSecretsId>
+    <UserSecretsId>aspnet-Forum3-59c28352-542a-4c8f-8941-48f1c7dacee8</UserSecretsId>
     <RootNamespace>Forum3</RootNamespace>
   </PropertyGroup>
 
