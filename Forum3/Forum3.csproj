@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp1.1</TargetFramework>
-	<EnableDefaultContentItems>false</EnableDefaultContentItems>
+	  <EnableDefaultContentItems>false</EnableDefaultContentItems>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -15,10 +15,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-	<Content Include="wwwroot\**\*">
-	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-	</Content>
+    <Content Include="wwwroot\**\*" CopyToOutputDirectory="Always" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
