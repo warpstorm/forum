@@ -22,12 +22,8 @@ namespace Forum3.Controllers {
 		}
 
 		public override ViewResult View(object model) => View(null, model);
-		public override ViewResult View(string viewName = null, object model = null) {
+		public override ViewResult View(string viewName, object model = null) {
 			UniversalViewActions();
-
-			if (model == null)
-				return base.View(viewName);
-			
 			return base.View(viewName, model);
 		}
 

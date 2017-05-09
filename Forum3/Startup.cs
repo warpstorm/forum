@@ -67,9 +67,6 @@ namespace Forum3 {
 				app.UseDatabaseErrorPage();
 				app.UseBrowserLink();
 			}
-			else {
-				//app.UseExceptionHandler("/Home/Error");
-			}
 
 			app.UseStaticFiles();
 
