@@ -10,17 +10,17 @@ namespace Forum3.Annotations {
 				return;
 
 			var currentToken = context.HttpContext.Request.Form["__RequestVerificationToken"].ToString();
-			var lastToken = context.HttpContext.Session.GetString(Names.Keys.LastProcessedToken);
+			var lastToken = context.HttpContext.Session.GetString(Constants.Keys.LastProcessedToken);
 
 			if (lastToken == currentToken) {
 				context.ModelState.AddModelError(string.Empty, "Looks like you accidentally submitted the same form twice.");
 				return;
 			}
 
-			context.HttpContext.Session.SetString(Names.Keys.LastProcessedToken, currentToken);
+			context.HttpContext.Session.SetString(Constants.Keys.LastProcessedToken, currentToken);
 
 			var currentTime = DateTime.Now;
-			var lastPostTimeStamp = context.HttpContext.Session.GetString(Names.Keys.LastPostTimestamp);
+			var lastPostTimeStamp = context.HttpContext.Session.GetString(Constants.Keys.LastPostTimestamp);
 
 			if (!string.IsNullOrEmpty(lastPostTimeStamp)) {
 				var lastPostTime = Convert.ToDateTime(lastPostTimeStamp);
@@ -31,7 +31,7 @@ namespace Forum3.Annotations {
 				}
 			}
 
-			context.HttpContext.Session.SetString(Names.Keys.LastPostTimestamp, currentTime.ToString());
+			context.HttpContext.Session.SetString(Constants.Keys.LastPostTimestamp, currentTime.ToString());
 		}
 	}
 }

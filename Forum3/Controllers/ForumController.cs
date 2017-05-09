@@ -15,7 +15,7 @@ namespace Forum3.Controllers {
 
 		protected void ProcessServiceResponse(ServiceResponse serviceResponse) {
 			if (!string.IsNullOrEmpty(serviceResponse.Message))
-				TempData[Names.Keys.StatusMessage] = serviceResponse.Message;
+				TempData[Constants.Keys.StatusMessage] = serviceResponse.Message;
 
 			foreach (var kvp in serviceResponse.ModelErrors)
 				ModelState.AddModelError(kvp.Key, kvp.Value);

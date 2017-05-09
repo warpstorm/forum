@@ -1,5 +1,5 @@
 ﻿namespace Forum3 {
-	public static class Names {
+	public static class Constants {
 		public static class Keys {
 			public const string LastPostTimestamp = "LastPostTimestamp";
 			public const string LastProcessedToken = "LastProcessedToken";

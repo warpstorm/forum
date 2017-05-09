@@ -42,7 +42,7 @@ namespace Forum3.Services {
 		}
 
 		public List<OnlineUser> GetOnlineUsers() {
-			var onlineTimeLimit = DateTime.Now.AddMinutes(SiteSettingsService.GetInt(Names.SiteSettings.OnlineTimeLimit));
+			var onlineTimeLimit = DateTime.Now.AddMinutes(SiteSettingsService.GetInt(Constants.SiteSettings.OnlineTimeLimit));
 			var onlineTodayTimeLimit = DateTime.Now.AddMinutes(-10080);
 
 			var onlineUsers = DbContext.Users.Where(u => u.LastOnline >= onlineTodayTimeLimit).OrderByDescending(u => u.LastOnline).Select(u => new OnlineUser {
