@@ -6,8 +6,8 @@ namespace Forum3 {
 		public static void Main(string[] args) {
 			var host = new WebHostBuilder()
 				.UseKestrel()
+				.UseUrls("http://*:31415")
 				.UseContentRoot(Directory.GetCurrentDirectory())
-				.UseIISIntegration()
 				.UseStartup<Startup>()
 				.Build();
 
