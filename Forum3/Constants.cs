@@ -1,5 +1,9 @@
 ﻿namespace Forum3 {
 	public static class Constants {
+		public static class Values {
+			public const int MessagesPerPage = 15;
+		}
+
 		public static class Keys {
 			public const string LastPostTimestamp = "LastPostTimestamp";
 			public const string LastProcessedToken = "LastProcessedToken";

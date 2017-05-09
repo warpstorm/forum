@@ -14,8 +14,6 @@ using Microsoft.AspNetCore.Mvc.Routing;
 
 namespace Forum3.Services {
 	public class TopicService {
-		const int MSG_PER_PAGE = 15;
-
 		ApplicationDbContext DbContext { get; }
 		UserService UserService { get; set; }
 
@@ -35,7 +33,7 @@ namespace Forum3.Services {
 		}
 
 		public async Task<PageModels.TopicIndexPage> IndexPage(int page) {
-			var take = MSG_PER_PAGE;
+			var take = Constants.Values.MessagesPerPage;
 			var skip = (page * take) - take;
 
 			var messageRecordQuery = from m in DbContext.Messages
@@ -76,7 +74,7 @@ namespace Forum3.Services {
 			if (parentId != messageId)
 				return GetRedirectViewModel(messageId, record.ParentId, messageIds);
 
-			var take = MSG_PER_PAGE;
+			var take = Constants.Values.MessagesPerPage;
 			var skip = take * (page - 1);
 			var totalPages = Convert.ToInt32(Math.Ceiling(messageIds.Count / take * 1.0));
 
@@ -167,7 +165,7 @@ namespace Forum3.Services {
 			while (messageIds[index] != messageId)
 				index++;
 
-			return Convert.ToInt32(Math.Ceiling(index / MSG_PER_PAGE * 1.0));
+			return Convert.ToInt32(Math.Ceiling(index / Constants.Values.MessagesPerPage * 1.0));
 		}
 	}
 }
