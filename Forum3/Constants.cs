@@ -2,6 +2,7 @@
 	public static class Constants {
 		public static class Values {
 			public const int MessagesPerPage = 15;
+			public const int HistoryTimeLimit = 14;
 		}
 
 		public static class Keys {

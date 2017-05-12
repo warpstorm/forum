@@ -14,7 +14,6 @@ namespace Forum3.Controllers {
 			MessageService = messageService;
 		}
 
-		[AllowAnonymous]
 		[HttpGet]
 		public async Task<IActionResult> Index(int page = 1) {
 			var viewModel = await TopicService.IndexPage(page);
