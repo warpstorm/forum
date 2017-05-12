@@ -11,6 +11,8 @@ using Microsoft.AspNetCore.Mvc;
 using Forum3.Controllers;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Forum3.Models.DataModels;
+using Forum3.Enums;
 
 namespace Forum3.Services {
 	public class TopicService {
@@ -58,7 +60,7 @@ namespace Forum3.Services {
 			};
 		}
 
-		public async Task<PageModels.TopicDisplayPage> DisplayPage(int messageId, int page = 1, int target = 0) {
+		public async Task<PageModels.TopicDisplayPage> DisplayPage(int messageId, int page = 0, int target = 0) {
 			var record = await DbContext.Messages.FindAsync(messageId);
 
 			if (record == null)
@@ -73,6 +75,9 @@ namespace Forum3.Services {
 
 			if (parentId != messageId)
 				return GetRedirectViewModel(messageId, record.ParentId, messageIds);
+
+			if (page < 1)
+				page = 1;
 
 			var take = Constants.Values.MessagesPerPage;
 			var skip = take * (page - 1);
