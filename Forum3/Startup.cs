@@ -30,15 +30,16 @@ namespace Forum3 {
 		public IConfigurationRoot Configuration { get; }
 
 		public void ConfigureServices(IServiceCollection services) {
-			// Uncomment to use the DefaultConnection string in appsettings.json
-			//var connectionString = Configuration.GetConnectionString("DefaultConnection");
-
 			// Loads from the user-secrets store
 			var connectionString = Configuration["DefaultConnection"];
 
+			// secrets store is empty, use the one defined in appsettings.json
+			if (string.IsNullOrEmpty(connectionString))
+				connectionString = Configuration.GetConnectionString("DefaultConnection");
+
 			// Add framework services.
 			services.AddDbContext<ApplicationDbContext>(options =>
-				options.UseSqlServer(connectionString));
+			options.UseSqlServer(connectionString));
 
 			services.AddIdentity<ApplicationUser, IdentityRole>(o => {
 				o.Password.RequireDigit = false;
