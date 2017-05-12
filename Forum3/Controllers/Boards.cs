@@ -7,29 +7,32 @@ using Forum3.Models.InputModels;
 
 namespace Forum3.Controllers {
 //	[Authorize(Roles = "Admin")]
-	public class Boards : Controller {
+	public class Boards : ForumController {
 		public BoardService BoardService { get; }
 
-		public Boards(BoardService boardService) {
+		public Boards(
+			BoardService boardService, 
+			UserService userService
+		) : base(userService) {
 			BoardService = boardService;
 		}
 
 		[HttpGet]
 		[AllowAnonymous]
 		public IActionResult Index() {
-			var viewModel = BoardService.GetIndexPage();
+			var viewModel = BoardService.IndexPage();
 			return View(viewModel);
 		}
 
 		[HttpGet]
 		public IActionResult Manage() {
-			var viewModel = BoardService.LoadBoardSummaries();
+			var viewModel = BoardService.ManagePage();
 			return View(viewModel);
 		}
 
 		[HttpGet]
 		public IActionResult Create() {
-			var viewModel = BoardService.GetCreatePage();
+			var viewModel = BoardService.CreatePage();
 			return View(viewModel);
 		}
 
@@ -41,7 +44,7 @@ namespace Forum3.Controllers {
 			if (ModelState.IsValid)
 				return RedirectToAction(nameof(Index));
 
-			var viewModel = BoardService.GetCreatePage(input);
+			var viewModel = BoardService.CreatePage(input);
 			return View(viewModel);
 		}
 	}

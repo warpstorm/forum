@@ -9,12 +9,13 @@ namespace Forum3.Models.DataModels {
 		[StringLength(64)]
 		public string Name { get; set; }
 
+		public int CategoryId { get; set; }
+
 		public bool VettedOnly { get; set; }
-		public int? ParentId { get; set; }
 		public int? LastMessageId { get; set; }
 		public int DisplayOrder { get; set; }
 
-		public Board Parent { get; set; }
 		public Message LastMessage { get; set; }
+		public Category Category { get; set; }
 	}
 }

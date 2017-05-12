@@ -1,4 +1,4 @@
-﻿@model List<IndexBoardSummary>
+﻿@model IndexPage
 
 @{
     ViewBag.Title = "Board Management";
@@ -8,11 +8,9 @@
 
 @Html.ValidationSummary()
 
-<table>
-    @foreach (var board in Model) {
-        @Html.Partial("_ManageItem", board)
-    }
-</table>
+@foreach (var category in Model.Categories) {
+    @Html.Partial("_ManageItem", category)
+}
 
 @section PageActions {
     <li><a asp-controller="Boards" asp-action="Create" class="button">Create Board</a></li>

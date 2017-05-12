@@ -19,10 +19,10 @@
             <ul class="floatRight">
                 @if (UserService.ContextUser.IsAuthenticated) {
                     <li>
-                        @Html.ActionLink("Boards", "Index", "Board", null, new { @class = "smallButton" })
+                        @Html.ActionLink("Boards", "Index", "Boards", null, new { @class = "smallButton" })
                     </li>
                     <li>
-                        @Html.ActionLink("Topics", "Index", "Message", new { id = "" }, new { @class = "smallButton" })
+                        @Html.ActionLink("Topics", "Index", "Topics", new { id = "" }, new { @class = "smallButton" })
                     </li>
 
                     @if (UserService.ContextUser.IsAdmin) {

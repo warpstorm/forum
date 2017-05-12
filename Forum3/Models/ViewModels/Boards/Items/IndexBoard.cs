@@ -1,8 +1,7 @@
-﻿using System.Collections.Generic;
-using Forum3.Models.ViewModels.Topics.Items;
+﻿using Forum3.Models.ViewModels.Topics.Items;
 
 namespace Forum3.Models.ViewModels.Boards.Items {
-	public class IndexBoardSummary {
+	public class IndexBoard {
 		public int Id { get; set; }
 		public int? Parent { get; set; }
 		public string Name { get; set; }
@@ -10,7 +9,6 @@ namespace Forum3.Models.ViewModels.Boards.Items {
 		public bool VettedOnly { get; set; }
 		public bool Unread { get; set; }
 		public bool Selected { get; set; }
-		public List<IndexBoardSummary> Children { get; set; }
 
 		public MessagePreview LastMessage { get; set; }
 	}

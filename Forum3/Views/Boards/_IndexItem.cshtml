@@ -1,89 +1,31 @@
-@model IndexBoardSummary
+@model IndexCategory
 
-@*
-    @{
-        var notifications = (NotificationList) ViewBag.Notifications;
+<div class="category">
+	<h3>@Model.Name</h3>
 
-        if (notifications.Notifications == null) {
-            ViewBag.BoardNotificationCount = 0;
-        }
-        else {
-            ViewBag.BoardNotificationCount = notifications.Notifications.Count(n => n.Boards != null && n.Boards.Contains(Model.Id));
-        }
-    }
-*@
+	<div class="table">
+		@foreach (var child in Model.Boards) {
+			<div class="table-row board">
+				<div class="table-cell boardInfo">
+					<a asp-controller="Topics" asp-action="Index" asp-route-id="@child.Id">
+						@child.Name
+						@if (child.Unread) {
+							<span class="smallButton subtleButton">Unread</span>
+						}
+					</a>
+				</div>
 
-<div class="boardGroup">
-    <div class="table parentBoard">
-        <div class="table-row">
-            <div class="table-cell boardInfo">
-                <a asp-controller="Message" asp-action="Index" asp-route-id="@Model.Id">
-                    @Model.Name
-                    @if (Model.Unread) {
-                        <span class="smallButton subtleButton">Unread</span>}
-                </a>
-                @if (ViewBag.BoardNotificationCount > 0) {
-                    <a asp-controller="Notification" asp-action="Index" asp-route-id="@Model.Id" class="smallButton subtleButton">
-                        <span class="icon-flag"></span> @ViewBag.BoardNotificationCount
-                    </a>}
-            </div>
-
-            @if (Model.LastMessage != null) {
-                <div class="table-cell lastPost">
-                    <p>
-                        <a asp-controller="Topics" asp-action="Display" asp-route-id="@Model.LastMessage.Id" asp-fragment="latest">
-                            @Html.Raw(Model.LastMessage.ShortPreview)
-                        </a>
-                    </p>
-                    <p>by @Model.LastMessage.LastReplyByName, @Model.LastMessage.LastReplyPosted</p>
-                </div>
-			}
-        </div>
-        @if (Model.Children.Count > 0) {
-            foreach (var child in Model.Children) {
-                //if (notifications.Notifications == null) {
-                //    ViewBag.BoardNotificationCount = 0;
-                //}
-                //else {
-                //    ViewBag.BoardNotificationCount = notifications.Notifications.Count(n => n.Boards != null && n.Boards.Contains(child.Id));
-                //}
-
-                <div class="table-row childBoard">
-                    <div class="table-cell boardInfo">
-                        <a asp-controller="Topics" asp-action="Index" asp-route-id="@child.Id">
-                            @child.Name
-                            @if (child.Unread) {
-                                <span class="smallButton subtleButton">Unread</span>
-                            }
-                        </a>
-
-                        @*@if (ViewBag.BoardNotificationCount > 0) {
-                                <a href="@Url.Action("Index", "Notification", new { id = child.Id })" class="smallButton subtleButton"><span class="icon-flag"></span> @ViewBag.BoardNotificationCount</a>
-                            }*@
-
-                        @if (child.Children != null && child.Children.Count > 0) {
-                            <ul class="grandChildren">
-                                @foreach (var grandchild in child.Children) {
-                                    <li>
-                                        <a asp-controller="Topics" asp-action="Index" asp-route-id="@grandchild.Id">@grandchild.Name</a>
-                                    </li>
-                                }
-                            </ul>
-                        }
-                    </div>
-
-                    @if (child.LastMessage != null) {
-                        <div class="table-cell lastPost">
-                            <p>
-                                <a asp-controller="Topics" asp-action="Display" asp-route-id="@child.LastMessage.Id" asp-fragment="latest">
-                                    @Html.Raw(child.LastMessage.ShortPreview)
-                                </a>
-                            </p>
-                            <p>by @child.LastMessage.LastReplyByName, <time>@child.LastMessage.LastReplyPosted</time></p>
-                        </div>
+				@if (child.LastMessage != null) {
+					<div class="table-cell lastPost">
+						<p>
+							<a asp-controller="Topics" asp-action="Display" asp-route-id="@child.LastMessage.Id" asp-fragment="latest">
+								@Html.Raw(child.LastMessage.ShortPreview)
+							</a>
+						</p>
+						<p>by @child.LastMessage.LastReplyByName, <time>@child.LastMessage.LastReplyPosted</time></p>
+					</div>
 					}
-                </div>
-            }
-        }
-    </div>
+			</div>
+		}
+	</div>
 </div>

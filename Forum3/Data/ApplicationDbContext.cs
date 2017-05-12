@@ -1,12 +1,13 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Forum3.Models.DataModels;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Forum3.Models.DataModels;
 
 namespace Forum3.Data {
 	public class ApplicationDbContext : IdentityDbContext<ApplicationUser> {
 		public DbSet<Board> Boards { get; set; }
 		public DbSet<BoardRelationship> BoardRelationships { get; set; }
+		public DbSet<Category> Categories { get; set; }
 		public DbSet<MessageBoard> MessageBoards { get; set; }
 		public DbSet<Message> Messages { get; set; }
 		public DbSet<MessageThought> MessageThoughts { get; set; }
@@ -70,15 +71,15 @@ namespace Forum3.Data {
 				.OnDelete(DeleteBehavior.Restrict);
 
 			builder.Entity<Board>()
-				.HasOne(r => r.Parent)
+				.HasOne(r => r.Category)
 				.WithMany()
-				.HasForeignKey(r => r.ParentId)
+				.HasForeignKey(r => r.CategoryId)
 				.OnDelete(DeleteBehavior.Restrict);
 
 			builder.Entity<Board>()
 				.HasOne(r => r.LastMessage)
 				.WithMany()
-				.HasForeignKey(r => r.ParentId)
+				.HasForeignKey(r => r.LastMessageId)
 				.OnDelete(DeleteBehavior.Restrict);
 
 			builder.Entity<BoardRelationship>()

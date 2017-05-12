@@ -65,7 +65,7 @@ namespace Forum3.Controllers {
 
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Manage(InputModels.ProfileInput input) {
+		public IActionResult Manage(InputModels.ProfileInput input) {
 			// TODO - save changes
 
 			return View();
