@@ -6,30 +6,29 @@
     <h1>@ViewBag.Title</h1>
 
     <div>
-        @using (Html.BeginForm()) {
-            @Html.AntiForgeryToken()
-            @Html.ValidationSummary(true)
+		<form method="post"
+			  asp-action="@nameof(Forum3.Controllers.Boards.Create)"
+			  asp-controller="@nameof(Forum3.Controllers.Boards)">
 
-            <p>
-                @Html.LabelFor(model => model.Name)
-                @Html.EditorFor(model => model.Name)
-                @Html.ValidationMessageFor(model => model.Name)
-            </p>
+			<p>
+				<span>Name:</span>
+				<input type="text" asp-for="@Model.Name" />
+			</p>
+			<p asp-validation-for="@Model.Name"></p>
 
-            <p>
-                Vetted Only:
-                @Html.EditorFor(model => model.VettedOnly)
-            </p>
+			<p>
+				Vetted Only:
+				<input asp-for="@Model.VettedOnly" type="checkbox" />
+			</p>
 
-            <p>Parent:</p>
-            <p>
-                <select asp-for="Parent" asp-items="Model.Parents">
-                    <option value="" disabled selected style="display: none;">Please select a parent</option>
-                </select>
-                @Html.ValidationMessageFor(model => model.Parent)
-            </p>
+			<p>Category:</p>
+			<p>
+				<select asp-for="@Model.Category" asp-items="@Model.Categories">
+					<option value="" disabled selected style="display: none;">Please select a parent</option>
+				</select>
+			</p>
 
-            <p><input type="submit" value="Create" /></p>
-        }
-    </div>
+			<p><input type="submit" value="Create" /></p>
+		</form>
+	</div>
 </div>
