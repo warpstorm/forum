@@ -81,7 +81,7 @@ namespace Forum3 {
 			app.UseMvc(routes => {
 				routes.MapRoute(
 					name: "default",
-					template: "{controller=Topics}/{action=Index}/{id?}/{page?}/{target?}");
+					template: "{controller=Boards}/{action=Index}/{id?}/{page?}/{target?}");
 			});
 		}
 	}
