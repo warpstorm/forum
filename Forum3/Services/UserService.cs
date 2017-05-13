@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Forum3.Data;
 using Forum3.Models.DataModels;
 using Forum3.Helpers;
@@ -11,17 +13,8 @@ using Forum3.Models.ViewModels.Boards.Items;
 
 namespace Forum3.Services {
 	public class UserService {
-		public ContextUser ContextUser {
-			get {
-				if (_ContextUser == null)
-					LoadContextUser();
-
-				return _ContextUser;
-			}
-			private set {
-				_ContextUser = value;
-			}
-		}
+		// NOTE - This Result is a blocking call, required because this property can't be async. I should find a better solution like a UserServiceFactory or something.
+		public ContextUser ContextUser => _ContextUser ?? (_ContextUser = GetContextUser().Result);
 		ContextUser _ContextUser;
 
 		ApplicationDbContext DbContext { get; }
@@ -41,16 +34,21 @@ namespace Forum3.Services {
 			SiteSettingsService = siteSettingsService;
 		}
 
-		public List<OnlineUser> GetOnlineUsers() {
+		public async Task<List<OnlineUser>> GetOnlineUsers() {
+			await GetContextUser();
+
 			var onlineTimeLimit = DateTime.Now.AddMinutes(SiteSettingsService.GetInt(Constants.SiteSettings.OnlineTimeLimit));
 			var onlineTodayTimeLimit = DateTime.Now.AddMinutes(-10080);
 
-			var onlineUsers = DbContext.Users.Where(u => u.LastOnline >= onlineTodayTimeLimit).OrderByDescending(u => u.LastOnline).Select(u => new OnlineUser {
-				Id = u.Id,
-				Name = u.DisplayName,
-				Online = u.LastOnline >= onlineTimeLimit,
-				LastOnline = u.LastOnline
-			}).ToList();
+			var onlineUsers = await (from user in DbContext.Users
+				where user.LastOnline >= onlineTodayTimeLimit
+				orderby user.LastOnline descending
+				select new OnlineUser {
+					Id = user.Id,
+					Name = user.DisplayName,
+					Online = user.LastOnline >= onlineTimeLimit,
+					LastOnline = user.LastOnline
+				}).ToListAsync();
 
 			foreach (var onlineUser in onlineUsers)
 				onlineUser.LastOnlineString = onlineUser.LastOnline.ToPassedTimeString();
@@ -58,30 +56,38 @@ namespace Forum3.Services {
 			return onlineUsers;
 		}
 
-		public List<string> GetBirthdays() {
+		public async Task<List<string>> GetBirthdays() {
 			var todayBirthdayNames = new List<string>();
 
-			var birthdays = DbContext.Users.Select(u => new Birthday {
+			var birthdays = await DbContext.Users.Select(u => new Birthday {
 				Date = u.Birthday,
 				DisplayName = u.DisplayName
-			}).ToList();
+			}).ToListAsync();
 
-			if (birthdays.Count > 0) {
+			if (birthdays.Any()) {
 				var todayBirthdays = birthdays.Where(u => new DateTime(DateTime.Now.Year, u.Date.Month, u.Date.Day).Date == DateTime.Now.Date);
 
 				foreach (var item in todayBirthdays) {
-					DateTime now = DateTime.Today;
-					int age = now.Year - item.Date.Year;
-					if (item.Date > now.AddYears(-age)) age--;
+					var now = DateTime.Today;
+					var age = now.Year - item.Date.Year;
 
-					todayBirthdayNames.Add(item.DisplayName + " (" + age + ")");
+					if (item.Date > now.AddYears(-age)) 
+						age--;
+
+					todayBirthdayNames.Add($"{item.DisplayName} ({age})");
 				}
 			}
 
 			return todayBirthdayNames;
 		}
 
-		void LoadContextUser() {
+		/// <summary>
+		/// Ensures the ContextUser is loaded.
+		/// </summary>
+		async Task<ContextUser> GetContextUser() {
+			if (_ContextUser != null)
+				return _ContextUser;
+
 			var contextUser = new ContextUser();
 			var currentPrincipal = HttpContextAccessor.HttpContext.User;
 
@@ -90,12 +96,13 @@ namespace Forum3.Services {
 				contextUser.IsAdmin = currentPrincipal.IsInRole("Admin");
 				contextUser.IsVetted = currentPrincipal.IsInRole("Vetted");
 
-				// NOTE - This is a blocking call, required because this method is called from a property and can't be async.
-				// TODO - Find a better solution like a UserServiceFactory or something.
-				contextUser.ApplicationUser = UserManager.GetUserAsync(currentPrincipal).Result;
+				contextUser.ApplicationUser = await UserManager.GetUserAsync(currentPrincipal);
+				contextUser.ApplicationUser.LastOnline = DateTime.Now;
+				DbContext.Entry(contextUser.ApplicationUser).State = EntityState.Modified;
+				await DbContext.SaveChangesAsync();
 			}
 
-			ContextUser = contextUser;
+			return _ContextUser = contextUser;
 		}
 
 		class Birthday {

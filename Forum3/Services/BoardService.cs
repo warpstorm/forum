@@ -24,11 +24,19 @@ namespace Forum3.Services {
 			UserService = userService;
 		}
 
-		public PageViewModels.IndexPage IndexPage() {
+		public async Task<PageViewModels.IndexPage> IndexPage() {
+			var birthdays = UserService.GetBirthdays();
+			var onlineUsers = UserService.GetOnlineUsers();
+
+			await Task.WhenAll(new Task[] {
+				birthdays,
+				onlineUsers
+			});
+
 			var viewModel = new PageViewModels.IndexPage {
-				Birthdays = UserService.GetBirthdays().ToArray(),
+				Birthdays = birthdays.Result.ToArray(),
 				Categories = GetCategories(),
-				OnlineUsers = UserService.GetOnlineUsers()
+				OnlineUsers = onlineUsers.Result
 			};
 
 			return viewModel;

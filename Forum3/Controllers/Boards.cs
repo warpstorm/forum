@@ -19,8 +19,8 @@ namespace Forum3.Controllers {
 
 		[HttpGet]
 		[AllowAnonymous]
-		public IActionResult Index() {
-			var viewModel = BoardService.IndexPage();
+		public async Task<IActionResult> Index() {
+			var viewModel = await BoardService.IndexPage();
 			return View(viewModel);
 		}
 
