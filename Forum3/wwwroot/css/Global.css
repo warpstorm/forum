@@ -2,12 +2,12 @@
 	min-width: 250px;
 	margin: 0;
 	padding: 0;
-	background-color: #fcfcfc;
+	background: url("../images/aurora.png") #0b1d24 repeat-x;
 }
 
 body {
 	font: 500 15px/1.4em "Segoe UI", "Segoe UI Web Regular", "Segoe UI Symbol", "Helvetica Neue", Arial, "sans-serif";
-	color: #000;
+	color: #e4f8ff;
 }
 
 table {
@@ -17,7 +17,6 @@ table {
 }
 
 hr {
-	color: #091d28;
 	clear: both;
 }
 
@@ -139,13 +138,16 @@ textarea {
 
 a, a:link {
 	text-decoration: none;
-	border-bottom: 1px dotted #091d28;
-	color: #031019;
+	border-bottom: 3px solid #283a41;
+	color: #97e4ff;
 }
 
 	a:visited, a.read {
-		text-decoration: none;
-		border-bottom: 1px dotted #69165a;
+		border-color: #3f2c49;
+	}
+
+	a:hover {
+		border-color: #405d68;
 	}
 
 button [class^="icon-"], button [class*=" icon-"],
@@ -413,51 +415,36 @@ Selectors and floating lists
 */
 
 #page-header {
-	clear: both;
+	width: 100%;
+	max-width: 1920px;
+	min-width: 250px;
+
 	font-size: .8em;
+	/*background-color: #24627a;*/
 }
 
-	#page-header a {
-		color: #d7ebf5;
-		border-bottom: 1px dotted #d7ebf5;
-	}
+#page-header a {
+	color: #d7ebf5;
+	border-bottom: 0px;
+}
 
-#page-footer {
-	margin: 30px 0 0 0;
-	clear: both;
-	text-align: center;
-	font-size: .7em;
-	line-height: 1.2em;
-	color: #7AB;
+#page-header nav {
+	padding: 0 13px;
+	line-height: 2.4em;
+	color: #FFF;
+}
+
+#page-header li {
+	display: inline-block;
 }
 
 #page-title {
 	height: 99px;
-	text-align: center;
 }
 
-	#page-title img {
-		max-width: 100%;
-		max-height: 100%;
-		vertical-align: middle;
-	}
-
-#page-header > nav {
-	padding: 0 13px;
-	line-height: 2.4em;
-	color: #FFF;
-	background-color: #526d7e;
-	box-shadow: 0 0 10px #081a27;
-}
-
-	#page-header > nav > div {
-		width: 100%;
-		max-width: 1920px;
-		min-width: 250px;
-	}
-
-#page-header li {
-	display: inline-block;
+#page-title img {
+	max-width: 100%;
+	max-height: 100%;
 }
 
 #siteAlert {
@@ -491,6 +478,21 @@ Selectors and floating lists
 
 .notifications img {
 	border: 0;
+}
+
+
+
+/*
+    PAGE FOOTER
+*/
+
+#page-footer {
+	margin: 30px 0 0 0;
+	clear: both;
+	text-align: center;
+	font-size: .65em;
+	line-height: 1.8em;
+	color: #97e4ff;
 }
 
 

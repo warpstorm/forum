@@ -35,7 +35,7 @@ namespace Forum3.Services {
 		}
 
 		public async Task<PageModels.TopicIndexPage> IndexPage(int page) {
-			var take = Constants.Values.MessagesPerPage;
+			var take = Constants.Defaults.MessagesPerPage;
 			var skip = (page * take) - take;
 
 			var messageRecordQuery = from m in DbContext.Messages
@@ -79,7 +79,7 @@ namespace Forum3.Services {
 			if (page < 1)
 				page = 1;
 
-			var take = Constants.Values.MessagesPerPage;
+			var take = Constants.Defaults.MessagesPerPage;
 			var skip = take * (page - 1);
 			var totalPages = Convert.ToInt32(Math.Ceiling(messageIds.Count / take * 1.0));
 
@@ -170,7 +170,7 @@ namespace Forum3.Services {
 			while (messageIds[index] != messageId)
 				index++;
 
-			return Convert.ToInt32(Math.Ceiling(index / Constants.Values.MessagesPerPage * 1.0));
+			return Convert.ToInt32(Math.Ceiling(index / Constants.Defaults.MessagesPerPage * 1.0));
 		}
 	}
 }

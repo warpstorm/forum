@@ -4,7 +4,7 @@
 	ViewBag.Title = "Warpstorm";
 }
 
-<div class="table indexWrapper">
+<div class="table fullWidth">
 	<div class="table-row">
 		<div class="table-cell">
 			@if (Model.Birthdays.Count() > 0) {
@@ -18,7 +18,7 @@
 			}
 		</div>
 
-		<div id="onlineUsersIndex" class="table-cell mobileHide lowResHide">
+		<div id="onlineUsersIndex" class="table-cell">
 			<h4>Who's online this week</h4>
 			<ul>
 				@foreach (var onlineUser in Model.OnlineUsers) {
@@ -34,3 +34,12 @@
 		</div>
 	</div>
 </div>
+
+@section styles {
+	<environment names="Development">
+		<link rel="stylesheet" href="~/css/BoardIndex.css" />
+	</environment>
+	<environment names="Staging,Production">
+		<link rel="stylesheet" href="~/css/BoardIndex.min.css" asp-append-version="true" />
+	</environment>
+}

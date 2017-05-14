@@ -13,8 +13,7 @@ using Forum3.Models.ViewModels.Boards.Items;
 
 namespace Forum3.Services {
 	public class UserService {
-		// NOTE - This Result is a blocking call, required because this property can't be async. I should find a better solution like a UserServiceFactory or something.
-		public ContextUser ContextUser => _ContextUser ?? (_ContextUser = GetContextUser().Result);
+		public ContextUser ContextUser => GetContextUser();
 		ContextUser _ContextUser;
 
 		ApplicationDbContext DbContext { get; }
@@ -35,9 +34,17 @@ namespace Forum3.Services {
 		}
 
 		public async Task<List<OnlineUser>> GetOnlineUsers() {
-			await GetContextUser();
+			GetContextUser();
 
-			var onlineTimeLimit = DateTime.Now.AddMinutes(SiteSettingsService.GetInt(Constants.SiteSettings.OnlineTimeLimit));
+			var onlineTimeLimitSetting = SiteSettingsService.GetInt(Constants.SiteSettings.OnlineTimeLimit);
+
+			if (onlineTimeLimitSetting == 0)
+				onlineTimeLimitSetting = Constants.Defaults.OnlineTimeLimit;
+
+			if (onlineTimeLimitSetting > 0)
+				onlineTimeLimitSetting *= -1;
+
+			var onlineTimeLimit = DateTime.Now.AddMinutes(onlineTimeLimitSetting);
 			var onlineTodayTimeLimit = DateTime.Now.AddMinutes(-10080);
 
 			var onlineUsers = await (from user in DbContext.Users
@@ -84,7 +91,7 @@ namespace Forum3.Services {
 		/// <summary>
 		/// Ensures the ContextUser is loaded.
 		/// </summary>
-		async Task<ContextUser> GetContextUser() {
+		ContextUser GetContextUser() {
 			if (_ContextUser != null)
 				return _ContextUser;
 
@@ -96,10 +103,10 @@ namespace Forum3.Services {
 				contextUser.IsAdmin = currentPrincipal.IsInRole("Admin");
 				contextUser.IsVetted = currentPrincipal.IsInRole("Vetted");
 
-				contextUser.ApplicationUser = await UserManager.GetUserAsync(currentPrincipal);
+				contextUser.ApplicationUser = UserManager.GetUserAsync(currentPrincipal).Result;
 				contextUser.ApplicationUser.LastOnline = DateTime.Now;
 				DbContext.Entry(contextUser.ApplicationUser).State = EntityState.Modified;
-				await DbContext.SaveChangesAsync();
+				DbContext.SaveChanges();
 			}
 
 			return _ContextUser = contextUser;
