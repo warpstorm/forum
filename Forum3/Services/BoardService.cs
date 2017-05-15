@@ -36,16 +36,16 @@ namespace Forum3.Services {
 
 			var viewModel = new PageViewModels.IndexPage {
 				Birthdays = birthdays.Result.ToArray(),
-				Categories = GetCategories(),
+				Categories = await GetCategories(),
 				OnlineUsers = onlineUsers.Result
 			};
 
 			return viewModel;
 		}
 
-		public PageViewModels.IndexPage ManagePage() {
+		public async Task<PageViewModels.IndexPage> ManagePage() {
 			var viewModel = new PageViewModels.IndexPage {
-				Categories = GetCategories()
+				Categories = await GetCategories()
 			};
 
 			return viewModel;
@@ -148,9 +148,9 @@ namespace Forum3.Services {
 			return pickList;
 		}
 
-		List<ItemViewModels.IndexCategory> GetCategories(int? targetBoard = null) {
-			var categoryRecords = DbContext.Categories.OrderBy(r => r.DisplayOrder).ToList();
-			var boardRecords = DbContext.Boards.OrderBy(r => r.DisplayOrder).ToList();
+		async Task<List<ItemViewModels.IndexCategory>> GetCategories(int? targetBoard = null) {
+			var categoryRecords = await DbContext.Categories.OrderBy(r => r.DisplayOrder).ToListAsync();
+			var boardRecords = await DbContext.Boards.OrderBy(r => r.DisplayOrder).ToListAsync();
 
 			var indexCategories = new List<ItemViewModels.IndexCategory>();
 

@@ -24,14 +24,14 @@ namespace Forum3.Controllers {
 		}
 
 		[HttpGet]
-		public IActionResult Manage() {
-			var viewModel = BoardService.ManagePage();
+		public async Task<IActionResult> Manage() {
+			var viewModel = await BoardService.ManagePage();
 			return View(viewModel);
 		}
 
 		[HttpGet]
-		public IActionResult Create() {
-			var viewModel = BoardService.CreatePage();
+		public async Task<IActionResult> Create() {
+			var viewModel = await BoardService.CreatePage();
 			return View(viewModel);
 		}
 
@@ -43,7 +43,7 @@ namespace Forum3.Controllers {
 			if (ModelState.IsValid)
 				return RedirectToAction(nameof(Index));
 
-			var viewModel = BoardService.CreatePage(input);
+			var viewModel = await BoardService.CreatePage(input);
 			return View(viewModel);
 		}
 	}
