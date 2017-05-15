@@ -110,6 +110,11 @@ namespace Forum3.Services {
 			if (string.IsNullOrEmpty(input.Name))
 				modelState.AddModelError(nameof(input.Name), "Name is a required field.");
 
+			var existingRecord = DbContext.Boards.FirstOrDefault(b => b.Name == input.Name);
+
+			if (existingRecord != null)
+				modelState.AddModelError(nameof(input.Name), "A board with that name already exists");
+
 			if (!modelState.IsValid)
 				return;
 

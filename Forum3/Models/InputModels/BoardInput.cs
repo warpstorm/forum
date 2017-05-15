@@ -3,6 +3,7 @@
 namespace Forum3.Models.InputModels {
 	public class BoardInput {
 		[Required]
+		[MinLength(3)]
 		[StringLength(64)]
 		public string Name { get; set; }
 
