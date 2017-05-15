@@ -51,9 +51,9 @@ namespace Forum3.Services {
 			return viewModel;
 		}
 
-		public PageViewModels.CreatePage CreatePage(InputModels.BoardInput input = null) {
+		public async Task<PageViewModels.CreatePage> CreatePage(InputModels.BoardInput input = null) {
 			var viewModel = new PageViewModels.CreatePage() {
-				Categories = GetCategoryPickList()
+				Categories = await GetCategoryPickList()
 			};
 
 			if (input != null) {
@@ -132,11 +132,11 @@ namespace Forum3.Services {
 			}
 		}
 
-		public List<SelectListItem> GetCategoryPickList(List<SelectListItem> pickList = null) {
+		async Task<List<SelectListItem>> GetCategoryPickList(List<SelectListItem> pickList = null) {
 			if (pickList == null)
 				pickList = new List<SelectListItem>();
 
-			var categoryRecords = DbContext.Categories.OrderBy(r => r.DisplayOrder).ToList();
+			var categoryRecords = await DbContext.Categories.OrderBy(r => r.DisplayOrder).ToListAsync();
 
 			foreach (var categoryRecord in categoryRecords) {
 				pickList.Add(new SelectListItem() {
