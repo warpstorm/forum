@@ -10,6 +10,7 @@ using DataModels = Forum3.Models.DataModels;
 using InputModels = Forum3.Models.InputModels;
 using PageViewModels = Forum3.Models.ViewModels.Boards.Pages;
 using ItemViewModels = Forum3.Models.ViewModels.Boards.Items;
+using Microsoft.EntityFrameworkCore;
 
 namespace Forum3.Services {
 	public class BoardService {
@@ -74,27 +75,50 @@ namespace Forum3.Services {
 
 			var categoryId = 0;
 
-			if (!string.IsNullOrEmpty(input.Category)) {
+			input.NewCategory = input.NewCategory.Trim();
+
+			if (!string.IsNullOrEmpty(input.NewCategory)) {
+				categoryRecord = DbContext.Categories.FirstOrDefault(c => c.Name == input.NewCategory);
+
+				if (categoryRecord == null) {
+					var displayOrder = await DbContext.Categories.MaxAsync(c => c.DisplayOrder);
+
+					categoryRecord = new DataModels.Category {
+						Name = input.NewCategory,
+						DisplayOrder = displayOrder + 1
+					};
+
+					await DbContext.Categories.AddAsync(categoryRecord);
+				}
+			}
+			else {
 				try {
 					categoryId = Convert.ToInt32(input.Category);
 
 					categoryRecord = DbContext.Categories.Find(categoryId);
 
 					if (categoryRecord == null)
-						modelState.AddModelError(nameof(input.Category), "No category was found with this name.");
+						modelState.AddModelError(nameof(input.Category), "No category was found with this ID.");
 				}
 				catch (FormatException) {
 					modelState.AddModelError(nameof(input.Category), "Invalid category ID");
 				}
 			}
 
+			input.Name = input.Name.Trim();
+
+			if (string.IsNullOrEmpty(input.Name))
+				modelState.AddModelError(nameof(input.Name), "Name is a required field.");
+
 			if (!modelState.IsValid)
 				return;
+
+			await DbContext.SaveChangesAsync();
 
 			var boardRecord = new DataModels.Board {
 				Name = input.Name,
 				VettedOnly = input.VettedOnly,
-				CategoryId = categoryId
+				CategoryId = categoryRecord.Id
 			};
 
 			if (modelState.IsValid) {

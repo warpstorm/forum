@@ -1,12 +1,11 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Forum3.Annotations;
 using Forum3.Services;
 using Forum3.Models.InputModels;
 
 namespace Forum3.Controllers {
-//	[Authorize(Roles = "Admin")]
+	[Authorize]
 	public class Boards : ForumController {
 		public BoardService BoardService { get; }
 

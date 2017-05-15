@@ -17,16 +17,17 @@
 			<p asp-validation-for="@Model.Name"></p>
 
 			<p>
-				Vetted Only:
+				Vetted Members Only:
 				<input asp-for="@Model.VettedOnly" type="checkbox" />
 			</p>
 
 			<p>Category:</p>
 			<p>
 				<select asp-for="@Model.Category" asp-items="@Model.Categories">
-					<option value="" disabled selected style="display: none;">Please select a parent</option>
+					<option value="" disabled selected style="display: none;">Please select an existing category</option>
 				</select>
 			</p>
+			<p>Or add a new one: <input asp-for="@Model.NewCategory" /></p>
 
 			<p><input type="submit" value="Create" /></p>
 		</form>
