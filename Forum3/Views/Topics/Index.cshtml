@@ -10,8 +10,8 @@
     </p>
 }
 
-<table class="table">
+<div class="table full-width content-box">
     @foreach (var item in Model.Topics) {
         @await Html.PartialAsync("_IndexItem", item)
     }
-</table>
+</div>

@@ -1,10 +1,10 @@
-﻿@model Forum3.Models.ViewModels.Topics.Items.MessagePreview
+﻿@model MessagePreview
 
-<tr>
-    <td clickableLinkParent>
+<div class="table-row hover-highlight">
+    <div class="table-cell pad pointer" clickableLinkParent>
         <a asp-action="Display" asp-route-id="@Model.Id">@Model.ShortPreview</a>
-    </td>
-    <td>
+    </div>
+    <div class="table-cell">
         @Model.LastReplyPosted
-    </td>
-</tr>
+    </div>
+</div>
