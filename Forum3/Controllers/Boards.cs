@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Forum3.Services;
 using Forum3.Models.InputModels;
@@ -82,6 +81,30 @@ namespace Forum3.Controllers {
 			var serviceResponse = await BoardService.MoveBoardUp(id);
 
 			ProcessServiceResponse(serviceResponse);
+
+			var viewModel = await BoardService.ManagePage();
+			return View(nameof(Manage), viewModel);
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> MergeCategory(Merge input) {
+			if (ModelState.IsValid) {
+				var serviceResponse = await BoardService.MergeCategory(input);
+
+				ProcessServiceResponse(serviceResponse);
+			}
+
+			var viewModel = await BoardService.ManagePage();
+			return View(nameof(Manage), viewModel);
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> MergeBoard(Merge input) {
+			if (ModelState.IsValid) {
+				var serviceResponse = await BoardService.MergeBoard(input);
+
+				ProcessServiceResponse(serviceResponse);
+			}
 
 			var viewModel = await BoardService.ManagePage();
 			return View(nameof(Manage), viewModel);

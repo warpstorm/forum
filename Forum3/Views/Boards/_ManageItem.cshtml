@@ -6,7 +6,7 @@
 		@if (Model.DisplayOrder != 1) {
 			<a asp-controller="@nameof(Boards)" asp-action="@nameof(Boards.MoveCategoryUp)" asp-route-id="@Model.Id" class="borderless spaced"><img alt="Move up" src="~/images/upArrow.png" /></a>
 		}
-		<img src="~/images/join.png" boardId="@Model.Id" class="mergeCategory spaced" />
+		<img src="~/images/join.png" categoryId="@Model.Id" class="mergeCategory spaced" />
 	</h3>
 
 	<div class="table full-width">

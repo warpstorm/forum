@@ -302,6 +302,81 @@ namespace Forum3.Services {
 			return serviceResponse;
 		}
 
+		public async Task<ServiceResponse> MergeCategory(InputModels.Merge input) {
+			var serviceResponse = new ServiceResponse();
+
+			var fromCategory = await DbContext.Categories.SingleOrDefaultAsync(b => b.Id == input.FromId);
+			var toCategory = await DbContext.Categories.SingleOrDefaultAsync(b => b.Id == input.ToId);
+
+			if (fromCategory == null)
+				serviceResponse.ModelErrors.Add(string.Empty, $"A record does not exist with ID '{input.FromId}'");
+
+			if (toCategory == null)
+				serviceResponse.ModelErrors.Add(string.Empty, $"A record does not exist with ID '{input.ToId}'");
+
+			if (serviceResponse.ModelErrors.Any())
+				return serviceResponse;
+
+			var displacedBoards = await DbContext.Boards.Where(b => b.CategoryId == fromCategory.Id).ToListAsync();
+
+			foreach (var displacedBoard in displacedBoards) {
+				displacedBoard.CategoryId = toCategory.Id;
+				DbContext.Entry(displacedBoard).State = EntityState.Modified;
+			}
+
+			await DbContext.SaveChangesAsync();
+
+			DbContext.Categories.Remove(fromCategory);
+
+			await DbContext.SaveChangesAsync();
+
+			return serviceResponse;
+		}
+
+		public async Task<ServiceResponse> MergeBoard(InputModels.Merge input) {
+			var serviceResponse = new ServiceResponse();
+
+			var fromBoard = await DbContext.Boards.SingleOrDefaultAsync(b => b.Id == input.FromId);
+			var toBoard = await DbContext.Boards.SingleOrDefaultAsync(b => b.Id == input.ToId);
+
+			if (fromBoard == null)
+				serviceResponse.ModelErrors.Add(string.Empty, $"A record does not exist with ID '{input.FromId}'");
+
+			if (toBoard == null)
+				serviceResponse.ModelErrors.Add(string.Empty, $"A record does not exist with ID '{input.ToId}'");
+
+			if (serviceResponse.ModelErrors.Any())
+				return serviceResponse;
+
+			var messageBoards = await DbContext.MessageBoards.Where(m => m.BoardId == fromBoard.Id).ToListAsync();
+
+			// Reassign messages to new board
+			foreach (var messageBoard in messageBoards) {
+				messageBoard.BoardId = toBoard.Id;
+				DbContext.Entry(messageBoard).State = EntityState.Modified;
+			}
+
+			await DbContext.SaveChangesAsync();
+
+			var categoryId = fromBoard.CategoryId;
+
+			// Delete the board
+			DbContext.Boards.Remove(fromBoard);
+
+			await DbContext.SaveChangesAsync();
+
+			// Remove the category if empty
+			if (!await DbContext.Boards.AnyAsync(b => b.CategoryId == categoryId)) {
+				var categoryRecord = await DbContext.Categories.SingleOrDefaultAsync(c => c.Id == categoryId);
+				
+				DbContext.Categories.Remove(categoryRecord);
+
+				await DbContext.SaveChangesAsync();
+			}
+
+			return serviceResponse;
+		}
+
 		async Task<List<SelectListItem>> GetCategoryPickList(List<SelectListItem> pickList = null) {
 			if (pickList == null)
 				pickList = new List<SelectListItem>();

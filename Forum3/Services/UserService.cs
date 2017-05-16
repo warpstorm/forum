@@ -89,7 +89,7 @@ namespace Forum3.Services {
 		}
 
 		/// <summary>
-		/// Ensures the ContextUser is loaded.
+		/// Ensures the ContextUser is loaded, and returns it.
 		/// </summary>
 		ContextUser GetContextUser() {
 			if (_ContextUser != null)
@@ -103,8 +103,11 @@ namespace Forum3.Services {
 				contextUser.IsAdmin = currentPrincipal.IsInRole("Admin");
 				contextUser.IsVetted = currentPrincipal.IsInRole("Vetted");
 
-				contextUser.ApplicationUser = UserManager.GetUserAsync(currentPrincipal).Result;
+				var userId = UserManager.GetUserId(currentPrincipal);
+
+				contextUser.ApplicationUser = DbContext.Users.SingleOrDefault(u => u.Id == userId);
 				contextUser.ApplicationUser.LastOnline = DateTime.Now;
+
 				DbContext.Entry(contextUser.ApplicationUser).State = EntityState.Modified;
 				DbContext.SaveChanges();
 			}

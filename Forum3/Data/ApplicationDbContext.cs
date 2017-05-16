@@ -6,7 +6,6 @@ using Forum3.Models.DataModels;
 namespace Forum3.Data {
 	public class ApplicationDbContext : IdentityDbContext<ApplicationUser> {
 		public DbSet<Board> Boards { get; set; }
-		public DbSet<BoardRelationship> BoardRelationships { get; set; }
 		public DbSet<Category> Categories { get; set; }
 		public DbSet<MessageBoard> MessageBoards { get; set; }
 		public DbSet<Message> Messages { get; set; }
@@ -80,18 +79,6 @@ namespace Forum3.Data {
 				.HasOne(r => r.LastMessage)
 				.WithMany()
 				.HasForeignKey(r => r.LastMessageId)
-				.OnDelete(DeleteBehavior.Restrict);
-
-			builder.Entity<BoardRelationship>()
-				.HasOne(r => r.Parent)
-				.WithMany()
-				.HasForeignKey(r => r.ParentId)
-				.OnDelete(DeleteBehavior.Restrict);
-
-			builder.Entity<BoardRelationship>()
-				.HasOne(r => r.Child)
-				.WithMany()
-				.HasForeignKey(r => r.ChildId)
 				.OnDelete(DeleteBehavior.Restrict);
 		}
 	}

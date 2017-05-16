@@ -39,7 +39,8 @@ namespace Forum3 {
 
 			// Add framework services.
 			services.AddDbContext<ApplicationDbContext>(options =>
-			options.UseSqlServer(connectionString));
+				options.UseSqlServer(connectionString)
+			);
 
 			services.AddIdentity<ApplicationUser, IdentityRole>(o => {
 				o.Password.RequireDigit = false;

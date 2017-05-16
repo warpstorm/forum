@@ -16,11 +16,20 @@
 	<a asp-controller="Boards" asp-action="Create" class="button">Create Board</a>
 </p>
 
-@section styles {
+@section scripts {
 	<environment names="Development">
-		<link rel="stylesheet" href="~/css/BoardManageIndex.css" />
+		<script src="~/js/ManageBoards.js" asp-append-version="true"></script>
 	</environment>
 	<environment names="Staging,Production">
-		<link rel="stylesheet" href="~/css/BoardManageIndex.min.css" asp-append-version="true" />
+		<script src="~/js/ManageBoards.min.js" asp-append-version="true"></script>
+	</environment>
+}
+
+@section styles {
+	<environment names="Development">
+		<link rel="stylesheet" href="~/css/ManageBoards.css" asp-append-version="true" />
+	</environment>
+	<environment names="Staging,Production">
+		<link rel="stylesheet" href="~/css/ManageBoards.min.css" asp-append-version="true" />
 	</environment>
 }
