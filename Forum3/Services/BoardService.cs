@@ -145,16 +145,58 @@ namespace Forum3.Services {
 			}
 
 			if (targetCategory.DisplayOrder > 1) {
-				var lowerCategory = DbContext.Categories.First(b => b.DisplayOrder == targetCategory.DisplayOrder - 1);
+				var displacedCategory = DbContext.Categories.First(b => b.DisplayOrder == targetCategory.DisplayOrder - 1);
 
-				lowerCategory.DisplayOrder++;
-				DbContext.Entry(lowerCategory).State = EntityState.Modified;
+				displacedCategory.DisplayOrder++;
+				DbContext.Entry(displacedCategory).State = EntityState.Modified;
 
 				targetCategory.DisplayOrder--;
 				DbContext.Entry(targetCategory).State = EntityState.Modified;
 
 				await DbContext.SaveChangesAsync();
 			}
+
+			return serviceResponse;
+		}
+
+		public async Task<ServiceResponse> MoveBoardUp(int id) {
+			var serviceResponse = new ServiceResponse();
+
+			var targetBoard = await DbContext.Boards.FirstOrDefaultAsync(b => b.Id == id);
+
+			if (targetBoard == null) {
+				serviceResponse.ModelErrors.Add(string.Empty, "No board found with that ID.");
+				return serviceResponse;
+			}
+
+			var categoryBoards = await DbContext.Boards.Where(b => b.CategoryId == targetBoard.CategoryId).OrderBy(b => b.DisplayOrder).ToListAsync();
+
+			var currentIndex = 1;
+
+			foreach (var board in categoryBoards) {
+				board.DisplayOrder = currentIndex++;
+				DbContext.Entry(board).State = EntityState.Modified;
+			}
+
+			await DbContext.SaveChangesAsync();
+
+			targetBoard = categoryBoards.First(b => b.Id == id);
+
+			if (targetBoard.DisplayOrder > 1) {
+				var displacedBoard = categoryBoards.FirstOrDefault(b => b.DisplayOrder == targetBoard.DisplayOrder - 1);
+
+				if (displacedBoard != null) {
+					displacedBoard.DisplayOrder++;
+					DbContext.Entry(displacedBoard).State = EntityState.Modified;
+				}
+
+				targetBoard.DisplayOrder--;
+				DbContext.Entry(targetBoard).State = EntityState.Modified;
+
+				await DbContext.SaveChangesAsync();
+			}
+			else
+				targetBoard.DisplayOrder = 2;
 
 			return serviceResponse;
 		}

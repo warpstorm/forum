@@ -1,9 +1,4 @@
-﻿.category {
-	background: #000;
-	border-radius: 3px;
-}
-
-	.category .board:hover .boardInfo {
+﻿	.category .board:hover .boardInfo {
 		background-color: #0f2831;
 	}
 

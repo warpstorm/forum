@@ -54,5 +54,15 @@ namespace Forum3.Controllers {
 			var viewModel = await BoardService.ManagePage();
 			return View(nameof(Manage), viewModel);
 		}
+
+		[HttpGet]
+		public async Task<IActionResult> MoveBoardUp(int id) {
+			var serviceResponse = await BoardService.MoveBoardUp(id);
+
+			ProcessServiceResponse(serviceResponse);
+
+			var viewModel = await BoardService.ManagePage();
+			return View(nameof(Manage), viewModel);
+		}
 	}
 }
