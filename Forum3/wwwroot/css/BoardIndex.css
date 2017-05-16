@@ -1,9 +1,7 @@
 ﻿#onlineUsersIndex {
 	width: 220px;
 	max-width: 220px;
-	padding: 15px;
 	overflow: hidden;
-	display: table-cell;
 	vertical-align: top;
 }
 

@@ -9,7 +9,7 @@
 		<img src="~/images/join.png" boardId="@Model.Id" class="mergeCategory spaced" />
 	</h3>
 
-	<div class="table">
+	<div class="table full-width">
 		@foreach (var child in Model.Boards) {
 			<div class="table-row board">
 				<div class="table-cell boardName small-pad">
@@ -22,9 +22,6 @@
 				</div>
 				<div class="table-cell boardInfo small-pad">
 					<a asp-controller="Boards" asp-action="Update" asp-route-id="@child.Id" class="borderless"><img alt="Update" src="~/images/edit.png" /></a>
-				</div>
-				<div class="table-cell boardInfo small-pad">
-					<a asp-controller="Boards" asp-action="Delete" asp-route-id="@child.Id" class="borderless"><img alt="Delete" src="~/images/delete.png" /></a>
 				</div>
 				<div class="table-cell boardInfo small-pad">
 					<img src="~/images/join.png" boardId="@child.Id" class="mergeBoard" />

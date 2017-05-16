@@ -113,11 +113,11 @@ textarea {
 	padding: 4px 10px;
 	margin: 2px;
 	font: 96%/1.4em "Segoe UI", "Segoe UI Web Regular", "Segoe UI Symbol", "Helvetica Neue", Arial, "sans-serif";
-	border: 1px solid #184f6f !important;
+	border: 1px solid #0f2831 !important;
 	border-radius: 2px;
-	box-shadow: #badff1 0 2px 5px 0;
 	max-width: 95%;
-	background-color: #fff;
+	background-color: #071115;
+	color: #e4f8ff;
 }
 
 textarea {
@@ -128,7 +128,7 @@ textarea {
 }
 
 	input:disabled, textarea:disabled, button:disabled {
-		background-color: #490f0f;
+		background-color: #121516;
 	}
 
 
@@ -137,19 +137,14 @@ textarea {
     BUTTONS and LINKS
 */
 
-a, a:link {
+a, a:link, a:visited {
 	text-decoration: none;
-	border-bottom: 3px solid #283a41;
-	color: #97e4ff;
+	color: #e4f8ff;
 }
 
-	a:visited, .read {
-		border-color: #3f2c49;
-	}
-
-	a:hover {
-		border-color: #405d68;
-	}
+a:hover, a:link:hover, a:visited:hover {
+	color: #ffffff;
+}
 
 button [class^="icon-"], button [class*=" icon-"],
 .button [class^="icon-"], .button [class*=" icon-"],
@@ -177,6 +172,7 @@ a.button, a.button:visited {
 	line-height: 12pt;
 	font-weight: 600;
 	color: #d7ebf5 !important;
+	border-color: transparent !important;
 }
 
 	.smallButton:hover, a.smallButton:hover {
@@ -196,11 +192,12 @@ a.smallButton {
 	text-shadow: #000 0 0 5px;
 	border: 1px solid #0f3044 !important;
 	border-radius: 2px;
+	box-shadow: none !important;
 }
 
 .subtleButton, a.subtleButton {
 	background-color: #0c2635;
-	box-shadow: none;
+	box-shadow: none !important;
 }
 
 .subtleButton {
@@ -222,7 +219,12 @@ a.smallButton {
 	color: #d01d1d;
 }
 
-.borderless, a.borderless, a.borderless:link {
+.borderless,
+a.borderless,
+a.borderless:link,
+.borderless *,
+a.borderless *,
+a.borderless:link * {
 	border-top-color: transparent;
 	border-bottom-color: transparent;
 	border-left-color: transparent;
@@ -231,6 +233,7 @@ a.smallButton {
 	border-bottom-width: 0;
 	border-left-width: 0;
 	border-right-width: 0;
+	box-shadow: none;
 }
 
 .highlight {
@@ -398,7 +401,6 @@ a.smallButton {
 
 .table-cell {
 	display: table-cell;
-	vertical-align: top;
 }
 
 
@@ -616,9 +618,33 @@ main > footer {
 	padding: 6px 20px;
 }
 
+
+
+/*
+	CONTENT BOX
+*/
+
 .content-box {
 	border-top: 2px solid #374d56;
 	border-radius: 2px;
 	background-color: #000;
 	box-shadow: #0f2831 0 -3px 12px inset;
 }
+
+	.content-box a, .content-box a:link {
+		text-decoration: none;
+		color: #e4f8ff;
+		border-bottom: 1px solid #283a41;
+		box-shadow: inset 0 -4px 0 #283a41;
+	}
+
+		.content-box a:visited {
+			border-color: #3f2c49;
+			box-shadow: inset 0 -4px 0 #3f2c49;
+		}
+
+		.content-box a:hover, .content-box a:link:hover, .content-box a:visited:hover {
+			color: #FFF;
+			border-color: #405d68;
+			box-shadow: inset 0 -4px 0 #405d68;
+		}

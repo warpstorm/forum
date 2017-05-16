@@ -2,34 +2,32 @@
 
 @{ ViewBag.Title = "Create Board"; }
 
-<div>
-    <h1>@ViewBag.Title</h1>
+<h1>@ViewBag.Title</h1>
 
-    <div>
-		<form method="post"
-			  asp-action="@nameof(Forum3.Controllers.Boards.Create)"
-			  asp-controller="@nameof(Forum3.Controllers.Boards)">
+<div class="content-box">
+	<form method="post"
+			asp-action="@nameof(Forum3.Controllers.Boards.Create)"
+			asp-controller="@nameof(Forum3.Controllers.Boards)">
 
-			<p>
-				<span>Name:</span>
-				<input type="text" asp-for="@Model.Name" />
-			</p>
-			<p asp-validation-for="@Model.Name"></p>
+		<p>
+			<span>Name:</span>
+			<input type="text" asp-for="@Model.Name" />
+		</p>
+		<p asp-validation-for="@Model.Name"></p>
 
-			<p>
-				Vetted Members Only:
-				<input asp-for="@Model.VettedOnly" type="checkbox" />
-			</p>
+		<p>
+			Vetted Members Only:
+			<input asp-for="@Model.VettedOnly" type="checkbox" />
+		</p>
 
-			<p>Category:</p>
-			<p>
-				<select asp-for="@Model.Category" asp-items="@Model.Categories">
-					<option value="" disabled selected style="display: none;">Please select an existing category</option>
-				</select>
-			</p>
-			<p>Or add a new one: <input asp-for="@Model.NewCategory" /></p>
+		<p>Category:</p>
+		<p>
+			<select asp-for="@Model.Category" asp-items="@Model.Categories">
+				<option value="" disabled selected style="display: none;">Please select an existing category</option>
+			</select>
+		</p>
+		<p>Or add a new one: <input asp-for="@Model.NewCategory" /></p>
 
-			<p><input type="submit" value="Create" /></p>
-		</form>
-	</div>
+		<p><input type="submit" value="Create" /></p>
+	</form>
 </div>
