@@ -11,6 +11,7 @@ using InputModels = Forum3.Models.InputModels;
 using PageViewModels = Forum3.Models.ViewModels.Boards.Pages;
 using ItemViewModels = Forum3.Models.ViewModels.Boards.Items;
 using Microsoft.EntityFrameworkCore;
+using Forum3.Models.ServiceModels;
 
 namespace Forum3.Services {
 	public class BoardService {
@@ -75,7 +76,8 @@ namespace Forum3.Services {
 
 			var categoryId = 0;
 
-			input.NewCategory = input.NewCategory.Trim();
+			if (!string.IsNullOrEmpty(input.NewCategory))
+				input.NewCategory = input.NewCategory.Trim();
 
 			if (!string.IsNullOrEmpty(input.NewCategory)) {
 				categoryRecord = DbContext.Categories.FirstOrDefault(c => c.Name == input.NewCategory);
@@ -130,6 +132,31 @@ namespace Forum3.Services {
 				await DbContext.Boards.AddAsync(boardRecord);
 				await DbContext.SaveChangesAsync();
 			}
+		}
+
+		public async Task<ServiceResponse> MoveCategoryUp(int id) {
+			var serviceResponse = new ServiceResponse();
+			
+			var targetCategory = DbContext.Categories.FirstOrDefault(b => b.Id == id);
+
+			if (targetCategory == null) {
+				serviceResponse.ModelErrors.Add(string.Empty, "No category found with that ID.");
+				return serviceResponse;
+			}
+
+			if (targetCategory.DisplayOrder > 1) {
+				var lowerCategory = DbContext.Categories.First(b => b.DisplayOrder == targetCategory.DisplayOrder - 1);
+
+				lowerCategory.DisplayOrder++;
+				DbContext.Entry(lowerCategory).State = EntityState.Modified;
+
+				targetCategory.DisplayOrder--;
+				DbContext.Entry(targetCategory).State = EntityState.Modified;
+
+				await DbContext.SaveChangesAsync();
+			}
+
+			return serviceResponse;
 		}
 
 		async Task<List<SelectListItem>> GetCategoryPickList(List<SelectListItem> pickList = null) {

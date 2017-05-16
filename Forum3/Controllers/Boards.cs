@@ -5,7 +5,6 @@ using Forum3.Services;
 using Forum3.Models.InputModels;
 
 namespace Forum3.Controllers {
-	[Authorize]
 	public class Boards : ForumController {
 		public BoardService BoardService { get; }
 
@@ -17,7 +16,6 @@ namespace Forum3.Controllers {
 		}
 
 		[HttpGet]
-		[AllowAnonymous]
 		public async Task<IActionResult> Index() {
 			var viewModel = await BoardService.IndexPage();
 			return View(viewModel);
@@ -41,10 +39,20 @@ namespace Forum3.Controllers {
 				await BoardService.Create(input, ModelState);
 
 			if (ModelState.IsValid)
-				return RedirectToAction(nameof(Index));
+				return RedirectToAction(nameof(Manage));
 
 			var viewModel = await BoardService.CreatePage(input);
 			return View(viewModel);
+		}
+
+		[HttpGet]
+		public async Task<IActionResult> MoveCategoryUp(int id) {
+			var serviceResponse = await BoardService.MoveCategoryUp(id);
+
+			ProcessServiceResponse(serviceResponse);
+
+			var viewModel = await BoardService.ManagePage();
+			return View(nameof(Manage), viewModel);
 		}
 	}
 }

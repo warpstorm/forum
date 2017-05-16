@@ -1,10 +1,10 @@
 ﻿@model Message
 
-<section class="mainContent pad gapBottom">
+<section class="mainContent pad gap-bottom">
 	<span id="message@(Model.Id)"></span>
 	<!-- TODO - if unread target = this, then <span id="latest"></span> -->
 
-	<aside class="floatRight">
+	<aside class="float-right">
 		@if (Model.CanReply) {
 			<span class="smallButton replyButton">
 				Reply
@@ -56,7 +56,7 @@
 		<blockquote>@Html.Raw(Model.ReplyBody)</blockquote>
 	}
 
-	<p class="padLeft">@Html.Raw(Model.Body)</p>
+	<p class="pad-left">@Html.Raw(Model.Body)</p>
 
 	<div class="hidden replyForm">
 		<p>Reply:</p>

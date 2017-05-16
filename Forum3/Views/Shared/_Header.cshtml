@@ -13,11 +13,11 @@
     }
 }*@
 
-<header id="page-header" class="marginCenter alignCenter">
+<header id="page-header" class="margin-center align-center">
 	<div id="page-title"><a href="/"><img src=@ViewData["LogoPath"] alt="Warpstorm" /></a></div>
 
 	<nav>
-		<ul class="floatRight">
+		<ul class="float-right">
 			@if (UserService.ContextUser.IsAuthenticated) {
 		<li>
 			@Html.ActionLink("Boards", "Index", "Boards", null, new { @class = "smallButton" })
@@ -51,7 +51,7 @@
 			</li>}
 		</ul>
 
-		<div id="login" class="floatLeft">
+		<div id="login" class="float-left">
 			@if (UserService.ContextUser.IsAuthenticated) {
 		<span><a asp-controller="Profile" asp-action="Manage">Welcome back, @UserService.ContextUser.ApplicationUser.DisplayName</a></span>
 

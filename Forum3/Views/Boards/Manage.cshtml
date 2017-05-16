@@ -4,7 +4,7 @@
     ViewBag.Title = "Board Management";
 }
 
-<h2>@ViewBag.Title</h2>
+<h1 class="pad-left">@ViewBag.Title</h1>
 
 @Html.ValidationSummary()
 
@@ -12,6 +12,15 @@
     @Html.Partial("_ManageItem", category)
 }
 
-@section PageActions {
-    <li><a asp-controller="Boards" asp-action="Create" class="button">Create Board</a></li>
+<p>
+	<a asp-controller="Boards" asp-action="Create" class="button">Create Board</a>
+</p>
+
+@section styles {
+	<environment names="Development">
+		<link rel="stylesheet" href="~/css/BoardManageIndex.css" />
+	</environment>
+	<environment names="Staging,Production">
+		<link rel="stylesheet" href="~/css/BoardManageIndex.min.css" asp-append-version="true" />
+	</environment>
 }
