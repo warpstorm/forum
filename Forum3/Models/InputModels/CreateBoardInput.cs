@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
 namespace Forum3.Models.InputModels {
-	public class BoardInput {
+	public class CreateBoardInput {
 		[Required]
 		[MinLength(3)]
 		[StringLength(64)]

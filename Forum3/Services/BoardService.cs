@@ -2,28 +2,37 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.EntityFrameworkCore;
+using Forum3.Controllers;
 using Forum3.Data;
 using Forum3.Helpers;
+using Forum3.Models.ServiceModels;
 using DataModels = Forum3.Models.DataModels;
 using InputModels = Forum3.Models.InputModels;
 using PageViewModels = Forum3.Models.ViewModels.Boards.Pages;
 using ItemViewModels = Forum3.Models.ViewModels.Boards.Items;
-using Microsoft.EntityFrameworkCore;
-using Forum3.Models.ServiceModels;
 
 namespace Forum3.Services {
 	public class BoardService {
 		ApplicationDbContext DbContext { get; }
 		UserService UserService { get; }
+		IUrlHelperFactory UrlHelperFactory { get; set; }
+		IActionContextAccessor ActionContextAccessor { get; set; }
 
 		public BoardService(
 			ApplicationDbContext dbContext,
-			UserService userService
+			UserService userService,
+			IActionContextAccessor actionContextAccessor,
+			IUrlHelperFactory urlHelperFactory
 		) {
 			DbContext = dbContext;
 			UserService = userService;
+			ActionContextAccessor = actionContextAccessor;
+			UrlHelperFactory = urlHelperFactory;
 		}
 
 		public async Task<PageViewModels.IndexPage> IndexPage() {
@@ -52,7 +61,7 @@ namespace Forum3.Services {
 			return viewModel;
 		}
 
-		public async Task<PageViewModels.CreatePage> CreatePage(InputModels.BoardInput input = null) {
+		public async Task<PageViewModels.CreatePage> CreatePage(InputModels.CreateBoardInput input = null) {
 			var viewModel = new PageViewModels.CreatePage() {
 				Categories = await GetCategoryPickList()
 			};
@@ -68,19 +77,46 @@ namespace Forum3.Services {
 			return viewModel;
 		}
 
-		public async Task Create(InputModels.BoardInput input, ModelStateDictionary modelState) {
-			if (DbContext.Boards.Any(b => b.Name == input.Name))
-				modelState.AddModelError(nameof(input.Name), "A board with that name already exists");
+		public async Task<PageViewModels.EditPage> EditPage(int boardId, InputModels.EditBoardInput input = null) {
+			var record = await DbContext.Boards.SingleOrDefaultAsync(b => b.Id == boardId);
+
+			if (record == null)
+				throw new Exception($"A record does not exist with ID '{boardId}'");
+
+			var viewModel = new PageViewModels.EditPage() {
+				Id = record.Id,
+				Categories = await GetCategoryPickList()
+			};
+
+			if (input != null) {
+				viewModel.Name = input.Name;
+				viewModel.VettedOnly = input.VettedOnly;
+
+				if (!string.IsNullOrEmpty(input.Category))
+					viewModel.Categories.First(item => item.Value == input.Category).Selected = true;
+			}
+			else {
+				viewModel.Name = record.Name;
+				viewModel.VettedOnly = record.VettedOnly;
+				viewModel.Categories.First(item => item.Text == record.Category.Name).Selected = true;
+			}
+
+			return viewModel;
+		}
+
+		public async Task<ServiceResponse> Create(InputModels.CreateBoardInput input) {
+			var serviceResponse = new ServiceResponse();
+		
+			if (await DbContext.Boards.AnyAsync(b => b.Name == input.Name))
+				serviceResponse.ModelErrors.Add(nameof(input.Name), "A board with that name already exists");
 
 			DataModels.Category categoryRecord = null;
-
-			var categoryId = 0;
 
 			if (!string.IsNullOrEmpty(input.NewCategory))
 				input.NewCategory = input.NewCategory.Trim();
 
 			if (!string.IsNullOrEmpty(input.NewCategory)) {
-				categoryRecord = DbContext.Categories.FirstOrDefault(c => c.Name == input.NewCategory);
+				categoryRecord = await DbContext.Categories.SingleOrDefaultAsync(c => c.Name == input.NewCategory);
 
 				if (categoryRecord == null) {
 					var displayOrder = await DbContext.Categories.MaxAsync(c => c.DisplayOrder);
@@ -95,43 +131,108 @@ namespace Forum3.Services {
 			}
 			else {
 				try {
-					categoryId = Convert.ToInt32(input.Category);
-
-					categoryRecord = DbContext.Categories.Find(categoryId);
+					var categoryId = Convert.ToInt32(input.Category);
+					categoryRecord = await DbContext.Categories.SingleOrDefaultAsync(c => c.Id == categoryId);
 
 					if (categoryRecord == null)
-						modelState.AddModelError(nameof(input.Category), "No category was found with this ID.");
+						serviceResponse.ModelErrors.Add(nameof(input.Category), "No category was found with this ID.");
 				}
 				catch (FormatException) {
-					modelState.AddModelError(nameof(input.Category), "Invalid category ID");
+					serviceResponse.ModelErrors.Add(nameof(input.Category), "Invalid category ID");
 				}
 			}
 
-			input.Name = input.Name.Trim();
+			if (!string.IsNullOrEmpty(input.Name))
+				input.Name = input.Name.Trim();
 
 			if (string.IsNullOrEmpty(input.Name))
-				modelState.AddModelError(nameof(input.Name), "Name is a required field.");
+				serviceResponse.ModelErrors.Add(nameof(input.Name), "Name is a required field.");
 
-			var existingRecord = DbContext.Boards.FirstOrDefault(b => b.Name == input.Name);
+			var existingRecord = await DbContext.Boards.SingleOrDefaultAsync(b => b.Name == input.Name);
 
 			if (existingRecord != null)
-				modelState.AddModelError(nameof(input.Name), "A board with that name already exists");
+				serviceResponse.ModelErrors.Add(nameof(input.Name), "A board with that name already exists");
 
-			if (!modelState.IsValid)
-				return;
+			if (serviceResponse.ModelErrors.Any())
+				return serviceResponse;
 
 			await DbContext.SaveChangesAsync();
 
-			var boardRecord = new DataModels.Board {
+			var record = new DataModels.Board {
 				Name = input.Name,
 				VettedOnly = input.VettedOnly,
 				CategoryId = categoryRecord.Id
 			};
 
-			if (modelState.IsValid) {
-				await DbContext.Boards.AddAsync(boardRecord);
-				await DbContext.SaveChangesAsync();
+			await DbContext.Boards.AddAsync(record);
+			await DbContext.SaveChangesAsync();
+
+			var urlHelper = UrlHelperFactory.GetUrlHelper(ActionContextAccessor.ActionContext);
+			serviceResponse.RedirectPath = urlHelper.Action(nameof(Boards.Manage), nameof(Boards), new { id = record.Id });
+
+			return serviceResponse;
+		}
+
+		public async Task<ServiceResponse> Edit(InputModels.EditBoardInput input) {
+			var serviceResponse = new ServiceResponse();
+
+			var record = await DbContext.Boards.SingleOrDefaultAsync(b => b.Id == input.Id);
+
+			if (record == null)
+				serviceResponse.ModelErrors.Add(string.Empty, $"A record does not exist with ID '{input.Id}'");
+
+			DataModels.Category categoryRecord = null;
+
+			if (!string.IsNullOrEmpty(input.NewCategory))
+				input.NewCategory = input.NewCategory.Trim();
+
+			if (!string.IsNullOrEmpty(input.NewCategory)) {
+				categoryRecord = await DbContext.Categories.SingleOrDefaultAsync(c => c.Name == input.NewCategory);
+
+				if (categoryRecord == null) {
+					var displayOrder = await DbContext.Categories.MaxAsync(c => c.DisplayOrder);
+
+					categoryRecord = new DataModels.Category {
+						Name = input.NewCategory,
+						DisplayOrder = displayOrder + 1
+					};
+
+					await DbContext.Categories.AddAsync(categoryRecord);
+				}
 			}
+			else {
+				try {
+					var categoryId = Convert.ToInt32(input.Category);
+					categoryRecord = await DbContext.Categories.SingleOrDefaultAsync(c => c.Id == categoryId);
+
+					if (categoryRecord == null)
+						serviceResponse.ModelErrors.Add(nameof(input.Category), "No category was found with this ID.");
+				}
+				catch (FormatException) {
+					serviceResponse.ModelErrors.Add(nameof(input.Category), "Invalid category ID");
+				}
+			}
+
+			if (!string.IsNullOrEmpty(input.Name))
+				input.Name = input.Name.Trim();
+
+			if (string.IsNullOrEmpty(input.Name))
+				serviceResponse.ModelErrors.Add(nameof(input.Name), "Name is a required field.");
+
+			if (serviceResponse.ModelErrors.Any())
+				return serviceResponse;
+
+			record.Name = input.Name;
+			record.VettedOnly = input.VettedOnly;
+			record.CategoryId = categoryRecord.Id;
+
+			DbContext.Entry(record).State = EntityState.Modified;
+			await DbContext.SaveChangesAsync();
+
+			var urlHelper = UrlHelperFactory.GetUrlHelper(ActionContextAccessor.ActionContext);
+			serviceResponse.RedirectPath = urlHelper.Action(nameof(Boards.Manage), nameof(Boards), new { id = record.Id });
+
+			return serviceResponse;
 		}
 
 		public async Task<ServiceResponse> MoveCategoryUp(int id) {

@@ -1,12 +1,12 @@
-﻿@model CreatePage
+﻿@model EditPage
 
-@{ ViewBag.Title = "Create Board"; }
+@{ ViewBag.Title = "Edit Board"; }
 
 <h1>@ViewBag.Title</h1>
 
 <div class="content-box pad">
 	<form method="post"
-			asp-action="@nameof(Forum3.Controllers.Boards.Create)"
+			asp-action="@nameof(Forum3.Controllers.Boards.Edit)"
 			asp-controller="@nameof(Forum3.Controllers.Boards)">
 
 		<p class="gap-top">
@@ -28,6 +28,6 @@
 		</p>
 		<p>Or add a new one: <input asp-for="@Model.NewCategory" /></p>
 
-		<p class="gap-top"><input type="submit" value="Create" /></p>
+		<p class="gap-top"><input type="submit" value="Save Changes" /></p>
 	</form>
 </div>

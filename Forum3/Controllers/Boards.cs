@@ -34,14 +34,36 @@ namespace Forum3.Controllers {
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> Create(BoardInput input) {
-			if (ModelState.IsValid)
-				await BoardService.Create(input, ModelState);
+		public async Task<IActionResult> Create(CreateBoardInput input) {
+			if (ModelState.IsValid) {
+				var response = await BoardService.Create(input);
+				ProcessServiceResponse(response);
 
-			if (ModelState.IsValid)
-				return RedirectToAction(nameof(Manage));
+				if (ModelState.IsValid)
+					return Redirect(response.RedirectPath);
+			}
 
 			var viewModel = await BoardService.CreatePage(input);
+			return View(viewModel);
+		}
+
+		[HttpGet]
+		public async Task<IActionResult> Edit(int id) {
+			var viewModel = await BoardService.EditPage(id);
+			return View(viewModel);
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> Edit(EditBoardInput input) {
+			if (ModelState.IsValid) {
+				var response = await BoardService.Edit(input);
+				ProcessServiceResponse(response);
+
+				if (ModelState.IsValid)
+					return Redirect(response.RedirectPath);
+			}
+
+			var viewModel = await BoardService.EditPage(input.Id, input);
 			return View(viewModel);
 		}
 
