@@ -1,0 +1,23 @@
+﻿@model IndexBoard
+
+<div class="table-row board">
+	<div class="table-cell boardInfo">
+		<a asp-controller="Topics" asp-action="Index" asp-route-id="@Model.Id">
+			@Model.Name
+			@if (Model.Unread) {
+				<span class="smallButton">Unread</span>
+			}
+		</a>
+	</div>
+
+	@if (Model.LastMessage != null) {
+		<div class="table-cell lastPost">
+			<p>
+				<a asp-controller="Topics" asp-action="Display" asp-route-id="@Model.LastMessage.Id" asp-fragment="latest">
+					@Html.Raw(Model.LastMessage.ShortPreview)
+				</a>
+			</p>
+			<p>by @Model.LastMessage.LastReplyByName, <time>@Model.LastMessage.LastReplyPosted</time></p>
+		</div>
+	}
+</div>

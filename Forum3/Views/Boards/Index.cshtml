@@ -14,7 +14,7 @@
 			}
 
 			@foreach (var indexCategory in Model.Categories) {
-				@Html.Partial("_IndexItem", indexCategory)
+				@await Html.PartialAsync("_IndexCategory", indexCategory)
 			}
 		</div>
 

@@ -1,0 +1,11 @@
+@model IndexCategory
+
+<div class="category content-box pad gap">
+	<h3>@Model.Name</h3>
+
+	<div class="table">
+		@foreach (var board in Model.Boards) {
+			@await Html.PartialAsync("_IndexBoard", board)
+		}
+	</div>
+</div>
