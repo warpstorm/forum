@@ -16,8 +16,8 @@ namespace Forum3.Controllers {
 		}
 
 		[HttpGet]
-		public IActionResult Create() {
-			var viewModel = ControllerService.CreatePage();
+		public async Task<IActionResult> Create(int id = 0) {
+			var viewModel = await ControllerService.CreatePage(id);
 
 			viewModel.CancelPath = Request.Headers["Referer"].ToString();
 

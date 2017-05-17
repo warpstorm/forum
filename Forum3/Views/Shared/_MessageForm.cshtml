@@ -10,6 +10,10 @@
 
         <input type="hidden" name="Id" value="@Model.Id" />
 
+		@if (Model.BoardId != null) {
+			<input type="hidden" name="BoardId" value="@Model.BoardId" />
+		}
+
         <div>
             <p><textarea asp-for="Body"></textarea></p>
             <p><span asp-validation-for="Body" /></p>

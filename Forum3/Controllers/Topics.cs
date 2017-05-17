@@ -15,8 +15,8 @@ namespace Forum3.Controllers {
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> Index(int page = 1) {
-			var viewModel = await TopicService.IndexPage(page);
+		public async Task<IActionResult> Index(int id = 0, int page = 1) {
+			var viewModel = await TopicService.IndexPage(id, page);
 			return View(viewModel);
 		}
 

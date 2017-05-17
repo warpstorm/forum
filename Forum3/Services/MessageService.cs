@@ -37,8 +37,16 @@ namespace Forum3.Services {
 			UrlHelperFactory = urlHelperFactory;
 		}
 
-		public CreateTopicPage CreatePage() {
-			var viewModel = new CreateTopicPage();
+		public async Task<CreateTopicPage> CreatePage(int boardId = 0) {
+			var board = await DbContext.Boards.SingleOrDefaultAsync(b => b.Id == boardId);
+
+			if (board == null)
+				throw new Exception($"A record does not exist with ID '{boardId}'");
+
+			var viewModel = new CreateTopicPage {
+				BoardId = boardId
+			};
+
 			return viewModel;
 		}
 
@@ -57,16 +65,41 @@ namespace Forum3.Services {
 		}
 
 		public async Task<ServiceResponse> CreateTopic(MessageInput input) {
-			var urlHelper = UrlHelperFactory.GetUrlHelper(ActionContextAccessor.ActionContext);
-
 			var serviceResponse = new ServiceResponse();
 
-			var processedMessage = await ProcessMessageInput(serviceResponse, input.Body); ;
+			var boardId = 0;
 
-			if (!serviceResponse.ModelErrors.Any()) {
-				var record = await CreateMessageRecord(processedMessage, null);
-				serviceResponse.RedirectPath = urlHelper.Action(nameof(Topics.Display), nameof(Topics), new { id = record.Id });
+			if (input.BoardId != null) {
+				boardId = Convert.ToInt32(input.BoardId);
+
+				var board = await DbContext.Boards.SingleOrDefaultAsync(b => b.Id == boardId);
+
+				if (board == null)
+					serviceResponse.ModelErrors.Add(string.Empty, $"A record does not exist with ID '{boardId}'");
 			}
+
+			if (serviceResponse.ModelErrors.Any())
+				return serviceResponse;
+
+			var processedMessage = await ProcessMessageInput(serviceResponse, input.Body);
+
+			if (serviceResponse.ModelErrors.Any())
+				return serviceResponse;
+
+			var urlHelper = UrlHelperFactory.GetUrlHelper(ActionContextAccessor.ActionContext);
+
+			var record = await CreateMessageRecord(processedMessage, null);
+
+			DbContext.MessageBoards.Add(new MessageBoard {
+				MessageId = record.Id,
+				BoardId = boardId,
+				TimeAdded = DateTime.Now,
+				UserId = UserService.ContextUser.ApplicationUser.Id
+			});
+
+			await DbContext.SaveChangesAsync();
+
+			serviceResponse.RedirectPath = urlHelper.Action(nameof(Topics.Display), nameof(Topics), new { id = record.Id });
 
 			return serviceResponse;
 		}
@@ -128,16 +161,10 @@ namespace Forum3.Services {
 			if (record == null)
 				throw new Exception($"A record does not exist with ID '{messageId}'");
 
-			if (record.ParentId == 0) {
-				var replies = await DbContext.Messages.Where(m => m.ParentId == messageId).ToListAsync();
+			if (record.ParentId != 0) {
+				var directReplies = await DbContext.Messages.Where(m => m.ReplyId == messageId).ToListAsync();
 
-				foreach (var reply in replies)
-					DbContext.Messages.Remove(reply);
-			}
-			else {
-				var replies = await DbContext.Messages.Where(m => m.ReplyId == messageId).ToListAsync();
-
-				foreach (var reply in replies) {
+				foreach (var reply in directReplies) {
 					reply.OriginalBody = 
 						$"[quote]{record.OriginalBody}\n" +
 						$"Message deleted by {UserService.ContextUser.ApplicationUser.DisplayName} on {DateTime.Now.ToString("MMMM dd, yyyy")}[/quote]" +
@@ -149,23 +176,33 @@ namespace Forum3.Services {
 				}
 			}
 
+			var topicReplies = await DbContext.Messages.Where(m => m.ParentId == messageId).ToListAsync();
+
+			foreach (var reply in topicReplies)
+				DbContext.Messages.Remove(reply);
+
+			var messageBoards = await DbContext.MessageBoards.Where(m => m.MessageId == record.Id).ToListAsync();
+
+			foreach (var messageBoard in messageBoards)
+				DbContext.MessageBoards.Remove(messageBoard);
+
 			DbContext.Messages.Remove(record);
 
 			await DbContext.SaveChangesAsync();
 		}
 
 		async Task<ProcessedMessageInput> ProcessMessageInput(ServiceResponse serviceResponse, string messageBody) {
-			var processedMessageInput = PreProcessMessageInput(messageBody);
+			var processedMessage = PreProcessMessageInput(messageBody);
 
-			ParseBBC(processedMessageInput);
+			ParseBBC(processedMessage);
 
 			// TODO - implement smileys here
 
-			ProcessMessageBodyUrls(processedMessageInput);
-			await FindMentionedUsers(processedMessageInput);
-			PostProcessMessageInput(processedMessageInput);
+			ProcessMessageBodyUrls(processedMessage);
+			await FindMentionedUsers(processedMessage);
+			PostProcessMessageInput(processedMessage);
 
-			return processedMessageInput;
+			return processedMessage;
 		}
 
 		/// <summary>
@@ -235,7 +272,6 @@ namespace Forum3.Services {
 				if (!string.IsNullOrEmpty(siteUrl)) {
 					var remoteUrlReplacement = GetRemoteUrlReplacement(siteUrl);
 
-					// Run the replacement on the displaybody
 					remoteUrlReplacement.Regex.Replace(displayBody, remoteUrlReplacement.ReplacementText, 1);
 
 					displayBody += remoteUrlReplacement.FollowOnText;

@@ -34,7 +34,7 @@ namespace Forum3.Services {
 			UrlHelperFactory = urlHelperFactory;
 		}
 
-		public async Task<PageModels.TopicIndexPage> IndexPage(int page) {
+		public async Task<PageModels.TopicIndexPage> IndexPage(int boardId, int page) {
 			var take = Constants.Defaults.MessagesPerPage;
 			var skip = (page * take) - take;
 
@@ -54,6 +54,7 @@ namespace Forum3.Services {
 			var messageRecords = await messageRecordQuery.Skip(skip).Take(take).ToListAsync();
 
 			return new PageModels.TopicIndexPage {
+				BoardId = boardId,
 				Skip = skip + take,
 				Take = take,
 				Topics = messageRecords

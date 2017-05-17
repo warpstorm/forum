@@ -3,12 +3,12 @@
 <div asp-validation-summary="All" class="text-danger"></div>
 
 @for (var i = 0; i < Model.Messages.Count(); i++) {
-	@Html.Partial("_DisplayItem", Model.Messages[i])
+	@await Html.PartialAsync("_DisplayItem", Model.Messages[i])
 }
 
 <p class="gap-top">Reply to Thread:</p>
 <div class="content-box pad">
-	@Html.Partial("_MessageForm", Model.ReplyForm)
+	@await Html.PartialAsync("_MessageForm", Model.ReplyForm)
 </div>
 
 @section scripts {

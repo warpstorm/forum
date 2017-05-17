@@ -6,7 +6,7 @@
 
 @if (User.Identity.IsAuthenticated) {
     <p>
-        <a class="button" asp-action="Create" asp-controller="Messages">Create a new Topic</a>
+        <a class="button" asp-action="Create" asp-controller="Messages" asp-route-id="@Model.BoardId">Create a new Topic</a>
     </p>
 }
 
