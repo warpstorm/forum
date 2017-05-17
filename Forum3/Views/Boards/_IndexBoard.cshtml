@@ -1,7 +1,7 @@
 ﻿@model IndexBoard
 
 <div class="table-row board">
-	<div class="table-cell boardInfo">
+	<div class="table-cell boardInfo pad">
 		<a asp-controller="Topics" asp-action="Index" asp-route-id="@Model.Id">
 			@Model.Name
 			@if (Model.Unread) {
