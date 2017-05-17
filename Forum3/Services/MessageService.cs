@@ -230,6 +230,8 @@ namespace Forum3.Services {
 			// keep this as close to the smiley replacement as possible to prevent HTML-izing the bracket.
 			displayBody = displayBody.Replace("*heartsmiley*", "<3");
 
+			processedMessageInput.DisplayBody = displayBody;
+
 			return processedMessageInput;
 		}
 
@@ -272,11 +274,13 @@ namespace Forum3.Services {
 				if (!string.IsNullOrEmpty(siteUrl)) {
 					var remoteUrlReplacement = GetRemoteUrlReplacement(siteUrl);
 
-					remoteUrlReplacement.Regex.Replace(displayBody, remoteUrlReplacement.ReplacementText, 1);
+					displayBody = remoteUrlReplacement.Regex.Replace(displayBody, remoteUrlReplacement.ReplacementText, 1);
 
 					displayBody += remoteUrlReplacement.FollowOnText;
 				}
 			}
+
+			processedMessageInput.DisplayBody = displayBody;
 		}
 
 		/// <summary>
@@ -319,8 +323,8 @@ namespace Forum3.Services {
 			// replace the URL with the HTML
 			return new RemoteUrlReplacement {
 				Regex = regexUrl,
-				ReplacementText = "$1 <a target='_blank' href='" + remoteUrl + "'>" + remotePageDetails.Title + "</a>",
-				FollowOnText = " <br /><br />" + remotePageDetails.Card
+				ReplacementText = "$1<a target='_blank' href='" + remoteUrl + "'>" + remotePageDetails.Title + "</a>",
+				FollowOnText = string.IsNullOrEmpty(remotePageDetails.Card) ? string.Empty : " <br /><br />" + remotePageDetails.Card
 			};
 		}
 

@@ -53,10 +53,10 @@
 	</p>
 
 	@if (Model.ReplyId > 0) {
-		<blockquote>@Html.Raw(Model.ReplyBody)</blockquote>
+			<blockquote>@Html.Raw(Model.ReplyBody)</blockquote>
 	}
 
-	<p class="pad-left">@Html.Raw(Model.Body)</p>
+	<div class="message-body">@Html.Raw(Model.Body)</div>
 
 	<div class="hidden replyForm">
 		<p>Reply:</p>

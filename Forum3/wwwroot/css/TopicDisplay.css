@@ -1,1 +1,14 @@
-﻿
+﻿.message-body {
+	white-space: pre-line;
+}
+
+.message-body a {
+	text-decoration: none;
+	border-bottom: 1px solid #253248;
+	box-shadow: inset 0 -3px 0 #253248;
+}
+
+	.message-body a:hover {
+		border-color: #7090c6;
+		box-shadow: inset 0 -3px 0 #7090c6;
+	}
