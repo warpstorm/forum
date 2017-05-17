@@ -123,26 +123,30 @@ namespace Forum3.Services {
 		}
 
 		public async Task DeleteMessage(int messageId) {
-			var recordTask = DbContext.Messages.SingleAsync(m => m.Id == messageId);
-			var repliesTask = DbContext.Messages.Where(m => m.ReplyId == messageId).ToListAsync();
-
-			await Task.WhenAll(recordTask, repliesTask);
-
-			var record = await recordTask;
-			var replies = await repliesTask;
-
+			var record = await DbContext.Messages.SingleAsync(m => m.Id == messageId);
+			
 			if (record == null)
 				throw new Exception($"A record does not exist with ID '{messageId}'");
 
-			foreach (var reply in replies) {
-				reply.OriginalBody = 
-					$"[quote]{record.OriginalBody}\n" +
-					$"Message deleted by {UserService.ContextUser.ApplicationUser.DisplayName} on {DateTime.Now.ToString("MMMM dd, yyyy")}[/quote]" +
-					reply.OriginalBody;
+			if (record.ParentId == 0) {
+				var replies = await DbContext.Messages.Where(m => m.ParentId == messageId).ToListAsync();
 
-				reply.ReplyId = 0;
+				foreach (var reply in replies)
+					DbContext.Messages.Remove(reply);
+			}
+			else {
+				var replies = await DbContext.Messages.Where(m => m.ReplyId == messageId).ToListAsync();
 
-				DbContext.Entry(reply).State = EntityState.Modified;
+				foreach (var reply in replies) {
+					reply.OriginalBody = 
+						$"[quote]{record.OriginalBody}\n" +
+						$"Message deleted by {UserService.ContextUser.ApplicationUser.DisplayName} on {DateTime.Now.ToString("MMMM dd, yyyy")}[/quote]" +
+						reply.OriginalBody;
+
+					reply.ReplyId = 0;
+
+					DbContext.Entry(reply).State = EntityState.Modified;
+				}
 			}
 
 			DbContext.Messages.Remove(record);

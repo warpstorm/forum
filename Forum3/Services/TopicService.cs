@@ -47,8 +47,8 @@ namespace Forum3.Services {
 										 LastReplyId = m.LastReplyId == 0 ? m.Id : m.LastReplyId,
 										 LastReplyById = m.LastReplyById,
 										 LastReplyPostedDT = m.LastReplyPosted,
-										 Views = m.Views,
-										 Replies = m.Replies,
+										 Views = m.ViewCount,
+										 Replies = m.ReplyCount,
 									 };
 
 			var messageRecords = await messageRecordQuery.Skip(skip).Take(take).ToListAsync();
@@ -85,7 +85,7 @@ namespace Forum3.Services {
 
 			var pageMessageIds = messageIds.Skip(skip).Take(take);
 
-			record.Views++;
+			record.ViewCount++;
 			DbContext.Entry(record).State = EntityState.Modified;
 			DbContext.SaveChanges();
 
@@ -132,7 +132,7 @@ namespace Forum3.Services {
 				TopicHeader = new ItemModels.TopicHeader {
 					StartedById = record.PostedById,
 					Subject = record.ShortPreview,
-					Views = record.Views,
+					Views = record.ViewCount,
 				},
 				Messages = messages,
 				//Boards = new List<IndexBoard>(),

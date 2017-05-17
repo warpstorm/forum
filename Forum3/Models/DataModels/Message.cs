@@ -68,8 +68,8 @@ namespace Forum3.Models.DataModels {
 		public int ReplyId { get; set; }
 		public int LastReplyId { get; set; }
 
-		public int Views { get; set; }
-		public int Replies { get; set; }
+		public int ViewCount { get; set; }
+		public int ReplyCount { get; set; }
 
 		public List<MessageThought> Thoughts { get; set; }
 	}

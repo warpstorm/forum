@@ -534,4 +534,5 @@ a.smallButton {
 	.smallButton:hover,
 	a.smallButton:hover {
 		border-color: #7090c6;
+		box-shadow: none;
 	}
