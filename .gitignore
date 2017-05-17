@@ -13,6 +13,8 @@
 **/Scripts/build/**
 **/Scripts/def/**
 
+Migrations/
+
 launchSettings.json
 debugSettings.json
 project.lock.json
