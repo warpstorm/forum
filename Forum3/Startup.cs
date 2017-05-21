@@ -37,7 +37,6 @@ namespace Forum3 {
 			if (string.IsNullOrEmpty(connectionString))
 				connectionString = Configuration.GetConnectionString("DefaultConnection");
 
-			// Add framework services.
 			services.AddDbContext<ApplicationDbContext>(options =>
 				options.UseSqlServer(connectionString)
 			);
