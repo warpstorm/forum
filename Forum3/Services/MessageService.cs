@@ -21,9 +21,9 @@ using Forum3.Models.ViewModels.Messages;
 namespace Forum3.Services {
 	public class MessageService {
 		ApplicationDbContext DbContext { get; }
-		UserService UserService { get; set; }
-		IUrlHelperFactory UrlHelperFactory { get; set; }
-		IActionContextAccessor ActionContextAccessor { get; set; }
+		UserService UserService { get; }
+		IUrlHelperFactory UrlHelperFactory { get; }
+		IActionContextAccessor ActionContextAccessor { get; }
 
 		public MessageService(
 			ApplicationDbContext dbContext,
