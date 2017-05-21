@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Forum3.Models.DataModels;
 
 namespace Forum3.Data {
-	public class ApplicationDbContext : IdentityDbContext<ApplicationUser> {
+	public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, string> {
 		public DbSet<Board> Boards { get; set; }
 		public DbSet<Category> Categories { get; set; }
 		public DbSet<MessageBoard> MessageBoards { get; set; }

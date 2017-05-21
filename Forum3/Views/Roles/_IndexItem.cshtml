@@ -1,0 +1,16 @@
+﻿@model IndexRole
+
+<div class="table-row">
+	<div class="table-cell small-pad">
+		<p>@Model.Name</p>
+		<div class="small-pad-left">
+			<p class="note">@Model.Description</p>
+			<p class="note">Added by @Model.CreatedBy</p>
+			<p class="note">@Model.NumberOfUsers users</p>
+		</div>
+	</div>
+	<div class="table-cell small-pad actions">
+		<a asp-controller="@nameof(Roles)" asp-action="Edit" asp-route-id="@Model.Id" class="borderless"><img alt="Edit" src="~/images/edit.png" /></a>
+        <a asp-controller="@nameof(Roles)" asp-action="Delete" asp-route-id="@Model.Id" class="borderless"><img alt="Delete" src="~/images/delete.png" /></a>
+    </div>
+</div>

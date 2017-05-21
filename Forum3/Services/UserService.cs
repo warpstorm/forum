@@ -10,6 +10,7 @@ using Forum3.Models.DataModels;
 using Forum3.Helpers;
 using Forum3.Models.ServiceModels;
 using Forum3.Models.ViewModels.Boards.Items;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace Forum3.Services {
 	public class UserService {
@@ -19,17 +20,20 @@ namespace Forum3.Services {
 		ApplicationDbContext DbContext { get; }
 		IHttpContextAccessor HttpContextAccessor { get; }
 		UserManager<ApplicationUser> UserManager { get; }
+		RoleManager<ApplicationRole> RoleManager { get; }
 		SiteSettingsService SiteSettingsService { get; }
 
 		public UserService(
 			ApplicationDbContext dbContext,
 			IHttpContextAccessor httpContextAccessor,
 			UserManager<ApplicationUser> userManager,
+			RoleManager<ApplicationRole> roleManager,
 			SiteSettingsService siteSettingsService
 		) {
 			DbContext = dbContext;
 			HttpContextAccessor = httpContextAccessor;
 			UserManager = userManager;
+			RoleManager = roleManager;
 			SiteSettingsService = siteSettingsService;
 		}
 
@@ -100,6 +104,9 @@ namespace Forum3.Services {
 
 			if (currentPrincipal.Identity.IsAuthenticated) {
 				contextUser.IsAuthenticated = true;
+
+				// TODO check if roles exist here
+
 				contextUser.IsAdmin = currentPrincipal.IsInRole("Admin");
 				contextUser.IsVetted = currentPrincipal.IsInRole("Vetted");
 

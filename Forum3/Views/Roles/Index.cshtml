@@ -1,0 +1,29 @@
+@model IndexPage
+
+@if (Model.Roles.Any()) {
+	<div class="content-box pad">
+		<div class="table full-width">
+			@foreach (var item in Model.Roles) {
+				@await Html.PartialAsync("_IndexItem", item)
+			}
+		</div>
+	</div>
+}
+
+@section PageActions {
+	<li>
+		<a class="button" asp-controller="@nameof(Roles)" asp-action="@nameof(Roles.Create)">Create a New Role</a>
+	</li>
+}
+
+@{ViewData["Title"] = "Roles";}
+@section Header {@ViewData["Title"]}
+
+@section styles {
+	<environment names="Development">
+		<link rel="stylesheet" href="~/css/RoleIndex.css" asp-append-version="true" />
+	</environment>
+	<environment names="Staging,Production">
+		<link rel="stylesheet" href="~/css/RoleIndex.min.css" asp-append-version="true" />
+	</environment>
+}

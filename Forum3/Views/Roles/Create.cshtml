@@ -1,0 +1,29 @@
+﻿@model CreatePage
+
+<section class="content-box pad">
+	<form method="post"
+		  asp-action="@nameof(Roles.Create)"
+		  asp-controller="@nameof(Roles)">
+
+		<div asp-validation-summary="All" class="error"></div>
+
+		<dl>
+			<dt>Name</dt>
+			<dd><input type="text" asp-for="@Model.Name" /></dd>
+            <dd><span asp-validation-for="@Model.Name" class="error"></span></dd>
+		</dl>
+
+        <dl>
+            <dt>Description</dt>
+            <dd><textarea asp-for="@Model.Description"></textarea></dd>
+            <dd><span asp-validation-for="@Model.Description" class="error"></span></dd>
+        </dl>
+
+		<ul>
+			<li><button>Create</button></li>
+		</ul>
+	</form>
+</section>
+
+@{ ViewBag.Title = "Create a Role"; }
+@section Header {@ViewData["Title"]}

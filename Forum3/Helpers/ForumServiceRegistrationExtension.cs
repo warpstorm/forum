@@ -9,6 +9,7 @@ namespace Forum3.Helpers {
 			services.AddScoped<TopicService>();
 			services.AddScoped<SiteSettingsService>();
 			services.AddScoped<UserService>();
+			services.AddScoped<RoleService>();
 
 			return services;
 		}

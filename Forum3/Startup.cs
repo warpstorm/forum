@@ -46,7 +46,7 @@ namespace Forum3 {
 				options.UseSqlServer(connectionString)
 			);
 
-			services.AddIdentity<ApplicationUser, IdentityRole>(options => {
+			services.AddIdentity<ApplicationUser, ApplicationRole>(options => {
 				options.Password.RequireDigit = false;
 				options.Password.RequireLowercase = false;
 				options.Password.RequireUppercase = false;

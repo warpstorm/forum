@@ -27,6 +27,10 @@
   <ItemGroup>
     <Compile Include="Migrations\20170521085722_initial.cs" />
     <Compile Include="Migrations\20170521085722_initial.Designer.cs" />
+    <Compile Include="Migrations\20170521125024_roles.cs" />
+    <Compile Include="Migrations\20170521125024_roles.Designer.cs" />
+    <Compile Include="Migrations\20170521140601_roles2.cs" />
+    <Compile Include="Migrations\20170521140601_roles2.Designer.cs" />
     <Compile Include="Migrations\ApplicationDbContextModelSnapshot.cs" />
   </ItemGroup>
 
