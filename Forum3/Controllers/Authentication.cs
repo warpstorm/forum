@@ -7,11 +7,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Forum3.Models.DataModels;
-using Forum3.Models.ViewModels.Authentication;
 using Forum3.Interfaces.Users;
-using Forum3.Services;
+using Forum3.Models.DataModels;
 using Forum3.Models.InputModels;
+using Forum3.Models.ViewModels.Authentication;
+using Forum3.Services;
 
 namespace Forum3.Controllers {
 	[AllowAnonymous]

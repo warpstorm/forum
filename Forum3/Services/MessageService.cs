@@ -5,6 +5,7 @@ using System.Net;
 using System.Security.Authentication;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
@@ -16,7 +17,6 @@ using Forum3.Models.DataModels;
 using Forum3.Models.InputModels;
 using Forum3.Models.ServiceModels;
 using Forum3.Models.ViewModels.Messages;
-using Microsoft.AspNetCore.Mvc;
 
 namespace Forum3.Services {
 	public class MessageService {
@@ -67,16 +67,14 @@ namespace Forum3.Services {
 		public async Task<ServiceResponse> CreateTopic(MessageInput input) {
 			var serviceResponse = new ServiceResponse();
 
-			var boardId = 0;
+			if (input.BoardId == null)
+				serviceResponse.ModelErrors.Add(nameof(input.BoardId), $"Board ID is required");
 
-			if (input.BoardId != null) {
-				boardId = Convert.ToInt32(input.BoardId);
+			var boardId = Convert.ToInt32(input.BoardId);
+			var boardRecord = await DbContext.Boards.SingleOrDefaultAsync(b => b.Id == boardId);
 
-				var board = await DbContext.Boards.SingleOrDefaultAsync(b => b.Id == boardId);
-
-				if (board == null)
-					serviceResponse.ModelErrors.Add(string.Empty, $"A record does not exist with ID '{boardId}'");
-			}
+			if (boardRecord == null)
+				serviceResponse.ModelErrors.Add(string.Empty, $"A record does not exist with ID '{boardId}'");
 
 			if (serviceResponse.ModelErrors.Any())
 				return serviceResponse;
@@ -92,7 +90,7 @@ namespace Forum3.Services {
 
 			DbContext.MessageBoards.Add(new MessageBoard {
 				MessageId = record.Id,
-				BoardId = boardId,
+				BoardId = boardRecord.Id,
 				TimeAdded = DateTime.Now,
 				UserId = UserService.ContextUser.ApplicationUser.Id
 			});

@@ -2,20 +2,19 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
+using Forum3.Controllers;
 using Forum3.Data;
 using Forum3.Helpers;
 using PageModels = Forum3.Models.ViewModels.Topics.Pages;
 using ItemModels = Forum3.Models.ViewModels.Topics.Items;
-using Microsoft.AspNetCore.Mvc;
-using Forum3.Controllers;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Routing;
-using Forum3.Models.DataModels;
-using Forum3.Enums;
 
-namespace Forum3.Services {
-	public class TopicService {
+namespace Forum3.Services
+{
+    public class TopicService {
 		ApplicationDbContext DbContext { get; }
 		UserService UserService { get; set; }
 
