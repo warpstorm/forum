@@ -1,10 +1,9 @@
-﻿@{
-    ViewData["Title"] = "Confirm Email";
-}
+﻿<section class="content-box pad">
+    <p>Thank you for confirming your email. Please <a asp-area="Users" asp-controller="@nameof(Authentication)" asp-action="@nameof(Authentication.Login)">Click here to Log in</a>.</p>
+</section>
 
-<h2>@ViewData["Title"].</h2>
-<div>
-    <p>
-        Thank you for confirming your email. Please <a asp-area="Users" asp-controller="Authentication" asp-action="Login">Click here to Log in</a>.
-    </p>
-</div>
+@{ViewData["Title"] = "Confirm Email";}
+
+@section Header {
+    @ViewData["Title"]
+}

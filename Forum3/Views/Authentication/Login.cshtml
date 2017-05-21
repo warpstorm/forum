@@ -4,36 +4,40 @@
 @model LoginViewModel
 @inject SignInManager<Forum3.Models.DataModels.ApplicationUser> SignInManager
 
-@{
-    ViewData["Title"] = "Log in";
-}
-
-<section class="content-box">
+<section class="content-box pad">
     <form method="post"
-          asp-area="Users"
-          asp-controller="Authentication"
-          asp-action="Login"
+          asp-controller="@nameof(Authentication)"
+          asp-action="@nameof(Authentication.Login)"
           asp-route-returnurl="@ViewData["ReturnUrl"]">
+
         <div asp-validation-summary="All"></div>
+
         <dl>
-            <dt>Email</dt>
+            <dt>Username (email address)</dt>
             <dd><input asp-for="Email" /></dd>
             <dd><span asp-validation-for="Email"></span></dd>
         </dl>
+
         <dl>
             <dt>Password</dt>
             <dd><input asp-for="Password" /></dd>
             <dd><span asp-validation-for="Password"></span></dd>
         </dl>
+
         <dl>
             <dt><input asp-for="RememberMe" /> Remember Me</dt>
         </dl>
 
-        <p><button>Log in</button></p>
-
-        <div class="gap-top">
-            <p><a asp-action="Register" asp-route-returnurl="@ViewData["ReturnUrl"]">Register as a new user?</a></p>
-            <p><a asp-action="ForgotPassword">Forgot your password?</a></p>
-        </div>
+        <ul>
+            <li><button>Log in</button></li>
+            <li><a class="button" asp-action="@nameof(Authentication.Register)" asp-route-returnurl="@ViewData["ReturnUrl"]">Register as a new user?</a></li>
+            <li><a class="button" asp-action="@nameof(Authentication.ForgotPassword)">Forgot your password?</a></li>
+        </ul>
     </form>
 </section>
+
+@{ViewData["Title"] = "Login";}
+
+@section Header {
+    @ViewData["Title"]
+}

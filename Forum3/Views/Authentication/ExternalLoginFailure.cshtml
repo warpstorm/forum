@@ -1,8 +1,9 @@
-﻿@{
-    ViewData["Title"] = "Login Failure";
-}
+﻿<section class="content-box pad">
+    <p class="error">Unsuccessful login with service.</p>
+</section>
 
-<header>
-    <h2>@ViewData["Title"].</h2>
-    <p class="text-danger">Unsuccessful login with service.</p>
-</header>
+@{ViewData["Title"] = "Login Failure";}
+
+@section Header {
+    @ViewData["Title"]
+}

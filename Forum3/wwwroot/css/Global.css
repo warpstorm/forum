@@ -110,15 +110,15 @@ video {
     FORMS
 */
 
-form dl {
-	padding: 10px 0;
+form li {
+    display: inline-block;
 }
 
-form dt {
-	padding: 12px 0 3px 0;
-	font-weight: 600;
-	font-size: .9em;
-	line-height: .9em;
+form li, form dt {
+    padding: 12px 0 3px 0;
+    font-weight: 600;
+    font-size: .9em;
+    line-height: .9em;
 }
 
 form dd {
@@ -428,6 +428,7 @@ main > header {
 	line-height: 1.8em;
 	color: #FFF;
 	text-shadow: #253248 0 0 5px;
+    text-align: left;
 }
 
 	main > header ul {

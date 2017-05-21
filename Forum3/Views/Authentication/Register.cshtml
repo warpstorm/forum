@@ -1,35 +1,43 @@
 ﻿@model RegisterViewModel
 
-<form method="post"
-        asp-controller="Authentication"
-        asp-action="Register"
-        asp-route-returnurl="@ViewData["ReturnUrl"]">
+<section class="content-box pad">
+    <form method="post"
+          asp-controller="@nameof(Authentication)"
+          asp-action="@nameof(Authentication.Register)"
+          asp-route-returnurl="@ViewData["ReturnUrl"]">
 
-    <div asp-validation-summary="All"></div>
+        <div asp-validation-summary="All"></div>
 
-    <dl>
-        <dt>Display Name:</dt>
-        <dd><input asp-for="DisplayName" /></dd>
-        <dd><span asp-validation-for="DisplayName"></span></dd>
+        <dl>
+            <dt>Display Name</dt>
+            <dd><input asp-for="DisplayName" /></dd>
+            <dd><span asp-validation-for="DisplayName"></span></dd>
+        </dl>
 
-        <dt>Username (email address):</dt>
-        <dd><input asp-for="Email" /></dd>
-        <dd><span asp-validation-for="Email"></span></dd>
-        
-        <dt>Password:</dt>
-        <dd><input asp-for="Password" /></dd>
-        <dd><span asp-validation-for="Password"></span></dd>
+        <dl>
+            <dt>Username (email address)</dt>
+            <dd><input asp-for="Email" /></dd>
+            <dd><span asp-validation-for="Email"></span></dd>
+        </dl>
 
-        <dt>Confirm Password:</dt>
-        <dd><input asp-for="ConfirmPassword" /></dd>
-        <dd><span asp-validation-for="ConfirmPassword"></span></dd>
-    </dl>
+        <dl>
+            <dt>Password</dt>
+            <dd><input asp-for="Password" /></dd>
+            <dd><span asp-validation-for="Password"></span></dd>
+            
+            <dt>Confirm Password</dt>
+            <dd><input asp-for="ConfirmPassword" /></dd>
+            <dd><span asp-validation-for="ConfirmPassword"></span></dd>
+        </dl>
 
-    <button>Register</button>
-</form>
+        <ul>
+            <li><button>Register</button></li>
+        </ul>
+    </form>
+</section>
 
 @{ViewData["Title"] = "Register";}
 
 @section Header {
-    Register
+    @ViewData["Title"]
 }

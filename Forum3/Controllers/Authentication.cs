@@ -15,6 +15,10 @@ using Forum3.Services;
 using Forum3.Helpers;
 
 namespace Forum3.Controllers {
+	/// <summary>
+	/// Most of this is OOB MVC 6 authentication code.
+	/// Eventually this will be migrated and cleaned up under an AuthenticationService class.
+	/// </summary>
 	[AllowAnonymous]
 	public class Authentication : ForumController {
 		UserManager<ApplicationUser> UserManager { get; }

@@ -1,17 +1,26 @@
 ﻿@model SendCodeViewModel
-@{
-    ViewData["Title"] = "Send Verification Code";
+
+<section class="content-box pad">
+    <form method="post"
+          asp-controller="@nameof(Authentication)"
+          asp-action="@nameof(Authentication.SendCode)" 
+          asp-route-returnurl="@Model.ReturnUrl">
+
+        <input asp-for="RememberMe" type="hidden" />
+
+        <dl>
+            <dt>Select Two-Factor Authentication Provider</dt>
+            <dd><select asp-for="SelectedProvider" asp-items="Model.Providers"></select></dd>
+        </dl>
+
+        <ul>
+            <li><button>Submit</button></li>
+        </ul>
+    </form>
+</section>
+
+@{ViewData["Title"] = "Send Verification Code";}
+
+@section Header {
+    @ViewData["Title"]
 }
-
-<h2>@ViewData["Title"].</h2>
-
-<form asp-area="Users" asp-controller="Authentication" asp-action="SendCode" asp-route-returnurl="@Model.ReturnUrl" method="post" class="form-horizontal">
-    <input asp-for="RememberMe" type="hidden" />
-    <div class="row">
-        <div class="col-md-8">
-            Select Two-Factor Authentication Provider:
-            <select asp-for="SelectedProvider" asp-items="Model.Providers"></select>
-            <button type="submit" class="btn btn-default">Submit</button>
-        </div>
-    </div>
-</form>

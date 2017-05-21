@@ -1,8 +1,9 @@
-﻿@{
-    ViewData["Title"] = "Access Denied";
-}
+﻿<section class="content-box pad">
+    <p class="error">You do not have access to this resource.</p>
+</section>
 
-<header>
-    <h1 class="text-danger">Access Denied.</h1>
-    <p class="text-danger">You do not have access to this resource.</p>
-</header>
+@{ViewData["Title"] = "Access Denied";}
+
+@section Header {
+    @ViewData["Title"]
+}
