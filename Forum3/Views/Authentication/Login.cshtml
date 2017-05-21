@@ -10,18 +10,18 @@
           asp-action="@nameof(Authentication.Login)"
           asp-route-returnurl="@ViewData["ReturnUrl"]">
 
-        <div asp-validation-summary="All"></div>
+        <div asp-validation-summary="All" class="error"></div>
 
         <dl>
             <dt>Username (email address)</dt>
             <dd><input asp-for="Email" /></dd>
-            <dd><span asp-validation-for="Email"></span></dd>
+            <dd><span asp-validation-for="Email" class="error"></span></dd>
         </dl>
 
         <dl>
             <dt>Password</dt>
             <dd><input asp-for="Password" /></dd>
-            <dd><span asp-validation-for="Password"></span></dd>
+            <dd><span asp-validation-for="Password" class="error"></span></dd>
         </dl>
 
         <dl>
