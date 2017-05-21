@@ -51,6 +51,7 @@ namespace Forum3.Controllers {
 			await HttpContext.Authentication.SignOutAsync(ExternalCookieScheme);
 
 			ViewData["ReturnUrl"] = returnUrl;
+
 			return View();
 		}
 
@@ -60,8 +61,14 @@ namespace Forum3.Controllers {
 			ViewData["ReturnUrl"] = returnUrl;
 
 			if (ModelState.IsValid) {
-				// This doesn't count login failures towards account lockout
-				// To enable password failures to trigger account lockout, set lockoutOnFailure: true
+				// Require the user to have a confirmed email before they can log on.
+				var user = await UserManager.FindByEmailAsync(model.Email);
+
+				if (user != null && !await UserManager.IsEmailConfirmedAsync(user)) {
+					ModelState.AddModelError(string.Empty, "You must have a confirmed email to log in.");
+					return View(model);
+				}
+
 				var result = await SignInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
 
 				if (result.Succeeded) {
@@ -77,13 +84,10 @@ namespace Forum3.Controllers {
 					Logger.LogWarning(2, "User account locked out.");
 					return View("Lockout");
 				}
-				else {
-					ModelState.AddModelError(string.Empty, "Invalid login attempt.");
-					return View(model);
-				}
+
+				ModelState.AddModelError(string.Empty, "Invalid login attempt.");
 			}
 
-			// If we got this far, something failed, redisplay form
 			return View(model);
 		}
 
