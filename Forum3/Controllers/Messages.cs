@@ -9,15 +9,15 @@ using Forum3.Services;
 namespace Forum3.Controllers {
 	[Authorize]
 	public class Messages : ForumController {
-		public MessageService ControllerService { get; }
+		public MessageService MessageService { get; }
 
-		public Messages(MessageService controllerService, UserService userService) : base(userService) {
-			ControllerService = controllerService;
+		public Messages(MessageService messageService, UserService userService) : base(userService) {
+			MessageService = messageService;
 		}
 
 		[HttpGet]
 		public async Task<IActionResult> Create(int id = 0) {
-			var viewModel = await ControllerService.CreatePage(id);
+			var viewModel = await MessageService.CreatePage(id);
 
 			viewModel.CancelPath = Request.Headers["Referer"].ToString();
 
@@ -29,7 +29,7 @@ namespace Forum3.Controllers {
 		[PreventRapidRequests]
 		public async Task<IActionResult> Create(MessageInput input) {
 			if (ModelState.IsValid) {
-				var serviceResponse = await ControllerService.CreateTopic(input);
+				var serviceResponse = await MessageService.CreateTopic(input);
 				ProcessServiceResponse(serviceResponse);
 
 				if (!string.IsNullOrEmpty(serviceResponse.RedirectPath))
@@ -45,7 +45,7 @@ namespace Forum3.Controllers {
 
 		[HttpGet]
 		public async Task<IActionResult> Edit(int id) {
-			var viewModel = await ControllerService.EditPage(id);
+			var viewModel = await MessageService.EditPage(id);
 
 			viewModel.CancelPath = Request.Headers["Referer"].ToString();
 
@@ -57,7 +57,7 @@ namespace Forum3.Controllers {
 		[PreventRapidRequests]
 		public async Task<IActionResult> Edit(MessageInput input) {
 			if (ModelState.IsValid) {
-				var serviceResponse = await ControllerService.EditMessage(input);
+				var serviceResponse = await MessageService.EditMessage(input);
 				ProcessServiceResponse(serviceResponse);
 
 				return RedirectToAction(nameof(Topics.Display), nameof(Topics), new { Id = input.Id });
@@ -74,7 +74,7 @@ namespace Forum3.Controllers {
 		[PreventRapidRequests]
 		public async Task<IActionResult> TopicReply(MessageInput input) {
 			if (ModelState.IsValid) {
-				await ControllerService.CreateReply(input);
+				await MessageService.CreateReply(input);
 				return RedirectToAction(nameof(Topics.Display), nameof(Topics), new { Id = input.Id });
 			}
 
@@ -83,7 +83,7 @@ namespace Forum3.Controllers {
 
 		[HttpGet]
 		public async Task<IActionResult> Delete(int id) {
-			await ControllerService.DeleteMessage(id);
+			await MessageService.DeleteMessage(id);
 			return RedirectToAction(nameof(Topics.Index), nameof(Topics));
 		}
 	}
