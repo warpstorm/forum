@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Forum3.Interfaces.Users;
 using Forum3.Enums;
 using Forum3.Models.DataModels;
 using Forum3.Models.ViewModels.Profile;
@@ -18,21 +17,18 @@ namespace Forum3.Controllers {
 	public class Profile : ForumController {
 		UserManager<ApplicationUser> UserManager { get; }
 		SignInManager<ApplicationUser> SignInManager { get; }
-		IEmailSender EmailSender { get; }
 		ILogger Logger { get; }
 		string ExternalCookieScheme { get; }
 
 		public Profile(
 			UserManager<ApplicationUser> userManager,
 			SignInManager<ApplicationUser> signInManager,
-			IEmailSender emailSender,
 			ILoggerFactory loggerFactory,
 			UserService userService,
 			IOptions<IdentityCookieOptions> identityCookieOptions
 		) : base(userService) {
 			UserManager = userManager;
 			SignInManager = signInManager;
-			EmailSender = emailSender;
 			Logger = loggerFactory.CreateLogger<Profile>();
 			ExternalCookieScheme = identityCookieOptions.Value.ExternalCookieAuthenticationScheme;
 		}
