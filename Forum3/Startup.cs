@@ -10,6 +10,11 @@ using Forum3.Data;
 using Forum3.Helpers;
 using Forum3.Annotations;
 using Forum3.Models.DataModels;
+using Forum3.Models.ServiceModels;
+using Forum3.Interfaces.Users;
+using Forum3.Services;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Routing;
 
 namespace Forum3 {
 	public class Startup {
@@ -41,13 +46,14 @@ namespace Forum3 {
 				options.UseSqlServer(connectionString)
 			);
 
-			services.AddIdentity<ApplicationUser, IdentityRole>(o => {
-				o.Password.RequireDigit = false;
-				o.Password.RequireLowercase = false;
-				o.Password.RequireUppercase = false;
-				o.Password.RequireNonAlphanumeric = false;
-				o.Password.RequiredLength = 3;
-				o.Cookies.ApplicationCookie.LoginPath = "/Authentication/Login";
+			services.AddIdentity<ApplicationUser, IdentityRole>(options => {
+				options.Password.RequireDigit = false;
+				options.Password.RequireLowercase = false;
+				options.Password.RequireUppercase = false;
+				options.Password.RequireNonAlphanumeric = false;
+				options.Password.RequiredLength = 3;
+				options.Cookies.ApplicationCookie.LoginPath = "/Authentication/Login";
+				options.SignIn.RequireConfirmedEmail = true;
 			})
 				.AddEntityFrameworkStores<ApplicationDbContext>()
 				.AddDefaultTokenProviders();
@@ -58,8 +64,17 @@ namespace Forum3 {
 
 			services.AddMvc();
 
+			services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
+			services.AddSingleton<IUrlHelperFactory, UrlHelperFactory>();
+
+			services.Configure<AuthMessageSenderOptions>(Configuration);
+
+			services.AddTransient<IEmailSender, AuthMessageSender>();
+			services.AddTransient<ISmsSender, AuthMessageSender>();
+
 			services.AddDistributedMemoryCache();
 			services.AddSession();
+
 			services.AddForum();
 		}
 

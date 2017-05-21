@@ -12,6 +12,7 @@ using Forum3.Models.DataModels;
 using Forum3.Models.InputModels;
 using Forum3.Models.ViewModels.Authentication;
 using Forum3.Services;
+using Forum3.Helpers;
 
 namespace Forum3.Controllers {
 	[AllowAnonymous]
@@ -34,6 +35,8 @@ namespace Forum3.Controllers {
 		) : base(userService) {
 			UserManager = userManager;
 			SignInManager = signInManager;
+			EmailSender = emailSender;
+			SmsSender = smsSender;
 			Logger = loggerFactory.CreateLogger<Authentication>();
 			ExternalCookieScheme = identityCookieOptions.Value.ExternalCookieAuthenticationScheme;
 		}
@@ -101,22 +104,27 @@ namespace Forum3.Controllers {
 				var result = await UserManager.CreateAsync(user, input.Password);
 
 				if (result.Succeeded) {
-					// For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=532713
-					// Send an email with this link
-					//var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-					//var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: HttpContext.Request.Scheme);
-					//await _emailSender.SendEmailAsync(model.Email, "Confirm your account",
-					//    $"Please confirm your account by clicking this link: <a href='{callbackUrl}'>link</a>");
-					await SignInManager.SignInAsync(user, isPersistent: false);
+					var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
+
+					var callbackUrl = Url.Action(nameof(ConfirmEmail), nameof(Authentication), new { userId = user.Id, code = code }, protocol: HttpContext.Request.Scheme);
+
 					Logger.LogInformation(3, "User created a new account with password.");
+
+					// Automatically redirects on loopback addresses. Useful for development environments that don't have email.
+					if (Request.IsLocal() || EmailSender == null)
+						return Redirect(callbackUrl);
+
+					await EmailSender.SendEmailAsync(input.Email, "Confirm your account", $"Please confirm your account by clicking this link: <a href='{callbackUrl}'>link</a>");
 					return RedirectToLocal(returnUrl);
 				}
 
 				AddErrors(result);
 			}
 
-			// If we got this far, something failed, redisplay form
-			return View(input);
+			return View(new RegisterViewModel {
+				Email = input.Email,
+				DisplayName = input.DisplayName
+			});
 		}
 
 		[HttpPost]
@@ -239,13 +247,17 @@ namespace Forum3.Controllers {
 					return View("ForgotPasswordConfirmation");
 				}
 
-				// For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=532713
 				// Send an email with this link
-				//var code = await _userManager.GeneratePasswordResetTokenAsync(user);
-				//var callbackUrl = Url.Action("ResetPassword", "Account", new { userId = user.Id, code = code }, protocol: HttpContext.Request.Scheme);
-				//await _emailSender.SendEmailAsync(model.Email, "Reset Password",
-				//   $"Please reset your password by clicking here: <a href='{callbackUrl}'>link</a>");
-				//return View("ForgotPasswordConfirmation");
+				var code = await UserManager.GeneratePasswordResetTokenAsync(user);
+
+				var callbackUrl = Url.Action(nameof(ResetPassword), nameof(Authentication), new { userId = user.Id, code = code }, protocol: HttpContext.Request.Scheme);
+
+				//Automatically redirects on loopback addresses. Useful for development environments that don't have email.
+				if (Request.IsLocal() || EmailSender == null)
+					return Redirect(callbackUrl);
+
+				await EmailSender.SendEmailAsync(model.Email, "Reset Password", $"Please reset your password by clicking here: <a href='{callbackUrl}'>link</a>");
+				return View("ForgotPasswordConfirmation");
 			}
 
 			// If we got this far, something failed, redisplay form
