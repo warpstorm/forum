@@ -155,7 +155,7 @@ namespace Forum3.Services {
 
 		public async Task DeleteMessage(int messageId) {
 			var record = await DbContext.Messages.SingleAsync(m => m.Id == messageId);
-			
+
 			if (record == null)
 				throw new Exception($"A record does not exist with ID '{messageId}'");
 
@@ -163,7 +163,7 @@ namespace Forum3.Services {
 				var directReplies = await DbContext.Messages.Where(m => m.ReplyId == messageId).ToListAsync();
 
 				foreach (var reply in directReplies) {
-					reply.OriginalBody = 
+					reply.OriginalBody =
 						$"[quote]{record.OriginalBody}\n" +
 						$"Message deleted by {UserService.ContextUser.ApplicationUser.DisplayName} on {DateTime.Now.ToString("MMMM dd, yyyy")}[/quote]" +
 						reply.OriginalBody;

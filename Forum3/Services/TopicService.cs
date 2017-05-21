@@ -12,9 +12,8 @@ using Forum3.Helpers;
 using PageModels = Forum3.Models.ViewModels.Topics.Pages;
 using ItemModels = Forum3.Models.ViewModels.Topics.Items;
 
-namespace Forum3.Services
-{
-    public class TopicService {
+namespace Forum3.Services {
+	public class TopicService {
 		ApplicationDbContext DbContext { get; }
 		UserService UserService { get; set; }
 
@@ -126,7 +125,7 @@ namespace Forum3.Services
 					Id = message.Id,
 				};
 			}
-			
+
 			var topic = new PageModels.TopicDisplayPage {
 				Id = record.Id,
 				TopicHeader = new ItemModels.TopicHeader {

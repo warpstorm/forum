@@ -21,5 +21,5 @@ namespace Forum3.Helpers {
 
 			return services;
 		}
-    }
+	}
 }

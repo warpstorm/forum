@@ -34,7 +34,7 @@ namespace Forum3.Controllers {
 			SignInManager = signInManager;
 			EmailSender = emailSender;
 			Logger = loggerFactory.CreateLogger<Profile>();
-            ExternalCookieScheme = identityCookieOptions.Value.ExternalCookieAuthenticationScheme;
+			ExternalCookieScheme = identityCookieOptions.Value.ExternalCookieAuthenticationScheme;
 		}
 
 		[HttpGet]
@@ -161,7 +161,7 @@ namespace Forum3.Controllers {
 		public async Task<IActionResult> LinkLogin(string provider) {
 			// Clear the existing external cookie to ensure a clean login process
 			await HttpContext.Authentication.SignOutAsync(ExternalCookieScheme);
-			
+
 			// Request a redirect to the external login provider to link a login for the current user
 			var redirectUrl = Url.Action("LinkLoginCallback", "Manage");
 			var properties = SignInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl, UserManager.GetUserId(User));
@@ -171,12 +171,12 @@ namespace Forum3.Controllers {
 		[HttpGet]
 		public async Task<ActionResult> LinkLoginCallback() {
 			var user = await GetCurrentUserAsync();
-			
+
 			if (user == null)
 				return View("Error");
-			
+
 			var info = await SignInManager.GetExternalLoginInfoAsync(await UserManager.GetUserIdAsync(user));
-			
+
 			if (info == null)
 				return RedirectToAction(nameof(ManageLogins), new { Message = EManageMessageId.Error });
 

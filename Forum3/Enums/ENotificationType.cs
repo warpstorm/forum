@@ -1,6 +1,5 @@
 ﻿namespace Forum3.Enums {
-	public enum ENotificationType
-    {
+	public enum ENotificationType {
 		Reply,
 		Quote,
 		Thought,

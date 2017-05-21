@@ -106,7 +106,7 @@ namespace Forum3.Services {
 
 		public async Task<ServiceResponse> Create(InputModels.CreateBoardInput input) {
 			var serviceResponse = new ServiceResponse();
-		
+
 			if (await DbContext.Boards.AnyAsync(b => b.Name == input.Name))
 				serviceResponse.ModelErrors.Add(nameof(input.Name), "A board with that name already exists");
 
@@ -237,7 +237,7 @@ namespace Forum3.Services {
 
 		public async Task<ServiceResponse> MoveCategoryUp(int id) {
 			var serviceResponse = new ServiceResponse();
-			
+
 			var targetCategory = DbContext.Categories.FirstOrDefault(b => b.Id == id);
 
 			if (targetCategory == null) {
@@ -368,7 +368,7 @@ namespace Forum3.Services {
 			// Remove the category if empty
 			if (!await DbContext.Boards.AnyAsync(b => b.CategoryId == categoryId)) {
 				var categoryRecord = await DbContext.Categories.SingleOrDefaultAsync(c => c.Id == categoryId);
-				
+
 				DbContext.Categories.Remove(categoryRecord);
 
 				await DbContext.SaveChangesAsync();

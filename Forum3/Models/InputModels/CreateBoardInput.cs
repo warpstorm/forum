@@ -9,7 +9,7 @@ namespace Forum3.Models.InputModels {
 
 		[StringLength(64)]
 		public string Category { get; set; }
-		
+
 		[StringLength(64)]
 		public string NewCategory { get; set; }
 

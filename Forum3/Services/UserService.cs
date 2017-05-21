@@ -48,14 +48,14 @@ namespace Forum3.Services {
 			var onlineTodayTimeLimit = DateTime.Now.AddMinutes(-10080);
 
 			var onlineUsers = await (from user in DbContext.Users
-				where user.LastOnline >= onlineTodayTimeLimit
-				orderby user.LastOnline descending
-				select new OnlineUser {
-					Id = user.Id,
-					Name = user.DisplayName,
-					Online = user.LastOnline >= onlineTimeLimit,
-					LastOnline = user.LastOnline
-				}).ToListAsync();
+									 where user.LastOnline >= onlineTodayTimeLimit
+									 orderby user.LastOnline descending
+									 select new OnlineUser {
+										 Id = user.Id,
+										 Name = user.DisplayName,
+										 Online = user.LastOnline >= onlineTimeLimit,
+										 LastOnline = user.LastOnline
+									 }).ToListAsync();
 
 			foreach (var onlineUser in onlineUsers)
 				onlineUser.LastOnlineString = onlineUser.LastOnline.ToPassedTimeString();
@@ -78,7 +78,7 @@ namespace Forum3.Services {
 					var now = DateTime.Today;
 					var age = now.Year - item.Date.Year;
 
-					if (item.Date > now.AddYears(-age)) 
+					if (item.Date > now.AddYears(-age))
 						age--;
 
 					todayBirthdayNames.Add($"{item.DisplayName} ({age})");
