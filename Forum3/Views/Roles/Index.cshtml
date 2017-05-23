@@ -7,13 +7,9 @@
 				@await Html.PartialAsync("_IndexItem", item)
 			}
 		</div>
-	</div>
-}
 
-@section PageActions {
-	<li>
-		<a class="button" asp-controller="@nameof(Roles)" asp-action="@nameof(Roles.Create)">Create a New Role</a>
-	</li>
+		<p class="gap-top"><a class="button" asp-controller="@nameof(Roles)" asp-action="@nameof(Roles.Create)">Create a New Role</a></p>
+	</div>
 }
 
 @{ViewData["Title"] = "Roles";}

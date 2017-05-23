@@ -47,5 +47,39 @@ namespace Forum3.Controllers {
 
 			return View(viewModel);
 		}
+
+		[HttpGet]
+		public async Task<IActionResult> Edit(string id) {
+			var viewModel = await RoleService.EditPage(id);
+			return View(viewModel);
+		}
+
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> Edit(InputModels.EditRoleInput input) {
+			if (ModelState.IsValid) {
+				var serviceResponse = await RoleService.Edit(input);
+				ProcessServiceResponse(serviceResponse);
+
+				if (!string.IsNullOrEmpty(serviceResponse.RedirectPath))
+					return Redirect(serviceResponse.RedirectPath);
+			}
+
+			var viewModel = await RoleService.EditPage(input.Id);
+
+			viewModel.Name = input.Name;
+			viewModel.Description = input.Description;
+
+			return View(viewModel);
+		}
+
+		[HttpGet]
+		public async Task<IActionResult> Delete(string id) {
+			if (ModelState.IsValid) {
+				await RoleService.Delete(id);
+			}
+
+			return RedirectToAction(nameof(Roles.Index), nameof(Roles));
+		}
 	}
 }
