@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
 namespace Forum3.Models.InputModels {
-	public class Role {
+	public class CreateRoleInput {
 		[Required]
 		[MaxLength(64)]
 		public string Name { get; set; }

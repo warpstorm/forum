@@ -60,20 +60,20 @@ namespace Forum3.Services {
 			return viewModel;
 		}
 
-		public async Task<ServiceResponse> Create(InputModels.Role input) {
+		public async Task<ServiceResponse> Create(InputModels.CreateRoleInput input) {
 			var serviceResponse = new ServiceResponse();
 
 			if (input.Name != null)
 				input.Name = input.Name.Trim();
 
 			if (string.IsNullOrEmpty(input.Name))
-				serviceResponse.ModelErrors.Add(nameof(InputModels.Role.Name), "Name is required");
+				serviceResponse.ModelErrors.Add(nameof(InputModels.CreateRoleInput.Name), "Name is required");
 
 			if (input.Description != null)
 				input.Description = input.Description.Trim();
 
 			if (string.IsNullOrEmpty(input.Description))
-				serviceResponse.ModelErrors.Add(nameof(InputModels.Role.Description), "Description is required");
+				serviceResponse.ModelErrors.Add(nameof(InputModels.CreateRoleInput.Description), "Description is required");
 
 			if (serviceResponse.ModelErrors.Any())
 				return serviceResponse;
@@ -81,7 +81,7 @@ namespace Forum3.Services {
 			var existingRole = await RoleManager.FindByNameAsync(input.Name);
 
 			if (existingRole != null)
-				serviceResponse.ModelErrors.Add(nameof(InputModels.Role.Name), "A role with this name already exists");
+				serviceResponse.ModelErrors.Add(nameof(InputModels.CreateRoleInput.Name), "A role with this name already exists");
 
 			if (serviceResponse.ModelErrors.Any())
 				return serviceResponse;
@@ -94,7 +94,7 @@ namespace Forum3.Services {
 			return serviceResponse;
 		}
 
-		async Task CreateRecord(InputModels.Role input) {
+		async Task CreateRecord(InputModels.CreateRoleInput input) {
 			var record = new ApplicationRole {
 				Name = input.Name,
 				Description = input.Description,

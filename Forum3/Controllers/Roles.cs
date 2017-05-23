@@ -31,7 +31,7 @@ namespace Forum3.Controllers {
 
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Create(InputModels.Role input) {
+		public async Task<IActionResult> Create(InputModels.CreateRoleInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await RoleService.Create(input);
 				ProcessServiceResponse(serviceResponse);
