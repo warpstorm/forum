@@ -99,7 +99,7 @@ namespace Forum3.Controllers {
 
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Register(RegisterInputModel input, string returnUrl = null) {
+		public async Task<IActionResult> Register(RegisterInput input, string returnUrl = null) {
 			ViewData["ReturnUrl"] = returnUrl;
 
 			if (ModelState.IsValid) {
