@@ -1,0 +1,23 @@
+﻿@model UserListPage
+
+@if (Model.ExistingUsers.Any()) {
+	<div class="content-box pad">
+		<h2>Users already in this role</h2>
+		<ul class="pad-top">
+			@foreach (var user in Model.ExistingUsers) {
+				<li class="small-pad"><a asp-action="@nameof(Roles.RemoveUser)" asp-route-id="@Model.Id" asp-route-user="@user.Id">@user.Name</a></li>
+			}
+		</ul>
+	</div>
+}
+
+@if (Model.AvailableUsers.Any()) {
+	<div class="content-box pad">
+		<h2>Users available to add</h2>
+		<ul class="pad-top">
+			@foreach (var user in Model.AvailableUsers) {
+				<li class="small-pad"><a asp-action="@nameof(Roles.AddUser)" asp-route-id="@Model.Id" asp-route-user="@user.Id">@user.Name</a></li>
+			}
+		</ul>
+	</div>
+}

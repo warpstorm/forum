@@ -1,50 +1,47 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using Forum3.Controllers;
 using Forum3.Data;
+using Forum3.Helpers;
 using Forum3.Models.DataModels;
 using Forum3.Models.ServiceModels;
-using Forum3.Controllers;
 using DataModels = Forum3.Models.DataModels;
 using InputModels = Forum3.Models.InputModels;
 using PageViewModels = Forum3.Models.ViewModels.Roles.Pages;
 using ItemViewModels = Forum3.Models.ViewModels.Roles.Items;
-using System;
-using Forum3.Helpers;
 
 namespace Forum3.Services {
 	public class RoleService {
-		ApplicationDbContext DbContext { get; }
 		UserService UserService { get; set; }
 		UserManager<ApplicationUser> UserManager { get; }
 		RoleManager<ApplicationRole> RoleManager { get; }
-		IUrlHelperFactory UrlHelperFactory { get; }
-		IActionContextAccessor ActionContextAccessor { get; }
+		IUrlHelper UrlHelper { get; }
 
 		public RoleService(
-			ApplicationDbContext dbContext,
 			UserService userService,
 			UserManager<ApplicationUser> userManager,
 			RoleManager<ApplicationRole> roleManager,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory
 		) {
-			DbContext = dbContext;
 			UserService = userService;
 			UserManager = userManager;
 			RoleManager = roleManager;
-			ActionContextAccessor = actionContextAccessor;
-			UrlHelperFactory = urlHelperFactory;
+
+			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
 		public async Task<PageViewModels.IndexPage> IndexPage() {
 			var viewModel = new PageViewModels.IndexPage();
 
-			var roles = await DbContext.Roles.OrderBy(r => r.Name).ToListAsync();
+			var roles = await RoleManager.Roles.OrderBy(r => r.Name).ToListAsync();
 
 			foreach (var role in roles) {
 				ApplicationUser createdBy = null;
@@ -56,6 +53,8 @@ namespace Forum3.Services {
 				if (role.ModifiedById != null)
 					modifiedBy = await UserManager.FindByIdAsync(role.ModifiedById);
 
+				var usersInRole = await UserManager.GetUsersInRoleAsync(role.Name);
+
 				viewModel.Roles.Add(new ItemViewModels.IndexRole {
 					Id = role.Id,
 					Description = role.Description,
@@ -64,7 +63,7 @@ namespace Forum3.Services {
 					Created = role.CreatedDate.ToPassedTimeString(),
 					ModifiedBy = modifiedBy?.DisplayName,
 					Modified = role.ModifiedDate.ToPassedTimeString(),
-					NumberOfUsers = role.Users.Count
+					NumberOfUsers = usersInRole.Count()
 				});
 			}
 
@@ -89,7 +88,7 @@ namespace Forum3.Services {
 			if (serviceResponse.ModelErrors.Any())
 				return serviceResponse;
 
-			if (await DbContext.Roles.AnyAsync(r => r.Name == input.Name))
+			if (await RoleManager.FindByNameAsync(input.Name) != null)
 				serviceResponse.ModelErrors.Add(nameof(InputModels.CreateRoleInput.Name), "A role with this name already exists");
 
 			if (serviceResponse.ModelErrors.Any())
@@ -97,14 +96,16 @@ namespace Forum3.Services {
 
 			await CreateRecord(input);
 
-			var urlHelper = UrlHelperFactory.GetUrlHelper(ActionContextAccessor.ActionContext);
-			serviceResponse.RedirectPath = urlHelper.Action(nameof(Roles.Index), nameof(Roles));
+			serviceResponse.RedirectPath = UrlHelper.Action(nameof(Roles.Index), nameof(Roles));
 
 			return serviceResponse;
 		}
 
 		public async Task<PageViewModels.EditPage> EditPage(string id) {
 			var role = await RoleManager.FindByIdAsync(id);
+
+			if (role == null)
+				throw new Exception($"A record does not exist with ID '{id}'");
 
 			ApplicationUser createdBy = null;
 			ApplicationUser modifiedBy = null;
@@ -115,6 +116,8 @@ namespace Forum3.Services {
 			if (role.ModifiedById != null)
 				modifiedBy = await UserManager.FindByIdAsync(role.ModifiedById);
 
+			var usersInRole = await UserManager.GetUsersInRoleAsync(role.Name);
+
 			return new PageViewModels.EditPage {
 				Id = role.Id,
 				Description = role.Description,
@@ -123,7 +126,7 @@ namespace Forum3.Services {
 				Created = role.CreatedDate.ToPassedTimeString(),
 				ModifiedBy = modifiedBy?.DisplayName,
 				Modified = role.ModifiedDate.ToPassedTimeString(),
-				NumberOfUsers = role.Users.Count
+				NumberOfUsers = usersInRole.Count()
 			};
 		}
 
@@ -150,30 +153,33 @@ namespace Forum3.Services {
 			if (serviceResponse.ModelErrors.Any())
 				return serviceResponse;
 
-			if (await DbContext.Roles.AnyAsync(r => r.Id != input.Id && r.Name == input.Name))
+			var existingRole = await RoleManager.FindByNameAsync(input.Name);
+
+			if (existingRole != null && existingRole.Id != input.Id)
 				serviceResponse.ModelErrors.Add(nameof(InputModels.EditRoleInput.Name), "A role with this name already exists");
 
 			if (serviceResponse.ModelErrors.Any())
 				return serviceResponse;
 
+			var modified = false;
+
 			if (record.Name != input.Name) {
 				record.Name = input.Name;
-				DbContext.Entry(record).State = EntityState.Modified;
+				modified = true;
 			}
 
 			if (record.Description != input.Description) {
 				record.Description = input.Description;
-				DbContext.Entry(record).State = EntityState.Modified;
+				modified = true;
 			}
 
-			if (DbContext.Entry(record).State == EntityState.Modified) {
+			if (modified) {
 				record.ModifiedById = UserService.ContextUser.ApplicationUser.Id;
 				record.ModifiedDate = DateTime.Now;
-				await DbContext.SaveChangesAsync();
+				await RoleManager.UpdateAsync(record);
 			}
 
-			var urlHelper = UrlHelperFactory.GetUrlHelper(ActionContextAccessor.ActionContext);
-			serviceResponse.RedirectPath = urlHelper.Action(nameof(Roles.Index), nameof(Roles));
+			serviceResponse.RedirectPath = UrlHelper.Action(nameof(Roles.Index), nameof(Roles));
 
 			return serviceResponse;
 		}
@@ -183,6 +189,82 @@ namespace Forum3.Services {
 
 			if (record != null)
 				await RoleManager.DeleteAsync(record);
+		}
+
+		public async Task<PageViewModels.UserListPage> UserList(string id) {
+			var role = await RoleManager.FindByIdAsync(id);
+
+			if (role == null)
+				throw new Exception($"A record does not exist with ID '{id}'");
+
+			var usersInRole = await UserManager.GetUsersInRoleAsync(role.Name);
+
+			var userRecords = await UserManager.Users.Select(u => new ItemViewModels.UserListItem {
+				Id = u.Id,
+				Name = u.DisplayName
+			}).ToListAsync();
+
+			var existingUsers = new List<ItemViewModels.UserListItem>();
+
+			foreach (var user in usersInRole)
+				existingUsers.Add(userRecords.Single(u => u.Id == user.Id));
+
+			var availableUsers = userRecords.Except(existingUsers).ToList();
+
+			return new PageViewModels.UserListPage {
+				Id = role.Id,
+				Name = role.Name,
+				ExistingUsers = existingUsers,
+				AvailableUsers = availableUsers
+			};
+		}
+		
+		public async Task<ServiceResponse> AddUser(string roleId, string userId) {
+			var serviceResponse = new ServiceResponse();
+
+			var roleRecord = await RoleManager.FindByIdAsync(roleId);
+
+			if (roleRecord == null)
+				serviceResponse.ModelErrors.Add(string.Empty, $"A record does not exist with ID '{roleId}'");
+
+			var userRecord = await UserManager.FindByIdAsync(userId);
+
+			if (userRecord == null)
+				serviceResponse.ModelErrors.Add(string.Empty, $"A record does not exist with ID '{roleId}'");
+
+			if (serviceResponse.ModelErrors.Any())
+				return serviceResponse;
+
+			var result = await UserManager.AddToRoleAsync(userRecord, roleRecord.Name);
+
+			if (result.Succeeded)
+				serviceResponse.RedirectPath = UrlHelper.Action(nameof(Roles.Edit), nameof(Roles), new { Id = roleId });
+
+			return serviceResponse;
+		}
+
+		public async Task<ServiceResponse> RemoveUser(string roleId, string userId) {
+			var serviceResponse = new ServiceResponse();
+
+			var roleRecord = await RoleManager.FindByIdAsync(roleId);
+
+			if (roleRecord == null)
+				serviceResponse.ModelErrors.Add(string.Empty, $"A record does not exist with ID '{roleId}'");
+
+			var userRecord = await UserManager.FindByIdAsync(userId);
+
+			if (userRecord == null)
+				serviceResponse.ModelErrors.Add(string.Empty, $"A record does not exist with ID '{roleId}'");
+
+			if (serviceResponse.ModelErrors.Any())
+				return serviceResponse;
+
+			var result = await UserManager.RemoveFromRoleAsync(userRecord, roleRecord.Name);
+
+			if (result.Succeeded)
+				serviceResponse.RedirectPath = UrlHelper.Action(nameof(Roles.Edit), nameof(Roles), new { Id = roleId });
+
+			return serviceResponse;
 		}
 
 		async Task CreateRecord(InputModels.CreateRoleInput input) {
