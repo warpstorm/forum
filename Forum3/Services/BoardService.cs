@@ -19,25 +19,26 @@ using ItemViewModels = Forum3.Models.ViewModels.Boards.Items;
 namespace Forum3.Services {
 	public class BoardService {
 		ApplicationDbContext DbContext { get; }
-		UserService UserService { get; }
-		IUrlHelperFactory UrlHelperFactory { get; set; }
-		IActionContextAccessor ActionContextAccessor { get; set; }
+		SiteSettingsService SiteSettingsService { get; }
+		ContextUser ContextUser { get; }
+		IUrlHelper UrlHelper { get; }
 
 		public BoardService(
 			ApplicationDbContext dbContext,
-			UserService userService,
+			SiteSettingsService siteSettingsService,
+			ContextUserFactory contextUserFactory,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory
 		) {
 			DbContext = dbContext;
-			UserService = userService;
-			ActionContextAccessor = actionContextAccessor;
-			UrlHelperFactory = urlHelperFactory;
+			SiteSettingsService = siteSettingsService;
+			ContextUser = contextUserFactory.GetContextUser();
+			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
 		public async Task<PageViewModels.IndexPage> IndexPage() {
-			var birthdays = UserService.GetBirthdays();
-			var onlineUsers = UserService.GetOnlineUsers();
+			var birthdays = GetBirthdays();
+			var onlineUsers = GetOnlineUsers();
 
 			await Task.WhenAll(new Task[] {
 				birthdays,
@@ -167,8 +168,7 @@ namespace Forum3.Services {
 			await DbContext.Boards.AddAsync(record);
 			await DbContext.SaveChangesAsync();
 
-			var urlHelper = UrlHelperFactory.GetUrlHelper(ActionContextAccessor.ActionContext);
-			serviceResponse.RedirectPath = urlHelper.Action(nameof(Boards.Manage), nameof(Boards), new { id = record.Id });
+			serviceResponse.RedirectPath = UrlHelper.Action(nameof(Boards.Manage), nameof(Boards), new { id = record.Id });
 
 			return serviceResponse;
 		}
@@ -229,8 +229,7 @@ namespace Forum3.Services {
 			DbContext.Entry(record).State = EntityState.Modified;
 			await DbContext.SaveChangesAsync();
 
-			var urlHelper = UrlHelperFactory.GetUrlHelper(ActionContextAccessor.ActionContext);
-			serviceResponse.RedirectPath = urlHelper.Action(nameof(Boards.Manage), nameof(Boards), new { id = record.Id });
+			serviceResponse.RedirectPath = UrlHelper.Action(nameof(Boards.Manage), nameof(Boards), new { id = record.Id });
 
 			return serviceResponse;
 		}
@@ -409,7 +408,7 @@ namespace Forum3.Services {
 				foreach (var boardRecord in boardRecords.Where(r => r.CategoryId == categoryRecord.Id)) {
 					var indexBoard = GetIndexBoard(targetBoard, boardRecord);
 
-					if (!indexBoard.VettedOnly || UserService.ContextUser.IsVetted)
+					if (!indexBoard.VettedOnly || ContextUser.IsVetted)
 						indexCategory.Boards.Add(indexBoard);
 				}
 
@@ -442,6 +441,64 @@ namespace Forum3.Services {
 			}
 
 			return indexBoard;
+		}
+
+		async Task<List<ItemViewModels.OnlineUser>> GetOnlineUsers() {
+			var onlineTimeLimitSetting = SiteSettingsService.GetInt(Constants.SiteSettings.OnlineTimeLimit);
+
+			if (onlineTimeLimitSetting == 0)
+				onlineTimeLimitSetting = Constants.Defaults.OnlineTimeLimit;
+
+			if (onlineTimeLimitSetting > 0)
+				onlineTimeLimitSetting *= -1;
+
+			var onlineTimeLimit = DateTime.Now.AddMinutes(onlineTimeLimitSetting);
+			var onlineTodayTimeLimit = DateTime.Now.AddMinutes(-10080);
+
+			var onlineUsers = await (from user in DbContext.Users
+									 where user.LastOnline >= onlineTodayTimeLimit
+									 orderby user.LastOnline descending
+									 select new ItemViewModels.OnlineUser {
+										 Id = user.Id,
+										 Name = user.DisplayName,
+										 Online = user.LastOnline >= onlineTimeLimit,
+										 LastOnline = user.LastOnline
+									 }).ToListAsync();
+
+			foreach (var onlineUser in onlineUsers)
+				onlineUser.LastOnlineString = onlineUser.LastOnline.ToPassedTimeString();
+
+			return onlineUsers;
+		}
+
+		async Task<List<string>> GetBirthdays() {
+			var todayBirthdayNames = new List<string>();
+
+			var birthdays = await DbContext.Users.Select(u => new Birthday {
+				Date = u.Birthday,
+				DisplayName = u.DisplayName
+			}).ToListAsync();
+
+			if (birthdays.Any()) {
+				var todayBirthdays = birthdays.Where(u => new DateTime(DateTime.Now.Year, u.Date.Month, u.Date.Day).Date == DateTime.Now.Date);
+
+				foreach (var item in todayBirthdays) {
+					var now = DateTime.Today;
+					var age = now.Year - item.Date.Year;
+
+					if (item.Date > now.AddYears(-age))
+						age--;
+
+					todayBirthdayNames.Add($"{item.DisplayName} ({age})");
+				}
+			}
+
+			return todayBirthdayNames;
+		}
+
+		class Birthday {
+			public string DisplayName { get; set; }
+			public DateTime Date { get; set; }
 		}
 	}
 }

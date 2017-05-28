@@ -9,27 +9,25 @@ using Microsoft.EntityFrameworkCore;
 using Forum3.Controllers;
 using Forum3.Data;
 using Forum3.Helpers;
+using Forum3.Models.ServiceModels;
 using PageModels = Forum3.Models.ViewModels.Topics.Pages;
 using ItemModels = Forum3.Models.ViewModels.Topics.Items;
 
 namespace Forum3.Services {
 	public class TopicService {
 		ApplicationDbContext DbContext { get; }
-		UserService UserService { get; set; }
-
-		IUrlHelperFactory UrlHelperFactory { get; set; }
-		IActionContextAccessor ActionContextAccessor { get; set; }
+		ContextUser ContextUser { get; }
+		IUrlHelper UrlHelper { get; }
 
 		public TopicService(
 			ApplicationDbContext dbContext,
-			UserService userService,
+			ContextUserFactory contextUserFactory,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory
 		) {
 			DbContext = dbContext;
-			UserService = userService;
-			ActionContextAccessor = actionContextAccessor;
-			UrlHelperFactory = urlHelperFactory;
+			ContextUser = contextUserFactory.GetContextUser();
+			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
 		public async Task<PageModels.TopicIndexPage> IndexPage(int boardId, int page) {
@@ -88,8 +86,6 @@ namespace Forum3.Services {
 			DbContext.Entry(record).State = EntityState.Modified;
 			DbContext.SaveChanges();
 
-			var currentUser = UserService.ContextUser;
-
 			var messageQuery = from m in DbContext.Messages
 							   join im in DbContext.Messages on m.ReplyId equals im.Id into Replies
 							   from r in Replies.DefaultIfEmpty()
@@ -116,10 +112,10 @@ namespace Forum3.Services {
 				message.TimePosted = message.TimePostedDT.ToPassedTimeString();
 				message.TimeEdited = message.TimeEditedDT.ToPassedTimeString();
 
-				message.CanEdit = currentUser.IsAdmin || (currentUser.IsAuthenticated && currentUser.ApplicationUser.Id == message.PostedById);
-				message.CanDelete = currentUser.IsAdmin || (currentUser.IsAuthenticated && currentUser.ApplicationUser.Id == message.PostedById);
-				message.CanReply = currentUser.IsAuthenticated;
-				message.CanThought = currentUser.IsAuthenticated;
+				message.CanEdit = ContextUser.IsAdmin || (ContextUser.IsAuthenticated && ContextUser.ApplicationUser.Id == message.PostedById);
+				message.CanDelete = ContextUser.IsAdmin || (ContextUser.IsAuthenticated && ContextUser.ApplicationUser.Id == message.PostedById);
+				message.CanReply = ContextUser.IsAuthenticated;
+				message.CanThought = ContextUser.IsAuthenticated;
 
 				message.ReplyForm = new ItemModels.ReplyForm {
 					Id = message.Id,
@@ -136,8 +132,8 @@ namespace Forum3.Services {
 				Messages = messages,
 				//Boards = new List<IndexBoard>(),
 				//AssignedBoards = new List<IndexBoard>(),
-				IsAuthenticated = currentUser.IsAuthenticated,
-				CanManage = currentUser.IsAdmin || record.PostedById == currentUser.ApplicationUser.Id,
+				IsAuthenticated = ContextUser.IsAuthenticated,
+				CanManage = ContextUser.IsAdmin || record.PostedById == ContextUser.ApplicationUser.Id,
 				TotalPages = totalPages,
 				CurrentPage = page,
 				ReplyForm = new ItemModels.ReplyForm {
@@ -157,9 +153,7 @@ namespace Forum3.Services {
 				target = messageId
 			};
 
-			var urlHelper = UrlHelperFactory.GetUrlHelper(ActionContextAccessor.ActionContext);
-
-			viewModel.RedirectPath = urlHelper.Action(nameof(Topics.Display), nameof(Topics), routeValues) + "#message" + messageId;
+			viewModel.RedirectPath = UrlHelper.Action(nameof(Topics.Display), nameof(Topics), routeValues) + "#message" + messageId;
 
 			return viewModel;
 		}

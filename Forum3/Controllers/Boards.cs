@@ -8,9 +8,8 @@ namespace Forum3.Controllers {
 		public BoardService BoardService { get; }
 
 		public Boards(
-			BoardService boardService,
-			UserService userService
-		) : base(userService) {
+			BoardService boardService
+		) {
 			BoardService = boardService;
 		}
 

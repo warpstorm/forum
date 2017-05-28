@@ -2,39 +2,44 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Forum3.Controllers;
-using Forum3.Data;
 using Forum3.Helpers;
 using Forum3.Models.DataModels;
 using Forum3.Models.ServiceModels;
-using DataModels = Forum3.Models.DataModels;
 using InputModels = Forum3.Models.InputModels;
 using PageViewModels = Forum3.Models.ViewModels.Roles.Pages;
 using ItemViewModels = Forum3.Models.ViewModels.Roles.Items;
 
 namespace Forum3.Services {
 	public class RoleService {
-		UserService UserService { get; set; }
 		UserManager<ApplicationUser> UserManager { get; }
 		RoleManager<ApplicationRole> RoleManager { get; }
+		SignInManager<ApplicationUser> SignInManager { get; }
+		ContextUser ContextUser { get; }
+		HttpContext HttpContext { get; }
 		IUrlHelper UrlHelper { get; }
 
 		public RoleService(
-			UserService userService,
 			UserManager<ApplicationUser> userManager,
 			RoleManager<ApplicationRole> roleManager,
+			SignInManager<ApplicationUser> signInManager,
+			ContextUserFactory contextUserFactory,
+			IHttpContextAccessor httpContextAccessor,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory
 		) {
-			UserService = userService;
 			UserManager = userManager;
 			RoleManager = roleManager;
+			SignInManager = signInManager;
 
+			ContextUser = contextUserFactory.GetContextUser();
+			HttpContext = httpContextAccessor.HttpContext;
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
@@ -174,7 +179,7 @@ namespace Forum3.Services {
 			}
 
 			if (modified) {
-				record.ModifiedById = UserService.ContextUser.ApplicationUser.Id;
+				record.ModifiedById = ContextUser.ApplicationUser.Id;
 				record.ModifiedDate = DateTime.Now;
 				await RoleManager.UpdateAsync(record);
 			}
@@ -237,8 +242,12 @@ namespace Forum3.Services {
 
 			var result = await UserManager.AddToRoleAsync(userRecord, roleRecord.Name);
 
-			if (result.Succeeded)
+			if (result.Succeeded) {
+				if (userId == ContextUser.ApplicationUser.Id)
+					await SignInManager.SignOutAsync();
+
 				serviceResponse.RedirectPath = UrlHelper.Action(nameof(Roles.Edit), nameof(Roles), new { Id = roleId });
+			}
 
 			return serviceResponse;
 		}
@@ -261,8 +270,12 @@ namespace Forum3.Services {
 
 			var result = await UserManager.RemoveFromRoleAsync(userRecord, roleRecord.Name);
 
-			if (result.Succeeded)
+			if (result.Succeeded) {
+				if (userId == ContextUser.ApplicationUser.Id)
+					await SignInManager.SignOutAsync();
+
 				serviceResponse.RedirectPath = UrlHelper.Action(nameof(Roles.Edit), nameof(Roles), new { Id = roleId });
+			}
 
 			return serviceResponse;
 		}
@@ -274,9 +287,9 @@ namespace Forum3.Services {
 				Name = input.Name,
 				Description = input.Description,
 				CreatedDate = now,
-				CreatedById = UserService.ContextUser.ApplicationUser.Id,
+				CreatedById = ContextUser.ApplicationUser.Id,
 				ModifiedDate = now,
-				ModifiedById = UserService.ContextUser.ApplicationUser.Id
+				ModifiedById = ContextUser.ApplicationUser.Id
 			};
 
 			await RoleManager.CreateAsync(record);

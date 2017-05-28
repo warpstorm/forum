@@ -12,9 +12,8 @@ namespace Forum3.Controllers {
 		public MessageService MessageService { get; }
 
 		public Messages(
-			MessageService messageService,
-			UserService userService
-		) : base(userService) {
+			MessageService messageService
+		) {
 			MessageService = messageService;
 		}
 

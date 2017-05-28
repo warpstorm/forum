@@ -21,20 +21,18 @@ using Forum3.Models.ViewModels.Messages;
 namespace Forum3.Services {
 	public class MessageService {
 		ApplicationDbContext DbContext { get; }
-		UserService UserService { get; }
-		IUrlHelperFactory UrlHelperFactory { get; }
-		IActionContextAccessor ActionContextAccessor { get; }
+		ContextUser ContextUser { get; }
+		IUrlHelper UrlHelper { get; }
 
 		public MessageService(
 			ApplicationDbContext dbContext,
-			UserService userService,
+			ContextUserFactory contextUserFactory,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory
 		) {
 			DbContext = dbContext;
-			UserService = userService;
-			ActionContextAccessor = actionContextAccessor;
-			UrlHelperFactory = urlHelperFactory;
+			ContextUser = contextUserFactory.GetContextUser();
+			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
 		public async Task<CreateTopicPage> CreatePage(int boardId = 0) {
@@ -84,27 +82,23 @@ namespace Forum3.Services {
 			if (serviceResponse.ModelErrors.Any())
 				return serviceResponse;
 
-			var urlHelper = UrlHelperFactory.GetUrlHelper(ActionContextAccessor.ActionContext);
-
 			var record = await CreateMessageRecord(processedMessage, null);
 
 			DbContext.MessageBoards.Add(new MessageBoard {
 				MessageId = record.Id,
 				BoardId = boardRecord.Id,
 				TimeAdded = DateTime.Now,
-				UserId = UserService.ContextUser.ApplicationUser.Id
+				UserId = ContextUser.ApplicationUser.Id
 			});
 
 			await DbContext.SaveChangesAsync();
 
-			serviceResponse.RedirectPath = urlHelper.Action(nameof(Topics.Display), nameof(Topics), new { id = record.Id });
+			serviceResponse.RedirectPath = UrlHelper.Action(nameof(Topics.Display), nameof(Topics), new { id = record.Id });
 
 			return serviceResponse;
 		}
 
 		public async Task<ServiceResponse> CreateReply(MessageInput input) {
-			var urlHelper = UrlHelperFactory.GetUrlHelper(ActionContextAccessor.ActionContext);
-
 			var serviceResponse = new ServiceResponse();
 
 			if (input.Id == 0)
@@ -123,15 +117,13 @@ namespace Forum3.Services {
 
 			if (!serviceResponse.ModelErrors.Any()) {
 				var record = await CreateMessageRecord(processedMessage, replyRecord);
-				serviceResponse.RedirectPath = urlHelper.Action(nameof(Topics.Display), nameof(Topics), new { id = record.Id });
+				serviceResponse.RedirectPath = UrlHelper.Action(nameof(Topics.Display), nameof(Topics), new { id = record.Id });
 			}
 
 			return serviceResponse;
 		}
 
 		public async Task<ServiceResponse> EditMessage(MessageInput input) {
-			var urlHelper = UrlHelperFactory.GetUrlHelper(ActionContextAccessor.ActionContext);
-
 			var serviceResponse = new ServiceResponse();
 
 			if (input.Id == 0)
@@ -147,7 +139,7 @@ namespace Forum3.Services {
 
 			if (!serviceResponse.ModelErrors.Any()) {
 				await UpdateMessageRecord(processedMessage, record);
-				serviceResponse.RedirectPath = urlHelper.Action(nameof(Topics.Display), nameof(Topics), new { id = record.Id });
+				serviceResponse.RedirectPath = UrlHelper.Action(nameof(Topics.Display), nameof(Topics), new { id = record.Id });
 			}
 
 			return serviceResponse;
@@ -165,7 +157,7 @@ namespace Forum3.Services {
 				foreach (var reply in directReplies) {
 					reply.OriginalBody =
 						$"[quote]{record.OriginalBody}\n" +
-						$"Message deleted by {UserService.ContextUser.ApplicationUser.DisplayName} on {DateTime.Now.ToString("MMMM dd, yyyy")}[/quote]" +
+						$"Message deleted by {ContextUser.ApplicationUser.DisplayName} on {DateTime.Now.ToString("MMMM dd, yyyy")}[/quote]" +
 						reply.OriginalBody;
 
 					reply.ReplyId = 0;
@@ -422,7 +414,7 @@ namespace Forum3.Services {
 					user = await DbContext.Users.SingleAsync(u => u.UserName.ToLower().Contains(matchedTag.ToLower()));
 
 				if (user != null) {
-					if (user.Id != UserService.ContextUser.ApplicationUser.Id)
+					if (user.Id != ContextUser.ApplicationUser.Id)
 						processedMessageInput.MentionedUsers.Add(user.Id);
 
 					// Eventually link to user profiles
@@ -501,12 +493,12 @@ namespace Forum3.Services {
 				TimeEdited = currentTime,
 				LastReplyPosted = currentTime,
 
-				PostedById = UserService.ContextUser.ApplicationUser.Id,
-				PostedByName = UserService.ContextUser.ApplicationUser.DisplayName,
-				EditedById = UserService.ContextUser.ApplicationUser.Id,
-				EditedByName = UserService.ContextUser.ApplicationUser.DisplayName,
-				LastReplyById = UserService.ContextUser.ApplicationUser.Id,
-				LastReplyByName = UserService.ContextUser.ApplicationUser.DisplayName,
+				PostedById = ContextUser.ApplicationUser.Id,
+				PostedByName = ContextUser.ApplicationUser.DisplayName,
+				EditedById = ContextUser.ApplicationUser.Id,
+				EditedByName = ContextUser.ApplicationUser.DisplayName,
+				LastReplyById = ContextUser.ApplicationUser.Id,
+				LastReplyByName = ContextUser.ApplicationUser.DisplayName,
 
 				ParentId = parentId,
 				ReplyId = replyId,
@@ -518,8 +510,8 @@ namespace Forum3.Services {
 
 			if (replyRecord != null) {
 				replyRecord.LastReplyId = record.Id;
-				replyRecord.LastReplyById = UserService.ContextUser.ApplicationUser.Id;
-				replyRecord.LastReplyByName = UserService.ContextUser.ApplicationUser.DisplayName;
+				replyRecord.LastReplyById = ContextUser.ApplicationUser.Id;
+				replyRecord.LastReplyByName = ContextUser.ApplicationUser.DisplayName;
 				replyRecord.LastReplyPosted = currentTime;
 
 				DbContext.Entry(replyRecord).State = EntityState.Modified;
@@ -527,8 +519,8 @@ namespace Forum3.Services {
 
 			if (parentMessage != null && parentMessage.Id != replyRecord.Id) {
 				parentMessage.LastReplyId = record.Id;
-				parentMessage.LastReplyById = UserService.ContextUser.ApplicationUser.Id;
-				parentMessage.LastReplyByName = UserService.ContextUser.ApplicationUser.DisplayName;
+				parentMessage.LastReplyById = ContextUser.ApplicationUser.Id;
+				parentMessage.LastReplyByName = ContextUser.ApplicationUser.DisplayName;
 				parentMessage.LastReplyPosted = currentTime;
 
 				DbContext.Entry(parentMessage).State = EntityState.Modified;
@@ -546,8 +538,8 @@ namespace Forum3.Services {
 			record.LongPreview = message.LongPreview;
 			record.TimeEdited = DateTime.Now;
 
-			record.EditedById = UserService.ContextUser.ApplicationUser.Id;
-			record.EditedByName = UserService.ContextUser.ApplicationUser.DisplayName;
+			record.EditedById = ContextUser.ApplicationUser.Id;
+			record.EditedByName = ContextUser.ApplicationUser.DisplayName;
 
 			DbContext.Update(record);
 

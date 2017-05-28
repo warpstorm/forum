@@ -8,8 +8,9 @@ namespace Forum3.Helpers {
 			services.AddScoped<BoardService>();
 			services.AddScoped<TopicService>();
 			services.AddScoped<SiteSettingsService>();
-			services.AddScoped<UserService>();
 			services.AddScoped<RoleService>();
+
+			services.AddTransient<ContextUserFactory>();
 
 			return services;
 		}

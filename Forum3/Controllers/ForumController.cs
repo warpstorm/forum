@@ -4,17 +4,10 @@ using System.Linq;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Forum3.Models.ServiceModels;
-using Forum3.Services;
 
 namespace Forum3.Controllers {
 	[Authorize]
 	public class ForumController : Controller {
-		UserService UserService { get; set; }
-
-		public ForumController(UserService userService) {
-			UserService = userService;
-		}
-
 		protected void ProcessServiceResponse(ServiceResponse serviceResponse) {
 			if (!string.IsNullOrEmpty(serviceResponse.Message))
 				TempData[Constants.Keys.StatusMessage] = serviceResponse.Message;

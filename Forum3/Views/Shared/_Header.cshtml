@@ -1,6 +1,8 @@
-﻿@inject Forum3.Services.UserService UserService
+﻿@inject Forum3.Services.ContextUserFactory ContextUserFactory
 
-@*@{
+@*
+	TODO - to be imported
+@{
     if (Request.IsAuthenticated) {
         var notifications = (NotificationList) ViewBag.Notifications;
 
@@ -13,12 +15,16 @@
     }
 }*@
 
+@{ 
+	var contextUser = ContextUserFactory.GetContextUser();
+}
+
 <header id="page-header" class="margin-center align-center">
 	<div id="page-title"><a href="/"><img src=@ViewData["LogoPath"] alt="Warpstorm" /></a></div>
 
 	<nav>
 		<ul class="float-right">
-			@if (UserService.ContextUser.IsAuthenticated) {
+			@if (contextUser.IsAuthenticated) {
 		<li>
 			@Html.ActionLink("Boards", "Index", "Boards", null, new { @class = "smallButton" })
 		</li>
@@ -26,7 +32,7 @@
 				@Html.ActionLink("Topics", "Index", "Topics", new { id = "" }, new { @class = "smallButton" })
 			</li>
 
-			@if (UserService.ContextUser.IsAdmin) {
+			@if (contextUser.IsAdmin) {
 			<li>
 				<a href="@Url.Action("Dashboard", "Admin")" class="smallButton highlight">
 					<span class="icon-wrench"></span> Admin
@@ -40,20 +46,20 @@
 				</li>}
 			else {
 			<li>
-				<a class="smallButton" asp-action="@nameof(Forum3.Controllers.Authentication.Register)" asp-controller="@nameof(Forum3.Controllers.Authentication)">
+				<a class="smallButton" asp-action="@nameof(Authentication.Register)" asp-controller="@nameof(Authentication)">
 					<span class="icon-sun"></span> Register
 				</a>
 			</li>
 			<li>
-				<a class="smallButton" asp-action="@nameof(Forum3.Controllers.Authentication.Login)" asp-controller="@nameof(Forum3.Controllers.Authentication)">
+				<a class="smallButton" asp-action="@nameof(Authentication.Login)" asp-controller="@nameof(Authentication)">
 					<span class="icon-enter"></span> Log in
 				</a>
 			</li>}
 		</ul>
 
 		<div id="login" class="float-left">
-			@if (UserService.ContextUser.IsAuthenticated) {
-		<span><a asp-controller="Profile" asp-action="Manage">Welcome back, @UserService.ContextUser.ApplicationUser.DisplayName</a></span>
+			@if (contextUser.IsAuthenticated) {
+		<span><a asp-controller="Profile" asp-action="Manage">Welcome back, @contextUser.ApplicationUser.DisplayName</a></span>
 
 			<a href="@Url.Action("Index", "Notification")" class="@ViewBag.NotificationButtonClasses">
 				<span class="icon-flag"></span> @ViewBag.NotificationCount
@@ -61,9 +67,9 @@
 			else {
 			<span>
 				Welcome Guest! Please
-				<a asp-action="@nameof(Forum3.Controllers.Authentication.Register)" asp-controller="@nameof(Forum3.Controllers.Authentication)">register</a>
+				<a asp-action="@nameof(Authentication.Register)" asp-controller="@nameof(Authentication)">register</a>
 				or
-				<a asp-action="@nameof(Forum3.Controllers.Authentication.Login)" asp-controller="@nameof(Forum3.Controllers.Authentication)">log in</a>.
+				<a asp-action="@nameof(Authentication.Login)" asp-controller="@nameof(Authentication)">log in</a>.
 			</span>}
 		</div>
 
@@ -71,4 +77,4 @@
 	</nav>
 </header>
 
-<form asp-area="" asp-controller="@nameof(Forum3.Controllers.Authentication)" asp-action="@nameof(Forum3.Controllers.Authentication.Logout)" method="post" id="logoutForm" class="navbar-right"></form>
+<form asp-area="" asp-controller="@nameof(Authentication)" asp-action="@nameof(Authentication.Logout)" method="post" id="logoutForm" class="navbar-right"></form>

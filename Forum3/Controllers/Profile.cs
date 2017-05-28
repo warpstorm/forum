@@ -6,27 +6,25 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Forum3.Enums;
-using Forum3.Models.DataModels;
 using Forum3.Models.ViewModels.Profile;
 using Forum3.Models.ViewModels.Profile.Pages;
-using Forum3.Services;
+using DataModels = Forum3.Models.DataModels;
 using InputModels = Forum3.Models.InputModels;
 
 namespace Forum3.Controllers {
 	[Authorize]
 	public class Profile : ForumController {
-		UserManager<ApplicationUser> UserManager { get; }
-		SignInManager<ApplicationUser> SignInManager { get; }
+		UserManager<DataModels.ApplicationUser> UserManager { get; }
+		SignInManager<DataModels.ApplicationUser> SignInManager { get; }
 		ILogger Logger { get; }
 		string ExternalCookieScheme { get; }
 
 		public Profile(
-			UserManager<ApplicationUser> userManager,
-			SignInManager<ApplicationUser> signInManager,
+			UserManager<DataModels.ApplicationUser> userManager,
+			SignInManager<DataModels.ApplicationUser> signInManager,
 			ILoggerFactory loggerFactory,
-			UserService userService,
 			IOptions<IdentityCookieOptions> identityCookieOptions
-		) : base(userService) {
+		) {
 			UserManager = userManager;
 			SignInManager = signInManager;
 			Logger = loggerFactory.CreateLogger<Profile>();
@@ -194,7 +192,7 @@ namespace Forum3.Controllers {
 				ModelState.AddModelError(string.Empty, error.Description);
 		}
 
-		Task<ApplicationUser> GetCurrentUserAsync() {
+		Task<DataModels.ApplicationUser> GetCurrentUserAsync() {
 			return UserManager.GetUserAsync(HttpContext.User);
 		}
 	}

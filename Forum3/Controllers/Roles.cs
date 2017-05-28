@@ -11,9 +11,8 @@ namespace Forum3.Controllers {
 		RoleService RoleService { get; }
 
 		public Roles(
-			RoleService roleService,
-			UserService userService
-		) : base(userService) {
+			RoleService roleService
+		) {
 			RoleService = roleService;
 		}
 
