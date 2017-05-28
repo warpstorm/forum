@@ -19,30 +19,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="Migrations\**" />
-    <EmbeddedResource Remove="Migrations\**" />
-    <None Remove="Migrations\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="Migrations\20170521085722_initial.cs" />
-    <Compile Include="Migrations\20170521085722_initial.Designer.cs" />
-    <Compile Include="Migrations\20170521125024_roles.cs" />
-    <Compile Include="Migrations\20170521125024_roles.Designer.cs" />
-    <Compile Include="Migrations\20170521140601_roles2.cs" />
-    <Compile Include="Migrations\20170521140601_roles2.Designer.cs" />
-    <Compile Include="Migrations\20170523203810_roles3.cs" />
-    <Compile Include="Migrations\20170523203810_roles3.Designer.cs" />
-    <Compile Include="Migrations\20170528185258_cats.cs" />
-    <Compile Include="Migrations\20170528185258_cats.Designer.cs" />
-    <Compile Include="Migrations\20170528185356_cats2.cs" />
-    <Compile Include="Migrations\20170528185356_cats2.Designer.cs" />
-    <Compile Include="Migrations\20170528185426_cats3.cs" />
-    <Compile Include="Migrations\20170528185426_cats3.Designer.cs" />
-    <Compile Include="Migrations\ApplicationDbContextModelSnapshot.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="DevZH.HtmlAgilityPack" Version="1.4.9.4-final" />
     <PackageReference Include="Microsoft.AspNetCore" Version="1.1.2" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="1.1.2" />
