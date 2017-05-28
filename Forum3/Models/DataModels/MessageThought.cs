@@ -12,9 +12,5 @@ namespace Forum3.Models.DataModels {
 
 		[Required]
 		public string UserId { get; set; }
-
-		public Smiley Smiley { get; set; }
-		public Message Message { get; set; }
-		public ApplicationUser User { get; set; }
 	}
 }

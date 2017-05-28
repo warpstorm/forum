@@ -16,8 +16,5 @@ namespace Forum3.Models.DataModels {
 		public string UserId { get; set; }
 
 		public DateTime TimeAdded { get; set; }
-
-		public Message Message { get; set; }
-		public Board Board { get; set; }
 	}
 }

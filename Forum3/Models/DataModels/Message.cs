@@ -44,8 +44,6 @@ namespace Forum3.Models.DataModels {
 		[StringLength(64)]
 		public string PostedByName { get; set; }
 
-		public ApplicationUser PostedBy { get; set; }
-
 		[Required]
 		public string EditedById { get; set; }
 
@@ -53,15 +51,12 @@ namespace Forum3.Models.DataModels {
 		[StringLength(64)]
 		public string EditedByName { get; set; }
 
-		public ApplicationUser EditedBy { get; set; }
-
 		[Required]
 		public string LastReplyById { get; set; }
 
 		[Required]
 		[StringLength(64)]
 		public string LastReplyByName { get; set; }
-		public ApplicationUser LastReplyBy { get; set; }
 
 		public int ParentId { get; set; }
 		public int ReplyId { get; set; }
