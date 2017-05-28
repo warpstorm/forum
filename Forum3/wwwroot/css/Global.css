@@ -81,10 +81,6 @@ fieldset {
 		padding: 0;
 	}
 
-.nav li {
-	display: inline-block;
-}
-
 img {
 	border: 0;
 }
@@ -175,10 +171,7 @@ a.borderless * {
 }
 
 .highlight {
-	background-color: #92abba !important;
-	color: #000 !important;
-	box-shadow: none !important;
-	border: 1px solid #FFF !important;
+	border: 1px solid #7090c6 !important;
 }
 
 .hover-underline:hover {
@@ -257,8 +250,16 @@ a.borderless * {
 	display: inline-block;
 }
 
+.inline > li {
+	display: inline-block;
+}
+
 .full-width {
 	width: 100%;
+}
+
+.relative {
+	position: relative;
 }
 
 .gap {
@@ -354,15 +355,6 @@ a.borderless * {
 	font-size: .8em;
 }
 
-	#page-header nav {
-		padding: 0 13px;
-		line-height: 2.4em;
-	}
-
-	#page-header li {
-		display: inline-block;
-	}
-
 #page-title {
 	height: 99px;
 }
@@ -372,7 +364,25 @@ a.borderless * {
 		max-height: 100%;
 	}
 
+.drop-down-menu-wrapper {
+	position: relative;
+	display: none;
+}
 
+.drop-down-menu {
+	max-height: 300px;
+	position: absolute;
+	overflow-y: auto;
+	right: 0;
+}
+
+	.drop-down-menu li {
+		padding: 0 10px;
+	}
+
+	.drop-down-menu li:hover {
+		background-color: #253248;
+	}
 
 /*
     PAGE FOOTER
@@ -472,7 +482,7 @@ main > footer {
 
 button [class^="icon-"], button [class*=" icon-"],
 .button [class^="icon-"], .button [class*=" icon-"],
-.smallButton [class^="icon-"], .smallButton [class*=" icon-"] {
+.small-button [class^="icon-"], .small-button [class*=" icon-"] {
 	padding-right: 3px;
 }
 
@@ -489,7 +499,7 @@ a.button {
 	color: #fff;
 }
 
-.smallButton, a.smallButton {
+.small-button, a.small-button {
 	margin: 2px 6px 2px 0;
 	padding: 1px 7px;
 	font-size: 7.5pt;
@@ -498,15 +508,15 @@ a.button {
 	color: #d6e3eb;
 }
 
-	.smallButton:hover, a.smallButton:hover {
+	.small-button:hover, a.small-button:hover {
 		color: #FFF;
 	}
 
 button,
 .button,
 a.button,
-.smallButton,
-a.smallButton {
+.small-button,
+a.small-button {
 	display: inline-block;
 	white-space: nowrap;
 	letter-spacing: .35px;
@@ -521,8 +531,8 @@ a.smallButton {
 	button:hover,
 	.button:hover,
 	a.button:hover,
-	.smallButton:hover,
-	a.smallButton:hover {
+	.small-button:hover,
+	a.small-button:hover {
 		border-color: #7090c6;
 		box-shadow: none;
 	}

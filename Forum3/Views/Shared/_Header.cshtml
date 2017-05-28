@@ -7,7 +7,7 @@
         var notifications = (NotificationList) ViewBag.Notifications;
 
         ViewBag.NotificationCount = notifications.NotificationCount;
-        ViewBag.NotificationButtonClasses = "smallButton";
+        ViewBag.NotificationButtonClasses = "small-button";
 
         if (notifications.NotificationCount > 0) {
             ViewBag.NotificationButtonClasses += " highlight";
@@ -22,36 +22,38 @@
 <header id="page-header" class="margin-center align-center">
 	<div id="page-title"><a href="/"><img src=@ViewData["LogoPath"] alt="Warpstorm" /></a></div>
 
-	<nav>
-		<ul class="float-right">
+	<nav class="small-pad">
+		<ul class="float-right inline">
 			@if (contextUser.IsAuthenticated) {
-		<li>
-			@Html.ActionLink("Boards", "Index", "Boards", null, new { @class = "smallButton" })
-		</li>
-			<li>
-				@Html.ActionLink("Topics", "Index", "Topics", new { id = "" }, new { @class = "smallButton" })
-			</li>
+				<li><a asp-controller="@nameof(Boards)" asp-action="@nameof(Boards.Index)" class="small-button">Boards</a></li>
+				<li><a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)" class="small-button">Topics</a></li>
 
-			@if (contextUser.IsAdmin) {
-			<li>
-				<a href="@Url.Action("Dashboard", "Admin")" class="smallButton highlight">
-					<span class="icon-wrench"></span> Admin
-				</a>
-			</li>}
+				@if (contextUser.IsAdmin) {
+					<li class="open-menu">
+						<span class="small-button pointer">Admin</span>
+						<div class="drop-down-menu-wrapper">
+							<ul class="drop-down-menu content-box">
+								<li><a asp-controller="@nameof(Roles)" asp-action="@nameof(Roles.Index)">Roles</a></li>
+								<li>Settings</li>
+								<li>Users</li>
+							</ul>
+						</div>
+					</li>
+				}
 
 				<li>
-					<a href="javascript:document.getElementById('logoutForm').submit()" class="smallButton" onclick="return confirm('Are you sure you want to logout?');">
+					<a href="javascript:document.getElementById('logoutForm').submit()" class="small-button" onclick="return confirm('Are you sure you want to logout?');">
 						<span class="icon-exit"></span> Log off
 					</a>
 				</li>}
 			else {
 			<li>
-				<a class="smallButton" asp-action="@nameof(Authentication.Register)" asp-controller="@nameof(Authentication)">
+				<a class="small-button" asp-action="@nameof(Authentication.Register)" asp-controller="@nameof(Authentication)">
 					<span class="icon-sun"></span> Register
 				</a>
 			</li>
 			<li>
-				<a class="smallButton" asp-action="@nameof(Authentication.Login)" asp-controller="@nameof(Authentication)">
+				<a class="small-button" asp-action="@nameof(Authentication.Login)" asp-controller="@nameof(Authentication)">
 					<span class="icon-enter"></span> Log in
 				</a>
 			</li>}

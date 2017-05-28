@@ -6,13 +6,13 @@
 
 	<aside class="float-right">
 		@if (Model.CanReply) {
-			<span class="smallButton replyButton">
+			<span class="small-button replyButton">
 				Reply
 			</span>
 		}
 
 		@if (Model.CanEdit) {
-			<a class="smallButton"
+			<a class="small-button"
 			   asp-controller="@nameof(Forum3.Controllers.Messages)"
 			   asp-action="@nameof(Forum3.Controllers.Messages.Edit)"
 			   asp-route-id="@Model.Id">
@@ -22,7 +22,7 @@
 
 		@if (Model.CanDelete) {
 			@if (Model.ParentId == 0) {
-				<a class="smallButton"
+				<a class="small-button"
 				   asp-controller="@nameof(Forum3.Controllers.Messages)"
 				   asp-action="@nameof(Forum3.Controllers.Messages.Delete)"
 				   asp-route-id="@Model.Id"
@@ -31,7 +31,7 @@
 				</a>
 			}
 			else {
-				<a class="smallButton"
+				<a class="small-button"
 				   asp-controller="@nameof(Forum3.Controllers.Messages)"
 				   asp-action="@nameof(Forum3.Controllers.Messages.Delete)"
 				   asp-route-id="@Model.Id"

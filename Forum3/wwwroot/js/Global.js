@@ -1,21 +1,20 @@
 ﻿$(function () {
-    // TODO - enable shift-click and middle click to new windows
+	$("body").on("click", function(e) {
+		e.stopPropagation();
+		$(".drop-down-menu-wrapper").hide();
+	});
+
+	$(".open-menu").on("click", function(e) {
+		e.stopPropagation();
+		$(this).children(".drop-down-menu-wrapper").show();
+	});
+	
+	// TODO - enable shift-click and middle click to new windows
     $("[clickableLinkParent]").on("click", function (e) {
         e.stopPropagation();
         window.location.href = $(this).find("a").eq(0).attr("href");
     });
-
-    $("#createTopicButton").on("click", function (e) {
-        OpenModal($(e).data("source"));
-    });
 });
-
-function OpenModal(url) {
-    if (url && url.length > 0) {
-        $("#modal").html("");
-        $("#modal").load(url);
-    }
-}
 
 function PostToPath(path, parameters) {
 	var form = $('<form></form>');
