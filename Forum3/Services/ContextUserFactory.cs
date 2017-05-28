@@ -11,20 +11,24 @@ using Forum3.Models.ServiceModels;
 namespace Forum3.Services {
 	public class ContextUserFactory {
 		ApplicationDbContext DbContext { get; }
-		HttpContext HttpContext { get; }
 		UserManager<ApplicationUser> UserManager { get; }
 		RoleManager<ApplicationRole> RoleManager { get; }
+		SignInManager<ApplicationUser> SignInManager { get; }
+		HttpContext HttpContext { get; }
 
 		public ContextUserFactory(
 			ApplicationDbContext dbContext,
-			IHttpContextAccessor httpContextAccessor,
 			UserManager<ApplicationUser> userManager,
-			RoleManager<ApplicationRole> roleManager
+			RoleManager<ApplicationRole> roleManager,
+			SignInManager<ApplicationUser> signInManager,
+			IHttpContextAccessor httpContextAccessor
 		) {
 			DbContext = dbContext;
-			HttpContext = httpContextAccessor.HttpContext;
 			UserManager = userManager;
 			RoleManager = roleManager;
+			SignInManager = signInManager;
+
+			HttpContext = httpContextAccessor.HttpContext;
 		}
 
 		public ContextUser GetContextUser() {
@@ -49,6 +53,9 @@ namespace Forum3.Services {
 			if (currentPrincipal.Identity.IsAuthenticated) {
 				contextUser.IsAuthenticated = true;
 
+				var userId = UserManager.GetUserId(currentPrincipal);
+				contextUser.ApplicationUser = DbContext.Users.SingleOrDefault(u => u.Id == userId);
+
 				var adminRole = DbContext.Roles.SingleOrDefault(r => r.Name == "Admin");
 
 				var adminUsersQuery = from user in DbContext.Users
@@ -63,14 +70,16 @@ namespace Forum3.Services {
 					contextUser.IsAdmin = true;
 				else if (adminUsers.Count() == 0)
 					contextUser.IsAdmin = true;
-				else
-					contextUser.IsAdmin = currentPrincipal.IsInRole("Admin");
+				else if (currentPrincipal.IsInRole("Admin")) {
+					// Force logout if the user was removed from Admin, but their cookie still says they're in Admin.
+					if (!adminUsersQuery.Any(u => u.Id == contextUser.ApplicationUser.Id))
+						SignInManager.SignOutAsync().ConfigureAwait(false);
+					else
+						contextUser.IsAdmin = true;
+				}
 
 				contextUser.IsVetted = currentPrincipal.IsInRole("Vetted");
 
-				var userId = UserManager.GetUserId(currentPrincipal);
-
-				contextUser.ApplicationUser = DbContext.Users.SingleOrDefault(u => u.Id == userId);
 				contextUser.ApplicationUser.LastOnline = DateTime.Now;
 
 				DbContext.Entry(contextUser.ApplicationUser).State = EntityState.Modified;
