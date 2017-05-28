@@ -364,25 +364,7 @@ a.borderless * {
 		max-height: 100%;
 	}
 
-.drop-down-menu-wrapper {
-	position: relative;
-	display: none;
-}
 
-.drop-down-menu {
-	max-height: 300px;
-	position: absolute;
-	overflow-y: auto;
-	right: 0;
-}
-
-	.drop-down-menu li {
-		padding: 0 10px;
-	}
-
-	.drop-down-menu li:hover {
-		background-color: #253248;
-	}
 
 /*
     PAGE FOOTER
@@ -473,6 +455,36 @@ main > footer {
 	background-color: #121822;
 	box-shadow: #1d2737 0 -2px 8px inset;
 }
+
+
+
+/*
+	DROP DOWN MENU
+*/
+
+.drop-down-menu-wrapper {
+	position: relative;
+	display: none;
+}
+
+.drop-down-menu {
+	max-height: 300px;
+	padding: 5px 10px;
+	position: absolute;
+	overflow-y: auto;
+	right: 0;
+	border: 1px solid #253248;
+	box-shadow: #121822 0 3px 8px;
+}
+
+	.drop-down-menu li {
+		padding: 0 10px;
+		cursor: pointer;
+	}
+
+		.drop-down-menu li:hover {
+			background-color: #253248;
+		}
 
 
 

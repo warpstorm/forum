@@ -33,6 +33,12 @@
     <Compile Include="Migrations\20170521140601_roles2.Designer.cs" />
     <Compile Include="Migrations\20170523203810_roles3.cs" />
     <Compile Include="Migrations\20170523203810_roles3.Designer.cs" />
+    <Compile Include="Migrations\20170528185258_cats.cs" />
+    <Compile Include="Migrations\20170528185258_cats.Designer.cs" />
+    <Compile Include="Migrations\20170528185356_cats2.cs" />
+    <Compile Include="Migrations\20170528185356_cats2.Designer.cs" />
+    <Compile Include="Migrations\20170528185426_cats3.cs" />
+    <Compile Include="Migrations\20170528185426_cats3.Designer.cs" />
     <Compile Include="Migrations\ApplicationDbContextModelSnapshot.cs" />
   </ItemGroup>
 

@@ -33,7 +33,8 @@
 						<span class="small-button pointer">Admin</span>
 						<div class="drop-down-menu-wrapper">
 							<ul class="drop-down-menu content-box">
-								<li><a asp-controller="@nameof(Roles)" asp-action="@nameof(Roles.Index)">Roles</a></li>
+								<li clickableLinkParent><a asp-controller="@nameof(Boards)" asp-action="@nameof(Boards.Manage)">Boards</a></li>
+								<li clickableLinkParent><a asp-controller="@nameof(Roles)" asp-action="@nameof(Roles.Index)">Roles</a></li>
 								<li>Settings</li>
 								<li>Users</li>
 							</ul>

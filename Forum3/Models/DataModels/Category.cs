@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace Forum3.Models.DataModels {
 	public class Category {
@@ -9,5 +10,7 @@ namespace Forum3.Models.DataModels {
 		public string Name { get; set; }
 
 		public int DisplayOrder { get; set; }
+
+		public List<Board> Boards { get; set; }
 	}
 }

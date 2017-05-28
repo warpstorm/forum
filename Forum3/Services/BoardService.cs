@@ -181,31 +181,31 @@ namespace Forum3.Services {
 			if (record == null)
 				serviceResponse.ModelErrors.Add(string.Empty, $"A record does not exist with ID '{input.Id}'");
 
-			DataModels.Category categoryRecord = null;
+			DataModels.Category newCategoryRecord = null;
 
 			if (!string.IsNullOrEmpty(input.NewCategory))
 				input.NewCategory = input.NewCategory.Trim();
 
 			if (!string.IsNullOrEmpty(input.NewCategory)) {
-				categoryRecord = await DbContext.Categories.SingleOrDefaultAsync(c => c.Name == input.NewCategory);
+				newCategoryRecord = await DbContext.Categories.SingleOrDefaultAsync(c => c.Name == input.NewCategory);
 
-				if (categoryRecord == null) {
+				if (newCategoryRecord == null) {
 					var displayOrder = await DbContext.Categories.MaxAsync(c => c.DisplayOrder);
 
-					categoryRecord = new DataModels.Category {
+					newCategoryRecord = new DataModels.Category {
 						Name = input.NewCategory,
 						DisplayOrder = displayOrder + 1
 					};
 
-					await DbContext.Categories.AddAsync(categoryRecord);
+					await DbContext.Categories.AddAsync(newCategoryRecord);
 				}
 			}
 			else {
 				try {
-					var categoryId = Convert.ToInt32(input.Category);
-					categoryRecord = await DbContext.Categories.SingleOrDefaultAsync(c => c.Id == categoryId);
+					var newCategoryId = Convert.ToInt32(input.Category);
+					newCategoryRecord = await DbContext.Categories.SingleOrDefaultAsync(c => c.Id == newCategoryId);
 
-					if (categoryRecord == null)
+					if (newCategoryRecord == null)
 						serviceResponse.ModelErrors.Add(nameof(input.Category), "No category was found with this ID.");
 				}
 				catch (FormatException) {
@@ -224,10 +224,27 @@ namespace Forum3.Services {
 
 			record.Name = input.Name;
 			record.VettedOnly = input.VettedOnly;
-			record.CategoryId = categoryRecord.Id;
+
+			var oldCategoryId = -1;
+
+			if (record.CategoryId != newCategoryRecord.Id) {
+				DbContext.Entry(record).Reference(r => r.Category).Load();
+				DbContext.Entry(record.Category).Collection(r => r.Boards).Load();
+
+				if (record.Category.Boards.Count() == 1)
+					oldCategoryId = record.CategoryId;
+
+				record.CategoryId = newCategoryRecord.Id;
+			}
 
 			DbContext.Entry(record).State = EntityState.Modified;
 			await DbContext.SaveChangesAsync();
+
+			if (oldCategoryId >= 0) {
+				var oldCategoryRecord = DbContext.Categories.Find(oldCategoryId);
+				DbContext.Categories.Remove(oldCategoryRecord);
+				await DbContext.SaveChangesAsync();
+			}
 
 			serviceResponse.RedirectPath = UrlHelper.Action(nameof(Boards.Manage), nameof(Boards), new { id = record.Id });
 

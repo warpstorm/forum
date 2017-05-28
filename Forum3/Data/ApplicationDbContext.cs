@@ -71,7 +71,7 @@ namespace Forum3.Data {
 
 			builder.Entity<Board>()
 				.HasOne(r => r.Category)
-				.WithMany()
+				.WithMany(r => r.Boards)
 				.HasForeignKey(r => r.CategoryId)
 				.OnDelete(DeleteBehavior.Restrict);
 
