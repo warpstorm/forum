@@ -91,6 +91,9 @@ namespace Forum3.Services {
 				UserId = ContextUser.ApplicationUser.Id
 			});
 
+			boardRecord.LastMessageId = record.Id;
+			DbContext.Entry(boardRecord).State = EntityState.Modified;
+
 			await DbContext.SaveChangesAsync();
 
 			serviceResponse.RedirectPath = UrlHelper.Action(nameof(Topics.Display), nameof(Topics), new { id = record.Id });
@@ -117,6 +120,19 @@ namespace Forum3.Services {
 
 			if (!serviceResponse.ModelErrors.Any()) {
 				var record = await CreateMessageRecord(processedMessage, replyRecord);
+
+				var boardRecord = await (from message in DbContext.Messages
+								   join messageBoard in DbContext.MessageBoards on message.Id equals messageBoard.MessageId
+								   join board in DbContext.Boards on messageBoard.BoardId equals board.Id
+								   where message.Id == record.ParentId
+								   select board).SingleOrDefaultAsync();
+
+				if (boardRecord != null) {
+					boardRecord.LastMessageId = record.Id;
+					DbContext.Entry(boardRecord).State = EntityState.Modified;
+					await DbContext.SaveChangesAsync();
+				}
+
 				serviceResponse.RedirectPath = UrlHelper.Action(nameof(Topics.Display), nameof(Topics), new { id = record.Id });
 			}
 

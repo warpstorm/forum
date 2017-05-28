@@ -1,7 +1,7 @@
 ﻿@model IndexBoard
 
-<div class="table-row full-width">
-	<div class="table-cell full-width pad pointer boardInfo" clickableLinkParent>
+<div class="table-row">
+	<div class="table-cell pad pointer boardInfo" clickableLinkParent>
 		<p>
 			<a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)" asp-route-id="@Model.Id">
 				@Model.Name
@@ -14,14 +14,14 @@
 		<p class="note small-pad-left">@Model.Description</p>
 	</div>
 
-	<div class="table-cell lastPost">
+	<div class="table-cell lastPost pointer" clickableLinkParent>
 		@if (Model.LastMessage != null) {
 			<p>
 				<a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Display)" asp-route-id="@Model.LastMessage.Id" asp-fragment="latest">
 					@Html.Raw(Model.LastMessage.ShortPreview)
 				</a>
 			</p>
-			<p>by @Model.LastMessage.LastReplyByName, <time>@Model.LastMessage.LastReplyPosted</time></p>
+			<p class="note">by @Model.LastMessage.LastReplyByName, <time>@Model.LastMessage.LastReplyPosted</time></p>
 		}
 	</div>
 </div>

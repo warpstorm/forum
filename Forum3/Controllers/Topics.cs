@@ -1,7 +1,10 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Forum3.Annotations;
+using Forum3.Models.InputModels;
 using Forum3.Services;
+using Forum3.Models.ViewModels.Topics.Items;
 
 namespace Forum3.Controllers {
 	[Authorize]
@@ -31,6 +34,24 @@ namespace Forum3.Controllers {
 				return View(viewModel);
 			else
 				return Redirect(viewModel.RedirectPath);
+		}
+
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		[PreventRapidRequests]
+		public async Task<IActionResult> TopicReply(MessageInput input) {
+			if (ModelState.IsValid) {
+				var serviceResponse = await MessageService.CreateReply(input);
+				ProcessServiceResponse(serviceResponse);
+
+				if (!string.IsNullOrEmpty(serviceResponse.RedirectPath))
+					return Redirect(serviceResponse.RedirectPath);
+			}
+
+			var viewModel = await TopicService.DisplayPage(input.Id);
+			viewModel.ReplyForm.Body = input.Body;
+
+			return View(nameof(Display), viewModel);
 		}
 	}
 }

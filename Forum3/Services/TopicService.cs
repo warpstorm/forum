@@ -34,17 +34,19 @@ namespace Forum3.Services {
 			var take = Constants.Defaults.MessagesPerPage;
 			var skip = (page * take) - take;
 
-			var messageRecordQuery = from m in DbContext.Messages
-									 where m.ParentId == 0
-									 orderby m.LastReplyPosted descending
+			var messageRecordQuery = from message in DbContext.Messages
+									 join messageBoard in DbContext.MessageBoards on message.Id equals messageBoard.Id
+									 where messageBoard.BoardId == boardId
+									 where message.ParentId == 0
+									 orderby message.LastReplyPosted descending
 									 select new ItemModels.MessagePreview {
-										 Id = m.Id,
-										 ShortPreview = m.ShortPreview,
-										 LastReplyId = m.LastReplyId == 0 ? m.Id : m.LastReplyId,
-										 LastReplyById = m.LastReplyById,
-										 LastReplyPostedDT = m.LastReplyPosted,
-										 Views = m.ViewCount,
-										 Replies = m.ReplyCount,
+										 Id = message.Id,
+										 ShortPreview = message.ShortPreview,
+										 LastReplyId = message.LastReplyId == 0 ? message.Id : message.LastReplyId,
+										 LastReplyById = message.LastReplyById,
+										 LastReplyPostedDT = message.LastReplyPosted,
+										 Views = message.ViewCount,
+										 Replies = message.ReplyCount,
 									 };
 
 			var messageRecords = await messageRecordQuery.Skip(skip).Take(take).ToListAsync();

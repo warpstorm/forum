@@ -27,3 +27,10 @@
 	display: inline-block;
 	border-radius: 2px;
 }
+
+.lastPost {
+	width: 300px;
+	max-width: 300px;
+	white-space: nowrap;
+	overflow: hidden;
+}

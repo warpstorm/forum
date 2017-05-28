@@ -38,9 +38,10 @@ namespace Forum3.Controllers {
 					return Redirect(serviceResponse.RedirectPath);
 			}
 
-			var viewModel = new CreateTopicPage();
-
-			viewModel.Body = input.Body;
+			var viewModel = new CreateTopicPage() {
+				BoardId = input.BoardId,
+				Body = input.Body
+			};
 
 			return View(viewModel);
 		}
@@ -62,25 +63,15 @@ namespace Forum3.Controllers {
 				var serviceResponse = await MessageService.EditMessage(input);
 				ProcessServiceResponse(serviceResponse);
 
-				return RedirectToAction(nameof(Topics.Display), nameof(Topics), new { Id = input.Id });
+				if (!string.IsNullOrEmpty(serviceResponse.RedirectPath))
+					return Redirect(serviceResponse.RedirectPath);
 			}
 
-			var viewModel = new CreateTopicPage();
-			viewModel.Body = input.Body;
+			var viewModel = new CreateTopicPage() {
+				Body = input.Body
+			};
 
 			return View(viewModel);
-		}
-
-		[HttpPost]
-		[ValidateAntiForgeryToken]
-		[PreventRapidRequests]
-		public async Task<IActionResult> TopicReply(MessageInput input) {
-			if (ModelState.IsValid) {
-				await MessageService.CreateReply(input);
-				return RedirectToAction(nameof(Topics.Display), nameof(Topics), new { Id = input.Id });
-			}
-
-			return View(input);
 		}
 
 		[HttpGet]
