@@ -1,23 +1,27 @@
 ﻿@model IndexBoard
 
-<div class="table-row board">
-	<div class="table-cell boardInfo pad">
-		<a asp-controller="Topics" asp-action="Index" asp-route-id="@Model.Id">
-			@Model.Name
-			@if (Model.Unread) {
-				<span class="small-button">Unread</span>
-			}
-		</a>
+<div class="table-row full-width">
+	<div class="table-cell full-width pad pointer boardInfo" clickableLinkParent>
+		<p>
+			<a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)" asp-route-id="@Model.Id">
+				@Model.Name
+
+				@if (Model.Unread) {
+					<span class="small-button">Unread</span>
+				}
+			</a>
+		</p>
+		<p class="note small-pad-left">@Model.Description</p>
 	</div>
 
-	@if (Model.LastMessage != null) {
-		<div class="table-cell lastPost">
+	<div class="table-cell lastPost">
+		@if (Model.LastMessage != null) {
 			<p>
-				<a asp-controller="Topics" asp-action="Display" asp-route-id="@Model.LastMessage.Id" asp-fragment="latest">
+				<a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Display)" asp-route-id="@Model.LastMessage.Id" asp-fragment="latest">
 					@Html.Raw(Model.LastMessage.ShortPreview)
 				</a>
 			</p>
 			<p>by @Model.LastMessage.LastReplyByName, <time>@Model.LastMessage.LastReplyPosted</time></p>
-		</div>
-	}
+		}
+	</div>
 </div>

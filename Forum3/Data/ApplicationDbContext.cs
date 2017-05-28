@@ -68,18 +68,6 @@ namespace Forum3.Data {
 				.WithMany()
 				.HasForeignKey(r => r.UserId)
 				.OnDelete(DeleteBehavior.Restrict);
-
-			builder.Entity<Board>()
-				.HasOne(r => r.Category)
-				.WithMany(r => r.Boards)
-				.HasForeignKey(r => r.CategoryId)
-				.OnDelete(DeleteBehavior.Restrict);
-
-			builder.Entity<Board>()
-				.HasOne(r => r.LastMessage)
-				.WithMany()
-				.HasForeignKey(r => r.LastMessageId)
-				.OnDelete(DeleteBehavior.Restrict);
 		}
 	}
 }

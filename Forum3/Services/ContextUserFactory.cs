@@ -78,8 +78,6 @@ namespace Forum3.Services {
 						contextUser.IsAdmin = true;
 				}
 
-				contextUser.IsVetted = currentPrincipal.IsInRole("Vetted");
-
 				contextUser.ApplicationUser.LastOnline = DateTime.Now;
 
 				DbContext.Entry(contextUser.ApplicationUser).State = EntityState.Modified;

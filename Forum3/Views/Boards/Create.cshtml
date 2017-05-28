@@ -1,33 +1,37 @@
 ﻿@model CreatePage
 
-@{ ViewBag.Title = "Create Board"; }
-
-<h1>@ViewBag.Title</h1>
-
 <div class="content-box pad">
 	<form method="post"
-			asp-action="@nameof(Forum3.Controllers.Boards.Create)"
-			asp-controller="@nameof(Forum3.Controllers.Boards)">
+			asp-action="@nameof(Boards.Create)"
+			asp-controller="@nameof(Boards)">
 
-		<p class="gap-top">
-			<span>Name:</span>
-			<input type="text" asp-for="@Model.Name" />
-		</p>
-		<p asp-validation-for="@Model.Name"></p>
+		<dl>
+			<dt>Name</dt>
+			<dd><input type="text" asp-for="@Model.Name" /></dd>
+			<dd><span asp-validation-for="@Model.Name" class="error"></span></dd>
+		</dl>
 
-		<p class="gap-top">
-			Vetted Members Only:
-			<input asp-for="@Model.VettedOnly" type="checkbox" />
-		</p>
+		<dl>
+			<dt>Description</dt>
+			<dd><textarea asp-for="@Model.Description"></textarea></dd>
+			<dd><span asp-validation-for="@Model.Description" class="error"></span></dd>
+		</dl>
 
-		<p class="gap-top">
-			Category:
-			<select asp-for="@Model.Category" asp-items="@Model.Categories">
-				<option value="" disabled selected style="display: none;">Please select an existing category</option>
-			</select>
-		</p>
-		<p>Or add a new one: <input asp-for="@Model.NewCategory" /></p>
+		<dl>
+			<dt>Category</dt>
+			<dd>
+				<select asp-for="@Model.Category" asp-items="@Model.Categories">
+					<option value="" disabled selected style="display: none;">Please select an existing category</option>
+				</select>
+			</dd>
+			<dd>Or add a new one: <input asp-for="@Model.NewCategory" /></dd>
+		</dl>
 
-		<p class="gap-top"><input type="submit" value="Create" /></p>
+		<ul>
+			<li><button>Create</button></li>
+		</ul>
 	</form>
 </div>
+
+@{ ViewBag.Title = "Create a Board"; }
+@section Header {@ViewData["Title"]}

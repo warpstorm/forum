@@ -69,7 +69,7 @@ namespace Forum3.Services {
 
 			if (input != null) {
 				viewModel.Name = input.Name;
-				viewModel.VettedOnly = input.VettedOnly;
+				viewModel.Description = input.Description;
 
 				if (!string.IsNullOrEmpty(input.Category))
 					viewModel.Categories.First(item => item.Value == input.Category).Selected = true;
@@ -91,15 +91,17 @@ namespace Forum3.Services {
 
 			if (input != null) {
 				viewModel.Name = input.Name;
-				viewModel.VettedOnly = input.VettedOnly;
+				viewModel.Description = input.Description;
 
 				if (!string.IsNullOrEmpty(input.Category))
 					viewModel.Categories.First(item => item.Value == input.Category).Selected = true;
 			}
 			else {
+				var category = await DbContext.Categories.FindAsync(record.CategoryId);
+
 				viewModel.Name = record.Name;
-				viewModel.VettedOnly = record.VettedOnly;
-				viewModel.Categories.First(item => item.Text == record.Category.Name).Selected = true;
+				viewModel.Description = record.Description;
+				viewModel.Categories.First(item => item.Text == category.Name).Selected = true;
 			}
 
 			return viewModel;
@@ -149,6 +151,9 @@ namespace Forum3.Services {
 			if (string.IsNullOrEmpty(input.Name))
 				serviceResponse.ModelErrors.Add(nameof(input.Name), "Name is a required field.");
 
+			if (!string.IsNullOrEmpty(input.Description))
+				input.Description = input.Description.Trim();
+
 			var existingRecord = await DbContext.Boards.SingleOrDefaultAsync(b => b.Name == input.Name);
 
 			if (existingRecord != null)
@@ -161,7 +166,7 @@ namespace Forum3.Services {
 
 			var record = new DataModels.Board {
 				Name = input.Name,
-				VettedOnly = input.VettedOnly,
+				Description = input.Description,
 				CategoryId = categoryRecord.Id
 			};
 
@@ -219,19 +224,21 @@ namespace Forum3.Services {
 			if (string.IsNullOrEmpty(input.Name))
 				serviceResponse.ModelErrors.Add(nameof(input.Name), "Name is a required field.");
 
+			if (!string.IsNullOrEmpty(input.Description))
+				input.Description = input.Description.Trim();
+
 			if (serviceResponse.ModelErrors.Any())
 				return serviceResponse;
 
 			record.Name = input.Name;
-			record.VettedOnly = input.VettedOnly;
+			record.Description = input.Description;
 
 			var oldCategoryId = -1;
 
 			if (record.CategoryId != newCategoryRecord.Id) {
-				DbContext.Entry(record).Reference(r => r.Category).Load();
-				DbContext.Entry(record.Category).Collection(r => r.Boards).Load();
+				var categoryBoards = await DbContext.Boards.Where(r => r.CategoryId == record.CategoryId).ToListAsync();
 
-				if (record.Category.Boards.Count() == 1)
+				if (categoryBoards.Count() <= 1)
 					oldCategoryId = record.CategoryId;
 
 				record.CategoryId = newCategoryRecord.Id;
@@ -425,8 +432,9 @@ namespace Forum3.Services {
 				foreach (var boardRecord in boardRecords.Where(r => r.CategoryId == categoryRecord.Id)) {
 					var indexBoard = GetIndexBoard(targetBoard, boardRecord);
 
-					if (!indexBoard.VettedOnly || ContextUser.IsVetted)
-						indexCategory.Boards.Add(indexBoard);
+					// TODO check board roles here
+
+					indexCategory.Boards.Add(indexBoard);
 				}
 
 				// Don't index the category if there's no boards available to the user
@@ -441,20 +449,24 @@ namespace Forum3.Services {
 			var indexBoard = new ItemViewModels.IndexBoard {
 				Id = boardRecord.Id,
 				Name = boardRecord.Name,
+				Description = boardRecord.Description,
 				DisplayOrder = boardRecord.DisplayOrder,
-				VettedOnly = boardRecord.VettedOnly,
 				Unread = false,
 				Selected = targetBoard != null && targetBoard == boardRecord.Id,
 			};
 
-			if (boardRecord.LastMessage != null) {
-				indexBoard.LastMessage = new Models.ViewModels.Topics.Items.MessagePreview {
-					Id = boardRecord.LastMessage.Id,
-					ShortPreview = boardRecord.LastMessage.ShortPreview,
-					LastReplyByName = boardRecord.LastMessage.LastReplyByName,
-					LastReplyId = boardRecord.LastMessage.LastReplyId,
-					LastReplyPosted = boardRecord.LastMessage.LastReplyPosted.ToPassedTimeString()
-				};
+			if (boardRecord.LastMessageId != null) {
+				var lastMessage = DbContext.Messages.Find(boardRecord.LastMessageId);
+
+				if (lastMessage != null) {
+					indexBoard.LastMessage = new Models.ViewModels.Topics.Items.MessagePreview {
+						Id = lastMessage.Id,
+						ShortPreview = lastMessage.ShortPreview,
+						LastReplyByName = lastMessage.LastReplyByName,
+						LastReplyId = lastMessage.LastReplyId,
+						LastReplyPosted = lastMessage.LastReplyPosted.ToPassedTimeString()
+					};
+				}
 			}
 
 			return indexBoard;
