@@ -544,6 +544,24 @@ namespace Forum3.Services {
 
 			await DbContext.SaveChangesAsync();
 
+			var topicId = parentId == 0 ? record.Id : parentId;
+
+			var participation = await DbContext.Participants.SingleOrDefaultAsync(r => r.MessageId == topicId && r.UserId == ContextUser.ApplicationUser.Id);
+
+			if (participation == null) {
+				DbContext.Participants.Add(new Participant {
+					MessageId = topicId,
+					UserId = ContextUser.ApplicationUser.Id,
+					Time = DateTime.Now
+				});
+			}
+			else {
+				participation.Time = DateTime.Now;
+				DbContext.Entry(participation).State = EntityState.Modified;
+			}
+
+			await DbContext.SaveChangesAsync();
+
 			return record;
 		}
 
