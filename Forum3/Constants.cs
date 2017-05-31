@@ -2,7 +2,7 @@
 	public static class Constants {
 		public static class Defaults {
 			public const int MessagesPerPage = 15;
-			public const int HistoryTimeLimit = 14;
+			public const int HistoryTimeLimit = -14;
 			public const int OnlineTimeLimit = 5;
 		}
 

@@ -17,10 +17,14 @@
 <body>
 	@await Html.PartialAsync("_Header")
 
-	<nav>
+	<nav class="actions float-right pad-right">
 		<ul>
 			@RenderSection("PageActions", required: false)
 		</ul>
+	</nav>
+
+	<nav class="breadcrumbs">
+		@RenderSection("Breadcrumbs", required: false)
 	</nav>
 
 	<div role="main" class="margin-center">

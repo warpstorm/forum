@@ -400,23 +400,7 @@ namespace Forum3.Services {
 			return serviceResponse;
 		}
 
-		async Task<List<SelectListItem>> GetCategoryPickList(List<SelectListItem> pickList = null) {
-			if (pickList == null)
-				pickList = new List<SelectListItem>();
-
-			var categoryRecords = await DbContext.Categories.OrderBy(r => r.DisplayOrder).ToListAsync();
-
-			foreach (var categoryRecord in categoryRecords) {
-				pickList.Add(new SelectListItem() {
-					Text = categoryRecord.Name,
-					Value = categoryRecord.Id.ToString()
-				});
-			}
-
-			return pickList;
-		}
-
-		async Task<List<ItemViewModels.IndexCategory>> GetCategories(int? targetBoard = null) {
+		public async Task<List<ItemViewModels.IndexCategory>> GetCategories() {
 			var categoryRecords = await DbContext.Categories.OrderBy(r => r.DisplayOrder).ToListAsync();
 			var boardRecords = await DbContext.Boards.OrderBy(r => r.DisplayOrder).ToListAsync();
 
@@ -430,7 +414,7 @@ namespace Forum3.Services {
 				};
 
 				foreach (var boardRecord in boardRecords.Where(r => r.CategoryId == categoryRecord.Id)) {
-					var indexBoard = GetIndexBoard(targetBoard, boardRecord);
+					var indexBoard = GetIndexBoard(boardRecord);
 
 					// TODO check board roles here
 
@@ -445,14 +429,13 @@ namespace Forum3.Services {
 			return indexCategories;
 		}
 
-		ItemViewModels.IndexBoard GetIndexBoard(int? targetBoard, DataModels.Board boardRecord) {
+		public ItemViewModels.IndexBoard GetIndexBoard(DataModels.Board boardRecord) {
 			var indexBoard = new ItemViewModels.IndexBoard {
 				Id = boardRecord.Id,
 				Name = boardRecord.Name,
 				Description = boardRecord.Description,
 				DisplayOrder = boardRecord.DisplayOrder,
-				Unread = false,
-				Selected = targetBoard != null && targetBoard == boardRecord.Id,
+				Unread = false
 			};
 
 			if (boardRecord.LastMessageId != null) {
@@ -472,6 +455,22 @@ namespace Forum3.Services {
 			return indexBoard;
 		}
 
+		async Task<List<SelectListItem>> GetCategoryPickList(List<SelectListItem> pickList = null) {
+			if (pickList == null)
+				pickList = new List<SelectListItem>();
+
+			var categoryRecords = await DbContext.Categories.OrderBy(r => r.DisplayOrder).ToListAsync();
+
+			foreach (var categoryRecord in categoryRecords) {
+				pickList.Add(new SelectListItem() {
+					Text = categoryRecord.Name,
+					Value = categoryRecord.Id.ToString()
+				});
+			}
+
+			return pickList;
+		}
+		
 		async Task<List<ItemViewModels.OnlineUser>> GetOnlineUsers() {
 			var onlineTimeLimitSetting = SiteSettingsService.GetInt(Constants.SiteSettings.OnlineTimeLimit);
 

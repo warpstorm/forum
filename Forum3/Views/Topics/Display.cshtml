@@ -11,6 +11,18 @@
 	@await Html.PartialAsync("_MessageForm", Model.ReplyForm)
 </div>
 
+@section Breadcrumbs {
+	@if (User.Identity.IsAuthenticated) {
+		<a asp-action="@nameof(Boards.Index)" asp-controller="@nameof(Boards)" class="small-button">Board Index</a>
+
+		if (Model.AssignedBoards.Any()) {
+			foreach (var board in Model.AssignedBoards) {
+				<a asp-action="@nameof(Topics.Index)" asp-controller="@nameof(Topics)" asp-route-id="@board.Id" class="small-button">@board.Name</a>
+			}
+		}
+	}
+}
+
 @section scripts {
     <environment names="Development">
         <script src="~/js/TopicDisplay.js" asp-append-version="true"></script>

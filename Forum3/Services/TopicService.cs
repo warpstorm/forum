@@ -8,24 +8,30 @@ using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
 using Forum3.Controllers;
 using Forum3.Data;
+using Forum3.Enums;
 using Forum3.Helpers;
+using Forum3.Models.DataModels;
 using Forum3.Models.ServiceModels;
+using Forum3.Models.ViewModels.Boards.Items;
 using PageModels = Forum3.Models.ViewModels.Topics.Pages;
 using ItemModels = Forum3.Models.ViewModels.Topics.Items;
 
 namespace Forum3.Services {
 	public class TopicService {
 		ApplicationDbContext DbContext { get; }
+		BoardService BoardService { get; }
 		ContextUser ContextUser { get; }
 		IUrlHelper UrlHelper { get; }
 
 		public TopicService(
 			ApplicationDbContext dbContext,
+			BoardService boardService,
 			ContextUserFactory contextUserFactory,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory
 		) {
 			DbContext = dbContext;
+			BoardService = boardService;
 			ContextUser = contextUserFactory.GetContextUser();
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
@@ -34,9 +40,14 @@ namespace Forum3.Services {
 			var take = Constants.Defaults.MessagesPerPage;
 			var skip = (page * take) - take;
 
+			var boardRecord = await DbContext.Boards.FindAsync(boardId);
+
+			if (boardRecord == null)
+				throw new Exception($"A record does not exist with ID '{boardId}'");
+
 			var messageRecordQuery = from message in DbContext.Messages
-									 join messageBoard in DbContext.MessageBoards on message.Id equals messageBoard.Id
-									 where messageBoard.BoardId == boardId
+									 join messageBoard in DbContext.MessageBoards on message.Id equals messageBoard.MessageId
+									 where messageBoard.BoardId == boardRecord.Id
 									 where message.ParentId == 0
 									 orderby message.LastReplyPosted descending
 									 select new ItemModels.MessagePreview {
@@ -52,7 +63,8 @@ namespace Forum3.Services {
 			var messageRecords = await messageRecordQuery.Skip(skip).Take(take).ToListAsync();
 
 			return new PageModels.TopicIndexPage {
-				BoardId = boardId,
+				BoardId = boardRecord.Id,
+				BoardName = boardRecord.Name,
 				Skip = skip + take,
 				Take = take,
 				Topics = messageRecords
@@ -88,6 +100,43 @@ namespace Forum3.Services {
 			DbContext.Entry(record).State = EntityState.Modified;
 			DbContext.SaveChanges();
 
+			var messages = await GetTopicMessages(pageMessageIds);
+
+			var topic = new PageModels.TopicDisplayPage {
+				Id = record.Id,
+				TopicHeader = new ItemModels.TopicHeader {
+					StartedById = record.PostedById,
+					Subject = record.ShortPreview,
+					Views = record.ViewCount,
+				},
+				Messages = messages,
+				Categories = await BoardService.GetCategories(),
+				AssignedBoards = new List<IndexBoard>(),
+				IsAuthenticated = ContextUser.IsAuthenticated,
+				CanManage = ContextUser.IsAdmin || record.PostedById == ContextUser.ApplicationUser.Id,
+				TotalPages = totalPages,
+				CurrentPage = page,
+				ReplyForm = new ItemModels.ReplyForm {
+					Id = record.Id
+				}
+			};
+
+			var assignedBoards = await (
+				from messageBoard in DbContext.MessageBoards
+				join board in DbContext.Boards on messageBoard.BoardId equals board.Id
+				where messageBoard.MessageId == topic.Id
+				select board
+			).ToListAsync();
+
+			foreach (var assignedBoard in assignedBoards)
+				topic.AssignedBoards.Add(BoardService.GetIndexBoard(assignedBoard));
+
+			await MarkTopicRead(topic);
+
+			return topic;
+		}
+
+		async Task<List<ItemModels.Message>> GetTopicMessages(IEnumerable<int> pageMessageIds) {
 			var messageQuery = from m in DbContext.Messages
 							   join im in DbContext.Messages on m.ReplyId equals im.Id into Replies
 							   from r in Replies.DefaultIfEmpty()
@@ -124,26 +173,40 @@ namespace Forum3.Services {
 				};
 			}
 
-			var topic = new PageModels.TopicDisplayPage {
-				Id = record.Id,
-				TopicHeader = new ItemModels.TopicHeader {
-					StartedById = record.PostedById,
-					Subject = record.ShortPreview,
-					Views = record.ViewCount,
-				},
-				Messages = messages,
-				//Boards = new List<IndexBoard>(),
-				//AssignedBoards = new List<IndexBoard>(),
-				IsAuthenticated = ContextUser.IsAuthenticated,
-				CanManage = ContextUser.IsAdmin || record.PostedById == ContextUser.ApplicationUser.Id,
-				TotalPages = totalPages,
-				CurrentPage = page,
-				ReplyForm = new ItemModels.ReplyForm {
-					Id = record.Id
-				}
-			};
+			return messages;
+		}
 
-			return topic;
+		async Task MarkTopicRead(PageModels.TopicDisplayPage topic) {
+			var historyTimeLimit = DateTime.Now.AddDays(Constants.Defaults.HistoryTimeLimit);
+
+			var viewLogs = await DbContext.ViewLogs.Where(v =>
+				v.LogTime >= historyTimeLimit
+				&& v.UserId == ContextUser.ApplicationUser.Id
+				&& (v.TargetType == EViewLogTargetType.All || (v.TargetType == EViewLogTargetType.Message && v.TargetId == topic.Id))
+			).ToListAsync();
+
+			DateTime latestTime;
+
+			var latestMessageTime = topic.Messages.Max(r => r.RecordTime);
+
+			if (viewLogs.Any()) {
+				var latestViewLogTime = viewLogs.Max(r => r.LogTime);
+				latestTime = latestViewLogTime > latestMessageTime ? latestViewLogTime : latestMessageTime;
+			}
+			else
+				latestTime = latestMessageTime;
+
+			foreach (var viewLog in DbContext.ViewLogs.Where(r => r.UserId == ContextUser.ApplicationUser.Id && r.TargetId == topic.Id && r.TargetType == EViewLogTargetType.Message).ToList())
+				DbContext.ViewLogs.Remove(viewLog);
+
+			DbContext.ViewLogs.Add(new ViewLog {
+				LogTime = latestTime,
+				TargetId = topic.Id,
+				TargetType = EViewLogTargetType.Message,
+				UserId = ContextUser.ApplicationUser.Id
+			});
+
+			await DbContext.SaveChangesAsync();
 		}
 
 		PageModels.TopicDisplayPage GetRedirectViewModel(int messageId, int parentMessageId, List<int> messageIds) {
