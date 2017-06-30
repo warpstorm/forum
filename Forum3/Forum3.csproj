@@ -12,6 +12,10 @@
   <PropertyGroup>
     <UserSecretsId>aspnet-Forum3-59c28352-542a-4c8f-8941-48f1c7dacee8</UserSecretsId>
     <RootNamespace>Forum3</RootNamespace>
+    <Authors>Jim Yarbro</Authors>
+    <Company>Warpstorm.com</Company>
+    <Product>Forum</Product>
+    <Description>Forum</Description>
   </PropertyGroup>
 
   <ItemGroup>

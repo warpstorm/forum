@@ -42,7 +42,7 @@
 		}
 	</aside>
 
-	<p class="note">
+	<header class="message-header note">
 		@Model.PostedByName
 		<time>
 			posted @Model.TimePosted
@@ -50,7 +50,7 @@
 				<span>| edited @Model.TimeEdited</span>
 			}
 		</time>
-	</p>
+	</header>
 
 	@if (Model.ReplyId > 0) {
 			<blockquote>@Html.Raw(Model.ReplyBody)</blockquote>
