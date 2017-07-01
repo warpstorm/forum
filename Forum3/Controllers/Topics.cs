@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using Forum3.Annotations;
 using Forum3.Models.InputModels;
 using Forum3.Services;
-using Forum3.Models.ViewModels.Topics.Items;
 
 namespace Forum3.Controllers {
 	[Authorize]
@@ -34,6 +33,11 @@ namespace Forum3.Controllers {
 				return View(viewModel);
 			else
 				return Redirect(viewModel.RedirectPath);
+		}
+
+		[HttpGet]
+		public IActionResult Latest(int id) {
+			return RedirectToAction(nameof(Display), new { id = id, page = 0 });
 		}
 
 		[HttpPost]
