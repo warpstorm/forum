@@ -282,7 +282,7 @@ namespace Forum3.Services {
 
 					displayBody = remoteUrlReplacement.Regex.Replace(displayBody, remoteUrlReplacement.ReplacementText, 1);
 
-					displayBody += remoteUrlReplacement.FollowOnText;
+					processedMessageInput.Cards += remoteUrlReplacement.Card;
 				}
 			}
 
@@ -311,7 +311,7 @@ namespace Forum3.Services {
 				return new RemoteUrlReplacement {
 					Regex = regexYoutube,
 					ReplacementText = "<a target='_blank' href='" + remoteUrl + "'>" + remotePageDetails.Title + "</a>",
-					FollowOnText = " <br /><br />" + youtubeIframeClosed
+					Card = " <br /><br />" + youtubeIframeClosed
 				};
 			}
 			// or is it a gifv link
@@ -322,7 +322,7 @@ namespace Forum3.Services {
 				return new RemoteUrlReplacement {
 					Regex = regexGifv,
 					ReplacementText = " <a target='_blank' href='" + remoteUrl + "'>" + remotePageDetails.Title + "</a>",
-					FollowOnText = " <br /><br />" + gifvEmbedded
+					Card = " <br /><br />" + gifvEmbedded
 				};
 			}
 
@@ -330,7 +330,7 @@ namespace Forum3.Services {
 			return new RemoteUrlReplacement {
 				Regex = regexUrl,
 				ReplacementText = "$1<a target='_blank' href='" + remoteUrl + "'>" + remotePageDetails.Title + "</a>",
-				FollowOnText = string.IsNullOrEmpty(remotePageDetails.Card) ? string.Empty : " <br /><br />" + remotePageDetails.Card
+				Card = remotePageDetails.Card ?? string.Empty
 			};
 		}
 
@@ -347,7 +347,7 @@ namespace Forum3.Services {
 			HtmlDocument document = null;
 
 			var client = new HtmlWeb() {
-				UserAgent = "MOZILLA/5.0 (WINDOWS NT 6.1; WOW64) APPLEWEBKIT/537.1 (KHTML, LIKE GECKO) CHROME/21.0.1180.75 SAFARI/537.1"
+				UserAgent = "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36"
 			};
 
 			client.PreRequest += (handler, request) => {
@@ -382,7 +382,7 @@ namespace Forum3.Services {
 				returnResult.Title = ogTitle.Attributes["content"].Value.Trim();
 
 				if (ogDescription != null && ogDescription.Attributes["content"] != null && !string.IsNullOrEmpty(ogDescription.Attributes["content"].Value.Trim())) {
-					returnResult.Card += "<blockquote class='card'>";
+					returnResult.Card += "<blockquote class='card pointer hover-highlight' clickableLinkParent>";
 
 					if (ogImage != null && ogImage.Attributes["content"] != null && !string.IsNullOrEmpty(ogImage.Attributes["content"].Value.Trim()))
 						returnResult.Card += "<div class='cardImage'><img src='" + ogImage.Attributes["content"].Value.Trim() + "' /></div>";
@@ -504,6 +504,7 @@ namespace Forum3.Services {
 				DisplayBody = processedMessage.DisplayBody,
 				ShortPreview = processedMessage.ShortPreview,
 				LongPreview = processedMessage.LongPreview,
+				Cards = processedMessage.Cards,
 
 				TimePosted = currentTime,
 				TimeEdited = currentTime,
@@ -570,6 +571,8 @@ namespace Forum3.Services {
 			record.DisplayBody = message.DisplayBody;
 			record.ShortPreview = message.ShortPreview;
 			record.LongPreview = message.LongPreview;
+			record.Cards = message.Cards;
+
 			record.TimeEdited = DateTime.Now;
 
 			record.EditedById = ContextUser.ApplicationUser.Id;

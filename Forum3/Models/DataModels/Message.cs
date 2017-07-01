@@ -21,6 +21,12 @@ namespace Forum3.Models.DataModels {
 		public string DisplayBody { get; set; }
 
 		/// <summary>
+		/// Follow-on text that displays under the message body.
+		/// </summary>
+		[DataType(DataType.MultilineText)]
+		public string Cards { get; set; }
+
+		/// <summary>
 		/// Longer preview without images or other embedded HTML. Useful for quotes.
 		/// </summary>
 		[Required]

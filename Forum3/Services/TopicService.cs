@@ -152,6 +152,7 @@ namespace Forum3.Services {
 								   ReplyPreview = r == null ? string.Empty : r.LongPreview,
 								   ReplyPostedBy = r == null ? string.Empty : r.PostedByName,
 								   Body = m.DisplayBody,
+								   Cards = m.Cards,
 								   OriginalBody = m.OriginalBody,
 								   PostedByName = m.PostedByName,
 								   PostedById = m.PostedById,
