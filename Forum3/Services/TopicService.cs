@@ -13,8 +13,8 @@ using Forum3.Helpers;
 using Forum3.Models.DataModels;
 using Forum3.Models.ServiceModels;
 using Forum3.Models.ViewModels.Boards.Items;
-using PageModels = Forum3.Models.ViewModels.Topics.Pages;
 using ItemModels = Forum3.Models.ViewModels.Topics.Items;
+using PageModels = Forum3.Models.ViewModels.Topics.Pages;
 
 namespace Forum3.Services {
 	public class TopicService {
@@ -42,12 +42,9 @@ namespace Forum3.Services {
 
 			var boardRecord = await DbContext.Boards.FindAsync(boardId);
 
-			if (boardRecord == null)
-				throw new Exception($"A record does not exist with ID '{boardId}'");
-
 			var messageRecordQuery = from message in DbContext.Messages
 									 join messageBoard in DbContext.MessageBoards on message.Id equals messageBoard.MessageId
-									 where messageBoard.BoardId == boardRecord.Id
+									 where boardRecord == null || messageBoard.BoardId == boardRecord.Id
 									 where message.ParentId == 0
 									 orderby message.LastReplyPosted descending
 									 select new ItemModels.MessagePreview {
@@ -63,8 +60,8 @@ namespace Forum3.Services {
 			var messageRecords = await messageRecordQuery.Skip(skip).Take(take).ToListAsync();
 
 			return new PageModels.TopicIndexPage {
-				BoardId = boardRecord.Id,
-				BoardName = boardRecord.Name,
+				BoardId = boardRecord?.Id ?? 0,
+				BoardName = boardRecord?.Name ?? "All Topics",
 				Skip = skip + take,
 				Take = take,
 				Topics = messageRecords
@@ -86,6 +83,12 @@ namespace Forum3.Services {
 
 			if (parentId != messageId)
 				return GetRedirectViewModel(messageId, record.ParentId, messageIds);
+
+			if (target > 0) {
+				var targetIndex = messageIds.FindIndex(i => i == target);
+
+				page = targetIndex / Constants.Defaults.MessagesPerPage;
+			}
 
 			if (page < 1)
 				page = 1;

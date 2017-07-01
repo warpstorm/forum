@@ -9,7 +9,7 @@
 @{ViewData["Title"] = "Topics";}
 
 @section PageActions {
-	@if (User.Identity.IsAuthenticated) {
+	@if (User.Identity.IsAuthenticated && Model.BoardId > 0) {
 		<p>
 			<a class="button" asp-action="Create" asp-controller="Messages" asp-route-id="@Model.BoardId">Create a new Topic</a>
 		</p>
