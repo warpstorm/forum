@@ -28,7 +28,7 @@ namespace Forum3.Controllers {
 
 		[HttpGet]
 		public async Task<IActionResult> Display(int id, int page = 1, int target = 0) {
-			var viewModel = await TopicService.DisplayPage(id, page);
+			var viewModel = await TopicService.DisplayPage(id, page, target);
 
 			if (string.IsNullOrEmpty(viewModel.RedirectPath))
 				return View(viewModel);
