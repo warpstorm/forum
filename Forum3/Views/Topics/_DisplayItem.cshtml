@@ -14,8 +14,8 @@
 
 			@if (Model.CanEdit) {
 				<a class="small-button"
-				   asp-controller="@nameof(Forum3.Controllers.Messages)"
-				   asp-action="@nameof(Forum3.Controllers.Messages.Edit)"
+				   asp-controller="@nameof(Messages)"
+				   asp-action="@nameof(Messages.Edit)"
 				   asp-route-id="@Model.Id">
 					Edit
 				</a>
@@ -24,8 +24,8 @@
 			@if (Model.CanDelete) {
 				@if (Model.ParentId == 0) {
 					<a class="small-button"
-					   asp-controller="@nameof(Forum3.Controllers.Messages)"
-					   asp-action="@nameof(Forum3.Controllers.Messages.Delete)"
+					   asp-controller="@nameof(Messages)"
+					   asp-action="@nameof(Messages.Delete)"
 					   asp-route-id="@Model.Id"
 					   onclick="return confirm('Are you sure you want to remove this ENTIRE topic?');">
 						Delete
@@ -33,8 +33,8 @@
 				}
 				else {
 					<a class="small-button"
-					   asp-controller="@nameof(Forum3.Controllers.Messages)"
-					   asp-action="@nameof(Forum3.Controllers.Messages.Delete)"
+					   asp-controller="@nameof(Messages)"
+					   asp-action="@nameof(Messages.Delete)"
 					   asp-route-id="@Model.Id"
 					   onclick="return confirm('Are you sure you want to remove this reply?');">
 						Delete
