@@ -1,7 +1,7 @@
 ﻿@model MessagePreview
 
 <div class="table-row hover-highlight">
-    <div class="table-cell pad pointer" clickableLinkParent>
+    <div class="table-cell pad pointer" clickable-link-parent>
         <a asp-action="@nameof(Topics.Display)" asp-route-id="@Model.Id">@Model.ShortPreview</a>
     </div>
     <div class="table-cell">

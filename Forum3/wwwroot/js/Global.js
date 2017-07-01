@@ -10,7 +10,7 @@
 	});
 	
 	// TODO - enable shift-click and middle click to new windows
-    $("[clickableLinkParent]").on("click", function (e) {
+    $("[clickable-link-parent]").on("click", function (e) {
         e.stopPropagation();
         window.location.href = $(this).find("a").eq(0).attr("href");
     });

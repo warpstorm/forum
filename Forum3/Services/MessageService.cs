@@ -382,22 +382,22 @@ namespace Forum3.Services {
 				returnResult.Title = ogTitle.Attributes["content"].Value.Trim();
 
 				if (ogDescription != null && ogDescription.Attributes["content"] != null && !string.IsNullOrEmpty(ogDescription.Attributes["content"].Value.Trim())) {
-					returnResult.Card += "<blockquote class='card pointer hover-highlight' clickableLinkParent>";
+					returnResult.Card += "<blockquote class='card pointer hover-highlight' clickable-link-parent>";
 
 					if (ogImage != null && ogImage.Attributes["content"] != null && !string.IsNullOrEmpty(ogImage.Attributes["content"].Value.Trim()))
-						returnResult.Card += "<div class='cardImage'><img src='" + ogImage.Attributes["content"].Value.Trim() + "' /></div>";
+						returnResult.Card += "<div class='card-image'><img src='" + ogImage.Attributes["content"].Value.Trim() + "' /></div>";
 
 					returnResult.Card += "<div>";
-					returnResult.Card += "<p class='cardTitle'><a target='_blank' href='" + remoteUrl + "'>" + returnResult.Title + "</a></p>";
+					returnResult.Card += "<p class='card-title'><a target='_blank' href='" + remoteUrl + "'>" + returnResult.Title + "</a></p>";
 
 					var decodedDescription = WebUtility.HtmlDecode(ogDescription.Attributes["content"].Value.Trim());
 
-					returnResult.Card += "<p class='cardDescription'>" + decodedDescription + "</p>";
+					returnResult.Card += "<p class='card-description'>" + decodedDescription + "</p>";
 
 					if (ogSiteName != null && ogSiteName.Attributes["content"] != null && !string.IsNullOrEmpty(ogSiteName.Attributes["content"].Value.Trim()))
-						returnResult.Card += "<p class='cardLink'><a target='_blank' href='" + remoteUrl + "'>[" + ogSiteName.Attributes["content"].Value.Trim() + "]</a></p>";
+						returnResult.Card += "<p class='card-link'><a target='_blank' href='" + remoteUrl + "'>[" + ogSiteName.Attributes["content"].Value.Trim() + "]</a></p>";
 					else
-						returnResult.Card += "<p class='cardLink'><a target='_blank' href='" + remoteUrl + "'>[Direct Link]</a></p>";
+						returnResult.Card += "<p class='card-link'><a target='_blank' href='" + remoteUrl + "'>[Direct Link]</a></p>";
 
 					returnResult.Card += "</div><br class='clear' /></blockquote>";
 				}
