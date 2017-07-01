@@ -19,13 +19,14 @@
 	}
 
 blockquote.card {
-	width: 96%;
+	width: 90%;
 	padding: 10px;
 	margin: 40px auto 0 auto;
-	background: linear-gradient(0, #121822, #1d2737);
+	/*background: linear-gradient(0, #121822, #1d2737);*/
+	background: #1d2737;
 	border-radius: 2px;
 	border: 1px solid #253248;
-	box-shadow: 0 0 5px 1px #1d2737;
+	box-shadow: 0 0 15px 1px #0c0f14;
 	font-size: .8em;
 }
 
