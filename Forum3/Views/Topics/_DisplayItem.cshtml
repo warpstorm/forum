@@ -7,7 +7,7 @@
 
 		<aside class="float-right">
 			@if (Model.CanReply) {
-				<span class="small-button replyButton">
+				<span class="small-button reply-button">
 					Reply
 				</span>
 			}
@@ -59,8 +59,8 @@
 
 		<div class="message-body">@Html.Raw(Model.Body)</div>
 
-		<div class="hidden replyForm">
-			<p>Reply:</p>
+		<div class="hidden reply-form pad gap-top">
+			<p>Reply directly to this message:</p>
 			@Html.Partial("_MessageForm", Model.ReplyForm)
 		</div>
 	</section>

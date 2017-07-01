@@ -1,19 +1,19 @@
 ﻿$(function () {
-    $(".replyButton").on("click.showReplyForm", ShowReplyForm);
+    $(".reply-button").on("click.show-reply-form", ShowReplyForm);
 });
 
 function ShowReplyForm() {
-    $(".replyForm").not(".hidden").addClass("hidden");
-    $(".replyButton").off("click.showReplyForm");
-    $(".replyButton").off("click.hideReplyForm");
-    $(".replyButton").on("click.showReplyForm", ShowReplyForm);
-    $(this).off("click.showReplyForm");
-    $(this).parents("section").find(".replyForm").removeClass("hidden");
-    $(this).on("click.hideReplyForm", HideReplyForm);
+    $(".reply-form").not(".hidden").addClass("hidden");
+    $(".reply-button").off("click.show-reply-form");
+    $(".reply-button").off("click.hide-reply-form");
+    $(".reply-button").on("click.show-reply-form", ShowReplyForm);
+    $(this).off("click.show-reply-form");
+    $(this).parents("section").find(".reply-form").removeClass("hidden");
+    $(this).on("click.hide-reply-form", HideReplyForm);
 }
 
 function HideReplyForm() {
-    $(this).off("click.hideReplyForm");
-    $(this).parents("section").find(".replyForm").addClass("hidden");
-    $(this).on("click.showReplyForm", ShowReplyForm);
+    $(this).off("click.hide-reply-form");
+    $(this).parents("section").find(".reply-form").addClass("hidden");
+    $(this).on("click.show-reply-form", ShowReplyForm);
 }
