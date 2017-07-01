@@ -87,7 +87,7 @@ namespace Forum3.Services {
 			if (target > 0) {
 				var targetIndex = messageIds.FindIndex(i => i == target);
 
-				page = targetIndex / Constants.Defaults.MessagesPerPage;
+				page = 1 + (targetIndex / Constants.Defaults.MessagesPerPage);
 			}
 
 			if (page < 1)
@@ -144,6 +144,7 @@ namespace Forum3.Services {
 							   join im in DbContext.Messages on m.ReplyId equals im.Id into Replies
 							   from r in Replies.DefaultIfEmpty()
 							   where pageMessageIds.Contains(m.Id)
+							   orderby m.Id
 							   select new ItemModels.Message {
 								   Id = m.Id,
 								   ParentId = m.ParentId,
