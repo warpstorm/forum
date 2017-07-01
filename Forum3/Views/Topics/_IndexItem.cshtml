@@ -2,7 +2,7 @@
 
 <div class="table-row hover-highlight">
     <div class="table-cell pad pointer" clickableLinkParent>
-        <a asp-action="Display" asp-route-id="@Model.Id">@Model.ShortPreview</a>
+        <a asp-action="@nameof(Topics.Display)" asp-route-id="@Model.Id">@Model.ShortPreview</a>
     </div>
     <div class="table-cell">
         @Model.LastReplyPosted
