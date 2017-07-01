@@ -85,9 +85,10 @@ namespace Forum3.Services {
 				return GetRedirectViewModel(messageId, record.ParentId, messageIds);
 
 			if (target > 0) {
-				var targetIndex = messageIds.FindIndex(i => i == target);
+				var targetPage = GetMessagePage(target, messageIds);
 
-				page = 1 + (targetIndex / Constants.Defaults.MessagesPerPage);
+				if (targetPage != page)
+					return GetRedirectViewModel(messageId, record.ParentId, messageIds);
 			}
 
 			if (page < 1)
@@ -95,7 +96,7 @@ namespace Forum3.Services {
 
 			var take = Constants.Defaults.MessagesPerPage;
 			var skip = take * (page - 1);
-			var totalPages = Convert.ToInt32(Math.Ceiling(messageIds.Count / take * 1.0));
+			var totalPages = Convert.ToInt32(Math.Ceiling(1.0 * messageIds.Count / take));
 
 			var pageMessageIds = messageIds.Skip(skip).Take(take);
 
@@ -229,11 +230,8 @@ namespace Forum3.Services {
 		}
 
 		int GetMessagePage(int messageId, List<int> messageIds) {
-			var index = 0;
-			while (messageIds[index] != messageId)
-				index++;
-
-			return Convert.ToInt32(Math.Ceiling(index / Constants.Defaults.MessagesPerPage * 1.0));
+			var index = (double) messageIds.FindIndex(id => id == messageId);
+			return Convert.ToInt32(Math.Ceiling(index / Constants.Defaults.MessagesPerPage));
 		}
 	}
 }
