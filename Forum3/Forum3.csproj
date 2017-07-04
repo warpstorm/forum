@@ -54,6 +54,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="wwwroot\css\min\" />
+    <Folder Include="wwwroot\css\min\" />
   </ItemGroup>
 
 </Project>
