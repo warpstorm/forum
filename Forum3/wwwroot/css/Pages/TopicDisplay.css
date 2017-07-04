@@ -1,4 +1,10 @@
-﻿.message-header {
+﻿.youtubePlayer {
+	width: 640px;
+	height: 360px;
+	max-width: 100%;
+}
+
+.message-header {
 	margin-bottom: 13px;
 }
 
@@ -22,7 +28,6 @@ blockquote.card {
 	width: 94%;
 	padding: 10px;
 	margin: 10px auto;
-	/*background: linear-gradient(0, #121822, #1d2737);*/
 	background: #1d2737;
 	border-radius: 2px;
 	border: 1px solid #253248;

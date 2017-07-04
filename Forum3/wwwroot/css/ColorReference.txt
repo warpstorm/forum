@@ -1,0 +1,9 @@
+﻿background			1d2737
+content box			121822
+text				d6e3eb
+subdued text		92abba
+area highlight		253248
+border				253248
+border highlight	7090c6
+button				35568e - 4d6690
+input				0c0f14

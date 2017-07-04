@@ -1,10 +1,14 @@
 ﻿@model MessagePreview
 
-<div class="table-row hover-highlight">
-    <div class="table-cell pad pointer" clickable-link-parent>
-        <a asp-action="@nameof(Topics.Display)" asp-route-id="@Model.Id">@Model.ShortPreview</a>
-    </div>
-    <div class="table-cell">
-        @Model.LastReplyPosted
-    </div>
+<div class="content-box gap pad hover-highlight pointer overflow-hidden" clickable-link-parent>
+	<div class="details inline">
+		<p><a asp-action="@nameof(Topics.Display)" asp-route-id="@Model.Id">@Model.ShortPreview</a></p>
+		<div class="note pad-left">
+			<p>Last reply posted @Model.LastReplyPosted by @Model.LastReplyByName</p>
+			<p>@Model.Views views</p>
+		</div>
+	</div>
+	<div class="pin">
+		<span class="icon-pushpin"></span>
+	</div>
 </div>

@@ -1,0 +1,60 @@
+﻿button [class^="icon-"], button [class*=" icon-"],
+.button [class^="icon-"], .button [class*=" icon-"],
+.small-button [class^="icon-"], .small-button [class*=" icon-"] {
+	padding-right: 3px;
+}
+
+button,
+.button {
+	padding: 4px 10px;
+	margin: 2px;
+	font: 96%/1.4em "Segoe UI", "Segoe UI Web Regular", "Segoe UI Symbol", "Helvetica Neue", Arial, "sans-serif";
+	color: #fff;
+}
+
+	button:disabled {
+		background-color: #121822;
+	}
+
+a.button {
+	border-bottom-width: 0;
+	color: #fff;
+}
+
+.small-button, a.small-button {
+	margin: 2px 6px 2px 0;
+	padding: 1px 7px;
+	font-size: 7.5pt;
+	line-height: 12pt;
+	font-weight: 600;
+	color: #d6e3eb;
+}
+
+	.small-button:hover, a.small-button:hover {
+		color: #FFF;
+	}
+
+button,
+.button,
+a.button,
+.small-button,
+a.small-button {
+	display: inline-block;
+	white-space: nowrap;
+	letter-spacing: .35px;
+	cursor: pointer;
+	background: linear-gradient(0, #35568e, #4d6690);
+	text-shadow: #000 0 0 5px;
+	border: 1px solid #253248;
+	border-radius: 2px;
+	box-shadow: none;
+}
+
+	button:hover,
+	.button:hover,
+	a.button:hover,
+	.small-button:hover,
+	a.small-button:hover {
+		border-color: #7090c6;
+		box-shadow: none;
+	}

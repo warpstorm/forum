@@ -52,5 +52,8 @@
   <ItemGroup>
     <WCFMetadata Include="Connected Services" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="wwwroot\css\min\" />
+  </ItemGroup>
 
 </Project>

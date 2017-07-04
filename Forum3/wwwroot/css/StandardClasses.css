@@ -1,0 +1,218 @@
+﻿[class^="icon-"], [class*=" icon-"] {
+	font-size: .9em;
+}
+
+.content-box {
+	border-top: 2px solid #253248;
+	border-radius: 2px;
+	background-color: #121822;
+	box-shadow: #1d2737 0 -2px 8px inset;
+}
+
+.error {
+	font-weight: bold;
+	color: #d01d1d;
+}
+
+.borderless,
+a.borderless,
+.borderless *,
+a.borderless * {
+	border-top-color: transparent;
+	border-bottom-color: transparent;
+	border-left-color: transparent;
+	border-right-color: transparent;
+	border-top-width: 0;
+	border-bottom-width: 0;
+	border-left-width: 0;
+	border-right-width: 0;
+	box-shadow: none;
+}
+
+.highlight {
+	border: 1px solid #7090c6 !important;
+}
+
+.hover-underline:hover {
+	color: #FFF;
+	text-decoration: underline;
+}
+
+.hover-highlight:hover {
+	background-color: #253248;
+}
+
+.clear {
+	clear: both;
+}
+
+.float-right {
+	float: right;
+	clear: right;
+}
+
+.float-left {
+	float: left;
+	clear: left;
+}
+
+.margin-center {
+	margin: 0 auto;
+}
+
+.align-left {
+	text-align: left;
+}
+
+.align-right {
+	text-align: right;
+}
+
+.align-center {
+	text-align: center;
+}
+
+.align-justify {
+	text-align: justify;
+}
+
+.note, a.note {
+	border: 0;
+	font-size: 8pt;
+	line-height: 12pt;
+	color: #92abba;
+}
+
+.note-large {
+	padding: 0 10px;
+	color: #92abba;
+	font-size: 1em;
+	line-height: 2em;
+}
+
+.font-small {
+	line-height: 12pt;
+	font-size: .7em;
+	font-weight: bold;
+	color: #92abba;
+}
+
+.hidden {
+	display: none !important;
+}
+
+.overflow-scroll-x {
+	overflow-x: scroll;
+}
+
+.overflow-scroll-y {
+	overflow-y: scroll;
+}
+
+.overflow-scroll {
+	overflow: scroll;
+}
+
+.overflow-hidden {
+	overflow: hidden;
+}
+
+.pointer {
+	cursor: pointer;
+}
+
+.inline {
+	display: inline-block;
+}
+
+	.inline > li {
+		display: inline-block;
+	}
+
+.full-width {
+	width: 100%;
+}
+
+.relative {
+	position: relative;
+}
+
+.gap {
+	margin: 10px 0;
+}
+
+.gap-top {
+	margin-top: 20px;
+}
+
+.gap-bottom {
+	margin-bottom: 20px;
+}
+
+.pad {
+	padding: 15px 20px;
+}
+
+.pad-top {
+	padding-top: 15px;
+}
+
+.pad-bottom {
+	padding-bottom: 15px;
+}
+
+.pad-left {
+	padding-left: 20px;
+}
+
+.pad-right {
+	padding-right: 20px;
+}
+
+.small-pad {
+	padding: 5px 10px;
+}
+
+.small-pad-top {
+	padding-top: 5px;
+}
+
+.small-pad-bottom {
+	padding-bottom: 5px;
+}
+
+.small-pad-left {
+	padding-left: 10px;
+}
+
+.small-pad-right {
+	padding-right: 10px;
+}
+
+.spaced {
+	margin: 0 5px;
+}
+
+.spaced-left {
+	margin-left: 5px;
+}
+
+.spaced-right {
+	margin-right: 5px;
+}
+
+.mobile-only {
+	display: none;
+}
+
+.table {
+	display: table;
+}
+
+.table-row {
+	display: table-row;
+}
+
+.table-cell {
+	display: table-cell;
+}
