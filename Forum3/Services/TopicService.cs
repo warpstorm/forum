@@ -210,14 +210,14 @@ namespace Forum3.Services {
 			foreach (var viewLog in DbContext.ViewLogs.Where(r => r.UserId == ContextUser.ApplicationUser.Id && r.TargetId == topic.Id && r.TargetType == EViewLogTargetType.Message).ToList())
 				DbContext.ViewLogs.Remove(viewLog);
 
-			DbContext.ViewLogs.Add(new ViewLog {
+			await DbContext.SaveChangesAsync();
+
+			await DbContext.ViewLogs.AddAsync(new ViewLog {
 				LogTime = latestTime,
 				TargetId = topic.Id,
 				TargetType = EViewLogTargetType.Message,
 				UserId = ContextUser.ApplicationUser.Id
 			});
-
-			await DbContext.SaveChangesAsync();
 		}
 
 		PageModels.TopicDisplayPage GetRedirectViewModel(int messageId, int parentMessageId, List<int> messageIds) {

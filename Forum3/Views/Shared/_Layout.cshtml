@@ -7,11 +7,16 @@
     <title>@Html.Raw(ViewData["Title"])</title>
 
 	<environment names="Development">
-		<link rel="stylesheet" href="~/css/Global.css" asp-append-version="true" />
+		<link rel="stylesheet" href="~/css/GlobalElements.css" asp-append-version="true" />
+		<link rel="stylesheet" href="~/css/GlobalHelpers.css" asp-append-version="true" />
+		<link rel="stylesheet" href="~/css/Layout.css" asp-append-version="true" />
 		<link rel="stylesheet" href="~/css/Glyphs.css" asp-append-version="true" />
+		<link rel="stylesheet" href="~/css/Forms.css" asp-append-version="true" />
+		<link rel="stylesheet" href="~/css/Buttons.css" asp-append-version="true" />
+		<link rel="stylesheet" href="~/css/StandardClasses.css" asp-append-version="true" />
 	</environment>
 	<environment names="Staging,Production">
-		<link rel="stylesheet" href="~/css/Global.min.css" asp-append-version="true" />
+		<link rel="stylesheet" href="~/css/min/Global.min.css" asp-append-version="true" />
 	</environment>
 </head>
 <body>
