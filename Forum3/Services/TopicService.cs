@@ -52,12 +52,17 @@ namespace Forum3.Services {
 										 ShortPreview = message.ShortPreview,
 										 LastReplyId = message.LastReplyId == 0 ? message.Id : message.LastReplyId,
 										 LastReplyById = message.LastReplyById,
+										 LastReplyByName = message.LastReplyByName,
 										 LastReplyPostedDT = message.LastReplyPosted,
 										 Views = message.ViewCount,
 										 Replies = message.ReplyCount,
 									 };
 
 			var messageRecords = await messageRecordQuery.Skip(skip).Take(take).ToListAsync();
+
+			foreach (var message in messageRecords) {
+				message.LastReplyPosted = message.LastReplyPostedDT.ToPassedTimeString();
+			}
 
 			return new PageModels.TopicIndexPage {
 				BoardId = boardRecord?.Id ?? 0,
