@@ -1,13 +1,11 @@
 @model IndexCategory
 
-<div class="category content-box pad gap">
-	<div class="table full-width">
-		<div class="table-row">
-			<div class="table-cell"><h3>@Model.Name</h3></div>
-			<div class="table-cell">Last Post</div>
-		</div>
-		@foreach (var board in Model.Boards) {
-			@await Html.PartialAsync("_IndexBoard", board)
-		}
+<div class="content-box pad gap overflow-hidden">
+	<div>
+		<div class="board-last-post float-right">Last Post</div>
+		<div class="board-name"><h3>@Model.Name</h3></div>
 	</div>
+	@foreach (var board in Model.Boards) {
+		@await Html.PartialAsync("_IndexBoard", board)
+	}
 </div>

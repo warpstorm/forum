@@ -1,11 +1,12 @@
-﻿#onlineUsersIndex {
-	width: 220px;
-	max-width: 220px;
-	overflow: hidden;
-	vertical-align: top;
+﻿#categories {
+	margin-right: 230px;
 }
 
-	#onlineUsersIndex li {
+#side-bar {
+	width: 220px;
+}
+
+	#side-bar li {
 		display: block;
 		margin: 0 5px;
 		padding: 4px 10px;
@@ -13,14 +14,14 @@
 		white-space: nowrap;
 	}
 
-	#onlineUsersIndex time {
+	#side-bar time {
 		color: #516169;
 		font-size: 7.5pt;
 		line-height: 12pt;
 		font-weight: bold;
 	}
 
-.chicletOnline {
+.chiclet-online {
 	background-color: #00e300;
 	height: 5px;
 	width: 5px;
@@ -28,9 +29,12 @@
 	border-radius: 2px;
 }
 
-.lastPost {
+.board-name {
+	margin-right: 300px;
+}
+
+.board-last-post {
 	width: 300px;
-	max-width: 300px;
 	white-space: nowrap;
 	overflow: hidden;
 }
