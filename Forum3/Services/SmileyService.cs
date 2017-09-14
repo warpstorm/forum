@@ -1,9 +1,9 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Forum3.Models.ViewModels.Smileys;
 
 using DataModels = Forum3.Models.DataModels;
+using ViewModels = Forum3.Models.ViewModels.Smileys;
 
 namespace Forum3.Services {
 	public class SmileyService {
@@ -15,20 +15,20 @@ namespace Forum3.Services {
 			DbContext = dbContext;
 		}
 
-		public async Task<IndexPage> IndexPage() {
+		public async Task<ViewModels.IndexPage> IndexPage() {
 			var smileysQuery = from smiley in DbContext.Smileys
 							   orderby smiley.SortOrder
 							   select smiley;
 
 			var smileys = await smileysQuery.ToListAsync();
 
-			var viewModel = new IndexPage();
+			var viewModel = new ViewModels.IndexPage();
 
 			foreach (var smiley in smileys) {
 				var sortColumn = smiley.SortOrder / 100;
 				var sortRow = smiley.SortOrder % 100;
 
-				viewModel.Smileys.Add(new Smiley {
+				viewModel.Smileys.Add(new ViewModels.Smiley {
 					Id = smiley.Id,
 					Code = smiley.Code,
 					Path = smiley.Path,
