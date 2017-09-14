@@ -27,14 +27,14 @@ namespace Forum3 {
 		// This method gets called by the runtime. Use this method to add services to the container.
 		public void ConfigureServices(IServiceCollection services) {
 			// Loads from the user-secrets store
-			var connectionString = Configuration["DefaultConnection"];
+			var dbConnectionString = Configuration["DefaultConnection"];
 
 			// Or use the one defined in appsettings.json
-			if (string.IsNullOrEmpty(connectionString))
-				connectionString = Configuration.GetConnectionString("DefaultConnection");
+			if (string.IsNullOrEmpty(dbConnectionString))
+				dbConnectionString = Configuration.GetConnectionString("DefaultConnection");
 
 			services.AddDbContext<ApplicationDbContext>(options =>
-				options.UseSqlServer(connectionString)
+				options.UseSqlServer(dbConnectionString)
 			);
 
 			services.AddIdentity<ApplicationUser, ApplicationRole>(options => {
@@ -61,12 +61,12 @@ namespace Forum3 {
 			services.AddTransient<IEmailSender, EmailSender>();
 
 			services.AddScoped((serviceProvider) => {
-				connectionString = Configuration["StorageConnection"];
+				var storageConnectionString = Configuration["StorageConnection"];
 
-				if (string.IsNullOrEmpty(connectionString))
-					connectionString = Configuration.GetConnectionString("StorageConnection");
+				if (string.IsNullOrEmpty(storageConnectionString))
+					storageConnectionString = Configuration.GetConnectionString("StorageConnection");
 
-				return CloudStorageAccount.Parse(connectionString);
+				return CloudStorageAccount.Parse(storageConnectionString);
 			});
 
 			services.AddForum();
