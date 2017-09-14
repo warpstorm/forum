@@ -15,22 +15,26 @@ using DataModels = Forum3.Models.DataModels;
 using ItemModels = Forum3.Models.ViewModels.Topics.Items;
 using PageModels = Forum3.Models.ViewModels.Topics.Pages;
 using ServiceModels = Forum3.Models.ServiceModels;
+using Microsoft.WindowsAzure.Storage;
 
 namespace Forum3.Services {
 	public class TopicService {
 		DataModels.ApplicationDbContext DbContext { get; }
+		CloudStorageAccount Storage { get; }
 		BoardService BoardService { get; }
 		ServiceModels.ContextUser ContextUser { get; }
 		IUrlHelper UrlHelper { get; }
 
 		public TopicService(
 			DataModels.ApplicationDbContext dbContext,
+			CloudStorageAccount storage,
 			BoardService boardService,
 			ContextUserFactory contextUserFactory,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory
 		) {
 			DbContext = dbContext;
+			Storage = storage;
 			BoardService = boardService;
 			ContextUser = contextUserFactory.GetContextUser();
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);

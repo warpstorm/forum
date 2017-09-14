@@ -1,13 +1,13 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.AspNetCore.Rewrite;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.WindowsAzure.Storage;
 using Forum3.Annotations;
 using Forum3.Helpers;
 using Forum3.Interfaces.Users;
@@ -59,6 +59,15 @@ namespace Forum3 {
 
 			services.Configure<EmailSenderOptions>(Configuration);
 			services.AddTransient<IEmailSender, EmailSender>();
+
+			services.AddScoped((serviceProvider) => {
+				connectionString = Configuration["StorageConnection"];
+
+				if (string.IsNullOrEmpty(connectionString))
+					connectionString = Configuration.GetConnectionString("StorageConnection");
+
+				return CloudStorageAccount.Parse(connectionString);
+			});
 
 			services.AddForum();
 
