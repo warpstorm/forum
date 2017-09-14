@@ -1,68 +1,95 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Forum3.Netcore2.Data;
-using Forum3.Netcore2.Models;
-using Forum3.Netcore2.Services;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Rewrite;
+using Forum3.Annotations;
+using Forum3.Helpers;
+using Forum3.Interfaces.Users;
+using Forum3.Models.DataModels;
+using Forum3.Models.ServiceModels;
+using Forum3.Services;
+using Forum3.Controllers;
 
-namespace Forum3.Netcore2
-{
-    public class Startup
-    {
-        public Startup(IConfiguration configuration)
-        {
-            Configuration = configuration;
-        }
+namespace Forum3 {
+	public class Startup {
+		public IConfiguration Configuration { get; }
 
-        public IConfiguration Configuration { get; }
+		public Startup(IConfiguration configuration) {
+			Configuration = configuration;
+		}
 
-        // This method gets called by the runtime. Use this method to add services to the container.
-        public void ConfigureServices(IServiceCollection services)
-        {
-            services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+		// This method gets called by the runtime. Use this method to add services to the container.
+		public void ConfigureServices(IServiceCollection services) {
+			// Loads from the user-secrets store
+			var connectionString = Configuration["DefaultConnection"];
 
-            services.AddIdentity<ApplicationUser, IdentityRole>()
-                .AddEntityFrameworkStores<ApplicationDbContext>()
-                .AddDefaultTokenProviders();
+			// Or use the one defined in appsettings.json
+			if (string.IsNullOrEmpty(connectionString))
+				connectionString = Configuration.GetConnectionString("DefaultConnection");
 
-            // Add application services.
-            services.AddTransient<IEmailSender, EmailSender>();
+			services.AddDbContext<ApplicationDbContext>(options =>
+				options.UseSqlServer(connectionString)
+			);
 
-            services.AddMvc();
-        }
+			services.AddIdentity<ApplicationUser, ApplicationRole>(options => {
+				options.Password.RequireDigit = false;
+				options.Password.RequireLowercase = false;
+				options.Password.RequireUppercase = false;
+				options.Password.RequireNonAlphanumeric = false;
+				options.Password.RequiredLength = 3;
+				options.SignIn.RequireConfirmedEmail = true;
+			})
+				.AddEntityFrameworkStores<ApplicationDbContext>()
+				.AddDefaultTokenProviders();
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
-        {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-                app.UseBrowserLink();
-                app.UseDatabaseErrorPage();
-            }
-            else
-            {
-                app.UseExceptionHandler("/Home/Error");
-            }
+			services.ConfigureApplicationCookie(options => options.LoginPath = $"/{nameof(Authentication)}/{nameof(Authentication.Login)}");
 
-            app.UseStaticFiles();
+			services.Configure<MvcOptions>(options => {
+				options.Filters.Add(new RequireRemoteHttpsAttribute());
+			});
 
-            app.UseAuthentication();
+			services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
+			services.AddSingleton<IUrlHelperFactory, UrlHelperFactory>();
 
-            app.UseMvc(routes =>
-            {
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
-            });
-        }
-    }
+			services.Configure<EmailSenderOptions>(Configuration);
+			services.AddTransient<IEmailSender, EmailSender>();
+
+			services.AddForum();
+
+			services.AddDistributedMemoryCache();
+			services.AddSession();
+
+			services.AddMvc();
+		}
+
+		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+		public void Configure(IApplicationBuilder app, IHostingEnvironment env) {
+			if (env.IsDevelopment()) {
+				app.UseDeveloperExceptionPage();
+				app.UseBrowserLink();
+				app.UseDatabaseErrorPage();
+			}
+			else {
+				app.UseExceptionHandler("/Boards/Error");
+			}
+
+			app.UseStaticFiles();
+
+			app.UseAuthentication();
+
+			app.UseSession();
+
+			app.UseMvc(routes => {
+				routes.MapRoute(
+					name: "default",
+					template: "{controller=Boards}/{action=Index}/{id?}/{page?}/{target?}");
+			});
+		}
+	}
 }

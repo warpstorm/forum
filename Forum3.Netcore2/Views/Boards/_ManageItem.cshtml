@@ -1,0 +1,32 @@
+﻿@model IndexCategory
+
+<div class="category pad gap content-box">
+	<h3>
+		@Model.Name
+		@if (Model.DisplayOrder != 1) {
+			<a asp-controller="@nameof(Boards)" asp-action="@nameof(Boards.MoveCategoryUp)" asp-route-id="@Model.Id" class="borderless spaced"><img alt="Move up" src="~/images/upArrow.png" /></a>
+		}
+		<img src="~/images/join.png" categoryId="@Model.Id" class="mergeCategory spaced" />
+	</h3>
+
+	<div class="table full-width">
+		@foreach (var child in Model.Boards) {
+			<div class="table-row board">
+				<div class="table-cell boardName small-pad">
+					<span>@child.Name</span>
+				</div>
+				<div class="table-cell boardInfo small-pad">
+					@if (child.DisplayOrder != 1) {
+						<a asp-controller="Boards" asp-action="MoveBoardUp" asp-route-id="@child.Id" class="borderless"><img alt="Move up" src="~/images/upArrow.png" /></a>
+					}
+				</div>
+				<div class="table-cell boardInfo small-pad">
+					<a asp-controller="Boards" asp-action="Edit" asp-route-id="@child.Id" class="borderless"><img alt="Edit" src="~/images/edit.png" /></a>
+				</div>
+				<div class="table-cell boardInfo small-pad">
+					<img src="~/images/join.png" boardId="@child.Id" class="mergeBoard" />
+				</div>
+			</div>
+		}
+	</div>
+</div>

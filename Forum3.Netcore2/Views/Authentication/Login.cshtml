@@ -1,0 +1,37 @@
+﻿@model LoginViewModel
+@inject SignInManager<Forum3.Models.DataModels.ApplicationUser> SignInManager
+
+<section class="content-box pad">
+	<form method="post"
+		  asp-controller="@nameof(Authentication)"
+		  asp-action="@nameof(Authentication.Login)"
+		  asp-route-returnurl="@ViewData["ReturnUrl"]">
+
+		<div asp-validation-summary="All" class="error"></div>
+
+		<dl>
+			<dt>Username (email address)</dt>
+			<dd><input asp-for="Email" /></dd>
+			<dd><span asp-validation-for="Email" class="error"></span></dd>
+		</dl>
+
+		<dl>
+			<dt>Password</dt>
+			<dd><input asp-for="Password" /></dd>
+			<dd><span asp-validation-for="Password" class="error"></span></dd>
+		</dl>
+
+		<dl>
+			<dt><input asp-for="RememberMe" /> Remember Me</dt>
+		</dl>
+
+		<ul>
+			<li><button>Log in</button></li>
+			<li><a class="button" asp-action="@nameof(Authentication.Register)" asp-route-returnurl="@ViewData["ReturnUrl"]">Register as a new user?</a></li>
+			<li><a class="button" asp-action="@nameof(Authentication.ForgotPassword)">Forgot your password?</a></li>
+		</ul>
+	</form>
+</section>
+
+@{ViewData["Title"] = "Login";}
+@section Header {@ViewData["Title"]}

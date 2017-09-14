@@ -1,24 +1,50 @@
-﻿// Configure bundling and minification for the project.
-// More info at https://go.microsoft.com/fwlink/?LinkId=808241
-[
-  {
-    "outputFileName": "wwwroot/css/site.min.css",
-    // An array of relative input file paths. Globbing patterns supported
-    "inputFiles": [
-      "wwwroot/css/site.css"
-    ]
-  },
-  {
-    "outputFileName": "wwwroot/js/site.min.js",
-    "inputFiles": [
-      "wwwroot/js/site.js"
-    ],
-    // Optionally specify minification options
-    "minify": {
-      "enabled": true,
-      "renameLocals": true
-    },
-    // Optionally generate .map file
-    "sourceMap": false
-  }
+﻿[
+	// STYLES
+	{
+		"outputFileName": "wwwroot/css/min/Global.min.css",
+		"inputFiles": [
+			"wwwroot/css/GlobalElements.css",
+			"wwwroot/css/GlobalHelpers.css",
+			"wwwroot/css/Layout.css",
+			"wwwroot/css/Glyphs.css",
+			"wwwroot/css/Forms.css",
+			"wwwroot/css/Buttons.css",
+			"wwwroot/css/StandardClasses.css"
+		]
+	},
+	{
+		"outputFileName": "wwwroot/css/min/TopicDisplay.min.css",
+		"inputFiles": [ "wwwroot/css/Pages/TopicDisplay.css" ]
+	},
+	{
+		"outputFileName": "wwwroot/css/min/TopicIndex.min.css",
+		"inputFiles": [ "wwwroot/css/Pages/TopicIndex.css" ]
+	},
+	{
+		"outputFileName": "wwwroot/css/min/BoardIndex.min.css",
+		"inputFiles": [ "wwwroot/css/Pages/BoardIndex.css" ]
+	},
+	{
+		"outputFileName": "wwwroot/css/min/ManageBoards.min.css",
+		"inputFiles": [ "wwwroot/css/Pages/ManageBoards.css" ]
+	},
+	// SCRIPTS
+	{
+		"outputFileName": "wwwroot/js/Global.min.js",
+		"inputFiles": [ "wwwroot/js/Global.js" ],
+		"minify": {
+			"enabled": true,
+			"renameLocals": true
+		},
+		"sourceMap": false
+	},
+	{
+		"outputFileName": "wwwroot/js/TopicDisplay.min.js",
+		"inputFiles": [ "wwwroot/js/TopicDisplay.js" ],
+		"minify": {
+			"enabled": true,
+			"renameLocals": true
+		},
+		"sourceMap": false
+	}
 ]

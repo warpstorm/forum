@@ -1,0 +1,35 @@
+﻿@model IndexPage
+
+@{
+    ViewData["Title"] = "Board Management";
+}
+
+<h1 class="pad-left">@ViewData["Title"]</h1>
+
+@Html.ValidationSummary()
+
+@foreach (var category in Model.Categories) {
+    @Html.Partial("_ManageItem", category)
+}
+
+<p>
+	<a asp-controller="Boards" asp-action="Create" class="button">Create Board</a>
+</p>
+
+@section scripts {
+	<environment names="Development">
+		<script src="~/js/ManageBoards.js" asp-append-version="true"></script>
+	</environment>
+	<environment names="Staging,Production">
+		<script src="~/js/ManageBoards.min.js" asp-append-version="true"></script>
+	</environment>
+}
+
+@section styles {
+	<environment names="Development">
+		<link rel="stylesheet" href="~/css/Pages/ManageBoards.css" asp-append-version="true" />
+	</environment>
+	<environment names="Staging,Production">
+		<link rel="stylesheet" href="~/css/min/ManageBoards.min.css" asp-append-version="true" />
+	</environment>
+}
