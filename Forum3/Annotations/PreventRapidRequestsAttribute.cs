@@ -1,13 +1,16 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace Forum3.Annotations {
 	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
 	public class PreventRapidRequestsAttribute : ActionFilterAttribute {
-		public override void OnActionExecuting(ActionExecutingContext context) {
+		public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next) {
 			if (!context.HttpContext.Request.Form.ContainsKey("__RequestVerificationToken"))
 				return;
+
+			await context.HttpContext.Session.LoadAsync();
 
 			var currentToken = context.HttpContext.Request.Form["__RequestVerificationToken"].ToString();
 			var lastToken = context.HttpContext.Session.GetString(Constants.Keys.LastProcessedToken);
@@ -32,6 +35,9 @@ namespace Forum3.Annotations {
 			}
 
 			context.HttpContext.Session.SetString(Constants.Keys.LastPostTimestamp, currentTime.ToString());
+
+			await context.HttpContext.Session.CommitAsync();
+			await base.OnActionExecutionAsync(context, next);
 		}
 	}
 }
