@@ -7,9 +7,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Forum3.Models.ViewModels.Authentication;
-using Forum3.Services;
 using Forum3.Models.DataModels;
 using Forum3.Interfaces.Users;
+using Forum3.Helpers;
 
 namespace Forum3.Controllers {
 	/// <summary>
@@ -196,6 +196,9 @@ namespace Forum3.Controllers {
 
 					var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 					var callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme);
+
+					if (Request.IsLocal() || _emailSender == null)
+						return Redirect(callbackUrl);
 
 					await _emailSender.SendEmailConfirmationAsync(input.Email, callbackUrl);
 
