@@ -53,6 +53,7 @@
     <WCFMetadata Include="Connected Services" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Views\Smileys\" />
     <Folder Include="wwwroot\css\min\" />
     <Folder Include="wwwroot\css\min\" />
   </ItemGroup>

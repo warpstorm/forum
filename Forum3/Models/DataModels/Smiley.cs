@@ -3,7 +3,7 @@
 namespace Forum3.Models.DataModels {
 	public class Smiley {
 		public int Id { get; set; }
-		public decimal? DisplayOrder { get; set; }
+		public int SortOrder { get; set; }
 
 		[Required]
 		public string Code { get; set; }
