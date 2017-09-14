@@ -9,7 +9,7 @@ using Forum3.Services;
 namespace Forum3.Controllers {
 	[Authorize]
 	public class Messages : ForumController {
-		public MessageService MessageService { get; }
+		MessageService MessageService { get; }
 
 		public Messages(
 			MessageService messageService

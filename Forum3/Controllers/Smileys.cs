@@ -4,7 +4,7 @@ using Forum3.Services;
 
 namespace Forum3.Controllers {
 	public class Smileys : ForumController {
-		public SmileyService SmileyService { get; }
+		SmileyService SmileyService { get; }
 
 		public Smileys(
 			SmileyService smileyService

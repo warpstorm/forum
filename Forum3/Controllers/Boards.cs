@@ -5,7 +5,7 @@ using Forum3.Services;
 
 namespace Forum3.Controllers {
 	public class Boards : ForumController {
-		public BoardService BoardService { get; }
+		BoardService BoardService { get; }
 
 		public Boards(
 			BoardService boardService

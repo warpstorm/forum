@@ -8,8 +8,8 @@ using Forum3.Services;
 namespace Forum3.Controllers {
 	[Authorize]
 	public class Topics : ForumController {
-		public TopicService TopicService { get; }
-		public MessageService MessageService { get; }
+		TopicService TopicService { get; }
+		MessageService MessageService { get; }
 
 		public Topics(
 			TopicService topicService,

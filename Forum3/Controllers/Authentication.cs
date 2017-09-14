@@ -19,10 +19,10 @@ namespace Forum3.Controllers {
 	[AllowAnonymous]
 	[Route("[controller]/[action]")]
 	public class Authentication : ForumController {
-		UserManager<ApplicationUser> _userManager { get; }
-		SignInManager<ApplicationUser> _signInManager { get; }
-		IEmailSender _emailSender { get; }
-		ILogger _logger { get; }
+		UserManager<ApplicationUser> UserManager { get; }
+		SignInManager<ApplicationUser> SignInManager { get; }
+		IEmailSender EmailSender { get; }
+		ILogger Logger { get; }
 
 		public Authentication(
 			UserManager<ApplicationUser> userManager,
@@ -30,10 +30,10 @@ namespace Forum3.Controllers {
 			IEmailSender emailSender,
 			ILogger<Authentication> logger
 		) {
-			_userManager = userManager;
-			_signInManager = signInManager;
-			_emailSender = emailSender;
-			_logger = logger;
+			UserManager = userManager;
+			SignInManager = signInManager;
+			EmailSender = emailSender;
+			Logger = logger;
 		}
 
 		[TempData]
@@ -55,16 +55,16 @@ namespace Forum3.Controllers {
 			if (ModelState.IsValid) {
 				// This doesn't count login failures towards account lockout
 				// To enable password failures to trigger account lockout, set lockoutOnFailure: true
-				var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
+				var result = await SignInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
 				if (result.Succeeded) {
-					_logger.LogInformation("User logged in.");
+					Logger.LogInformation("User logged in.");
 					return RedirectToLocal(returnUrl);
 				}
 				if (result.RequiresTwoFactor) {
 					return RedirectToAction(nameof(LoginWith2fa), new { returnUrl, model.RememberMe });
 				}
 				if (result.IsLockedOut) {
-					_logger.LogWarning("User account locked out.");
+					Logger.LogWarning("User account locked out.");
 					return RedirectToAction(nameof(Lockout));
 				}
 				else {
@@ -80,7 +80,7 @@ namespace Forum3.Controllers {
 		[HttpGet]
 		public async Task<IActionResult> LoginWith2fa(bool rememberMe, string returnUrl = null) {
 			// Ensure the user has gone through the username & password screen first
-			var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
+			var user = await SignInManager.GetTwoFactorAuthenticationUserAsync();
 
 			if (user == null) {
 				throw new ApplicationException($"Unable to load two-factor authentication user.");
@@ -99,25 +99,25 @@ namespace Forum3.Controllers {
 				return View(model);
 			}
 
-			var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
+			var user = await SignInManager.GetTwoFactorAuthenticationUserAsync();
 			if (user == null) {
-				throw new ApplicationException($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
+				throw new ApplicationException($"Unable to load user with ID '{UserManager.GetUserId(User)}'.");
 			}
 
 			var authenticatorCode = model.TwoFactorCode.Replace(" ", string.Empty).Replace("-", string.Empty);
 
-			var result = await _signInManager.TwoFactorAuthenticatorSignInAsync(authenticatorCode, rememberMe, model.RememberMachine);
+			var result = await SignInManager.TwoFactorAuthenticatorSignInAsync(authenticatorCode, rememberMe, model.RememberMachine);
 
 			if (result.Succeeded) {
-				_logger.LogInformation("User with ID {UserId} logged in with 2fa.", user.Id);
+				Logger.LogInformation("User with ID {UserId} logged in with 2fa.", user.Id);
 				return RedirectToLocal(returnUrl);
 			}
 			else if (result.IsLockedOut) {
-				_logger.LogWarning("User with ID {UserId} account locked out.", user.Id);
+				Logger.LogWarning("User with ID {UserId} account locked out.", user.Id);
 				return RedirectToAction(nameof(Lockout));
 			}
 			else {
-				_logger.LogWarning("Invalid authenticator code entered for user with ID {UserId}.", user.Id);
+				Logger.LogWarning("Invalid authenticator code entered for user with ID {UserId}.", user.Id);
 				ModelState.AddModelError(string.Empty, "Invalid authenticator code.");
 				return View();
 			}
@@ -126,7 +126,7 @@ namespace Forum3.Controllers {
 		[HttpGet]
 		public async Task<IActionResult> LoginWithRecoveryCode(string returnUrl = null) {
 			// Ensure the user has gone through the username & password screen first
-			var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
+			var user = await SignInManager.GetTwoFactorAuthenticationUserAsync();
 			if (user == null) {
 				throw new ApplicationException($"Unable to load two-factor authentication user.");
 			}
@@ -143,7 +143,7 @@ namespace Forum3.Controllers {
 				return View(model);
 			}
 
-			var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
+			var user = await SignInManager.GetTwoFactorAuthenticationUserAsync();
 
 			if (user == null) {
 				throw new ApplicationException($"Unable to load two-factor authentication user.");
@@ -151,18 +151,18 @@ namespace Forum3.Controllers {
 
 			var recoveryCode = model.RecoveryCode.Replace(" ", string.Empty);
 
-			var result = await _signInManager.TwoFactorRecoveryCodeSignInAsync(recoveryCode);
+			var result = await SignInManager.TwoFactorRecoveryCodeSignInAsync(recoveryCode);
 
 			if (result.Succeeded) {
-				_logger.LogInformation("User with ID {UserId} logged in with a recovery code.", user.Id);
+				Logger.LogInformation("User with ID {UserId} logged in with a recovery code.", user.Id);
 				return RedirectToLocal(returnUrl);
 			}
 			if (result.IsLockedOut) {
-				_logger.LogWarning("User with ID {UserId} account locked out.", user.Id);
+				Logger.LogWarning("User with ID {UserId} account locked out.", user.Id);
 				return RedirectToAction(nameof(Lockout));
 			}
 			else {
-				_logger.LogWarning("Invalid recovery code entered for user with ID {UserId}", user.Id);
+				Logger.LogWarning("Invalid recovery code entered for user with ID {UserId}", user.Id);
 				ModelState.AddModelError(string.Empty, "Invalid recovery code entered.");
 				return View();
 			}
@@ -190,20 +190,20 @@ namespace Forum3.Controllers {
 					Email = input.Email
 				};
 
-				var result = await _userManager.CreateAsync(user, input.Password);
+				var result = await UserManager.CreateAsync(user, input.Password);
 				if (result.Succeeded) {
-					_logger.LogInformation("User created a new account with password.");
+					Logger.LogInformation("User created a new account with password.");
 
-					var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+					var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
 					var callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme);
 
-					if (Request.IsLocal() || _emailSender == null)
+					if (Request.IsLocal() || EmailSender == null)
 						return Redirect(callbackUrl);
 
-					await _emailSender.SendEmailConfirmationAsync(input.Email, callbackUrl);
+					await EmailSender.SendEmailConfirmationAsync(input.Email, callbackUrl);
 
-					await _signInManager.SignInAsync(user, isPersistent: false);
-					_logger.LogInformation("User created a new account with password.");
+					await SignInManager.SignInAsync(user, isPersistent: false);
+					Logger.LogInformation("User created a new account with password.");
 					return RedirectToLocal(returnUrl);
 				}
 				AddErrors(result);
@@ -217,8 +217,8 @@ namespace Forum3.Controllers {
 		[Authorize]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> Logout() {
-			await _signInManager.SignOutAsync();
-			_logger.LogInformation("User logged out.");
+			await SignInManager.SignOutAsync();
+			Logger.LogInformation("User logged out.");
 			return RedirectToAction("Index", "Home");
 		}
 
@@ -227,7 +227,7 @@ namespace Forum3.Controllers {
 		public IActionResult ExternalLogin(string provider, string returnUrl = null) {
 			// Request a redirect to the external login provider.
 			var redirectUrl = Url.Action(nameof(ExternalLoginCallback), nameof(Authentication), new { returnUrl });
-			var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
+			var properties = SignInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
 			return Challenge(properties, provider);
 		}
 
@@ -237,15 +237,15 @@ namespace Forum3.Controllers {
 				ErrorMessage = $"Error from external provider: {remoteError}";
 				return RedirectToAction(nameof(Login));
 			}
-			var info = await _signInManager.GetExternalLoginInfoAsync();
+			var info = await SignInManager.GetExternalLoginInfoAsync();
 			if (info == null) {
 				return RedirectToAction(nameof(Login));
 			}
 
 			// Sign in the user with this external login provider if the user already has a login.
-			var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
+			var result = await SignInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
 			if (result.Succeeded) {
-				_logger.LogInformation("User logged in with {Name} provider.", info.LoginProvider);
+				Logger.LogInformation("User logged in with {Name} provider.", info.LoginProvider);
 				return RedirectToLocal(returnUrl);
 			}
 			if (result.IsLockedOut) {
@@ -265,17 +265,17 @@ namespace Forum3.Controllers {
 		public async Task<IActionResult> ExternalLoginConfirmation(ExternalLoginViewModel model, string returnUrl = null) {
 			if (ModelState.IsValid) {
 				// Get the information about the user from the external login provider
-				var info = await _signInManager.GetExternalLoginInfoAsync();
+				var info = await SignInManager.GetExternalLoginInfoAsync();
 				if (info == null) {
 					throw new ApplicationException("Error loading external login information during confirmation.");
 				}
 				var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
-				var result = await _userManager.CreateAsync(user);
+				var result = await UserManager.CreateAsync(user);
 				if (result.Succeeded) {
-					result = await _userManager.AddLoginAsync(user, info);
+					result = await UserManager.AddLoginAsync(user, info);
 					if (result.Succeeded) {
-						await _signInManager.SignInAsync(user, isPersistent: false);
-						_logger.LogInformation("User created an account using {Name} provider.", info.LoginProvider);
+						await SignInManager.SignInAsync(user, isPersistent: false);
+						Logger.LogInformation("User created an account using {Name} provider.", info.LoginProvider);
 						return RedirectToLocal(returnUrl);
 					}
 				}
@@ -291,11 +291,11 @@ namespace Forum3.Controllers {
 			if (userId == null || code == null) {
 				return RedirectToAction("Index", "Home");
 			}
-			var user = await _userManager.FindByIdAsync(userId);
+			var user = await UserManager.FindByIdAsync(userId);
 			if (user == null) {
 				throw new ApplicationException($"Unable to load user with ID '{userId}'.");
 			}
-			var result = await _userManager.ConfirmEmailAsync(user, code);
+			var result = await UserManager.ConfirmEmailAsync(user, code);
 			return View(result.Succeeded ? "ConfirmEmail" : "Error");
 		}
 
@@ -308,17 +308,17 @@ namespace Forum3.Controllers {
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model) {
 			if (ModelState.IsValid) {
-				var user = await _userManager.FindByEmailAsync(model.Email);
-				if (user == null || !(await _userManager.IsEmailConfirmedAsync(user))) {
+				var user = await UserManager.FindByEmailAsync(model.Email);
+				if (user == null || !(await UserManager.IsEmailConfirmedAsync(user))) {
 					// Don't reveal that the user does not exist or is not confirmed
 					return RedirectToAction(nameof(ForgotPasswordConfirmation));
 				}
 
 				// For more information on how to enable account confirmation and password reset please
 				// visit https://go.microsoft.com/fwlink/?LinkID=532713
-				var code = await _userManager.GeneratePasswordResetTokenAsync(user);
+				var code = await UserManager.GeneratePasswordResetTokenAsync(user);
 				var callbackUrl = Url.ResetPasswordCallbackLink(user.Id, code, Request.Scheme);
-				await _emailSender.SendEmailAsync(model.Email, "Reset Password",
+				await EmailSender.SendEmailAsync(model.Email, "Reset Password",
 				   $"Please reset your password by clicking here: <a href='{callbackUrl}'>link</a>");
 				return RedirectToAction(nameof(ForgotPasswordConfirmation));
 			}
@@ -347,12 +347,12 @@ namespace Forum3.Controllers {
 			if (!ModelState.IsValid) {
 				return View(model);
 			}
-			var user = await _userManager.FindByEmailAsync(model.Email);
+			var user = await UserManager.FindByEmailAsync(model.Email);
 			if (user == null) {
 				// Don't reveal that the user does not exist
 				return RedirectToAction(nameof(ResetPasswordConfirmation));
 			}
-			var result = await _userManager.ResetPasswordAsync(user, model.Code, model.Password);
+			var result = await UserManager.ResetPasswordAsync(user, model.Code, model.Password);
 			if (result.Succeeded) {
 				return RedirectToAction(nameof(ResetPasswordConfirmation));
 			}
