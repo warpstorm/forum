@@ -1,39 +1,39 @@
 ﻿@model RegisterViewModel
 
 <section class="content-box pad">
-    <form method="post"
-          asp-controller="@nameof(Authentication)"
-          asp-action="@nameof(Authentication.Register)"
-          asp-route-returnurl="@ViewData["ReturnUrl"]">
+	<form method="post"
+		  asp-controller="@nameof(Authentication)"
+		  asp-action="@nameof(Authentication.Register)"
+		  asp-route-returnurl="@ViewData["ReturnUrl"]">
 
-        <div asp-validation-summary="All" class="error"></div>
+		<div asp-validation-summary="All" class="error"></div>
 
-        <dl>
-            <dt>Display Name</dt>
-            <dd><input asp-for="DisplayName" /></dd>
-            <dd><span asp-validation-for="DisplayName" class="error"></span></dd>
-        </dl>
+		<dl>
+			<dt>Display Name</dt>
+			<dd><input asp-for="DisplayName" /></dd>
+			<dd><span asp-validation-for="DisplayName" class="error"></span></dd>
+		</dl>
 
-        <dl>
-            <dt>Username (email address)</dt>
-            <dd><input asp-for="Email" /></dd>
-            <dd><span asp-validation-for="Email" class="error"></span></dd>
-        </dl>
+		<dl>
+			<dt>Username (email address)</dt>
+			<dd><input asp-for="Email" /></dd>
+			<dd><span asp-validation-for="Email" class="error"></span></dd>
+		</dl>
 
-        <dl>
-            <dt>Password</dt>
-            <dd><input asp-for="Password" /></dd>
-            <dd><span asp-validation-for="Password" class="error"></span></dd>
-            
-            <dt>Confirm Password</dt>
-            <dd><input asp-for="ConfirmPassword" /></dd>
-            <dd><span asp-validation-for="ConfirmPassword" class="error"></span></dd>
-        </dl>
+		<dl>
+			<dt>Password</dt>
+			<dd><input asp-for="Password" /></dd>
+			<dd><span asp-validation-for="Password" class="error"></span></dd>
 
-        <ul>
-            <li><button>Register</button></li>
-        </ul>
-    </form>
+			<dt>Confirm Password</dt>
+			<dd><input asp-for="ConfirmPassword" /></dd>
+			<dd><span asp-validation-for="ConfirmPassword" class="error"></span></dd>
+		</dl>
+
+		<ul>
+			<li><button>Register</button></li>
+		</ul>
+	</form>
 </section>
 
 @{ViewData["Title"] = "Register";}

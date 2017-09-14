@@ -1,15 +1,16 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Forum3.Data;
 using Forum3.Models.ViewModels.Smileys;
+
+using DataModels = Forum3.Models.DataModels;
 
 namespace Forum3.Services {
 	public class SmileyService {
-		ApplicationDbContext DbContext { get; }
+		DataModels.ApplicationDbContext DbContext { get; }
 
 		public SmileyService(
-			ApplicationDbContext dbContext
+			DataModels.ApplicationDbContext dbContext
 		) {
 			DbContext = dbContext;
 		}

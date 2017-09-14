@@ -7,24 +7,24 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
 using Forum3.Controllers;
-using Forum3.Data;
 using Forum3.Enums;
 using Forum3.Helpers;
-using Forum3.Models.DataModels;
-using Forum3.Models.ServiceModels;
 using Forum3.Models.ViewModels.Boards.Items;
+
+using DataModels = Forum3.Models.DataModels;
 using ItemModels = Forum3.Models.ViewModels.Topics.Items;
 using PageModels = Forum3.Models.ViewModels.Topics.Pages;
+using ServiceModels = Forum3.Models.ServiceModels;
 
 namespace Forum3.Services {
 	public class TopicService {
-		ApplicationDbContext DbContext { get; }
+		DataModels.ApplicationDbContext DbContext { get; }
 		BoardService BoardService { get; }
-		ContextUser ContextUser { get; }
+		ServiceModels.ContextUser ContextUser { get; }
 		IUrlHelper UrlHelper { get; }
 
 		public TopicService(
-			ApplicationDbContext dbContext,
+			DataModels.ApplicationDbContext dbContext,
 			BoardService boardService,
 			ContextUserFactory contextUserFactory,
 			IActionContextAccessor actionContextAccessor,
@@ -212,7 +212,7 @@ namespace Forum3.Services {
 
 			await DbContext.SaveChangesAsync();
 
-			await DbContext.ViewLogs.AddAsync(new ViewLog {
+			await DbContext.ViewLogs.AddAsync(new DataModels.ViewLog {
 				LogTime = latestTime,
 				TargetId = topic.Id,
 				TargetType = EViewLogTargetType.Message,

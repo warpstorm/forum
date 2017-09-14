@@ -1,9 +1,15 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Threading.Tasks;
 
-namespace Forum3.Models.ViewModels.Authentication {
-	public class ForgotPasswordViewModel {
-		[Required]
-		[EmailAddress]
-		public string Email { get; set; }
-	}
+namespace Forum3.Models.ViewModels.Authentication
+{
+    public class ForgotPasswordViewModel
+    {
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; }
+    }
 }

@@ -1,13 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Forum3.Models.ServiceModels;
+using Forum3.Models.ViewModels;
 
 namespace Forum3.Controllers {
 	[Authorize]
 	public class ForumController : Controller {
+		public IActionResult Error() => View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+
+		public override ViewResult View(object model) => View(null, model);
+		public override ViewResult View(string viewName, object model = null) {
+			UniversalViewActions();
+			return base.View(viewName, model);
+		}
+
+		protected IActionResult RedirectToLocal(string returnUrl) {
+			if (Url.IsLocalUrl(returnUrl))
+				return Redirect(returnUrl);
+			else
+				return RedirectToAction("Index", "Boards");
+		}
+
 		protected void ProcessServiceResponse(ServiceResponse serviceResponse) {
 			if (!string.IsNullOrEmpty(serviceResponse.Message))
 				TempData[Constants.Keys.StatusMessage] = serviceResponse.Message;
@@ -16,10 +34,9 @@ namespace Forum3.Controllers {
 				ModelState.AddModelError(kvp.Key, kvp.Value);
 		}
 
-		public override ViewResult View(object model) => View(null, model);
-		public override ViewResult View(string viewName, object model = null) {
-			UniversalViewActions();
-			return base.View(viewName, model);
+		protected void AddErrors(IdentityResult result) {
+			foreach (var error in result.Errors)
+				ModelState.AddModelError(string.Empty, error.Description);
 		}
 
 		void UniversalViewActions() {
@@ -39,7 +56,6 @@ namespace Forum3.Controllers {
 
 			ViewData["LogoPath"] = "/images/logos/" + GetLogoPath();
 		}
-
 
 		string GetLogoPath() {
 			var holidayLogos = GetHolidays();

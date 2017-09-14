@@ -34,8 +34,7 @@
 		"inputFiles": [ "wwwroot/js/Global.js" ],
 		"minify": {
 			"enabled": true,
-			"renameLocals": true,
-			"outputMode": "multipleLines"
+			"renameLocals": true
 		},
 		"sourceMap": false
 	},
@@ -44,8 +43,7 @@
 		"inputFiles": [ "wwwroot/js/TopicDisplay.js" ],
 		"minify": {
 			"enabled": true,
-			"renameLocals": true,
-			"outputMode": "multipleLines"
+			"renameLocals": true
 		},
 		"sourceMap": false
 	}

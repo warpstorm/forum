@@ -1,44 +1,35 @@
 ﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Forum3.Data;
-using Forum3.Helpers;
-using Forum3.Annotations;
-using Forum3.Models.DataModels;
-using Forum3.Models.ServiceModels;
-using Forum3.Interfaces.Users;
-using Forum3.Services;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Rewrite;
+using Forum3.Annotations;
+using Forum3.Helpers;
+using Forum3.Interfaces.Users;
+using Forum3.Models.DataModels;
+using Forum3.Models.ServiceModels;
+using Forum3.Services;
+using Forum3.Controllers;
 
 namespace Forum3 {
 	public class Startup {
-		public Startup(IHostingEnvironment env) {
-			var builder = new ConfigurationBuilder()
-				.SetBasePath(env.ContentRootPath)
-				.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-				.AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true);
+		public IConfiguration Configuration { get; }
 
-			if (env.IsDevelopment()) {
-				builder.AddUserSecrets<Startup>();
-			}
-
-			builder.AddEnvironmentVariables();
-			Configuration = builder.Build();
+		public Startup(IConfiguration configuration) {
+			Configuration = configuration;
 		}
 
-		public IConfigurationRoot Configuration { get; }
-
+		// This method gets called by the runtime. Use this method to add services to the container.
 		public void ConfigureServices(IServiceCollection services) {
 			// Loads from the user-secrets store
 			var connectionString = Configuration["DefaultConnection"];
 
-			// secrets store is empty, use the one defined in appsettings.json
+			// Or use the one defined in appsettings.json
 			if (string.IsNullOrEmpty(connectionString))
 				connectionString = Configuration.GetConnectionString("DefaultConnection");
 
@@ -52,45 +43,45 @@ namespace Forum3 {
 				options.Password.RequireUppercase = false;
 				options.Password.RequireNonAlphanumeric = false;
 				options.Password.RequiredLength = 3;
-				options.Cookies.ApplicationCookie.LoginPath = "/Authentication/Login";
 				options.SignIn.RequireConfirmedEmail = true;
 			})
 				.AddEntityFrameworkStores<ApplicationDbContext>()
 				.AddDefaultTokenProviders();
 
+			services.ConfigureApplicationCookie(options => options.LoginPath = $"/{nameof(Authentication)}/{nameof(Authentication.Login)}");
+
 			services.Configure<MvcOptions>(options => {
 				options.Filters.Add(new RequireRemoteHttpsAttribute());
 			});
 
-			services.AddMvc();
-
 			services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
 			services.AddSingleton<IUrlHelperFactory, UrlHelperFactory>();
 
-			services.Configure<AuthMessageSenderOptions>(Configuration);
+			services.Configure<EmailSenderOptions>(Configuration);
+			services.AddTransient<IEmailSender, EmailSender>();
 
-			services.AddTransient<IEmailSender, AuthMessageSender>();
-			services.AddTransient<ISmsSender, AuthMessageSender>();
+			services.AddForum();
 
 			services.AddDistributedMemoryCache();
 			services.AddSession();
 
-			services.AddForum();
+			services.AddMvc();
 		}
 
-		public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory) {
-			loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-			loggerFactory.AddDebug();
-
+		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+		public void Configure(IApplicationBuilder app, IHostingEnvironment env) {
 			if (env.IsDevelopment()) {
 				app.UseDeveloperExceptionPage();
-				app.UseDatabaseErrorPage();
 				app.UseBrowserLink();
+				app.UseDatabaseErrorPage();
+			}
+			else {
+				app.UseExceptionHandler("/Boards/Error");
 			}
 
 			app.UseStaticFiles();
 
-			app.UseIdentity();
+			app.UseAuthentication();
 
 			app.UseSession();
 

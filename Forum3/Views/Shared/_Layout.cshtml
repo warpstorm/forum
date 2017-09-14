@@ -2,11 +2,11 @@
 <html>
 <head>
     <meta charset="utf-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>@Html.Raw(ViewData["Title"])</title>
+	<title>@Html.Raw(ViewData["Title"])</title>
 
-	<environment names="Development">
+    <environment include="Development">
 		<link rel="stylesheet" href="~/css/GlobalElements.css" asp-append-version="true" />
 		<link rel="stylesheet" href="~/css/GlobalHelpers.css" asp-append-version="true" />
 		<link rel="stylesheet" href="~/css/Layout.css" asp-append-version="true" />
@@ -14,10 +14,10 @@
 		<link rel="stylesheet" href="~/css/Forms.css" asp-append-version="true" />
 		<link rel="stylesheet" href="~/css/Buttons.css" asp-append-version="true" />
 		<link rel="stylesheet" href="~/css/StandardClasses.css" asp-append-version="true" />
-	</environment>
-	<environment names="Staging,Production">
+    </environment>
+    <environment exclude="Development">
 		<link rel="stylesheet" href="~/css/min/Global.min.css" asp-append-version="true" />
-	</environment>
+    </environment>
 </head>
 <body>
 	@await Html.PartialAsync("_Header")
@@ -48,18 +48,18 @@
 
 	<footer id="page-footer" class="align-center">
 		<p><a href="https://github.com/jyarbro/forum">Theme 12 | Code 3.0.0</a></p>
-		<p>Bringing disorder to chaos for 17 years.</p> 
+		<p>Bringing disorder to chaos for 17 years.</p>
 	</footer>
 
 	@RenderSection("Styles", required: false)
 
-    <environment names="Development">
-		<script src="~/lib/jquery/dist/jquery.js"></script>
+    <environment include="Development">
+        <script src="~/lib/jquery/dist/jquery.js"></script>
 		<script src="~/lib/jquery-validation/dist/jquery.validate.js"></script>
 		<script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js"></script>
 		<script src="~/js/Global.js" asp-append-version="true"></script>
-	</environment>
-    <environment names="Staging,Production">
+    </environment>
+    <environment exclude="Development">
         <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-2.2.0.min.js"
                 asp-fallback-src="~/lib/jquery/dist/jquery.min.js"
                 asp-fallback-test="window.jQuery"

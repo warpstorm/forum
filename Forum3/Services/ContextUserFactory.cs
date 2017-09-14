@@ -3,7 +3,6 @@ using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Forum3.Data;
 using Forum3.Helpers;
 using Forum3.Models.DataModels;
 using Forum3.Models.ServiceModels;

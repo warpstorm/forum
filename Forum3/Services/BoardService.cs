@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
 using Forum3.Controllers;
-using Forum3.Data;
 using Forum3.Helpers;
 using Forum3.Models.ServiceModels;
 using DataModels = Forum3.Models.DataModels;
@@ -18,13 +17,13 @@ using ItemViewModels = Forum3.Models.ViewModels.Boards.Items;
 
 namespace Forum3.Services {
 	public class BoardService {
-		ApplicationDbContext DbContext { get; }
+		DataModels.ApplicationDbContext DbContext { get; }
 		SiteSettingsService SiteSettingsService { get; }
 		ContextUser ContextUser { get; }
 		IUrlHelper UrlHelper { get; }
 
 		public BoardService(
-			ApplicationDbContext dbContext,
+			DataModels.ApplicationDbContext dbContext,
 			SiteSettingsService siteSettingsService,
 			ContextUserFactory contextUserFactory,
 			IActionContextAccessor actionContextAccessor,

@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Forum3.Data;
-using Forum3.Models.DataModels;
+using DataModels = Forum3.Models.DataModels;
 
 namespace Forum3.Services {
 	public class SiteSettingsService {
-		ApplicationDbContext DbContext { get; }
+		DataModels.ApplicationDbContext DbContext { get; }
 
 		public SiteSettingsService(
-			ApplicationDbContext dbContext
+			DataModels.ApplicationDbContext dbContext
 		) {
 			DbContext = dbContext;
 		}
@@ -17,7 +16,7 @@ namespace Forum3.Services {
 		public Dictionary<string, string> Settings { get; set; } = new Dictionary<string, string>();
 
 		string GetSetting(string name, string userId = "") {
-			SiteSetting setting = null;
+			DataModels.SiteSetting setting = null;
 			var settingValue = string.Empty;
 
 			if (string.IsNullOrEmpty(userId)) {

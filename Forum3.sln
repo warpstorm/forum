@@ -13,8 +13,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CodeKicker.BBCode", "CodeKi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Forum3", "Forum3\Forum3.csproj", "{ADFFD666-C590-4CA0-99A7-80AA597E7D4E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Forum3.Netcore2", "Forum3.Netcore2\Forum3.Netcore2.csproj", "{EF7B4534-53D6-4FC4-9070-69950A42E1B1}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,10 +27,6 @@ Global
 		{ADFFD666-C590-4CA0-99A7-80AA597E7D4E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ADFFD666-C590-4CA0-99A7-80AA597E7D4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ADFFD666-C590-4CA0-99A7-80AA597E7D4E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{EF7B4534-53D6-4FC4-9070-69950A42E1B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EF7B4534-53D6-4FC4-9070-69950A42E1B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{EF7B4534-53D6-4FC4-9070-69950A42E1B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EF7B4534-53D6-4FC4-9070-69950A42E1B1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

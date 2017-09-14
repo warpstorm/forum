@@ -12,7 +12,6 @@ using Microsoft.EntityFrameworkCore;
 using CodeKicker.BBCode;
 using HtmlAgilityPack;
 using Forum3.Controllers;
-using Forum3.Data;
 using Forum3.Models.DataModels;
 using Forum3.Models.InputModels;
 using Forum3.Models.ServiceModels;
@@ -434,7 +433,7 @@ namespace Forum3.Services {
 						processedMessageInput.MentionedUsers.Add(user.Id);
 
 					// Eventually link to user profiles
-					// returnObject.ProcessedBody = Regex.Replace(returnObject.ProcessedBody, @"@" + regexMatch.Groups[1].Value, "<a href='/Account/Details/" + user.UserId + "' class='user'>" + user.DisplayName + "</span>");
+					// returnObject.ProcessedBody = Regex.Replace(returnObject.ProcessedBody, @"@" + regexMatch.Groups[1].Value, "<a href='/Profile/Details/" + user.UserId + "' class='user'>" + user.DisplayName + "</span>");
 				}
 			}
 		}

@@ -1,10 +1,10 @@
 ﻿@model IndexPage
 
 @{
-    ViewBag.Title = "Board Management";
+    ViewData["Title"] = "Board Management";
 }
 
-<h1 class="pad-left">@ViewBag.Title</h1>
+<h1 class="pad-left">@ViewData["Title"]</h1>
 
 @Html.ValidationSummary()
 
