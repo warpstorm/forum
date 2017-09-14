@@ -225,7 +225,7 @@ namespace Forum3.Services {
 
 			var routeValues = new {
 				id = parentMessageId,
-				page = GetMessagePage(messageId, messageIds),
+				pageId = GetMessagePage(messageId, messageIds),
 				target = messageId
 			};
 
