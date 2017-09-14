@@ -37,7 +37,7 @@ namespace Forum3.Annotations {
 			context.HttpContext.Session.SetString(Constants.Keys.LastPostTimestamp, currentTime.ToString());
 
 			await context.HttpContext.Session.CommitAsync();
-			await base.OnActionExecutionAsync(context, next);
+			await next();
 		}
 	}
 }
