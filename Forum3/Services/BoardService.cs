@@ -121,7 +121,7 @@ namespace Forum3.Services {
 				categoryRecord = await DbContext.Categories.SingleOrDefaultAsync(c => c.Name == input.NewCategory);
 
 				if (categoryRecord == null) {
-					var displayOrder = await DbContext.Categories.MaxAsync(c => c.DisplayOrder);
+					var displayOrder = await DbContext.Categories.DefaultIfEmpty().MaxAsync(c => c.DisplayOrder);
 
 					categoryRecord = new DataModels.Category {
 						Name = input.NewCategory,
