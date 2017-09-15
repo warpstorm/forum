@@ -182,6 +182,17 @@ namespace Forum3.Services {
 				message.ReplyForm = new ItemModels.ReplyForm {
 					Id = message.Id,
 				};
+
+				var thoughtQuery = from mt in DbContext.MessageThoughts
+								   join s in DbContext.Smileys on mt.SmileyId equals s.Id
+								   join u in DbContext.Users on mt.UserId equals u.Id
+								   where mt.MessageId == message.Id
+								   select new ItemModels.MessageThought {
+									   Path = s.Path,
+									   Thought = s.Thought.Replace("{user}", u.DisplayName)
+								   };
+
+				message.Thoughts = await thoughtQuery.ToListAsync();
 			}
 
 			return messages;

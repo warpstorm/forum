@@ -10,13 +10,16 @@ namespace Forum3.Controllers {
 	public class Topics : ForumController {
 		TopicService TopicService { get; }
 		MessageService MessageService { get; }
+		SmileyService SmileyService { get; }
 
 		public Topics(
 			TopicService topicService,
-			MessageService messageService
+			MessageService messageService,
+			SmileyService smileyService
 		) {
 			TopicService = topicService;
 			MessageService = messageService;
+			SmileyService = smileyService;
 		}
 
 		[HttpGet]
@@ -27,6 +30,8 @@ namespace Forum3.Controllers {
 
 		[HttpGet]
 		public async Task<IActionResult> Display(int id, int pageId = 1, int target = 0) {
+			ViewData["Smileys"] = await SmileyService.GetSelectorList();
+
 			var viewModel = await TopicService.DisplayPage(id, pageId, target);
 
 			if (string.IsNullOrEmpty(viewModel.RedirectPath))

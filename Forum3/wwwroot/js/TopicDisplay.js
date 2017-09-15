@@ -1,6 +1,76 @@
 ﻿$(function () {
-    $(".reply-button").on("click.show-reply-form", ShowReplyForm);
+	$(".reply-button").on("click.show-reply-form", ShowReplyForm);
+
+	$(".thought-button").on("click.show-smiley-selector", function (e) {
+		e.preventDefault();
+
+		var messageId = $(this).attr("message-id");
+
+		ShowSmileySelector(this, function (smileyImg) {
+			var smileyId = $(smileyImg).attr("smiley-id");
+
+			PostToPath("/Messages/AddThought", {
+				MessageId: messageId,
+				SmileyId: smileyId
+			});
+
+			CloseSmileySelector();
+		});
+	});
 });
+
+function ShowSmileySelector(target, imgCallback) {
+	CloseSmileySelector();
+
+	var buttonOffset = $(target).offset();
+	var buttonHeight = $(target).outerHeight();
+
+	$("#smiley-selector").show();
+
+	var screenFalloff = buttonOffset.left + $("#smiley-selector").outerWidth() + 20 - window.innerWidth;
+
+	var selectorLeftOffset = buttonOffset.left;
+
+	if (screenFalloff > 0) {
+		selectorLeftOffset -= screenFalloff;
+	}
+
+	var selectorTopOffset = buttonOffset.top + buttonHeight;
+
+	$("#smiley-selector").offset({
+		top: selectorTopOffset,
+		left: selectorLeftOffset
+	});
+
+	$("#smiley-selector").on("click.smiley-selector-prevent-bubble", function (bubbleEvent) {
+		bubbleEvent.stopPropagation();
+	});
+
+	setTimeout(function () {
+		$("#smiley-selector img").on("click.smiley-image", function () {
+			imgCallback(this);
+		});
+
+		$("body").on("click.close-smiley-selector", function () {
+			CloseSmileySelector();
+		});
+	}, 50);
+}
+
+function CloseSmileySelector() {
+	$("#smiley-selector").offset({
+		top: 0,
+		left: 0
+	});
+
+	$("#smiley-selector").hide();
+
+	setTimeout(function () {
+		$("body").off("click.close-smiley-selector");
+		$("#smiley-selector img").off("click.smiley-image");
+		$("#smiley-selector").off("click.smiley-selector-prevent-bubble");
+	}, 50);
+}
 
 function ShowReplyForm() {
     $(".reply-form").not(".hidden").addClass("hidden");

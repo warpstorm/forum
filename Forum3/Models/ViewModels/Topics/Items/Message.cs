@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Forum3.Interfaces.Models.ViewModels;
 
 namespace Forum3.Models.ViewModels.Topics.Items {
@@ -24,5 +25,6 @@ namespace Forum3.Models.ViewModels.Topics.Items {
 		public DateTime TimePostedDT { get; set; }
 		public DateTime TimeEditedDT { get; set; }
 		public IMessageViewModel ReplyForm { get; set; }
+		public List<MessageThought> Thoughts { get; set; }
 	}
 }

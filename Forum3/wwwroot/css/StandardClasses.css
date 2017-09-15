@@ -133,6 +133,10 @@ a.borderless * {
 	overflow: hidden;
 }
 
+.overflow-auto {
+	overflow: auto;
+}
+
 .pointer {
 	cursor: pointer;
 }

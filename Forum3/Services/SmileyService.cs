@@ -26,6 +26,42 @@ namespace Forum3.Services {
 			CloudBlobClient = cloudBlobClient;
 		}
 
+		public async Task<List<List<ViewModels.IndexSmiley>>> GetSelectorList() {
+			var smileysQuery = from smiley in DbContext.Smileys
+							   orderby smiley.SortOrder
+							   select smiley;
+
+			var smileys = await smileysQuery.ToListAsync();
+
+			var results = new List<List<ViewModels.IndexSmiley>>();
+
+			var currentColumn = -1;
+
+			List<ViewModels.IndexSmiley> currentColumnList = null;
+
+			foreach (var smiley in smileys) {
+				var sortColumn = smiley.SortOrder / 1000;
+				var sortRow = smiley.SortOrder % 1000;
+
+				if (currentColumn != sortColumn) {
+					currentColumn = sortColumn;
+					currentColumnList = new List<ViewModels.IndexSmiley>();
+					results.Add(currentColumnList);
+				}
+
+				currentColumnList.Add(new ViewModels.IndexSmiley {
+					Id = smiley.Id,
+					Code = smiley.Code,
+					Path = smiley.Path,
+					Thought = smiley.Thought,
+					Column = sortColumn,
+					Row = sortRow
+				});
+			}
+
+			return results;
+		}
+
 		public async Task<ViewModels.IndexPage> IndexPage() {
 			var smileysQuery = from smiley in DbContext.Smileys
 							   orderby smiley.SortOrder

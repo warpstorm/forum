@@ -17,10 +17,18 @@
 });
 
 function PostToPath(path, parameters) {
+	var antiForgeryTokenValue = $("input[name=__RequestVerificationToken]").val();
+
 	var form = $('<form></form>');
 
 	form.attr("method", "post");
 	form.attr("action", path);
+
+	var antiForgeryToken = $("<input />");
+	antiForgeryToken.attr("type", "hidden");
+	antiForgeryToken.attr("name", "__RequestVerificationToken");
+	antiForgeryToken.attr("value", antiForgeryTokenValue);
+	form.append(antiForgeryToken);
 
 	$.each(parameters, function (key, value) {
 		var field = $('<input></input>');

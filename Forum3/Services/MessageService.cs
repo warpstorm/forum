@@ -160,11 +160,16 @@ namespace Forum3.Services {
 			return serviceResponse;
 		}
 
-		public async Task DeleteMessage(int messageId) {
+		public async Task<ServiceResponse> DeleteMessage(int messageId) {
+			var serviceResponse = new ServiceResponse();
+
 			var record = await DbContext.Messages.SingleAsync(m => m.Id == messageId);
 
 			if (record == null)
-				throw new Exception($"A record does not exist with ID '{messageId}'");
+				serviceResponse.ModelErrors.Add(null, $@"No record was found with the id '{messageId}'");
+
+			if (serviceResponse.ModelErrors.Any())
+				return serviceResponse;
 
 			if (record.ParentId != 0) {
 				var directReplies = await DbContext.Messages.Where(m => m.ReplyId == messageId).ToListAsync();
@@ -183,17 +188,70 @@ namespace Forum3.Services {
 
 			var topicReplies = await DbContext.Messages.Where(m => m.ParentId == messageId).ToListAsync();
 
-			foreach (var reply in topicReplies)
+			foreach (var reply in topicReplies) {
+				var replyThoughts = await DbContext.MessageThoughts.Where(mt => mt.MessageId == reply.Id).ToListAsync();
+
+				foreach (var replyThought in replyThoughts)
+					DbContext.MessageThoughts.Remove(replyThought);
+
 				DbContext.Messages.Remove(reply);
+			}
 
 			var messageBoards = await DbContext.MessageBoards.Where(m => m.MessageId == record.Id).ToListAsync();
 
 			foreach (var messageBoard in messageBoards)
 				DbContext.MessageBoards.Remove(messageBoard);
 
+			var messageThoughts = await DbContext.MessageThoughts.Where(mt => mt.MessageId == record.Id).ToListAsync();
+
+			foreach (var messageThought in messageThoughts)
+				DbContext.MessageThoughts.Remove(messageThought);
+
 			DbContext.Messages.Remove(record);
 
 			await DbContext.SaveChangesAsync();
+
+			serviceResponse.Message = $"The smiley was deleted.";
+			return serviceResponse;
+		}
+
+		public async Task<ServiceResponse> AddThought(ThoughtInput input) {
+			var serviceResponse = new ServiceResponse();
+
+			var messageRecord = await DbContext.Messages.FindAsync(input.MessageId);
+
+			if (messageRecord == null)
+				serviceResponse.ModelErrors.Add(null, $@"No message was found with the id '{input.MessageId}'");
+
+			var smileyRecord = await DbContext.Smileys.FindAsync(input.SmileyId);
+
+			if (messageRecord == null)
+				serviceResponse.ModelErrors.Add(null, $@"No smiley was found with the id '{input.SmileyId}'");
+
+			if (serviceResponse.ModelErrors.Any())
+				return serviceResponse;
+
+			var existingRecord = await DbContext.MessageThoughts
+				.SingleOrDefaultAsync(mt => 
+					mt.MessageId == messageRecord.Id
+					&& mt.SmileyId == smileyRecord.Id
+					&& mt.UserId == ContextUser.ApplicationUser.Id);
+
+			if (existingRecord == null) {
+				var messageThought = new MessageThought {
+					MessageId = messageRecord.Id,
+					SmileyId = smileyRecord.Id,
+					UserId = ContextUser.ApplicationUser.Id
+				};
+
+				await DbContext.MessageThoughts.AddAsync(messageThought);
+			}
+			else
+				DbContext.MessageThoughts.Remove(existingRecord);
+
+			await DbContext.SaveChangesAsync();
+
+			return serviceResponse;
 		}
 
 		async Task<ProcessedMessageInput> ProcessMessageInput(ServiceResponse serviceResponse, string messageBody) {

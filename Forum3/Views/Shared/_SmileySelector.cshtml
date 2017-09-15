@@ -1,0 +1,13 @@
+﻿@model List<List<Forum3.Models.ViewModels.Smileys.IndexSmiley>>
+
+<div id="smiley-selector">
+	<div class="content-box overflow-auto">
+		@foreach (var smileyColumn in Model) {
+			<ul>
+				@foreach (var smiley in smileyColumn) {
+					<li><img src="@smiley.Path" smiley-id="@smiley.Id" code="@smiley.Code" alt="@smiley.Thought" title="@smiley.Thought" /></li>
+				}
+			</ul>
+		}
+	</div>
+</div>

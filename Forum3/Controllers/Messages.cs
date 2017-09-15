@@ -79,5 +79,13 @@ namespace Forum3.Controllers {
 			await MessageService.DeleteMessage(id);
 			return RedirectToAction(nameof(Topics.Index), nameof(Topics));
 		}
+
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		[PreventRapidRequests]
+		public async Task<IActionResult> AddThought(ThoughtInput input) {
+			await MessageService.AddThought(input);
+			return RedirectToAction(nameof(Topics.Display), nameof(Topics), new { id = input.MessageId });
+		}
 	}
 }

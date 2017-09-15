@@ -7,7 +7,7 @@
 
 		<aside class="float-right">
 			@if (Model.CanThought) {
-				<span class="thought-button pad-right pointer note">
+				<span class="thought-button pad-right pointer note" message-id="@Model.Id">
 					<img class="align-middle" src="~/images/thoughts.png" />
 					Thought
 				</span>
@@ -65,7 +65,13 @@
 		</div>
 	</section>
 
-	<section class="message-thoughts"><!-- TODO --></section>
+	<section class="message-thoughts">
+		<ol>
+			@foreach (var messageThought in Model.Thoughts) {
+				<li><img src="@messageThought.Path" /> @messageThought.Thought</li>
+			}
+		</ol>
+	</section>
 
 	<section class="message-cards">@Html.Raw(Model.Cards)</section>
 </article>
