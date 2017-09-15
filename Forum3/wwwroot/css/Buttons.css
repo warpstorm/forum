@@ -1,6 +1,6 @@
-﻿button [class^="icon-"], button [class*=" icon-"],
-.button [class^="icon-"], .button [class*=" icon-"],
-.small-button [class^="icon-"], .small-button [class*=" icon-"] {
+﻿button img, button img,
+.button img, .button img,
+.small-button img, .small-button img {
 	padding-right: 3px;
 }
 

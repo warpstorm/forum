@@ -10,7 +10,6 @@
 		<link rel="stylesheet" href="~/css/GlobalElements.css" asp-append-version="true" />
 		<link rel="stylesheet" href="~/css/GlobalHelpers.css" asp-append-version="true" />
 		<link rel="stylesheet" href="~/css/Layout.css" asp-append-version="true" />
-		<link rel="stylesheet" href="~/css/Glyphs.css" asp-append-version="true" />
 		<link rel="stylesheet" href="~/css/Forms.css" asp-append-version="true" />
 		<link rel="stylesheet" href="~/css/Buttons.css" asp-append-version="true" />
 		<link rel="stylesheet" href="~/css/StandardClasses.css" asp-append-version="true" />
@@ -18,54 +17,62 @@
     <environment exclude="Development">
 		<link rel="stylesheet" href="~/css/min/Global.min.css" asp-append-version="true" />
     </environment>
+
+	<!-- PLEASE CHANGE THIS ID IF YOU DEPLOY THIS CODE TO OTHER SITES. THIS IS WARPSTORM.COM SPECIFIC. -->
+	<!-- Global Site Tag (gtag.js) - Google Analytics -->
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-349282-1"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag() { dataLayer.push(arguments) };
+		gtag('js', new Date());
+
+		gtag('config', 'UA-349282-1');
+	</script>
 </head>
 <body>
 	@await Html.PartialAsync("_Header")
 
 	<nav class="actions float-right pad-right">
 		<ul>
-			@RenderSection("PageActions", required: false)
+			@await RenderSectionAsync("PageActions", required: false)
 		</ul>
 	</nav>
 
 	<nav class="breadcrumbs">
-		@RenderSection("Breadcrumbs", required: false)
+		@await RenderSectionAsync("Breadcrumbs", required: false)
 	</nav>
 
 	<div role="main" class="margin-center">
 		<main class="align-center">
 			<header>
-				@RenderSection("Header", required: false)
+				@await RenderSectionAsync("Header", required: false)
 			</header>
 			<div class="align-left">
 				@RenderBody()
 			</div>
 			<footer>
-				@RenderSection("Footer", required: false)
+				@await RenderSectionAsync("Footer", required: false)
 			</footer>
 		</main>
 	</div>
 
-	<footer id="page-footer" class="align-center">
-		<p><a href="https://github.com/jyarbro/forum">Theme 12 | Code 3.0.0</a></p>
-		<p>Bringing disorder to chaos for 17 years.</p>
-	</footer>
+	@await Html.PartialAsync("_Footer")
 
-	@RenderSection("Styles", required: false)
+	@await RenderSectionAsync("Styles", required: false)
 
-    <environment include="Development">
-        <script src="~/lib/jquery/dist/jquery.js"></script>
+	<environment include="Development">
+		<script src="~/lib/jquery/dist/jquery.js"></script>
 		<script src="~/lib/jquery-validation/dist/jquery.validate.js"></script>
 		<script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js"></script>
 		<script src="~/js/Global.js" asp-append-version="true"></script>
-    </environment>
-    <environment exclude="Development">
-        <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-2.2.0.min.js"
-                asp-fallback-src="~/lib/jquery/dist/jquery.min.js"
-                asp-fallback-test="window.jQuery"
-                crossorigin="anonymous"
-                integrity="sha384-K+ctZQ+LL8q6tP7I94W+qzQsfRV2a+AfHIi9k8z8l9ggpc8X+Ytst4yBo/hH+8Fk">
-        </script>
+	</environment>
+	<environment exclude="Development">
+		<script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-2.2.0.min.js"
+				asp-fallback-src="~/lib/jquery/dist/jquery.min.js"
+				asp-fallback-test="window.jQuery"
+				crossorigin="anonymous"
+				integrity="sha384-K+ctZQ+LL8q6tP7I94W+qzQsfRV2a+AfHIi9k8z8l9ggpc8X+Ytst4yBo/hH+8Fk">
+		</script>
 		<script src="https://ajax.aspnetcdn.com/ajax/jquery.validate/1.15.0/jquery.validate.min.js"
 				asp-fallback-src="~/lib/jquery-validation/dist/jquery.validate.min.js"
 				asp-fallback-test="window.jQuery && window.jQuery.validator"></script>
@@ -73,8 +80,8 @@
 				asp-fallback-src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"
 				asp-fallback-test="window.jQuery && window.jQuery.validator && window.jQuery.validator.unobtrusive"></script>
 		<script src="~/js/Global.min.js" asp-append-version="true"></script>
-    </environment>
+	</environment>
 
-    @RenderSection("Scripts", required: false)
+	@await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

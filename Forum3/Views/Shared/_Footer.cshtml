@@ -1,0 +1,8 @@
+﻿<footer id="page-footer" class="align-center">
+	<p><a href="https://github.com/jyarbro/forum">Theme 12 | Code 3.0.0</a></p>
+	<p>Bringing disorder to chaos for 17 years.</p>
+</footer>
+
+@if (ViewData["Smileys"] != null) {
+	@await Html.PartialAsync("_SmileySelector", ViewData["Smileys"]);
+}

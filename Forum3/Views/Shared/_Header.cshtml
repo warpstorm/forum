@@ -45,36 +45,34 @@
 
 				<li>
 					<a href="javascript:document.getElementById('logoutForm').submit()" class="small-button" onclick="return confirm('Are you sure you want to logout?');">
-						<span class="icon-exit"></span> Log off
+						Log off
 					</a>
 				</li>}
 			else {
 			<li>
 				<a class="small-button" asp-action="@nameof(Authentication.Register)" asp-controller="@nameof(Authentication)">
-					<span class="icon-sun"></span> Register
+					Register
 				</a>
 			</li>
 			<li>
 				<a class="small-button" asp-action="@nameof(Authentication.Login)" asp-controller="@nameof(Authentication)">
-					<span class="icon-enter"></span> Log in
+					Log in
 				</a>
 			</li>}
 		</ul>
 
 		<div id="login" class="float-left">
 			@if (contextUser.IsAuthenticated) {
-		<span><a asp-controller="Profile" asp-action="Manage">Welcome back, @contextUser.ApplicationUser.DisplayName</a></span>
-
-			<a href="@Url.Action("Index", "Notification")" class="@ViewBag.NotificationButtonClasses">
-				<span class="icon-flag"></span> @ViewBag.NotificationCount
-			</a>}
+				<span><a asp-controller="Profile" asp-action="Manage">Welcome back, @contextUser.ApplicationUser.DisplayName</a></span>
+			}
 			else {
-			<span>
-				Welcome Guest! Please
-				<a asp-action="@nameof(Authentication.Register)" asp-controller="@nameof(Authentication)">register</a>
-				or
-				<a asp-action="@nameof(Authentication.Login)" asp-controller="@nameof(Authentication)">log in</a>.
-			</span>}
+				<span>
+					Welcome Guest! Please
+					<a asp-action="@nameof(Authentication.Register)" asp-controller="@nameof(Authentication)">register</a>
+					or
+					<a asp-action="@nameof(Authentication.Login)" asp-controller="@nameof(Authentication)">log in</a>.
+				</span>
+			}
 		</div>
 
 		<br class="clear" />
