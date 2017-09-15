@@ -2,7 +2,12 @@
 
 <div class="content-box gap pad hover-highlight">
 	<div class="pin float-right">
-		<span class="icon-pushpin"></span>
+		@if (Model.Pinned) {
+			<a asp-action="@nameof(Messages.Pin)" asp-controller="@nameof(Messages)" asp-route-id="@Model.Id"><img src="~/images/pinned.png" /></a>
+		}
+		else {
+			<a asp-action="@nameof(Messages.Pin)" asp-controller="@nameof(Messages)" asp-route-id="@Model.Id"><img src="~/images/unpinned.png" /></a>
+		}
 	</div>
 	<div class="details pointer" clickable-link-parent>
 		<p>

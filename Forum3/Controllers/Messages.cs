@@ -77,7 +77,15 @@ namespace Forum3.Controllers {
 		[HttpGet]
 		public async Task<IActionResult> Delete(int id) {
 			await MessageService.DeleteMessage(id);
+
+			// TODO - Redirect to topic if we didn't delete the whole thing.
 			return RedirectToAction(nameof(Topics.Index), nameof(Topics));
+		}
+
+		[HttpGet]
+		public async Task<IActionResult> Pin(int id) {
+			await MessageService.PinMessage(id);
+			return RedirectToReferrer();
 		}
 
 		[HttpPost]

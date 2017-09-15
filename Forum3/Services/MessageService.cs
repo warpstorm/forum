@@ -215,6 +215,36 @@ namespace Forum3.Services {
 			return serviceResponse;
 		}
 
+		public async Task<ServiceResponse> PinMessage(int messageId) {
+			var serviceResponse = new ServiceResponse();
+
+			var record = await DbContext.Messages.FindAsync(messageId);
+
+			if (record == null)
+				serviceResponse.ModelErrors.Add(null, $@"No record was found with the id '{messageId}'");
+
+			if (record.ParentId > 0)
+				messageId = record.ParentId;
+
+			var existingRecord = await DbContext.Pins.FirstOrDefaultAsync(p => p.MessageId == messageId && p.UserId == ContextUser.ApplicationUser.Id);
+
+			if (existingRecord == null) {
+				var pinRecord = new Pin {
+					MessageId = messageId,
+					Time = DateTime.Now,
+					UserId = ContextUser.ApplicationUser.Id
+				};
+
+				await DbContext.Pins.AddAsync(pinRecord);
+			}
+			else
+				DbContext.Pins.Remove(existingRecord);
+
+			await DbContext.SaveChangesAsync();
+
+			return serviceResponse;
+		}
+
 		public async Task<ServiceResponse> AddThought(ThoughtInput input) {
 			var serviceResponse = new ServiceResponse();
 
@@ -253,7 +283,7 @@ namespace Forum3.Services {
 
 			return serviceResponse;
 		}
-
+		
 		async Task<ProcessedMessageInput> ProcessMessageInput(ServiceResponse serviceResponse, string messageBody) {
 			var processedMessage = PreProcessMessageInput(messageBody);
 
