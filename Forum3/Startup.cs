@@ -2,19 +2,13 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.WindowsAzure.Storage;
 using Forum3.Annotations;
-using Forum3.Helpers;
-using Forum3.Interfaces.Users;
-using Forum3.Models.DataModels;
-using Forum3.Models.ServiceModels;
-using Forum3.Services;
 using Forum3.Controllers;
+using Forum3.Helpers;
+using Forum3.Models.DataModels;
 
 namespace Forum3 {
 	public class Startup {
@@ -54,22 +48,7 @@ namespace Forum3 {
 				options.Filters.Add(new RequireRemoteHttpsAttribute());
 			});
 
-			services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
-			services.AddSingleton<IUrlHelperFactory, UrlHelperFactory>();
-
-			services.Configure<EmailSenderOptions>(Configuration);
-			services.AddTransient<IEmailSender, EmailSender>();
-
-			services.AddScoped((serviceProvider) => {
-				var storageConnectionString = Configuration["StorageConnection"];
-
-				if (string.IsNullOrEmpty(storageConnectionString))
-					storageConnectionString = Configuration.GetConnectionString("StorageConnection");
-
-				return CloudStorageAccount.Parse(storageConnectionString);
-			});
-
-			services.AddForum();
+			services.AddForum(Configuration);
 
 			services.AddDistributedMemoryCache();
 			services.AddSession();
