@@ -117,24 +117,24 @@ namespace Forum3.Services {
 			if (replyRecord == null)
 				serviceResponse.ModelErrors.Add(string.Empty, $"A record does not exist with ID '{input.Id}'");
 
-			if (!serviceResponse.ModelErrors.Any()) {
-				var record = await CreateMessageRecord(processedMessage, replyRecord);
+			if (serviceResponse.ModelErrors.Any())
+				return serviceResponse;
 
-				var boardRecord = await (from message in DbContext.Messages
-								   join messageBoard in DbContext.MessageBoards on message.Id equals messageBoard.MessageId
-								   join board in DbContext.Boards on messageBoard.BoardId equals board.Id
-								   where message.Id == record.ParentId
-								   select board).SingleOrDefaultAsync();
+			var record = await CreateMessageRecord(processedMessage, replyRecord);
 
-				if (boardRecord != null) {
-					boardRecord.LastMessageId = record.Id;
-					DbContext.Entry(boardRecord).State = EntityState.Modified;
-					await DbContext.SaveChangesAsync();
-				}
+			var boardRecord = await (from message in DbContext.Messages
+								join messageBoard in DbContext.MessageBoards on message.Id equals messageBoard.MessageId
+								join board in DbContext.Boards on messageBoard.BoardId equals board.Id
+								where message.Id == record.ParentId
+								select board).FirstOrDefaultAsync();
 
-				serviceResponse.RedirectPath = UrlHelper.Action(nameof(Topics.Display), nameof(Topics), new { id = record.Id });
+			if (boardRecord != null) {
+				boardRecord.LastMessageId = record.Id;
+				DbContext.Entry(boardRecord).State = EntityState.Modified;
+				await DbContext.SaveChangesAsync();
 			}
 
+			serviceResponse.RedirectPath = UrlHelper.Action(nameof(Topics.Display), nameof(Topics), new { id = record.Id });
 			return serviceResponse;
 		}
 
