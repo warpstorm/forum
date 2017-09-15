@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -13,17 +14,21 @@ namespace Forum3.Controllers {
 	public class ForumController : Controller {
 		public IActionResult Error() => View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
 
+		string Referrer => GetReferrer();
+
 		public override ViewResult View(object model) => View(null, model);
 		public override ViewResult View(string viewName, object model = null) {
 			UniversalViewActions();
 			return base.View(viewName, model);
 		}
 
+		protected IActionResult RedirectToReferrer() => Redirect(Referrer);
+
 		protected IActionResult RedirectToLocal(string returnUrl) {
 			if (Url.IsLocalUrl(returnUrl))
 				return Redirect(returnUrl);
 			else
-				return RedirectToAction("Index", "Boards");
+				return RedirectToAction(nameof(Boards.Index), nameof(Boards));
 		}
 
 		protected void ProcessServiceResponse(ServiceResponse serviceResponse) {
@@ -55,6 +60,19 @@ namespace Forum3.Controllers {
 			//						+ WebConfigurationManager.AppSettings.Get("Forum:VersionFix");
 
 			ViewData["LogoPath"] = "/images/logos/" + GetLogoPath();
+			ViewData["Referrer"] = Referrer;
+		}
+
+		string GetReferrer() {
+			var referrer = Request.Query["returnurl"].ToString();
+
+			if (string.IsNullOrEmpty(referrer))
+				referrer = Request.Headers["Referer"].ToString();
+
+			if (string.IsNullOrEmpty(referrer) || !Regex.IsMatch(referrer, @"^(https?\:\/\/)(.*?)\/(.*)$", RegexOptions.IgnoreCase))
+				return "/";
+
+			return referrer;
 		}
 
 		string GetLogoPath() {
