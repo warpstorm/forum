@@ -13,5 +13,7 @@ namespace Forum3.Models.DataModels {
 
 		[Required]
 		public string Path { get; set; }
+
+		public string Thought { get; set; }
 	}
 }

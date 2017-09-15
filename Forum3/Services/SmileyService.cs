@@ -43,6 +43,7 @@ namespace Forum3.Services {
 					Id = smiley.Id,
 					Code = smiley.Code,
 					Path = smiley.Path,
+					Thought = smiley.Thought,
 					Column = sortColumn,
 					Row = sortRow
 				});
@@ -54,8 +55,10 @@ namespace Forum3.Services {
 		public ViewModels.CreatePage CreatePage(InputModels.CreateSmileyInput input = null) {
 			var viewModel = new ViewModels.CreatePage();
 
-			if (input != null)
+			if (input != null) {
 				viewModel.Code = input.Code;
+				viewModel.Thought = input.Thought;
+			}
 
 			return viewModel;
 		}
@@ -80,6 +83,7 @@ namespace Forum3.Services {
 
 			var smileyRecord = new DataModels.Smiley {
 				Code = input.Code,
+				Thought = input.Thought,
 				FileName = input.File.FileName
 			};
 
@@ -123,6 +127,11 @@ namespace Forum3.Services {
 
 				if (smileyRecord.Code != smileyInput.Code) {
 					smileyRecord.Code = smileyInput.Code;
+					DbContext.Entry(smileyRecord).State = EntityState.Modified;
+				}
+
+				if (smileyRecord.Thought != smileyInput.Thought) {
+					smileyRecord.Thought = smileyInput.Thought;
 					DbContext.Entry(smileyRecord).State = EntityState.Modified;
 				}
 			}

@@ -9,5 +9,8 @@ namespace Forum3.Models.InputModels {
 		[MinLength(2)]
 		[MaxLength(10)]
 		public string Code { get; set; }
+
+		[MaxLength(200)]
+		public string Thought { get; set; }
 	}
 }

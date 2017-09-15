@@ -10,9 +10,10 @@
 					<li>
 						<input hidden="hidden" asp-for="@Model.Smileys[i].Id" />
 						<a asp-action="@nameof(Smileys.Delete)" asp-route-id="@Model.Smileys[i].Id" class="borderless spaced"><img alt="Delete" src="~/images/deleteSmall.png" /></a>
+						<img src="@Model.Smileys[i].Path" />
 						<span asp-validation-for="@Model.Smileys[i].Code" class="error"></span>
 						<input asp-for="@Model.Smileys[i].Code" />
-						<img src="@Model.Smileys[i].Path" />
+						<input asp-for="@Model.Smileys[i].Thought" />
 					</li>
 				}
 			}
@@ -32,12 +33,3 @@
 		<a class="button" asp-action="Create" asp-controller="Smileys">Create a new Smiley</a>
 	</p>
 }
-
-@*@section styles {
-	<environment names="Development">
-		<link rel="stylesheet" href="~/css/Pages/SmileyIndex.css" asp-append-version="true" />
-	</environment>
-	<environment names="Staging,Production">
-		<link rel="stylesheet" href="~/css/min/SmileyIndex.min.css" asp-append-version="true" />
-	</environment>
-}*@

@@ -14,6 +14,12 @@
 		</dl>
 
 		<dl>
+			<dt>Thought</dt>
+			<dd><input asp-for="@Model.Thought" /></dd>
+			<dd><span asp-validation-for="@Model.Thought" class="error"></span></dd>
+		</dl>
+
+		<dl>
 			<dt>File</dt>
 			<dd><input asp-for="@Model.File" /></dd>
 			<dd><span asp-validation-for="@Model.File" class="error"></span></dd>
