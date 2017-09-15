@@ -18,8 +18,6 @@ namespace Forum3.Annotations {
 			return file.Length <= MaxFileSize;
 		}
 
-		public override string FormatErrorMessage(string name) {
-			return base.FormatErrorMessage((MaxFileSize / 1024).ToString());
-		}
+		public override string FormatErrorMessage(string name) => base.FormatErrorMessage((MaxFileSize / 1024).ToString());
 	}
 }
