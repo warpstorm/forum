@@ -60,6 +60,22 @@ a.borderless * {
 	margin: 0 auto;
 }
 
+.align-top {
+	vertical-align: top;
+}
+
+.align-middle {
+	vertical-align: middle;
+}
+
+.align-sub {
+	vertical-align: sub;
+}
+
+.align-bottom {
+	vertical-align: bottom;
+}
+
 .align-left {
 	text-align: left;
 }
