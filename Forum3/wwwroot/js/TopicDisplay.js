@@ -17,7 +17,25 @@
 			CloseSmileySelector();
 		});
 	});
+
+	$("blockquote.reply").on("click.show-full-reply", ShowFullReply);
 });
+
+function ShowFullReply() {
+	$(this).off("click.show-full-reply");
+	$(this).on("click.close-full-reply", CloseFullReply);
+
+	$(this).find(".reply-preview").addClass("hidden");
+	$(this).find(".reply-body").removeClass("hidden");
+}
+
+function CloseFullReply() {
+	$(this).find(".reply-body").addClass("hidden");
+	$(this).find(".reply-preview").removeClass("hidden");
+
+	$(this).off("click.show-full-reply");
+	$(this).on("click.show-full-reply", ShowFullReply);
+}
 
 function ShowSmileySelector(target, imgCallback) {
 	CloseSmileySelector();

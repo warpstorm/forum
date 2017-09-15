@@ -362,7 +362,7 @@ namespace Forum3.Services {
 
 			const string youtubePattern = @"(?:https?:\/\/)?(?:www\.)?(?:(?:(?:youtube.com\/watch\?[^?]*v=|youtu.be\/)([\w\-]+))(?:[^\s?]+)?)";
 			const string youtubeIframePartial = "<iframe type='text/html' title='YouTube video player' class='youtubePlayer' src='http://www.youtube.com/embed/{0}' frameborder='0' allowfullscreen='1'></iframe>";
-			const string gifvPartial = "<video autoplay loop><source src='{0}.webm' type='video/webm' /></video>";
+			const string gifvPartial = "<video autoplay loop><source src='{0}.webm' type='video/webm' /><source src='{0}.mp4' type='video/mp4' /></video>";
 
 			var regexYoutube = new Regex(youtubePattern);
 			var regexGifv = new Regex("(^| )((https?\\://){1}\\S+)\\.gifv", RegexOptions.Compiled | RegexOptions.Multiline);
@@ -376,7 +376,7 @@ namespace Forum3.Services {
 				return new RemoteUrlReplacement {
 					Regex = regexYoutube,
 					ReplacementText = "<a target='_blank' href='" + remoteUrl + "'>" + remotePageDetails.Title + "</a>",
-					Card = " <br /><br />" + youtubeIframeClosed
+					Card = $@"<div class=""embedded-video"">{youtubeIframeClosed}</div>"
 				};
 			}
 			// or is it a gifv link
@@ -387,7 +387,7 @@ namespace Forum3.Services {
 				return new RemoteUrlReplacement {
 					Regex = regexGifv,
 					ReplacementText = " <a target='_blank' href='" + remoteUrl + "'>" + remotePageDetails.Title + "</a>",
-					Card = " <br /><br />" + gifvEmbedded
+					Card = $@"<div class=""embedded-video"">{gifvEmbedded}</div>"
 				};
 			}
 

@@ -16,6 +16,7 @@ namespace Forum3.Models.ViewModels.Topics.Items {
 		public int ReplyId { get; set; }
 		public string PostedById { get; set; }
 		public string PostedByName { get; set; }
+		public string PostedByAvatarPath { get; set; }
 		public string ReplyBody { get; set; }
 		public string ReplyPostedBy { get; set; }
 		public string ReplyPreview { get; set; }
