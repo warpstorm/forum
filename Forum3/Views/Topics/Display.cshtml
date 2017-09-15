@@ -8,7 +8,7 @@
 				<li class="small-button highlight">@i</li>
 			}
 			else {
-				<li><a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Display)" asp-route-id="@Model.Id" asp-route-page="@i" class="small-button">@i.ToString()</a></li>
+				<li><a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Display)" asp-route-id="@Model.Id" asp-route-pageId="@i" class="small-button">@i.ToString()</a></li>
 			}
 		}
 	</ul>
@@ -32,7 +32,7 @@
 				<li class="small-button highlight">@i</li>
 			}
 			else {
-				<li><a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Display)" asp-route-id="@Model.Id" asp-route-page="@i" class="small-button">@i.ToString()</a></li>
+				<li><a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Display)" asp-route-id="@Model.Id" asp-route-pageId="@i" class="small-button">@i.ToString()</a></li>
 			}
 		}
 	</ul>

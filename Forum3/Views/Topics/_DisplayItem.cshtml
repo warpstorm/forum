@@ -21,7 +21,7 @@
 			}
 
 			@if (Model.CanEdit) {
-				<a class="pad-right note" asp-action="@nameof(Messages.Edit)" asp-route-id="@Model.Id">
+				<a class="pad-right note" asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.Edit)" asp-route-id="@Model.Id">
 					<img class="align-middle" src="~/images/edit.png" />
 					Edit
 				</a>
@@ -29,13 +29,13 @@
 
 			@if (Model.CanDelete) {
 				@if (Model.ParentId == 0) {
-					<a class="pad-right note" asp-action="@nameof(Messages.Delete)" asp-route-id="@Model.Id" onclick="return confirm('Are you sure you want to remove this ENTIRE topic?');">
+					<a class="pad-right note" asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.Delete)" asp-route-id="@Model.Id" onclick="return confirm('Are you sure you want to remove this ENTIRE topic?');">
 						<img class="align-middle" src="~/images/delete.png" />
 						Delete
 					</a>
 				}
 				else {
-					<a class="pad-right note" asp-action="@nameof(Messages.Delete)" asp-route-id="@Model.Id" onclick="return confirm('Are you sure you want to remove this reply?');">
+					<a class="pad-right note" asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.Delete)" asp-route-id="@Model.Id" onclick="return confirm('Are you sure you want to remove this reply?');">
 						<img class="align-middle" src="~/images/delete.png" />
 						Delete
 					</a>

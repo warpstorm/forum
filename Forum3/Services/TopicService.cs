@@ -93,7 +93,7 @@ namespace Forum3.Services {
 				var targetPage = GetMessagePage(target, messageIds);
 
 				if (targetPage != page)
-					return GetRedirectViewModel(messageId, record.ParentId, messageIds);
+					return GetRedirectViewModel(target, messageId, messageIds);
 			}
 
 			if (page < 1)
@@ -223,6 +223,9 @@ namespace Forum3.Services {
 		PageModels.TopicDisplayPage GetRedirectViewModel(int messageId, int parentMessageId, List<int> messageIds) {
 			var viewModel = new PageModels.TopicDisplayPage();
 
+			if (parentMessageId == 0)
+				parentMessageId = messageId;
+
 			var routeValues = new {
 				id = parentMessageId,
 				pageId = GetMessagePage(messageId, messageIds),
@@ -236,6 +239,8 @@ namespace Forum3.Services {
 
 		int GetMessagePage(int messageId, List<int> messageIds) {
 			var index = (double) messageIds.FindIndex(id => id == messageId);
+			index++;
+
 			return Convert.ToInt32(Math.Ceiling(index / Constants.Defaults.MessagesPerPage));
 		}
 	}
