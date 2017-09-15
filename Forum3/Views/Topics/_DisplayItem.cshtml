@@ -6,37 +6,37 @@
 		<!-- TODO - if unread target = this, then <span id="latest"></span> -->
 
 		<aside class="float-right">
+			@if (Model.CanThought) {
+				<span class="thought-button pad-right pointer note">
+					<img class="align-middle" src="~/images/thoughts.png" />
+					Thought
+				</span>
+			}
+
 			@if (Model.CanReply) {
-				<span class="small-button reply-button">
+				<span class="reply-button pad-right pointer note">
+					<img class="align-middle" src="~/images/reply.png" />
 					Reply
 				</span>
 			}
 
 			@if (Model.CanEdit) {
-				<a class="small-button"
-				   asp-controller="@nameof(Messages)"
-				   asp-action="@nameof(Messages.Edit)"
-				   asp-route-id="@Model.Id">
+				<a class="pad-right note" asp-action="@nameof(Messages.Edit)" asp-route-id="@Model.Id">
+					<img class="align-middle" src="~/images/edit.png" />
 					Edit
 				</a>
 			}
 
 			@if (Model.CanDelete) {
 				@if (Model.ParentId == 0) {
-					<a class="small-button"
-					   asp-controller="@nameof(Messages)"
-					   asp-action="@nameof(Messages.Delete)"
-					   asp-route-id="@Model.Id"
-					   onclick="return confirm('Are you sure you want to remove this ENTIRE topic?');">
+					<a class="pad-right note" asp-action="@nameof(Messages.Delete)" asp-route-id="@Model.Id" onclick="return confirm('Are you sure you want to remove this ENTIRE topic?');">
+						<img class="align-middle" src="~/images/delete.png" />
 						Delete
 					</a>
 				}
 				else {
-					<a class="small-button"
-					   asp-controller="@nameof(Messages)"
-					   asp-action="@nameof(Messages.Delete)"
-					   asp-route-id="@Model.Id"
-					   onclick="return confirm('Are you sure you want to remove this reply?');">
+					<a class="pad-right note" asp-action="@nameof(Messages.Delete)" asp-route-id="@Model.Id" onclick="return confirm('Are you sure you want to remove this reply?');">
+						<img class="align-middle" src="~/images/delete.png" />
 						Delete
 					</a>
 				}
