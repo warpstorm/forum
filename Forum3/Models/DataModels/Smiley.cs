@@ -9,6 +9,9 @@ namespace Forum3.Models.DataModels {
 		public string Code { get; set; }
 
 		[Required]
+		public string FileName { get; set; }
+
+		[Required]
 		public string Path { get; set; }
 	}
 }
