@@ -160,6 +160,11 @@ namespace Forum3.Services {
 
 			DbContext.Smileys.Remove(smileyRecord);
 
+			var thoughts = DbContext.MessageThoughts.Where(t => t.SmileyId == id).ToList();
+
+			if (thoughts.Any())
+				DbContext.MessageThoughts.RemoveRange(thoughts);
+
 			var container = CloudBlobClient.GetContainerReference("smileys");
 
 			if (!otherSmileys.Any() && await container.ExistsAsync()) {
