@@ -273,7 +273,15 @@ namespace Forum3.Services {
 
 			var regexUrl = new Regex("(^| )((https?\\://){1}\\S+)", RegexOptions.Compiled | RegexOptions.Multiline);
 
+			var matches = 0;
+
 			foreach (Match regexMatch in regexUrl.Matches(displayBody)) {
+				matches++;
+
+				// DoS prevention
+				if (matches > 10)
+					break;
+
 				var siteUrl = regexMatch.Groups[2].Value;
 
 				if (!string.IsNullOrEmpty(siteUrl)) {
@@ -363,7 +371,11 @@ namespace Forum3.Services {
 			};
 
 			Task.Run(async () => {
-				document = await client.LoadFromWebAsync(siteWithoutHash);
+				try {
+					document = await client.LoadFromWebAsync(siteWithoutHash);
+				}
+				// HtmlAgilityPack throws a generic exception when it fails to load a page.
+				catch (Exception) { }
 			}).Wait(3000);
 
 			if (document == null) {
@@ -419,14 +431,22 @@ namespace Forum3.Services {
 		async Task FindMentionedUsers(ProcessedMessageInput processedMessageInput) {
 			var regexUsers = new Regex(@"@(\S+)");
 
+			var matches = 0;
+
 			foreach (Match regexMatch in regexUsers.Matches(processedMessageInput.DisplayBody)) {
+				matches++;
+
+				// DoS prevention
+				if (matches > 10)
+					break;
+
 				var matchedTag = regexMatch.Groups[1].Value;
 
-				var user = await DbContext.Users.SingleAsync(u => u.UserName.ToLower() == matchedTag.ToLower());
+				var user = await DbContext.Users.SingleOrDefaultAsync(u => u.UserName.ToLower() == matchedTag.ToLower());
 
 				// try to guess what they meant
 				if (user == null)
-					user = await DbContext.Users.SingleAsync(u => u.UserName.ToLower().Contains(matchedTag.ToLower()));
+					user = await DbContext.Users.SingleOrDefaultAsync(u => u.UserName.ToLower().Contains(matchedTag.ToLower()));
 
 				if (user != null) {
 					if (user.Id != ContextUser.ApplicationUser.Id)
