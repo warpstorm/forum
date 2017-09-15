@@ -1,8 +1,29 @@
 @model IndexPage
 
-@foreach (var item in Model.Smileys) {
-	@await Html.PartialAsync("_IndexItem", item)
-}
+<div class="content-box pad">
+	<div asp-validation-summary="All"></div>
+
+	<form method="post" asp-action="@nameof(Smileys.Edit)">
+		<ol>
+			@if(Model.Smileys.Any()) {
+				@for (int i = 0; i < Model.Smileys.Count; i++) {
+					<li>
+						<input hidden="hidden" asp-for="@Model.Smileys[i].Id" />
+						<a asp-action="@nameof(Smileys.Delete)" asp-route-id="@Model.Smileys[i].Id" class="borderless spaced"><img alt="Delete" src="~/images/deleteSmall.png" /></a>
+						<span asp-validation-for="@Model.Smileys[i].Code" class="error"></span>
+						<input asp-for="@Model.Smileys[i].Code" />
+						<img src="@Model.Smileys[i].Path" />
+					</li>
+				}
+			}
+		</ol>
+
+		<ul>
+			<li><button>Save Changes</button></li>
+			<li><a class="button" href="@ViewData["Referrer"]">Cancel</a></li>
+		</ul>
+	</form>
+</div>
 
 @{ViewData["Title"] = "Smileys";}
 

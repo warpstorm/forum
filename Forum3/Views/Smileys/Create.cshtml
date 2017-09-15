@@ -1,0 +1,30 @@
+﻿@model Forum3.Models.ViewModels.Smileys.CreatePage
+
+<div class="content-box pad">
+	<div asp-validation-summary="ModelOnly"></div>
+
+	<form method="post" enctype="multipart/form-data"
+		asp-action="@nameof(Smileys.Create)"
+		asp-route-returnurl="@ViewData["Referrer"]">
+		
+		<dl>
+			<dt>Code</dt>
+			<dd><input asp-for="@Model.Code" /></dd>
+			<dd><span asp-validation-for="@Model.Code" class="error"></span></dd>
+		</dl>
+
+		<dl>
+			<dt>File</dt>
+			<dd><input asp-for="@Model.File" /></dd>
+			<dd><span asp-validation-for="@Model.File" class="error"></span></dd>
+		</dl>
+
+		<ul>
+			<li><button>Create</button></li>
+			<li><a class="button" href="@ViewData["Referrer"]">Cancel</a></li>
+		</ul>
+	</form>
+</div>
+
+@{ ViewData["Title"] = "Create a Smiley"; }
+@section Header {@ViewData["Title"]}
