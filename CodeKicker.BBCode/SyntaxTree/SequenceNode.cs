@@ -6,7 +6,7 @@ namespace CodeKicker.BBCode.SyntaxTree {
 	public sealed class SequenceNode : SyntaxTreeNode {
 		public SequenceNode() { }
 		public SequenceNode(SyntaxTreeNodeCollection subNodes) : base(subNodes) { }
-		public SequenceNode(IEnumerable<SyntaxTreeNode> subNodes) : base(subNodes) { }
+		public SequenceNode(IList<SyntaxTreeNode> subNodes) : base(subNodes) { }
 
 		public override string ToHtml() {
 			return string.Concat(SubNodes.Select(s => s.ToHtml()).ToArray());
@@ -20,7 +20,7 @@ namespace CodeKicker.BBCode.SyntaxTree {
 			return string.Concat(SubNodes.Select(s => s.ToText()).ToArray());
 		}
 
-		public override SyntaxTreeNode SetSubNodes(IEnumerable<SyntaxTreeNode> subNodes) {
+		public override SyntaxTreeNode SetSubNodes(IList<SyntaxTreeNode> subNodes) {
 			if (subNodes == null)
 				throw new ArgumentNullException("subNodes");
 

@@ -29,7 +29,7 @@ namespace CodeKicker.BBCode.SyntaxTree {
 			return Text;
 		}
 
-		public override SyntaxTreeNode SetSubNodes(IEnumerable<SyntaxTreeNode> subNodes) {
+		public override SyntaxTreeNode SetSubNodes(IList<SyntaxTreeNode> subNodes) {
 			if (subNodes == null)
 				throw new ArgumentNullException("subNodes");
 

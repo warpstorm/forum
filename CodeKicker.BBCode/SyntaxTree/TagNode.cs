@@ -9,7 +9,7 @@ namespace CodeKicker.BBCode.SyntaxTree {
 		public IDictionary<BBAttribute, string> AttributeValues { get; private set; } = new Dictionary<BBAttribute, string>();
 
 		public TagNode(BBTag tag) : this(tag, null) { }
-		public TagNode(BBTag tag, IEnumerable<SyntaxTreeNode> subNodes) : base(subNodes) {
+		public TagNode(BBTag tag, IList<SyntaxTreeNode> subNodes) : base(subNodes) {
 			if (tag == null)
 				throw new ArgumentNullException("tag");
 
@@ -121,7 +121,7 @@ namespace CodeKicker.BBCode.SyntaxTree {
 			return val;
 		}
 
-		public override SyntaxTreeNode SetSubNodes(IEnumerable<SyntaxTreeNode> subNodes) {
+		public override SyntaxTreeNode SetSubNodes(IList<SyntaxTreeNode> subNodes) {
 			if (subNodes == null)
 				throw new ArgumentNullException("subNodes");
 

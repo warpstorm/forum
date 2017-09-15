@@ -9,7 +9,7 @@ namespace CodeKicker.BBCode.SyntaxTree {
 		protected SyntaxTreeNode(ISyntaxTreeNodeCollection subNodes) {
 			SubNodes = subNodes;
 		}
-		protected SyntaxTreeNode(IEnumerable<SyntaxTreeNode> subNodes) {
+		protected SyntaxTreeNode(IList<SyntaxTreeNode> subNodes) {
 			SubNodes = new SyntaxTreeNodeCollection(subNodes);
 		}
 
@@ -21,7 +21,7 @@ namespace CodeKicker.BBCode.SyntaxTree {
 		public abstract string ToBBCode();
 		public abstract string ToText();
 
-		public abstract SyntaxTreeNode SetSubNodes(IEnumerable<SyntaxTreeNode> subNodes);
+		public abstract SyntaxTreeNode SetSubNodes(IList<SyntaxTreeNode> subNodes);
 		internal abstract SyntaxTreeNode AcceptVisitor(SyntaxTreeVisitor visitor);
 		protected abstract bool EqualsCore(SyntaxTreeNode b);
 

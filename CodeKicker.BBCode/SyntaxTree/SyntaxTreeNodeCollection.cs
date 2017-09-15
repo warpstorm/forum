@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 
 namespace CodeKicker.BBCode.SyntaxTree {
 	public class SyntaxTreeNodeCollection : Collection<SyntaxTreeNode>, ISyntaxTreeNodeCollection {
 		public SyntaxTreeNodeCollection() : base() { }
-		public SyntaxTreeNodeCollection(IEnumerable<SyntaxTreeNode> list) : base(list.ToArray()) { }
+		public SyntaxTreeNodeCollection(IList<SyntaxTreeNode> list) : base(list ?? new List<SyntaxTreeNode>()) { }
 
 		protected override void SetItem(int index, SyntaxTreeNode item) {
 			if (item == null)
