@@ -9,9 +9,20 @@
 	<nav>
 		<ul class="float-right inline">
 			@if (contextUser.IsAuthenticated) {
+				@if (contextUser.IsAdmin) {
+					<li class="open-menu">
+						<span class="small-button pointer">@contextUser.ApplicationUser.DisplayName</span>
+						<div class="drop-down-menu-wrapper hidden">
+							<ul class="drop-down-menu content-box">
+								<li clickable-link-parent><a asp-controller="@nameof(Profile)" asp-action="@nameof(Profile.Index)">Profile</a></li>
+								<li><a href="javascript:document.getElementById('logoutForm').submit()" onclick="return confirm('Are you sure you want to logout?');">Log off</a></li>
+							</ul>
+						</div>
+					</li>
+				}
+
 				<li><a asp-controller="@nameof(Boards)" asp-action="@nameof(Boards.Index)" class="small-button">Boards</a></li>
 				<li><a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)" class="small-button">Topics</a></li>
-				<li><a asp-controller="@nameof(Profile)" asp-action="@nameof(Profile.Index)" class="small-button">Profile</a></li>
 
 				@if (contextUser.IsAdmin) {
 					<li class="open-menu">
@@ -27,23 +38,11 @@
 						</div>
 					</li>
 				}
-
-				<li>
-					<a href="javascript:document.getElementById('logoutForm').submit()" class="small-button" onclick="return confirm('Are you sure you want to logout?');">
-						Log off
-					</a>
-				</li>}
+			}
 			else {
-			<li>
-				<a class="small-button" asp-action="@nameof(Authentication.Register)" asp-controller="@nameof(Authentication)">
-					Register
-				</a>
-			</li>
-			<li>
-				<a class="small-button" asp-action="@nameof(Authentication.Login)" asp-controller="@nameof(Authentication)">
-					Log in
-				</a>
-			</li>}
+				<li><a class="small-button" asp-action="@nameof(Authentication.Register)" asp-controller="@nameof(Authentication)">Register</a></li>
+				<li><a class="small-button" asp-action="@nameof(Authentication.Login)" asp-controller="@nameof(Authentication)">Log in</a></li>
+			}
 		</ul>
 		
 		<br class="clear" />

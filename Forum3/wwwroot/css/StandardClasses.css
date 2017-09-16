@@ -95,7 +95,7 @@ a.borderless * {
 .note, a.note {
 	border: 0;
 	font-size: 8pt;
-	line-height: 12pt;
+	line-height: 1.2em;
 	color: #92abba;
 }
 

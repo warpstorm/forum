@@ -17,17 +17,9 @@
 	#side-bar time {
 		color: #516169;
 		font-size: 7.5pt;
-		line-height: 12pt;
+		line-height: 1em;
 		font-weight: bold;
 	}
-
-.chiclet-online {
-	background-color: #00e300;
-	height: 5px;
-	width: 5px;
-	display: inline-block;
-	border-radius: 2px;
-}
 
 .board-name {
 	margin-right: 300px;

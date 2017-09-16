@@ -29,12 +29,14 @@
 	<h4>Who's online this week</h4>
 	<ul>
 		@foreach (var onlineUser in Model.OnlineUsers) {
-			<li>
-				@if (onlineUser.Online) {
-					<span class="chiclet-online"></span>
-				}
-				<span>@onlineUser.Name</span>
-				<time>@onlineUser.LastOnlineString</time>
+			<li class="note">
+				<p>
+					@if (onlineUser.Online) {
+						<span class="chiclet chiclet-green"></span>
+					}
+					<span>@onlineUser.Name</span>
+				</p>
+				<p><time>@onlineUser.LastOnlineString</time></p>
 			</li>
 		}
 	</ul>

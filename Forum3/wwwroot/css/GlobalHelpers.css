@@ -1,6 +1,21 @@
-﻿.drop-down-menu-wrapper {
+﻿.chiclet {
+	background-color: #808080;
+	height: 5px;
+	width: 5px;
+	display: inline-block;
+	border-radius: 2px;
+}
+
+.chiclet-green {
+	background-color: #00e300;
+}
+
+.chiclet-gold {
+	background-color: #ffd800;
+}
+
+.drop-down-menu-wrapper {
 	position: relative;
-	display: none;
 }
 
 .drop-down-menu {
@@ -16,6 +31,7 @@
 	.drop-down-menu li {
 		padding: 0 10px;
 		cursor: pointer;
+		white-space: nowrap;
 	}
 
 		.drop-down-menu li:hover {
