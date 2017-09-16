@@ -17,8 +17,5 @@ namespace Forum3.Models.DataModels {
 		public DateTime Time { get; set; }
 		public bool Unread { get; set; }
 		public ENotificationType Type { get; set; }
-
-		public ApplicationUser TargetUser { get; set; }
-		public Message Message { get; set; }
 	}
 }

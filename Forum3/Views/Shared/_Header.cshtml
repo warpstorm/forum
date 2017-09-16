@@ -1,28 +1,12 @@
 ﻿@inject Forum3.Services.ContextUserFactory ContextUserFactory
 
-@*
-	TODO - to be imported
-@{
-    if (Request.IsAuthenticated) {
-        var notifications = (NotificationList) ViewBag.Notifications;
-
-        ViewBag.NotificationCount = notifications.NotificationCount;
-        ViewBag.NotificationButtonClasses = "small-button";
-
-        if (notifications.NotificationCount > 0) {
-            ViewBag.NotificationButtonClasses += " highlight";
-        }
-    }
-}*@
-
 @{ 
 	var contextUser = ContextUserFactory.GetContextUser();
 }
 
-<header id="page-header" class="margin-center align-center">
-	<div id="page-title"><a href="/"><img src=@ViewData["LogoPath"] alt="Warpstorm" /></a></div>
+	<div id="page-title" class="align-center"><a href="/"><img src=@ViewData["LogoPath"] alt="Warpstorm" /></a></div>
 
-	<nav class="small-pad">
+	<nav>
 		<ul class="float-right inline">
 			@if (contextUser.IsAuthenticated) {
 				<li><a asp-controller="@nameof(Boards)" asp-action="@nameof(Boards.Index)" class="small-button">Boards</a></li>
@@ -64,6 +48,5 @@
 		
 		<br class="clear" />
 	</nav>
-</header>
 
 <form asp-area="" asp-controller="@nameof(Authentication)" asp-action="@nameof(Authentication.Logout)" method="post" id="logoutForm" class="navbar-right"></form>

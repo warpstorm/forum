@@ -46,10 +46,10 @@ namespace Forum3.Services {
 									 join messageBoard in DbContext.MessageBoards on message.Id equals messageBoard.MessageId
 									 join pin in DbContext.Pins on message.Id equals pin.MessageId into pins
 									 from pin in pins.DefaultIfEmpty()
+									 let pinned = pin != null && pin.UserId == ContextUser.ApplicationUser.Id
 									 where boardRecord == null || messageBoard.BoardId == boardRecord.Id
 									 where message.ParentId == 0
-									 where pin == null || pin.UserId == ContextUser.ApplicationUser.Id
-									 orderby pin.Id descending, message.LastReplyPosted descending
+									 orderby (pinned ? pin.Id : 0) descending, message.LastReplyPosted descending
 									 select new ItemModels.MessagePreview {
 										 Id = message.Id,
 										 ShortPreview = message.ShortPreview,
@@ -59,7 +59,7 @@ namespace Forum3.Services {
 										 LastReplyPostedDT = message.LastReplyPosted,
 										 Views = message.ViewCount,
 										 Replies = message.ReplyCount,
-										 Pinned = pin != null
+										 Pinned = pinned
 									 };
 
 			var messageRecords = await messageRecordQuery.Skip(skip).Take(take).ToListAsync();

@@ -275,6 +275,19 @@ namespace Forum3.Services {
 				};
 
 				await DbContext.MessageThoughts.AddAsync(messageThought);
+
+				if (messageRecord.PostedById != ContextUser.ApplicationUser.Id) {
+					var notification = new Notification {
+						MessageId = messageRecord.Id,
+						UserId = messageRecord.PostedById,
+						TargetUserId = ContextUser.ApplicationUser.Id,
+						Time = DateTime.Now,
+						Type = Enums.ENotificationType.Thought,
+						Unread = true,
+					};
+
+					await DbContext.Notifications.AddAsync(notification);
+				}
 			}
 			else
 				DbContext.MessageThoughts.Remove(existingRecord);
@@ -628,7 +641,7 @@ namespace Forum3.Services {
 				ReplyId = replyId,
 			};
 
-			DbContext.Messages.Add(record);
+			await DbContext.Messages.AddAsync(record);
 
 			await DbContext.SaveChangesAsync();
 
@@ -639,6 +652,19 @@ namespace Forum3.Services {
 				replyRecord.LastReplyPosted = currentTime;
 
 				DbContext.Entry(replyRecord).State = EntityState.Modified;
+
+				if (replyRecord.PostedById != ContextUser.ApplicationUser.Id) {
+					var notification = new Notification {
+						MessageId = record.Id,
+						UserId = replyRecord.PostedById,
+						TargetUserId = ContextUser.ApplicationUser.Id,
+						Time = DateTime.Now,
+						Type = Enums.ENotificationType.Quote,
+						Unread = true,
+					};
+
+					await DbContext.Notifications.AddAsync(notification);
+				}
 			}
 
 			if (parentMessage != null && parentMessage.Id != replyRecord.Id) {
@@ -648,6 +674,19 @@ namespace Forum3.Services {
 				parentMessage.LastReplyPosted = currentTime;
 
 				DbContext.Entry(parentMessage).State = EntityState.Modified;
+
+				if (parentMessage.PostedById != ContextUser.ApplicationUser.Id) {
+					var notification = new Notification {
+						MessageId = record.Id,
+						UserId = parentMessage.PostedById,
+						TargetUserId = ContextUser.ApplicationUser.Id,
+						Time = DateTime.Now,
+						Type = Enums.ENotificationType.Reply,
+						Unread = true,
+					};
+
+					await DbContext.Notifications.AddAsync(notification);
+				}
 			}
 
 			await DbContext.SaveChangesAsync();

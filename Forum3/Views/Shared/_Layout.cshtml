@@ -18,6 +18,8 @@
 		<link rel="stylesheet" href="~/css/min/Global.min.css" asp-append-version="true" />
     </environment>
 
+	@await RenderSectionAsync("Styles", required: false)
+
 	<!-- PLEASE CHANGE THIS ID IF YOU DEPLOY THIS CODE TO OTHER SITES. THIS IS WARPSTORM.COM SPECIFIC. -->
 	<!-- Global Site Tag (gtag.js) - Google Analytics -->
 	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-349282-1"></script>
@@ -30,17 +32,19 @@
 	</script>
 </head>
 <body>
-	@await Html.PartialAsync("_Header")
+	<header id="page-header" class="margin-center pad">
+		@await Html.PartialAsync("_Header")
 
-	<nav class="actions float-right pad-right">
-		<ul>
-			@await RenderSectionAsync("PageActions", required: false)
-		</ul>
-	</nav>
+		<nav class="actions float-right pad-right">
+			<ul>
+				@await RenderSectionAsync("PageActions", required: false)
+			</ul>
+		</nav>
 
-	<nav class="breadcrumbs">
-		@await RenderSectionAsync("Breadcrumbs", required: false)
-	</nav>
+		<nav class="breadcrumbs">
+			@await RenderSectionAsync("Breadcrumbs", required: false)
+		</nav>
+	</header>
 
 	<div role="main" class="margin-center">
 		<main class="align-center">
@@ -57,8 +61,6 @@
 	</div>
 
 	@await Html.PartialAsync("_Footer")
-
-	@await RenderSectionAsync("Styles", required: false)
 
 	<environment include="Development">
 		<script src="~/lib/jquery/dist/jquery.js"></script>

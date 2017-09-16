@@ -12,7 +12,18 @@
 			
 	<h4>Notifications</h4>
 	<ul class="gap-bottom">
-		<li>None</li>
+		@if (Model.Notifications.Any()) {
+			@foreach (var notification in Model.Notifications) {
+				<li class="note">
+					<p>@notification.Text</p>
+					<p><time>@notification.Time</time></p>
+				</li>
+				@*<li><a asp-controller="@nameof(Notifications)" asp-action="@nameof(Notifications.Open)" asp-route-id="@notification.Id">@notification.Text</a></li>*@
+			}
+		}
+		else {
+			<li>None</li>
+		}
 	</ul>
 
 	<h4>Who's online this week</h4>

@@ -3,8 +3,6 @@
 		Reply,
 		Quote,
 		Thought,
-		Invite,
-		PrivateReply,
 		Mention
 	}
 }

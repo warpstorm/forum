@@ -14,6 +14,7 @@ using DataModels = Forum3.Models.DataModels;
 using InputModels = Forum3.Models.InputModels;
 using PageViewModels = Forum3.Models.ViewModels.Boards.Pages;
 using ItemViewModels = Forum3.Models.ViewModels.Boards.Items;
+using Forum3.Enums;
 
 namespace Forum3.Services {
 	public class BoardService {
@@ -38,16 +39,19 @@ namespace Forum3.Services {
 		public async Task<PageViewModels.IndexPage> IndexPage() {
 			var birthdays = GetBirthdays();
 			var onlineUsers = GetOnlineUsers();
+			var notifications = GetNotifications();
 
 			await Task.WhenAll(new Task[] {
 				birthdays,
-				onlineUsers
+				onlineUsers,
+				notifications
 			});
 
 			var viewModel = new PageViewModels.IndexPage {
 				Birthdays = birthdays.Result.ToArray(),
 				Categories = await GetCategories(),
-				OnlineUsers = onlineUsers.Result
+				OnlineUsers = onlineUsers.Result,
+				Notifications = notifications.Result
 			};
 
 			return viewModel;
@@ -521,6 +525,48 @@ namespace Forum3.Services {
 			}
 
 			return todayBirthdayNames;
+		}
+
+		async Task<List<ItemViewModels.IndexNotification>> GetNotifications() {
+			var timeLimit = DateTime.Now.AddDays(-7);
+
+			// TODO - validate the indexes on these columns.
+
+			var notificationQuery = from n in DbContext.Notifications
+									join targetUser in DbContext.Users on n.TargetUserId equals targetUser.Id into targetUsers
+									from targetUser in targetUsers.DefaultIfEmpty()
+									where n.Time > timeLimit
+									where n.UserId == ContextUser.ApplicationUser.Id
+									where n.Unread
+									orderby n.Time descending
+									select new ItemViewModels.IndexNotification {
+										Id = n.Id,
+										Type = n.Type,
+										Time = n.Time.ToPassedTimeString(),
+										TargetUser = targetUser == null ? "User" : targetUser.DisplayName
+									};
+
+			var notifications = await notificationQuery.ToListAsync();
+
+			foreach (var notification in notifications)
+				notification.Text = NotificationText(notification);
+
+			return notifications;
+		}
+
+		string NotificationText(ItemViewModels.IndexNotification notification) {
+			switch (notification.Type) {
+				case ENotificationType.Quote:
+					return $"{notification.TargetUser} quoted you.";
+				case ENotificationType.Reply:
+					return $"{notification.TargetUser} replied to you.";
+				case ENotificationType.Thought:
+					return $"{notification.TargetUser} thought about your post.";
+				case ENotificationType.Mention:
+					return $"{notification.TargetUser} mentioned you.";
+				default:
+					return $"Unknown notification type. {notification.Id} | {notification.Type}";
+			}
 		}
 
 		class Birthday {
