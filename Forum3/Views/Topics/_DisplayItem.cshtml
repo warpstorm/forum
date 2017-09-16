@@ -45,12 +45,12 @@
 		</aside>
 
 		<header class="message-header note">
-			@Model.PostedByName posted 
+			@Model.PostedByName 
 			<time>
-				@Model.TimePosted
+				posted @Model.TimePosted
 				@if (Model.TimeEdited != Model.TimePosted) {
 					<span>| edited @Model.TimeEdited</span>
-			}
+				}
 			</time>
 		</header>
 

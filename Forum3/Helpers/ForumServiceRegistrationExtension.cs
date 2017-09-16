@@ -12,6 +12,7 @@ namespace Forum3.Helpers {
 		public static IServiceCollection AddForum(this IServiceCollection services, IConfiguration configuration) {
 			services.AddScoped<BoardService>();
 			services.AddScoped<MessageService>();
+			services.AddScoped<NotificationService>();
 			services.AddScoped<RoleService>();
 			services.AddScoped<SiteSettingsService>();
 			services.AddScoped<SmileyService>();

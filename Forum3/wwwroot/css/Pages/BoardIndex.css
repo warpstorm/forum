@@ -10,15 +10,7 @@
 		display: block;
 		margin: 0 5px;
 		padding: 4px 10px;
-		cursor: default;
 		white-space: nowrap;
-	}
-
-	#side-bar time {
-		color: #516169;
-		font-size: 7.5pt;
-		line-height: 1em;
-		font-weight: bold;
 	}
 
 .board-name {

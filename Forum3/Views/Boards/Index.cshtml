@@ -10,15 +10,19 @@
 		</ul>
 	}
 			
-	<h4>Notifications</h4>
-	<ul class="gap-bottom">
+	<h4><a asp-controller="@nameof(Notifications)" asp-action="@nameof(Notifications.Index)">Notifications</a></h4>
+	<ul class="gap-bottom note">
 		@if (Model.Notifications.Any()) {
 			@foreach (var notification in Model.Notifications) {
-				<li class="note">
-					<p>@notification.Text</p>
+				<li class="hover-highlight pointer" clickable-link-parent>
+					<p>
+						@if (notification.Recent) {
+							<span class="chiclet chiclet-gold"></span>
+						}
+						<a asp-controller="@nameof(Notifications)" asp-action="@nameof(Notifications.Open)" asp-route-id="@notification.Id">@notification.Text</a>
+					</p>
 					<p><time>@notification.Time</time></p>
 				</li>
-				@*<li><a asp-controller="@nameof(Notifications)" asp-action="@nameof(Notifications.Open)" asp-route-id="@notification.Id">@notification.Text</a></li>*@
 			}
 		}
 		else {
@@ -27,9 +31,9 @@
 	</ul>
 
 	<h4>Who's online this week</h4>
-	<ul>
+	<ul class="note">
 		@foreach (var onlineUser in Model.OnlineUsers) {
-			<li class="note">
+			<li>
 				<p>
 					@if (onlineUser.Online) {
 						<span class="chiclet chiclet-green"></span>

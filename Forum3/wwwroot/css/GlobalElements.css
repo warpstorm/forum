@@ -80,3 +80,10 @@ video {
 	max-width: 100%;
 	height: auto;
 }
+
+time {
+	color: #516169;
+	font-size: .85em;
+	line-height: 1em;
+	font-weight: bold;
+}

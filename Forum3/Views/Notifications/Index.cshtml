@@ -1,0 +1,68 @@
+﻿@model Forum3.Models.ViewModels.Notifications.Pages.IndexPage
+
+<div class="roundedBox">
+	<div class="roundedBoxHead">
+		@ViewBag.Title
+		@if (ViewBag.BoardName != null) {
+			@:for @ViewBag.BoardName
+        }
+	</div>
+
+	<div class="roundedBoxContent">
+		@if (Model.Notifications.Any()) {
+			if (Model.Notifications.Any(n => n.Type == ENotificationType.Mention)) {
+				<h3>Mentions</h3>
+				<ul>
+					@foreach (var notification in Model.Notifications.Where(n => n.Type == ENotificationType.Mention)) {
+						<li>
+							<a asp-action="@nameof(Notifications.Open)" asp-route-id="@notification.Id">@notification.Text</a>
+							<time>@notification.Time</time>
+						</li>
+					}
+				</ul>
+			}
+
+			if (Model.Notifications.Any(n => n.Type == ENotificationType.Thought)) {
+				<h3>Thoughts</h3>
+				<ul>
+					@foreach (var notification in Model.Notifications.Where(n => n.Type == ENotificationType.Thought)) {
+						<li>
+							<a asp-action="@nameof(Notifications.Open)" asp-route-id="@notification.Id">@notification.Text</a>
+							<time>@notification.Time</time>
+						</li>
+					}
+				</ul>
+			}
+
+			if (Model.Notifications.Any(n => n.Type == ENotificationType.Reply || n.Type == ENotificationType.Quote)) {
+				<h3>Quotes & Replies</h3>
+				<ul>
+					@foreach (var notification in Model.Notifications.Where(n => n.Type == ENotificationType.Quote)) {
+						<li>
+							<a asp-action="@nameof(Notifications.Open)" asp-route-id="@notification.Id">@notification.Text</a>
+							<time>@notification.Time</time>
+						</li>
+					}
+					@foreach (var notification in Model.Notifications.Where(n => n.Type == ENotificationType.Reply)) {
+						<li>
+							<a asp-action="@nameof(Notifications.Open)" asp-route-id="@notification.Id">@notification.Text</a>
+							<time>@notification.Time</time>
+						</li>
+					}
+				</ul>
+			}
+		}
+		else {
+			<ul><li>None</li></ul>
+		}
+	</div>
+</div>
+
+@{ViewData["Title"] = "Notifications";}
+
+@section PageActions {
+	<p>
+		<a asp-action="@nameof(Notifications.Index)" asp-route-show-read="1" class="button">Show Read</a>
+		<a asp-action="@nameof(Notifications.MarkAllRead)" class="button" onclick="return confirm('Are you sure you want to mark all notifications as read?');">Mark All Read</a>
+	</p>
+}

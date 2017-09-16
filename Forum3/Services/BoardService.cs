@@ -9,29 +9,32 @@ using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
 using Forum3.Controllers;
 using Forum3.Helpers;
-using Forum3.Models.ServiceModels;
+
 using DataModels = Forum3.Models.DataModels;
 using InputModels = Forum3.Models.InputModels;
-using PageViewModels = Forum3.Models.ViewModels.Boards.Pages;
 using ItemViewModels = Forum3.Models.ViewModels.Boards.Items;
-using Forum3.Enums;
+using PageViewModels = Forum3.Models.ViewModels.Boards.Pages;
+using ServiceModels = Forum3.Models.ServiceModels;
 
 namespace Forum3.Services {
 	public class BoardService {
 		DataModels.ApplicationDbContext DbContext { get; }
 		SiteSettingsService SiteSettingsService { get; }
-		ContextUser ContextUser { get; }
+		NotificationService NotificationService { get; }
+		ServiceModels.ContextUser ContextUser { get; }
 		IUrlHelper UrlHelper { get; }
 
 		public BoardService(
 			DataModels.ApplicationDbContext dbContext,
 			SiteSettingsService siteSettingsService,
+			NotificationService notificationService,
 			ContextUserFactory contextUserFactory,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory
 		) {
 			DbContext = dbContext;
 			SiteSettingsService = siteSettingsService;
+			NotificationService = notificationService;
 			ContextUser = contextUserFactory.GetContextUser();
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
@@ -39,7 +42,7 @@ namespace Forum3.Services {
 		public async Task<PageViewModels.IndexPage> IndexPage() {
 			var birthdays = GetBirthdays();
 			var onlineUsers = GetOnlineUsers();
-			var notifications = GetNotifications();
+			var notifications = NotificationService.GetNotifications();
 
 			await Task.WhenAll(new Task[] {
 				birthdays,
@@ -110,8 +113,8 @@ namespace Forum3.Services {
 			return viewModel;
 		}
 
-		public async Task<ServiceResponse> Create(InputModels.CreateBoardInput input) {
-			var serviceResponse = new ServiceResponse();
+		public async Task<ServiceModels.ServiceResponse> Create(InputModels.CreateBoardInput input) {
+			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			if (await DbContext.Boards.AnyAsync(b => b.Name == input.Name))
 				serviceResponse.ModelErrors.Add(nameof(input.Name), "A board with that name already exists");
@@ -181,8 +184,8 @@ namespace Forum3.Services {
 			return serviceResponse;
 		}
 
-		public async Task<ServiceResponse> Edit(InputModels.EditBoardInput input) {
-			var serviceResponse = new ServiceResponse();
+		public async Task<ServiceModels.ServiceResponse> Edit(InputModels.EditBoardInput input) {
+			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			var record = await DbContext.Boards.SingleOrDefaultAsync(b => b.Id == input.Id);
 
@@ -261,8 +264,8 @@ namespace Forum3.Services {
 			return serviceResponse;
 		}
 
-		public async Task<ServiceResponse> MoveCategoryUp(int id) {
-			var serviceResponse = new ServiceResponse();
+		public async Task<ServiceModels.ServiceResponse> MoveCategoryUp(int id) {
+			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			var targetCategory = DbContext.Categories.FirstOrDefault(b => b.Id == id);
 
@@ -286,8 +289,8 @@ namespace Forum3.Services {
 			return serviceResponse;
 		}
 
-		public async Task<ServiceResponse> MoveBoardUp(int id) {
-			var serviceResponse = new ServiceResponse();
+		public async Task<ServiceModels.ServiceResponse> MoveBoardUp(int id) {
+			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			var targetBoard = await DbContext.Boards.FirstOrDefaultAsync(b => b.Id == id);
 
@@ -328,8 +331,8 @@ namespace Forum3.Services {
 			return serviceResponse;
 		}
 
-		public async Task<ServiceResponse> MergeCategory(InputModels.Merge input) {
-			var serviceResponse = new ServiceResponse();
+		public async Task<ServiceModels.ServiceResponse> MergeCategory(InputModels.Merge input) {
+			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			var fromCategory = await DbContext.Categories.SingleOrDefaultAsync(b => b.Id == input.FromId);
 			var toCategory = await DbContext.Categories.SingleOrDefaultAsync(b => b.Id == input.ToId);
@@ -359,8 +362,8 @@ namespace Forum3.Services {
 			return serviceResponse;
 		}
 
-		public async Task<ServiceResponse> MergeBoard(InputModels.Merge input) {
-			var serviceResponse = new ServiceResponse();
+		public async Task<ServiceModels.ServiceResponse> MergeBoard(InputModels.Merge input) {
+			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			var fromBoard = await DbContext.Boards.SingleOrDefaultAsync(b => b.Id == input.FromId);
 			var toBoard = await DbContext.Boards.SingleOrDefaultAsync(b => b.Id == input.ToId);
@@ -525,48 +528,6 @@ namespace Forum3.Services {
 			}
 
 			return todayBirthdayNames;
-		}
-
-		async Task<List<ItemViewModels.IndexNotification>> GetNotifications() {
-			var timeLimit = DateTime.Now.AddDays(-7);
-
-			// TODO - validate the indexes on these columns.
-
-			var notificationQuery = from n in DbContext.Notifications
-									join targetUser in DbContext.Users on n.TargetUserId equals targetUser.Id into targetUsers
-									from targetUser in targetUsers.DefaultIfEmpty()
-									where n.Time > timeLimit
-									where n.UserId == ContextUser.ApplicationUser.Id
-									where n.Unread
-									orderby n.Time descending
-									select new ItemViewModels.IndexNotification {
-										Id = n.Id,
-										Type = n.Type,
-										Time = n.Time.ToPassedTimeString(),
-										TargetUser = targetUser == null ? "User" : targetUser.DisplayName
-									};
-
-			var notifications = await notificationQuery.ToListAsync();
-
-			foreach (var notification in notifications)
-				notification.Text = NotificationText(notification);
-
-			return notifications;
-		}
-
-		string NotificationText(ItemViewModels.IndexNotification notification) {
-			switch (notification.Type) {
-				case ENotificationType.Quote:
-					return $"{notification.TargetUser} quoted you.";
-				case ENotificationType.Reply:
-					return $"{notification.TargetUser} replied to you.";
-				case ENotificationType.Thought:
-					return $"{notification.TargetUser} thought about your post.";
-				case ENotificationType.Mention:
-					return $"{notification.TargetUser} mentioned you.";
-				default:
-					return $"Unknown notification type. {notification.Id} | {notification.Type}";
-			}
 		}
 
 		class Birthday {
