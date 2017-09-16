@@ -1,20 +1,52 @@
 ﻿$(function () {
-	$("body").on("click", function(e) {
-		e.stopPropagation();
-		$(".drop-down-menu-wrapper").hide();
-	});
-
-	$(".open-menu").on("click", function(e) {
-		e.stopPropagation();
-		$(this).children(".drop-down-menu-wrapper").show();
+	$(".open-menu").each(function () {
+		CloseMenu(this);
 	});
 	
-	// TODO - enable shift-click and middle click to new windows
-    $("[clickable-link-parent]").on("click", function (e) {
-        e.stopPropagation();
-        window.location.href = $(this).find("a").eq(0).attr("href");
-    });
+	$("[clickable-link-parent]").on("mousedown", function (e) {
+		var url = $(this).find("a").eq(0).attr("href");
+
+		switch (e.which) {
+			case 1:
+				if (e.shiftKey)
+					window.open(url, "_blank");
+				else
+					window.location.href = url;
+				break;
+
+			case 2:
+				window.open(url, "_blank");
+				break;
+		}
+
+		return true;
+	});
 });
+
+function OpenMenu(menu) {
+	$(menu).find(".drop-down-menu-wrapper").removeClass("hidden");
+	$(menu).off("click.open-menu");
+
+	$(menu).on("click.close-menu", function () {
+		CloseMenu(menu);
+	});
+
+	setTimeout(function () {
+		$("body").on("click.close-menu", function () {
+			CloseMenu(menu);
+		});
+	}, 50);
+}
+
+function CloseMenu(menu) {
+	$(menu).find(".drop-down-menu-wrapper").addClass("hidden");
+	$(menu).off("click.close-menu");
+	$("body").off("click.close-menu");
+
+	$(menu).on("click.open-menu", function (e) {
+		OpenMenu(menu);
+	});
+}
 
 function PostToPath(path, parameters) {
 	var antiForgeryTokenValue = $("input[name=__RequestVerificationToken]").val();
