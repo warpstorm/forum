@@ -12,9 +12,11 @@
     @Html.Partial("_ManageItem", category)
 }
 
-<p>
-	<a asp-controller="Boards" asp-action="Create" class="button">Create Board</a>
-</p>
+@section PageActions {
+	<p>
+		<a asp-controller="Boards" asp-action="Create" class="button">Create Board</a>
+	</p>
+}
 
 @section scripts {
 	<environment names="Development">
