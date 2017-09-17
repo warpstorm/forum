@@ -20,5 +20,10 @@ namespace Forum3.Models.ViewModels.Account {
 		[MaxLength(100)]
 		[DataType(DataType.Password)]
 		public string Password { get; set; }
+
+		[MinLength(3)]
+		[MaxLength(100)]
+		[DataType(DataType.Password)]
+		public string NewPassword { get; set; }
 	}
 }

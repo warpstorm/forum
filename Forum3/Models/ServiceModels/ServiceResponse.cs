@@ -4,8 +4,13 @@ using System.Linq;
 namespace Forum3.Models.ServiceModels {
 	public class ServiceResponse {
 		public string Message { get; set; }
-		public Dictionary<string, string> Errors { get; set; } = new Dictionary<string, string>();
 		public string RedirectPath { get; set; }
-		public bool Success => !Errors.Any();
+		public bool Success => !ErrorCollection.Any();
+		public Dictionary<string, string> Errors => new Dictionary<string, string>(ErrorCollection);
+
+		Dictionary<string, string> ErrorCollection { get; } = new Dictionary<string, string>();
+
+		public void Error(string message) => Error(string.Empty, message);
+		public void Error(string key, string message) => ErrorCollection[key] = message;
 	}
 }

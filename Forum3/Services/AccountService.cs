@@ -71,7 +71,7 @@ namespace Forum3.Services {
 			}
 			else if (!result.Succeeded) {
 				Logger.LogWarning($"Invalid login attempt for account '{input.Email}'.");
-				serviceResponse.Errors.Add(string.Empty, "Invalid login attempt.");
+				serviceResponse.Error(string.Empty, "Invalid login attempt.");
 			}
 			else
 				Logger.LogInformation($"User logged in '{input.Email}'.");
@@ -123,7 +123,7 @@ namespace Forum3.Services {
 
 			if (!await UserManager.CheckPasswordAsync(ContextUser.ApplicationUser, input.Password)) {
 				var message = $"Invalid password for '{input.DisplayName}'.";
-				serviceResponse.Errors.Add(nameof(InputModels.UpdateAccountInput.Password), message);
+				serviceResponse.Error(nameof(InputModels.UpdateAccountInput.Password), message);
 				Logger.LogWarning(message);
 			}
 
@@ -131,7 +131,7 @@ namespace Forum3.Services {
 
 			if (userRecord == null) {
 				var message = $"No user record found for '{input.DisplayName}'.";
-				serviceResponse.Errors.Add(string.Empty, message);
+				serviceResponse.Error(string.Empty, message);
 				Logger.LogCritical(message);
 			}
 
@@ -139,7 +139,7 @@ namespace Forum3.Services {
 
 			if (account == null) {
 				var message = $"No user account found for '{input.DisplayName}'.";
-				serviceResponse.Errors.Add(string.Empty, message);
+				serviceResponse.Error(string.Empty, message);
 				Logger.LogCritical(message);
 			}
 
@@ -157,42 +157,43 @@ namespace Forum3.Services {
 
 			await DbContext.SaveChangesAsync();
 
-			if (input.Email != userRecord.Id) {
-				var identityResult = await UserManager.SetEmailAsync(account, account.Id);
+			if (input.Email != userRecord.Email) {
+				var identityResult = await UserManager.SetEmailAsync(account, input.Email);
 
 				if (!identityResult.Succeeded) {
 					foreach (var error in identityResult.Errors) {
 						Logger.LogError($"Error modifying email by '{ContextUser.ApplicationUser.Id}' from '{userRecord.Id}' to '{input.Email}'. Message: {error.Description}");
-						serviceResponse.Errors.Add(nameof(InputModels.UpdateAccountInput.Email), error.Description);
+						serviceResponse.Error(nameof(InputModels.UpdateAccountInput.Email), error.Description);
 					}
 				}
 				else if (account.Id == ContextUser.ApplicationUser.Id) {
 					Logger.LogInformation($"Email address was modified by '{ContextUser.ApplicationUser.Id}' from '{userRecord.Id}' to '{input.Email}'.");
-
 					await SignOut();
-
-					// TODO check if email validated is reset. send verification email if not.
-
+					serviceResponse.RedirectPath = UrlHelper.Action(nameof(Login));
 					return serviceResponse;
 				}
 			}
 
 			// This allows admins to reset user passwords as well, assuming they don't set the password to the same thing as theirs.
-			if (input.Password != input.NewPassword) {
+			if (!string.IsNullOrEmpty(input.NewPassword) && input.Password != input.NewPassword) {
 				var identityResult = await UserManager.ChangePasswordAsync(account, input.Password, input.NewPassword);
 
 				if (!identityResult.Succeeded) {
 					foreach (var error in identityResult.Errors) {
 						Logger.LogError($"Error modifying password by '{ContextUser.ApplicationUser.Id}' for '{userRecord.Id}'. Message: {error.Description}");
-						serviceResponse.Errors.Add(nameof(InputModels.UpdateAccountInput.NewPassword), error.Description);
+						serviceResponse.Error(nameof(InputModels.UpdateAccountInput.NewPassword), error.Description);
 					}
 				}
 				else if (account.Id == ContextUser.ApplicationUser.Id) {
 					Logger.LogInformation($"Password was modified by '{ContextUser.ApplicationUser.Id}' for '{userRecord.Id}'.");
 					await SignOut();
+					serviceResponse.RedirectPath = UrlHelper.Action(nameof(Login));
 					return serviceResponse;
 				}
 			}
+
+			if (serviceResponse.Success)
+				serviceResponse.RedirectPath = UrlHelper.Action(nameof(Account.Details), nameof(Account), new { id = input.DisplayName });
 
 			return serviceResponse;
 		}
@@ -241,7 +242,7 @@ namespace Forum3.Services {
 			else {
 				foreach (var error in identityResult.Errors) {
 					Logger.LogError($"Error registering '{input.Email}'. Message: {error.Description}");
-					serviceResponse.Errors.Add(string.Empty, error.Description);
+					serviceResponse.Error(string.Empty, error.Description);
 				}
 			}
 
@@ -274,7 +275,7 @@ namespace Forum3.Services {
 			var account = await UserManager.FindByIdAsync(input.UserId);
 
 			if (account == null)
-				serviceResponse.Errors.Add(string.Empty, $"Unable to load account '{input.UserId}'.");
+				serviceResponse.Error(string.Empty, $"Unable to load account '{input.UserId}'.");
 
 			if (serviceResponse.Success) {
 				var identityResult = await UserManager.ConfirmEmailAsync(account, input.Code);
@@ -282,7 +283,7 @@ namespace Forum3.Services {
 				if (!identityResult.Succeeded) {
 					foreach (var error in identityResult.Errors) {
 						Logger.LogError($"Error confirming '{account.Id}'. Message: {error.Description}");
-						serviceResponse.Errors.Add(string.Empty, error.Description);
+						serviceResponse.Error(string.Empty, error.Description);
 					}
 				}
 				else

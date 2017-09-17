@@ -31,8 +31,12 @@ namespace Forum3.Controllers {
 				var serviceResponse = await AccountService.UpdateAccount(input);
 				ProcessServiceResponse(serviceResponse);
 
-				if (serviceResponse.Success)
-					return RedirectToReferrer();
+				if (serviceResponse.Success) {
+					if (!string.IsNullOrEmpty(serviceResponse.RedirectPath))
+						return Redirect(serviceResponse.RedirectPath);
+					else
+						return RedirectToReferrer();
+				}
 			}
 
 			var viewModel = await AccountService.DetailsPage(input);
@@ -47,8 +51,12 @@ namespace Forum3.Controllers {
 				var serviceResponse = await AccountService.SendVerificationEmail();
 				ProcessServiceResponse(serviceResponse);
 
-				if (ModelState.IsValid)
-					return RedirectToReferrer();
+				if (serviceResponse.Success) {
+					if (!string.IsNullOrEmpty(serviceResponse.RedirectPath))
+						return Redirect(serviceResponse.RedirectPath);
+					else
+						return RedirectToReferrer();
+				}
 			}
 
 			return RedirectToAction(nameof(Profile.Details), nameof(Profile));
@@ -61,8 +69,12 @@ namespace Forum3.Controllers {
 				var serviceResponse = await AccountService.ConfirmEmail(input);
 				ProcessServiceResponse(serviceResponse);
 
-				if (serviceResponse.Success)
-					return RedirectToAction(nameof(Details));
+				if (serviceResponse.Success) {
+					if (!string.IsNullOrEmpty(serviceResponse.RedirectPath))
+						return Redirect(serviceResponse.RedirectPath);
+					else
+						return RedirectToAction(nameof(Details));
+				}
 			}
 
 			return View();

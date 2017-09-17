@@ -24,7 +24,13 @@
 		</dl>
 
 		<dl>
-			<dt>Password</dt>
+			<dt>New Password</dt>
+			<dd><input asp-for="@Model.NewPassword" /></dd>
+			<dd><span asp-validation-for="@Model.NewPassword" class="error"></span></dd>
+		</dl>
+
+		<dl>
+			<dt>Current Password <span class="note">(Required for all changes)</span></dt>
 			<dd><input asp-for="@Model.Password" /></dd>
 			<dd><span asp-validation-for="@Model.Password" class="error"></span></dd>
 		</dl>

@@ -106,15 +106,15 @@ namespace Forum3.Services {
 			var extension = Path.GetExtension(input.File.FileName);
 
 			if (Regex.IsMatch(input.File.FileName, @"[^a-zA-Z 0-9_\-\.]"))
-				serviceResponse.Errors.Add("File", "Your filename contains invalid characters.");
+				serviceResponse.Error("File", "Your filename contains invalid characters.");
 
 			if (!allowedExtensions.Contains(extension))
-				serviceResponse.Errors.Add("File", "Your file must be a gif.");
+				serviceResponse.Error("File", "Your file must be a gif.");
 
 			if (DbContext.Smileys.Any(s => s.Code == input.Code))
-				serviceResponse.Errors.Add(nameof(input.Code), "Another smiley exists with that code.");
+				serviceResponse.Error(nameof(input.Code), "Another smiley exists with that code.");
 
-			if (serviceResponse.Errors.Any())
+			if (serviceResponse.Success)
 				return serviceResponse;
 
 			var smileyRecord = new DataModels.Smiley {
@@ -157,7 +157,7 @@ namespace Forum3.Services {
 				var smileyRecord = await DbContext.Smileys.FindAsync(smileyInput.Id);
 
 				if (smileyRecord == null) {
-					serviceResponse.Errors.Add(string.Empty, $@"No smiley was found with the id '{smileyInput.Id}'");
+					serviceResponse.Error(string.Empty, $@"No smiley was found with the id '{smileyInput.Id}'");
 					break;
 				}
 
@@ -172,7 +172,7 @@ namespace Forum3.Services {
 				}
 			}
 
-			if (serviceResponse.Errors.Any())
+			if (serviceResponse.Success)
 				return serviceResponse;
 
 			await DbContext.SaveChangesAsync();
@@ -187,9 +187,9 @@ namespace Forum3.Services {
 			var smileyRecord = await DbContext.Smileys.FindAsync(id);
 
 			if (smileyRecord == null)
-				serviceResponse.Errors.Add(string.Empty, $@"No smiley was found with the id '{id}'");
+				serviceResponse.Error(string.Empty, $@"No smiley was found with the id '{id}'");
 
-			if (serviceResponse.Errors.Any())
+			if (serviceResponse.Success)
 				return serviceResponse;
 
 			var otherSmileys = DbContext.Smileys.Where(s => s.FileName == smileyRecord.FileName).ToList();
