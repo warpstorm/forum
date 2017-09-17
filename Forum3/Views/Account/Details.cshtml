@@ -10,7 +10,7 @@
 
 		<dl>
 			<dt>Display Name</dt>
-			<dd><input type="text" asp-for="@Model.DisplayName" /></dd>
+			<dd><input asp-for="@Model.DisplayName" /></dd>
 			<dd><span asp-validation-for="@Model.DisplayName" class="error"></span></dd>
 		</dl>
 
@@ -21,6 +21,12 @@
 				<dd><a asp-action="@nameof(Account.SendVerificationEmail)" class="button">Send verification email</a></dd>
 			}
 			<dd><span asp-validation-for="@Model.Email" class="error"></span></dd>
+		</dl>
+
+		<dl>
+			<dt>Password</dt>
+			<dd><input asp-for="@Model.Password" /></dd>
+			<dd><span asp-validation-for="@Model.Password" class="error"></span></dd>
 		</dl>
 
 		<ul>

@@ -79,33 +79,39 @@ namespace Forum3.Services {
 			return serviceResponse;
 		}
 
-		public async Task<ViewModels.DetailsPage> DetailsPage(InputModels.UpdateAccountInput input) {
-			var viewModel = await DetailsPage(input.Id);
+		public async Task<ViewModels.DetailsPage> DetailsPage(string displayName) {
+			if (string.IsNullOrEmpty(displayName))
+				displayName = ContextUser.ApplicationUser.DisplayName;
 
-			viewModel.DisplayName = input.DisplayName;
-			viewModel.Email = input.Email;
-
-			return viewModel;
-		}
-
-		public async Task<ViewModels.DetailsPage> DetailsPage(string id) {
-			if (string.IsNullOrEmpty(id))
-				id = ContextUser.ApplicationUser.Id;
-
-			var userRecord = await DbContext.Users.FindAsync(id);
+			var userRecord = await DbContext.Users.SingleOrDefaultAsync(u => u.DisplayName == displayName);
 
 			if (userRecord == null) {
-				var message = $"No record found with the id {id}";
-				Logger.LogInformation(message);
-				throw new Exception(message);
+				var message = $"No record found with the display name '{displayName}'";
+				Logger.LogWarning(message);
+				throw new ApplicationException("You hackin' bro?");
 			}
 
 			// TODO check ownership / admin rights
 
 			var viewModel = new ViewModels.DetailsPage {
+				Id = userRecord.Id,
 				DisplayName = userRecord.DisplayName,
-				Id = userRecord.Email,
 				Email = userRecord.Email,
+				EmailConfirmed = userRecord.EmailConfirmed
+			};
+
+			return viewModel;
+		}
+
+		public async Task<ViewModels.DetailsPage> DetailsPage(InputModels.UpdateAccountInput input) {
+			// TODO check ownership / admin rights
+
+			var userRecord = await DbContext.Users.FindAsync(input.Id);
+
+			var viewModel = new ViewModels.DetailsPage {
+				Id = input.Id,
+				DisplayName = input.DisplayName,
+				Email = input.Email,
 				EmailConfirmed = userRecord.EmailConfirmed
 			};
 
@@ -116,7 +122,7 @@ namespace Forum3.Services {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			if (!await UserManager.CheckPasswordAsync(ContextUser.ApplicationUser, input.Password)) {
-				var message = $"Invalid password for '{input.Id}'.";
+				var message = $"Invalid password for '{input.DisplayName}'.";
 				serviceResponse.Errors.Add(nameof(InputModels.UpdateAccountInput.Password), message);
 				Logger.LogWarning(message);
 			}
@@ -124,16 +130,16 @@ namespace Forum3.Services {
 			var userRecord = await DbContext.Users.FindAsync(input.Id);
 
 			if (userRecord == null) {
-				var message = $"No user record found with the id '{input.Id}'.";
-				serviceResponse.Errors.Add(null, message);
+				var message = $"No user record found for '{input.DisplayName}'.";
+				serviceResponse.Errors.Add(string.Empty, message);
 				Logger.LogCritical(message);
 			}
 
 			var account = await UserManager.FindByIdAsync(input.Id);
 
 			if (account == null) {
-				var message = $"No user account found with the id '{input.Id}'.";
-				serviceResponse.Errors.Add(null, message);
+				var message = $"No user account found for '{input.DisplayName}'.";
+				serviceResponse.Errors.Add(string.Empty, message);
 				Logger.LogCritical(message);
 			}
 
@@ -146,7 +152,7 @@ namespace Forum3.Services {
 				userRecord.DisplayName = input.DisplayName;
 				DbContext.Entry(userRecord).State = EntityState.Modified;
 
-				Logger.LogInformation($"Display name was modified by '{ContextUser.ApplicationUser.Id}' for account '{userRecord.Id}'.");
+				Logger.LogInformation($"Display name was modified by '{ContextUser.ApplicationUser.Id}' for account '{userRecord.DisplayName}'.");
 			}
 
 			await DbContext.SaveChangesAsync();
@@ -227,7 +233,7 @@ namespace Forum3.Services {
 				var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
 				var callbackUrl = EmailConfirmationLink(user.Id, code);
 
-				if (EmailSender == null)
+				if (!EmailSender.Ready)
 					serviceResponse.RedirectPath = callbackUrl;
 				else
 					await EmailSender.SendEmailConfirmationAsync(input.Email, callbackUrl);
@@ -235,7 +241,7 @@ namespace Forum3.Services {
 			else {
 				foreach (var error in identityResult.Errors) {
 					Logger.LogError($"Error registering '{input.Email}'. Message: {error.Description}");
-					serviceResponse.Errors.Add(null, error.Description);
+					serviceResponse.Errors.Add(string.Empty, error.Description);
 				}
 			}
 
@@ -249,7 +255,12 @@ namespace Forum3.Services {
 
 			var code = await UserManager.GenerateEmailConfirmationTokenAsync(ContextUser.ApplicationUser);
 			var callbackUrl = EmailConfirmationLink(ContextUser.ApplicationUser.Id, code);
-			var email = ContextUser.ApplicationUser.Id;
+			var email = ContextUser.ApplicationUser.Email;
+
+			if (!EmailSender.Ready) {
+				serviceResponse.RedirectPath = callbackUrl;
+				return serviceResponse;
+			}
 
 			await EmailSender.SendEmailConfirmationAsync(email, callbackUrl);
 
@@ -263,7 +274,7 @@ namespace Forum3.Services {
 			var account = await UserManager.FindByIdAsync(input.UserId);
 
 			if (account == null)
-				serviceResponse.Errors.Add(null, $"Unable to load account '{input.UserId}'.");
+				serviceResponse.Errors.Add(string.Empty, $"Unable to load account '{input.UserId}'.");
 
 			if (serviceResponse.Success) {
 				var identityResult = await UserManager.ConfirmEmailAsync(account, input.Code);
@@ -271,7 +282,7 @@ namespace Forum3.Services {
 				if (!identityResult.Succeeded) {
 					foreach (var error in identityResult.Errors) {
 						Logger.LogError($"Error confirming '{account.Id}'. Message: {error.Description}");
-						serviceResponse.Errors.Add(null, error.Description);
+						serviceResponse.Errors.Add(string.Empty, error.Description);
 					}
 				}
 				else
@@ -297,17 +308,21 @@ namespace Forum3.Services {
 		public async Task<ServiceModels.ServiceResponse> ForgotPassword(InputModels.ForgotPasswordInput input) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
-			var account = await UserManager.FindByEmailAsync(input.Email);
+			var account = await UserManager.FindByNameAsync(input.Email);
 
 			if (account != null && await UserManager.IsEmailConfirmedAsync(account)) {
 				var code = await UserManager.GeneratePasswordResetTokenAsync(account);
 				var callbackUrl = ResetPasswordCallbackLink(account.Id, code);
 
-				if (EmailSender != null)
-					await EmailSender.SendEmailAsync(input.Email, "Reset Password", $"Please reset your password by clicking here: <a href='{callbackUrl}'>link</a>");
+				if (!EmailSender.Ready) {
+					serviceResponse.RedirectPath = callbackUrl;
+					return serviceResponse;
+				}
+
+				await EmailSender.SendEmailAsync(input.Email, "Reset Password", $"Please reset your password by clicking here: <a href='{callbackUrl}'>link</a>");
 			}
 
-			serviceResponse.RedirectPath = nameof(Account.ForgotPasswordConfirmation);
+			serviceResponse.RedirectPath = UrlHelper.Action(nameof(Account.ForgotPasswordConfirmation));
 			return serviceResponse;
 		}
 

@@ -124,6 +124,7 @@ namespace Forum3.Controllers {
 		public async Task<IActionResult> Register(InputModels.RegisterInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await AccountService.Register(input);
+				ProcessServiceResponse(serviceResponse);
 
 				if (serviceResponse.Success) {
 					if (!string.IsNullOrEmpty(serviceResponse.RedirectPath))
@@ -148,6 +149,7 @@ namespace Forum3.Controllers {
 		public async Task<IActionResult> ForgotPassword(InputModels.ForgotPasswordInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await AccountService.ForgotPassword(input);
+				ProcessServiceResponse(serviceResponse);
 
 				if (serviceResponse.Success) {
 					if (!string.IsNullOrEmpty(serviceResponse.RedirectPath))
@@ -175,6 +177,7 @@ namespace Forum3.Controllers {
 		public async Task<IActionResult> ResetPassword(InputModels.ResetPasswordInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await AccountService.ResetPassword(input);
+				ProcessServiceResponse(serviceResponse);
 
 				if (serviceResponse.Success) {
 					if (!string.IsNullOrEmpty(serviceResponse.RedirectPath))

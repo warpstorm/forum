@@ -166,7 +166,7 @@ namespace Forum3.Services {
 			var record = await DbContext.Messages.SingleAsync(m => m.Id == messageId);
 
 			if (record == null)
-				serviceResponse.Errors.Add(null, $@"No record was found with the id '{messageId}'");
+				serviceResponse.Errors.Add(string.Empty, $@"No record was found with the id '{messageId}'");
 
 			if (serviceResponse.Errors.Any())
 				return serviceResponse;
@@ -221,7 +221,7 @@ namespace Forum3.Services {
 			var record = await DbContext.Messages.FindAsync(messageId);
 
 			if (record == null)
-				serviceResponse.Errors.Add(null, $@"No record was found with the id '{messageId}'");
+				serviceResponse.Errors.Add(string.Empty, $@"No record was found with the id '{messageId}'");
 
 			if (record.ParentId > 0)
 				messageId = record.ParentId;
@@ -251,12 +251,12 @@ namespace Forum3.Services {
 			var messageRecord = await DbContext.Messages.FindAsync(input.MessageId);
 
 			if (messageRecord == null)
-				serviceResponse.Errors.Add(null, $@"No message was found with the id '{input.MessageId}'");
+				serviceResponse.Errors.Add(string.Empty, $@"No message was found with the id '{input.MessageId}'");
 
 			var smileyRecord = await DbContext.Smileys.FindAsync(input.SmileyId);
 
 			if (messageRecord == null)
-				serviceResponse.Errors.Add(null, $@"No smiley was found with the id '{input.SmileyId}'");
+				serviceResponse.Errors.Add(string.Empty, $@"No smiley was found with the id '{input.SmileyId}'");
 
 			if (serviceResponse.Errors.Any())
 				return serviceResponse;

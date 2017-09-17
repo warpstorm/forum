@@ -3,7 +3,6 @@
 namespace Forum3.Models.InputModels {
 	public class UpdateAccountInput {
 		[Required]
-		[EmailAddress]
 		public string Id { get; set; }
 
 		[Required]

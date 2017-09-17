@@ -10,18 +10,18 @@
 
 		<dl>
 			<dt>Username (email address)</dt>
-			<dd><input asp-for="Email" /></dd>
-			<dd><span asp-validation-for="Email" class="error"></span></dd>
+			<dd><input asp-for="@Model.Email" /></dd>
+			<dd><span asp-validation-for="@Model.Email" class="error"></span></dd>
 		</dl>
 
 		<dl>
 			<dt>Password</dt>
-			<dd><input asp-for="Password" /></dd>
-			<dd><span asp-validation-for="Password" class="error"></span></dd>
+			<dd><input asp-for="@Model.Password" /></dd>
+			<dd><span asp-validation-for="@Model.Password" class="error"></span></dd>
 		</dl>
 
 		<dl>
-			<dt><input asp-for="RememberMe" /> Remember Me</dt>
+			<dt><input asp-for="@Model.RememberMe" /> Remember Me</dt>
 		</dl>
 
 		<ul>

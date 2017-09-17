@@ -1,33 +1,39 @@
-﻿@model RegisterViewModel
+﻿@model ViewModels.RegisterPage
 
 <section class="content-box pad">
 	<form method="post"
-		  asp-controller="@nameof(Authentication)"
-		  asp-action="@nameof(Authentication.Register)"
+		  asp-controller="@nameof(Account)"
+		  asp-action="@nameof(Account.Register)"
 		  asp-route-returnurl="@ViewData["Referrer"]">
 
 		<div asp-validation-summary="All" class="error"></div>
 
 		<dl>
 			<dt>Display Name</dt>
-			<dd><input asp-for="DisplayName" /></dd>
-			<dd><span asp-validation-for="DisplayName" class="error"></span></dd>
+			<dd><input asp-for="@Model.DisplayName" /></dd>
+			<dd><span asp-validation-for="@Model.DisplayName" class="error"></span></dd>
 		</dl>
 
 		<dl>
 			<dt>Username (email address)</dt>
-			<dd><input asp-for="Email" /></dd>
-			<dd><span asp-validation-for="Email" class="error"></span></dd>
+			<dd><input asp-for="@Model.Email" /></dd>
+			<dd><span asp-validation-for="@Model.Email" class="error"></span></dd>
+		</dl>
+
+		<dl>
+			<dt>Confirm your email</dt>
+			<dd><input asp-for="@Model.ConfirmEmail" /></dd>
+			<dd><span asp-validation-for="@Model.ConfirmEmail" class="error"></span></dd>
 		</dl>
 
 		<dl>
 			<dt>Password</dt>
-			<dd><input asp-for="Password" /></dd>
-			<dd><span asp-validation-for="Password" class="error"></span></dd>
+			<dd><input asp-for="@Model.Password" /></dd>
+			<dd><span asp-validation-for="@Model.Password" class="error"></span></dd>
 
 			<dt>Confirm Password</dt>
-			<dd><input asp-for="ConfirmPassword" /></dd>
-			<dd><span asp-validation-for="ConfirmPassword" class="error"></span></dd>
+			<dd><input asp-for="@Model.ConfirmPassword" /></dd>
+			<dd><span asp-validation-for="@Model.ConfirmPassword" class="error"></span></dd>
 		</dl>
 
 		<ul>

@@ -7,9 +7,12 @@ using Forum3.Models.ServiceModels;
 using System.Text.Encodings.Web;
 using Microsoft.Extensions.Logging;
 using System.Net;
+using System;
 
 namespace Forum3.Services {
 	public class EmailSender : IEmailSender {
+		public bool Ready { get; }
+
 		EmailSenderOptions Options { get; }
 		ILogger Logger { get; }
 
@@ -19,6 +22,12 @@ namespace Forum3.Services {
 		) {
 			Options = optionsAccessor.Value;
 			Logger = logger;
+
+			if (Options.SendGridKey != null 
+				&& Options.SendGridUser != null
+				&& Options.FromName != null
+				&& Options.FromAddress != null)
+				Ready = true;
 		}
 
 		public Task SendEmailAsync(string email, string subject, string message) {
@@ -34,6 +43,9 @@ namespace Forum3.Services {
 		}
 
 		public async Task Execute(string apiKey, string subject, string message, string email) {
+			if (!Ready)
+				throw new ApplicationException("EmailSender is not ready.");
+
 			var client = new SendGridClient(apiKey);
 
 			var msg = new SendGridMessage() {
