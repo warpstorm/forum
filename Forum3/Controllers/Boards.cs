@@ -86,7 +86,7 @@ namespace Forum3.Controllers {
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> MergeCategory(Merge input) {
+		public async Task<IActionResult> MergeCategory(MergeInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await BoardService.MergeCategory(input);
 
@@ -98,7 +98,7 @@ namespace Forum3.Controllers {
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> MergeBoard(Merge input) {
+		public async Task<IActionResult> MergeBoard(MergeInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await BoardService.MergeBoard(input);
 
