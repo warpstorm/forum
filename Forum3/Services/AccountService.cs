@@ -152,26 +152,62 @@ namespace Forum3.Services {
 				userRecord.DisplayName = input.DisplayName;
 				DbContext.Entry(userRecord).State = EntityState.Modified;
 
-				Logger.LogInformation($"Display name was modified by '{ContextUser.ApplicationUser.Id}' for account '{userRecord.DisplayName}'.");
+				Logger.LogInformation($"Display name was modified by '{ContextUser.ApplicationUser.Email}' for account '{userRecord.DisplayName}'.");
 			}
 
 			await DbContext.SaveChangesAsync();
 
 			if (input.Email != userRecord.Email) {
+				serviceResponse.RedirectPath = UrlHelper.Action(nameof(Account.Details), nameof(Account), new { id = input.DisplayName });
+
 				var identityResult = await UserManager.SetEmailAsync(account, input.Email);
 
 				if (!identityResult.Succeeded) {
 					foreach (var error in identityResult.Errors) {
-						Logger.LogError($"Error modifying email by '{ContextUser.ApplicationUser.Id}' from '{userRecord.Id}' to '{input.Email}'. Message: {error.Description}");
-						serviceResponse.Error(nameof(InputModels.UpdateAccountInput.Email), error.Description);
+						Logger.LogError($"Error modifying email by '{ContextUser.ApplicationUser.Email}' from '{userRecord.Email}' to '{input.Email}'. Message: {error.Description}");
+						serviceResponse.Error(error.Description);
 					}
-				}
-				else if (account.Id == ContextUser.ApplicationUser.Id) {
-					Logger.LogInformation($"Email address was modified by '{ContextUser.ApplicationUser.Id}' from '{userRecord.Id}' to '{input.Email}'.");
-					await SignOut();
-					serviceResponse.RedirectPath = UrlHelper.Action(nameof(Login));
+
 					return serviceResponse;
 				}
+
+				identityResult = await UserManager.SetUserNameAsync(account, input.Email);
+
+				if (!identityResult.Succeeded) {
+					foreach (var error in identityResult.Errors) {
+						Logger.LogError($"Error modifying username by '{ContextUser.ApplicationUser.Email}' from '{userRecord.Id}' to '{input.Email}'. Message: {error.Description}");
+						serviceResponse.Error(error.Description);
+					}
+
+					return serviceResponse;
+				}
+
+				Logger.LogInformation($"Email address was modified by '{ContextUser.ApplicationUser.Email}' from '{userRecord.Id}' to '{input.Email}'.");
+
+				var code = await UserManager.GenerateEmailConfirmationTokenAsync(account);
+
+				if (EmailSender.Ready) {
+					var callbackUrl = EmailConfirmationLink(account.Id, code);
+
+					await EmailSender.SendEmailConfirmationAsync(input.Email, callbackUrl);
+
+					if (account.Id == ContextUser.ApplicationUser.Id)
+						await SignOut();
+				}
+				else {
+					identityResult = await UserManager.ConfirmEmailAsync(account, code);
+
+					if (!identityResult.Succeeded) {
+						foreach (var error in identityResult.Errors) {
+							Logger.LogError($"Error confirming '{account.Email}'. Message: {error.Description}");
+							serviceResponse.Error(string.Empty, error.Description);
+						}
+					}
+					else
+						Logger.LogInformation($"User confirmed email '{account.Email}'.");
+				}
+
+				return serviceResponse;
 			}
 
 			// This allows admins to reset user passwords as well, assuming they don't set the password to the same thing as theirs.
@@ -180,12 +216,12 @@ namespace Forum3.Services {
 
 				if (!identityResult.Succeeded) {
 					foreach (var error in identityResult.Errors) {
-						Logger.LogError($"Error modifying password by '{ContextUser.ApplicationUser.Id}' for '{userRecord.Id}'. Message: {error.Description}");
+						Logger.LogError($"Error modifying password by '{ContextUser.ApplicationUser.Email}' for '{userRecord.Email}'. Message: {error.Description}");
 						serviceResponse.Error(nameof(InputModels.UpdateAccountInput.NewPassword), error.Description);
 					}
 				}
 				else if (account.Id == ContextUser.ApplicationUser.Id) {
-					Logger.LogInformation($"Password was modified by '{ContextUser.ApplicationUser.Id}' for '{userRecord.Id}'.");
+					Logger.LogInformation($"Password was modified by '{ContextUser.ApplicationUser.Email}' for '{userRecord.Email}'.");
 					await SignOut();
 					serviceResponse.RedirectPath = UrlHelper.Action(nameof(Login));
 					return serviceResponse;
@@ -234,10 +270,12 @@ namespace Forum3.Services {
 				var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
 				var callbackUrl = EmailConfirmationLink(user.Id, code);
 
-				if (!EmailSender.Ready)
+				if (!EmailSender.Ready) {
 					serviceResponse.RedirectPath = callbackUrl;
-				else
-					await EmailSender.SendEmailConfirmationAsync(input.Email, callbackUrl);
+					return serviceResponse;
+				}
+
+				await EmailSender.SendEmailConfirmationAsync(input.Email, callbackUrl);
 			}
 			else {
 				foreach (var error in identityResult.Errors) {
@@ -282,7 +320,7 @@ namespace Forum3.Services {
 
 				if (!identityResult.Succeeded) {
 					foreach (var error in identityResult.Errors) {
-						Logger.LogError($"Error confirming '{account.Id}'. Message: {error.Description}");
+						Logger.LogError($"Error confirming '{account.Email}'. Message: {error.Description}");
 						serviceResponse.Error(string.Empty, error.Description);
 					}
 				}
@@ -349,10 +387,10 @@ namespace Forum3.Services {
 
 				if (!identityResult.Succeeded) {
 					foreach (var error in identityResult.Errors)
-						Logger.LogError($"Error resetting password for '{account.Id}'. Message: {error.Description}");
+						Logger.LogError($"Error resetting password for '{account.Email}'. Message: {error.Description}");
 				}
 				else
-					Logger.LogInformation($"Password was reset for '{account.Id}'.");
+					Logger.LogInformation($"Password was reset for '{account.Email}'.");
 			}
 
 			serviceResponse.RedirectPath = nameof(Account.ResetPasswordConfirmation);

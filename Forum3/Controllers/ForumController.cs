@@ -69,7 +69,7 @@ namespace Forum3.Controllers {
 			if (string.IsNullOrEmpty(referrer))
 				referrer = Request.Headers["Referer"].ToString();
 
-			if (string.IsNullOrEmpty(referrer) || !Regex.IsMatch(referrer, @"^(https?\:\/\/)(.*?)\/(.*)$", RegexOptions.IgnoreCase))
+			if (string.IsNullOrEmpty(referrer))
 				return "/";
 
 			return referrer;
