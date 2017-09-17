@@ -17,7 +17,6 @@ namespace Forum3.Controllers {
 	/// Eventually this will be migrated and cleaned up under an AuthenticationService class.
 	/// </summary>
 	[AllowAnonymous]
-	[Route("[controller]/[action]")]
 	public class Authentication : ForumController {
 		UserManager<ApplicationUser> UserManager { get; }
 		SignInManager<ApplicationUser> SignInManager { get; }
