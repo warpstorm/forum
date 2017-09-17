@@ -82,21 +82,21 @@ namespace Forum3.Services {
 				input.Name = input.Name.Trim();
 
 			if (string.IsNullOrEmpty(input.Name))
-				serviceResponse.ModelErrors.Add(nameof(InputModels.CreateRoleInput.Name), "Name is required");
+				serviceResponse.Errors.Add(nameof(InputModels.CreateRoleInput.Name), "Name is required");
 
 			if (input.Description != null)
 				input.Description = input.Description.Trim();
 
 			if (string.IsNullOrEmpty(input.Description))
-				serviceResponse.ModelErrors.Add(nameof(InputModels.CreateRoleInput.Description), "Description is required");
+				serviceResponse.Errors.Add(nameof(InputModels.CreateRoleInput.Description), "Description is required");
 
-			if (serviceResponse.ModelErrors.Any())
+			if (serviceResponse.Errors.Any())
 				return serviceResponse;
 
 			if (await RoleManager.FindByNameAsync(input.Name) != null)
-				serviceResponse.ModelErrors.Add(nameof(InputModels.CreateRoleInput.Name), "A role with this name already exists");
+				serviceResponse.Errors.Add(nameof(InputModels.CreateRoleInput.Name), "A role with this name already exists");
 
-			if (serviceResponse.ModelErrors.Any())
+			if (serviceResponse.Errors.Any())
 				return serviceResponse;
 
 			await CreateRecord(input);
@@ -141,29 +141,29 @@ namespace Forum3.Services {
 			var record = await RoleManager.FindByIdAsync(input.Id);
 
 			if (record == null)
-				serviceResponse.ModelErrors.Add(nameof(InputModels.EditRoleInput.Id), $"A record does not exist with ID '{input.Id}'");
+				serviceResponse.Errors.Add(nameof(InputModels.EditRoleInput.Id), $"A record does not exist with ID '{input.Id}'");
 
 			if (input.Name != null)
 				input.Name = input.Name.Trim();
 
 			if (string.IsNullOrEmpty(input.Name))
-				serviceResponse.ModelErrors.Add(nameof(InputModels.EditRoleInput.Name), "Name is required");
+				serviceResponse.Errors.Add(nameof(InputModels.EditRoleInput.Name), "Name is required");
 
 			if (input.Description != null)
 				input.Description = input.Description.Trim();
 
 			if (string.IsNullOrEmpty(input.Description))
-				serviceResponse.ModelErrors.Add(nameof(InputModels.EditRoleInput.Description), "Description is required");
+				serviceResponse.Errors.Add(nameof(InputModels.EditRoleInput.Description), "Description is required");
 
-			if (serviceResponse.ModelErrors.Any())
+			if (serviceResponse.Errors.Any())
 				return serviceResponse;
 
 			var existingRole = await RoleManager.FindByNameAsync(input.Name);
 
 			if (existingRole != null && existingRole.Id != input.Id)
-				serviceResponse.ModelErrors.Add(nameof(InputModels.EditRoleInput.Name), "A role with this name already exists");
+				serviceResponse.Errors.Add(nameof(InputModels.EditRoleInput.Name), "A role with this name already exists");
 
-			if (serviceResponse.ModelErrors.Any())
+			if (serviceResponse.Errors.Any())
 				return serviceResponse;
 
 			var modified = false;
@@ -230,14 +230,14 @@ namespace Forum3.Services {
 			var roleRecord = await RoleManager.FindByIdAsync(roleId);
 
 			if (roleRecord == null)
-				serviceResponse.ModelErrors.Add(string.Empty, $"A record does not exist with ID '{roleId}'");
+				serviceResponse.Errors.Add(string.Empty, $"A record does not exist with ID '{roleId}'");
 
 			var userRecord = await UserManager.FindByIdAsync(userId);
 
 			if (userRecord == null)
-				serviceResponse.ModelErrors.Add(string.Empty, $"A record does not exist with ID '{roleId}'");
+				serviceResponse.Errors.Add(string.Empty, $"A record does not exist with ID '{roleId}'");
 
-			if (serviceResponse.ModelErrors.Any())
+			if (serviceResponse.Errors.Any())
 				return serviceResponse;
 
 			var result = await UserManager.AddToRoleAsync(userRecord, roleRecord.Name);
@@ -258,14 +258,14 @@ namespace Forum3.Services {
 			var roleRecord = await RoleManager.FindByIdAsync(roleId);
 
 			if (roleRecord == null)
-				serviceResponse.ModelErrors.Add(string.Empty, $"A record does not exist with ID '{roleId}'");
+				serviceResponse.Errors.Add(string.Empty, $"A record does not exist with ID '{roleId}'");
 
 			var userRecord = await UserManager.FindByIdAsync(userId);
 
 			if (userRecord == null)
-				serviceResponse.ModelErrors.Add(string.Empty, $"A record does not exist with ID '{roleId}'");
+				serviceResponse.Errors.Add(string.Empty, $"A record does not exist with ID '{roleId}'");
 
-			if (serviceResponse.ModelErrors.Any())
+			if (serviceResponse.Errors.Any())
 				return serviceResponse;
 
 			var result = await UserManager.RemoveFromRoleAsync(userRecord, roleRecord.Name);

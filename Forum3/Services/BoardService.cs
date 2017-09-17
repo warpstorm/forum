@@ -117,7 +117,7 @@ namespace Forum3.Services {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			if (await DbContext.Boards.AnyAsync(b => b.Name == input.Name))
-				serviceResponse.ModelErrors.Add(nameof(input.Name), "A board with that name already exists");
+				serviceResponse.Errors.Add(nameof(input.Name), "A board with that name already exists");
 
 			DataModels.Category categoryRecord = null;
 
@@ -144,10 +144,10 @@ namespace Forum3.Services {
 					categoryRecord = await DbContext.Categories.SingleOrDefaultAsync(c => c.Id == categoryId);
 
 					if (categoryRecord == null)
-						serviceResponse.ModelErrors.Add(nameof(input.Category), "No category was found with this ID.");
+						serviceResponse.Errors.Add(nameof(input.Category), "No category was found with this ID.");
 				}
 				catch (FormatException) {
-					serviceResponse.ModelErrors.Add(nameof(input.Category), "Invalid category ID");
+					serviceResponse.Errors.Add(nameof(input.Category), "Invalid category ID");
 				}
 			}
 
@@ -155,7 +155,7 @@ namespace Forum3.Services {
 				input.Name = input.Name.Trim();
 
 			if (string.IsNullOrEmpty(input.Name))
-				serviceResponse.ModelErrors.Add(nameof(input.Name), "Name is a required field.");
+				serviceResponse.Errors.Add(nameof(input.Name), "Name is a required field.");
 
 			if (!string.IsNullOrEmpty(input.Description))
 				input.Description = input.Description.Trim();
@@ -163,9 +163,9 @@ namespace Forum3.Services {
 			var existingRecord = await DbContext.Boards.SingleOrDefaultAsync(b => b.Name == input.Name);
 
 			if (existingRecord != null)
-				serviceResponse.ModelErrors.Add(nameof(input.Name), "A board with that name already exists");
+				serviceResponse.Errors.Add(nameof(input.Name), "A board with that name already exists");
 
-			if (serviceResponse.ModelErrors.Any())
+			if (serviceResponse.Errors.Any())
 				return serviceResponse;
 
 			await DbContext.SaveChangesAsync();
@@ -190,7 +190,7 @@ namespace Forum3.Services {
 			var record = await DbContext.Boards.SingleOrDefaultAsync(b => b.Id == input.Id);
 
 			if (record == null)
-				serviceResponse.ModelErrors.Add(string.Empty, $"A record does not exist with ID '{input.Id}'");
+				serviceResponse.Errors.Add(string.Empty, $"A record does not exist with ID '{input.Id}'");
 
 			DataModels.Category newCategoryRecord = null;
 
@@ -217,10 +217,10 @@ namespace Forum3.Services {
 					newCategoryRecord = await DbContext.Categories.SingleOrDefaultAsync(c => c.Id == newCategoryId);
 
 					if (newCategoryRecord == null)
-						serviceResponse.ModelErrors.Add(nameof(input.Category), "No category was found with this ID.");
+						serviceResponse.Errors.Add(nameof(input.Category), "No category was found with this ID.");
 				}
 				catch (FormatException) {
-					serviceResponse.ModelErrors.Add(nameof(input.Category), "Invalid category ID");
+					serviceResponse.Errors.Add(nameof(input.Category), "Invalid category ID");
 				}
 			}
 
@@ -228,12 +228,12 @@ namespace Forum3.Services {
 				input.Name = input.Name.Trim();
 
 			if (string.IsNullOrEmpty(input.Name))
-				serviceResponse.ModelErrors.Add(nameof(input.Name), "Name is a required field.");
+				serviceResponse.Errors.Add(nameof(input.Name), "Name is a required field.");
 
 			if (!string.IsNullOrEmpty(input.Description))
 				input.Description = input.Description.Trim();
 
-			if (serviceResponse.ModelErrors.Any())
+			if (serviceResponse.Errors.Any())
 				return serviceResponse;
 
 			record.Name = input.Name;
@@ -270,7 +270,7 @@ namespace Forum3.Services {
 			var targetCategory = DbContext.Categories.FirstOrDefault(b => b.Id == id);
 
 			if (targetCategory == null) {
-				serviceResponse.ModelErrors.Add(string.Empty, "No category found with that ID.");
+				serviceResponse.Errors.Add(string.Empty, "No category found with that ID.");
 				return serviceResponse;
 			}
 
@@ -295,7 +295,7 @@ namespace Forum3.Services {
 			var targetBoard = await DbContext.Boards.FirstOrDefaultAsync(b => b.Id == id);
 
 			if (targetBoard == null) {
-				serviceResponse.ModelErrors.Add(string.Empty, "No board found with that ID.");
+				serviceResponse.Errors.Add(string.Empty, "No board found with that ID.");
 				return serviceResponse;
 			}
 
@@ -331,19 +331,19 @@ namespace Forum3.Services {
 			return serviceResponse;
 		}
 
-		public async Task<ServiceModels.ServiceResponse> MergeCategory(InputModels.Merge input) {
+		public async Task<ServiceModels.ServiceResponse> MergeCategory(InputModels.MergeInput input) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			var fromCategory = await DbContext.Categories.SingleOrDefaultAsync(b => b.Id == input.FromId);
 			var toCategory = await DbContext.Categories.SingleOrDefaultAsync(b => b.Id == input.ToId);
 
 			if (fromCategory == null)
-				serviceResponse.ModelErrors.Add(string.Empty, $"A record does not exist with ID '{input.FromId}'");
+				serviceResponse.Errors.Add(string.Empty, $"A record does not exist with ID '{input.FromId}'");
 
 			if (toCategory == null)
-				serviceResponse.ModelErrors.Add(string.Empty, $"A record does not exist with ID '{input.ToId}'");
+				serviceResponse.Errors.Add(string.Empty, $"A record does not exist with ID '{input.ToId}'");
 
-			if (serviceResponse.ModelErrors.Any())
+			if (serviceResponse.Errors.Any())
 				return serviceResponse;
 
 			var displacedBoards = await DbContext.Boards.Where(b => b.CategoryId == fromCategory.Id).ToListAsync();
@@ -362,19 +362,19 @@ namespace Forum3.Services {
 			return serviceResponse;
 		}
 
-		public async Task<ServiceModels.ServiceResponse> MergeBoard(InputModels.Merge input) {
+		public async Task<ServiceModels.ServiceResponse> MergeBoard(InputModels.MergeInput input) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			var fromBoard = await DbContext.Boards.SingleOrDefaultAsync(b => b.Id == input.FromId);
 			var toBoard = await DbContext.Boards.SingleOrDefaultAsync(b => b.Id == input.ToId);
 
 			if (fromBoard == null)
-				serviceResponse.ModelErrors.Add(string.Empty, $"A record does not exist with ID '{input.FromId}'");
+				serviceResponse.Errors.Add(string.Empty, $"A record does not exist with ID '{input.FromId}'");
 
 			if (toBoard == null)
-				serviceResponse.ModelErrors.Add(string.Empty, $"A record does not exist with ID '{input.ToId}'");
+				serviceResponse.Errors.Add(string.Empty, $"A record does not exist with ID '{input.ToId}'");
 
-			if (serviceResponse.ModelErrors.Any())
+			if (serviceResponse.Errors.Any())
 				return serviceResponse;
 
 			var messageBoards = await DbContext.MessageBoards.Where(m => m.BoardId == fromBoard.Id).ToListAsync();

@@ -106,15 +106,15 @@ namespace Forum3.Services {
 			var extension = Path.GetExtension(input.File.FileName);
 
 			if (Regex.IsMatch(input.File.FileName, @"[^a-zA-Z 0-9_\-\.]"))
-				serviceResponse.ModelErrors.Add("File", "Your filename contains invalid characters.");
+				serviceResponse.Errors.Add("File", "Your filename contains invalid characters.");
 
 			if (!allowedExtensions.Contains(extension))
-				serviceResponse.ModelErrors.Add("File", "Your file must be a gif.");
+				serviceResponse.Errors.Add("File", "Your file must be a gif.");
 
 			if (DbContext.Smileys.Any(s => s.Code == input.Code))
-				serviceResponse.ModelErrors.Add(nameof(input.Code), "Another smiley exists with that code.");
+				serviceResponse.Errors.Add(nameof(input.Code), "Another smiley exists with that code.");
 
-			if (serviceResponse.ModelErrors.Any())
+			if (serviceResponse.Errors.Any())
 				return serviceResponse;
 
 			var smileyRecord = new DataModels.Smiley {
@@ -157,7 +157,7 @@ namespace Forum3.Services {
 				var smileyRecord = await DbContext.Smileys.FindAsync(smileyInput.Id);
 
 				if (smileyRecord == null) {
-					serviceResponse.ModelErrors.Add(null, $@"No smiley was found with the id '{smileyInput.Id}'");
+					serviceResponse.Errors.Add(null, $@"No smiley was found with the id '{smileyInput.Id}'");
 					break;
 				}
 
@@ -172,7 +172,7 @@ namespace Forum3.Services {
 				}
 			}
 
-			if (serviceResponse.ModelErrors.Any())
+			if (serviceResponse.Errors.Any())
 				return serviceResponse;
 
 			await DbContext.SaveChangesAsync();
@@ -187,9 +187,9 @@ namespace Forum3.Services {
 			var smileyRecord = await DbContext.Smileys.FindAsync(id);
 
 			if (smileyRecord == null)
-				serviceResponse.ModelErrors.Add(null, $@"No smiley was found with the id '{id}'");
+				serviceResponse.Errors.Add(null, $@"No smiley was found with the id '{id}'");
 
-			if (serviceResponse.ModelErrors.Any())
+			if (serviceResponse.Errors.Any())
 				return serviceResponse;
 
 			var otherSmileys = DbContext.Smileys.Where(s => s.FileName == smileyRecord.FileName).ToList();

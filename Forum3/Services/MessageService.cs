@@ -65,20 +65,20 @@ namespace Forum3.Services {
 			var serviceResponse = new ServiceResponse();
 
 			if (input.BoardId == null)
-				serviceResponse.ModelErrors.Add(nameof(input.BoardId), $"Board ID is required");
+				serviceResponse.Errors.Add(nameof(input.BoardId), $"Board ID is required");
 
 			var boardId = Convert.ToInt32(input.BoardId);
 			var boardRecord = await DbContext.Boards.SingleOrDefaultAsync(b => b.Id == boardId);
 
 			if (boardRecord == null)
-				serviceResponse.ModelErrors.Add(string.Empty, $"A record does not exist with ID '{boardId}'");
+				serviceResponse.Errors.Add(string.Empty, $"A record does not exist with ID '{boardId}'");
 
-			if (serviceResponse.ModelErrors.Any())
+			if (serviceResponse.Errors.Any())
 				return serviceResponse;
 
 			var processedMessage = await ProcessMessageInput(serviceResponse, input.Body);
 
-			if (serviceResponse.ModelErrors.Any())
+			if (serviceResponse.Errors.Any())
 				return serviceResponse;
 
 			var record = await CreateMessageRecord(processedMessage, null);
@@ -115,9 +115,9 @@ namespace Forum3.Services {
 			var processedMessage = await processedMessageTask;
 
 			if (replyRecord == null)
-				serviceResponse.ModelErrors.Add(string.Empty, $"A record does not exist with ID '{input.Id}'");
+				serviceResponse.Errors.Add(string.Empty, $"A record does not exist with ID '{input.Id}'");
 
-			if (serviceResponse.ModelErrors.Any())
+			if (serviceResponse.Errors.Any())
 				return serviceResponse;
 
 			var record = await CreateMessageRecord(processedMessage, replyRecord);
@@ -152,7 +152,7 @@ namespace Forum3.Services {
 			var record = await recordTask;
 			var processedMessage = await processedMessageTask;
 
-			if (!serviceResponse.ModelErrors.Any()) {
+			if (!serviceResponse.Errors.Any()) {
 				await UpdateMessageRecord(processedMessage, record);
 				serviceResponse.RedirectPath = UrlHelper.Action(nameof(Topics.Display), nameof(Topics), new { id = record.Id });
 			}
@@ -166,9 +166,9 @@ namespace Forum3.Services {
 			var record = await DbContext.Messages.SingleAsync(m => m.Id == messageId);
 
 			if (record == null)
-				serviceResponse.ModelErrors.Add(null, $@"No record was found with the id '{messageId}'");
+				serviceResponse.Errors.Add(null, $@"No record was found with the id '{messageId}'");
 
-			if (serviceResponse.ModelErrors.Any())
+			if (serviceResponse.Errors.Any())
 				return serviceResponse;
 
 			if (record.ParentId != 0) {
@@ -221,7 +221,7 @@ namespace Forum3.Services {
 			var record = await DbContext.Messages.FindAsync(messageId);
 
 			if (record == null)
-				serviceResponse.ModelErrors.Add(null, $@"No record was found with the id '{messageId}'");
+				serviceResponse.Errors.Add(null, $@"No record was found with the id '{messageId}'");
 
 			if (record.ParentId > 0)
 				messageId = record.ParentId;
@@ -251,14 +251,14 @@ namespace Forum3.Services {
 			var messageRecord = await DbContext.Messages.FindAsync(input.MessageId);
 
 			if (messageRecord == null)
-				serviceResponse.ModelErrors.Add(null, $@"No message was found with the id '{input.MessageId}'");
+				serviceResponse.Errors.Add(null, $@"No message was found with the id '{input.MessageId}'");
 
 			var smileyRecord = await DbContext.Smileys.FindAsync(input.SmileyId);
 
 			if (messageRecord == null)
-				serviceResponse.ModelErrors.Add(null, $@"No smiley was found with the id '{input.SmileyId}'");
+				serviceResponse.Errors.Add(null, $@"No smiley was found with the id '{input.SmileyId}'");
 
-			if (serviceResponse.ModelErrors.Any())
+			if (serviceResponse.Errors.Any())
 				return serviceResponse;
 
 			var existingRecord = await DbContext.MessageThoughts

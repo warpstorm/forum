@@ -1,0 +1,21 @@
+﻿@model ViewModels.DetailsPage
+
+<div class="content-box pad">
+	<dl>
+		<dt>Name</dt>
+		<dd><span>@Model.DisplayName</span></dd>
+	</dl>
+	<dl>
+		<dt>Email</dt>
+		<dd><span>@Model.Email</span></dd>
+	</dl>
+</div>
+
+@{ ViewData["Title"] = $"{Model.DisplayName}'s Profile"; }
+@section Header {@ViewData["Title"]}
+
+@section PageActions {
+	<p>
+		<a asp-controller="@nameof(Account)" asp-action="@nameof(Account.Details)" class="button">Edit Account Details</a>
+	</p>
+}

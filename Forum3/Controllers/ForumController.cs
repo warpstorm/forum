@@ -35,7 +35,7 @@ namespace Forum3.Controllers {
 			if (!string.IsNullOrEmpty(serviceResponse.Message))
 				TempData[Constants.Keys.StatusMessage] = serviceResponse.Message;
 
-			foreach (var kvp in serviceResponse.ModelErrors)
+			foreach (var kvp in serviceResponse.Errors)
 				ModelState.AddModelError(kvp.Key, kvp.Value);
 		}
 
@@ -64,7 +64,7 @@ namespace Forum3.Controllers {
 		}
 
 		string GetReferrer() {
-			var referrer = Request.Query["returnurl"].ToString();
+			var referrer = Request.Query["ReturnUrl"].ToString();
 
 			if (string.IsNullOrEmpty(referrer))
 				referrer = Request.Headers["Referer"].ToString();

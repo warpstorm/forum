@@ -3,16 +3,18 @@ using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.WindowsAzure.Storage;
-using Forum3.Services;
-using Forum3.Models.ServiceModels;
 using Forum3.Interfaces.Users;
+using Forum3.Models.ServiceModels;
+using Forum3.Services;
 
 namespace Forum3.Helpers {
 	public static class ForumServiceRegistrationExtension {
 		public static IServiceCollection AddForum(this IServiceCollection services, IConfiguration configuration) {
+			services.AddScoped<AccountService>();
 			services.AddScoped<BoardService>();
 			services.AddScoped<MessageService>();
 			services.AddScoped<NotificationService>();
+			services.AddScoped<ProfileService>();
 			services.AddScoped<RoleService>();
 			services.AddScoped<SiteSettingsService>();
 			services.AddScoped<SmileyService>();

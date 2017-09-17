@@ -1,7 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Threading.Tasks;
 
-namespace Forum3.Models.InputModels {
-	public class RegisterInput {
+namespace Forum3.Models.ViewModels.Account {
+	public class RegisterPage {
 		[Required]
 		[StringLength(64, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 3)]
 		public string DisplayName { get; set; }
@@ -19,7 +23,7 @@ namespace Forum3.Models.InputModels {
 		[StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 3)]
 		public string Password { get; set; }
 
-		[Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
+		[Compare(nameof(Password), ErrorMessage = "The password and confirmation password do not match.")]
 		public string ConfirmPassword { get; set; }
 	}
 }

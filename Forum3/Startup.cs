@@ -42,7 +42,7 @@ namespace Forum3 {
 				.AddEntityFrameworkStores<ApplicationDbContext>()
 				.AddDefaultTokenProviders();
 
-			services.ConfigureApplicationCookie(options => options.LoginPath = $"/{nameof(Authentication)}/{nameof(Authentication.Login)}");
+			services.ConfigureApplicationCookie(options => options.LoginPath = $"/{nameof(Account)}/{nameof(Account.Login)}");
 
 			services.Configure<MvcOptions>(options => {
 				options.Filters.Add(new RequireRemoteHttpsAttribute());

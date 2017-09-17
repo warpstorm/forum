@@ -1,0 +1,34 @@
+﻿@model ViewModels.DetailsPage
+
+<div class="content-box pad">
+	<form method="post"
+		  asp-action="@nameof(Account.Details)">
+
+		<div asp-validation-summary="All" class="error"></div>
+
+		<input type="hidden" asp-for="@Model.Id" />
+
+		<dl>
+			<dt>Display Name</dt>
+			<dd><input type="text" asp-for="@Model.DisplayName" /></dd>
+			<dd><span asp-validation-for="@Model.DisplayName" class="error"></span></dd>
+		</dl>
+
+		<dl>
+			<dt>Email</dt>
+			<dd><input asp-for="@Model.Email" /></dd>
+			@if (!Model.EmailConfirmed) {
+				<dd><a asp-action="@nameof(Account.SendVerificationEmail)" class="button">Send verification email</a></dd>
+			}
+			<dd><span asp-validation-for="@Model.Email" class="error"></span></dd>
+		</dl>
+
+		<ul>
+			<li><button>Save</button></li>
+			<li><a href="@ViewData["Referrer"]" class="button">Cancel</a></li>
+		</ul>
+	</form>
+</div>
+
+@{ ViewData["Title"] = $"{Model.DisplayName}'s Account Details"; }
+@section Header {@ViewData["Title"]}

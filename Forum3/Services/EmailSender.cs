@@ -5,13 +5,20 @@ using SendGrid.Helpers.Mail;
 using Forum3.Interfaces.Users;
 using Forum3.Models.ServiceModels;
 using System.Text.Encodings.Web;
+using Microsoft.Extensions.Logging;
+using System.Net;
 
 namespace Forum3.Services {
 	public class EmailSender : IEmailSender {
-		public EmailSenderOptions Options { get; }
+		EmailSenderOptions Options { get; }
+		ILogger Logger { get; }
 
-		public EmailSender(IOptions<EmailSenderOptions> optionsAccessor) {
+		public EmailSender(
+			IOptions<EmailSenderOptions> optionsAccessor,
+			ILogger<EmailSender> logger
+		) {
 			Options = optionsAccessor.Value;
+			Logger = logger;
 		}
 
 		public Task SendEmailAsync(string email, string subject, string message) {
@@ -39,6 +46,9 @@ namespace Forum3.Services {
 			msg.AddTo(new EmailAddress(email));
 
 			var response = await client.SendEmailAsync(msg);
+
+			if (response.StatusCode != HttpStatusCode.Accepted)
+				Logger.LogCritical($"Error sending email. Response body: {response.Body}");
 		}
 	}
 }

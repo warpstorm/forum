@@ -7,5 +7,10 @@ namespace Forum3.Helpers {
 			if (o == null)
 				throw new ArgumentNullException(paramName);
 		}
+
+		public static void ThrowIfNullOrEmpty(this string o, string paramName) {
+			if (string.IsNullOrEmpty(o))
+				throw new ArgumentNullException(paramName);
+		}
 	}
 }
