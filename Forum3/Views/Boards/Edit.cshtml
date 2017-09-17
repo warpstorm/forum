@@ -1,11 +1,11 @@
 ﻿@model EditPage
 
 <div class="content-box pad">
-	<div asp-validation-summary="All" class="text-danger"></div>
-	
 	<form method="post"
 			asp-action="@nameof(Boards.Edit)"
 			asp-controller="@nameof(Boards)">
+
+		<div asp-validation-summary="All" class="text-danger"></div>
 
 		<input type="hidden" asp-for="@Model.Id" />
 
