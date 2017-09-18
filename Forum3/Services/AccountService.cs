@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Drawing;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -6,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.WindowsAzure.Storage.Blob;
 using Forum3.Controllers;
 using Forum3.Helpers;
 using Forum3.Interfaces.Users;
@@ -14,10 +18,14 @@ using DataModels = Forum3.Models.DataModels;
 using InputModels = Forum3.Models.InputModels;
 using ServiceModels = Forum3.Models.ServiceModels;
 using ViewModels = Forum3.Models.ViewModels.Account;
+using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 
 namespace Forum3.Services {
 	public class AccountService {
 		DataModels.ApplicationDbContext DbContext { get; }
+		SiteSettingsService SiteSettingsService { get; }
+		CloudBlobClient CloudBlobClient { get; }
 		ServiceModels.ContextUser ContextUser { get; }
 		UserManager<DataModels.ApplicationUser> UserManager { get; }
 		SignInManager<DataModels.ApplicationUser> SignInManager { get; }
@@ -27,6 +35,8 @@ namespace Forum3.Services {
 
 		public AccountService(
 			DataModels.ApplicationDbContext dbContext,
+			SiteSettingsService siteSettingsService,
+			CloudBlobClient cloudBlobClient,
 			ContextUserFactory contextUserFactory,
 			UserManager<DataModels.ApplicationUser> userManager,
 			SignInManager<DataModels.ApplicationUser> signInManager,
@@ -36,6 +46,8 @@ namespace Forum3.Services {
 			ILogger<AccountService> logger
 		) {
 			DbContext = dbContext;
+			SiteSettingsService = siteSettingsService;
+			CloudBlobClient = cloudBlobClient;
 			ContextUser = contextUserFactory.GetContextUser();
 			UserManager = userManager;
 			SignInManager = signInManager;
@@ -91,9 +103,10 @@ namespace Forum3.Services {
 				throw new ApplicationException("You hackin' bro?");
 			}
 
-			// TODO check ownership / admin rights
+			CanEdit(userRecord.Id);
 
 			var viewModel = new ViewModels.DetailsPage {
+				AvatarPath = userRecord.AvatarPath,
 				Id = userRecord.Id,
 				DisplayName = userRecord.DisplayName,
 				Email = userRecord.Email,
@@ -104,9 +117,15 @@ namespace Forum3.Services {
 		}
 
 		public async Task<ViewModels.DetailsPage> DetailsPage(InputModels.UpdateAccountInput input) {
-			// TODO check ownership / admin rights
-
 			var userRecord = await DbContext.Users.FindAsync(input.Id);
+
+			if (userRecord == null) {
+				var message = $"No record found with the display name '{input.DisplayName}'";
+				Logger.LogWarning(message);
+				throw new ApplicationException("You hackin' bro?");
+			}
+
+			CanEdit(userRecord.Id);
 
 			var viewModel = new ViewModels.DetailsPage {
 				Id = input.Id,
@@ -135,6 +154,8 @@ namespace Forum3.Services {
 				Logger.LogCritical(message);
 			}
 
+			CanEdit(userRecord.Id);
+
 			var account = await UserManager.FindByIdAsync(input.Id);
 
 			if (account == null) {
@@ -143,8 +164,6 @@ namespace Forum3.Services {
 				Logger.LogCritical(message);
 			}
 
-			// TODO check ownership / admin rights
-
 			if (!serviceResponse.Success)
 				return serviceResponse;
 
@@ -152,7 +171,7 @@ namespace Forum3.Services {
 				userRecord.DisplayName = input.DisplayName;
 				DbContext.Entry(userRecord).State = EntityState.Modified;
 
-				Logger.LogInformation($"Display name was modified by '{ContextUser.ApplicationUser.Email}' for account '{userRecord.DisplayName}'.");
+				Logger.LogInformation($"Display name was modified by '{ContextUser.ApplicationUser.DisplayName}' for account '{userRecord.DisplayName}'.");
 			}
 
 			await DbContext.SaveChangesAsync();
@@ -164,7 +183,7 @@ namespace Forum3.Services {
 
 				if (!identityResult.Succeeded) {
 					foreach (var error in identityResult.Errors) {
-						Logger.LogError($"Error modifying email by '{ContextUser.ApplicationUser.Email}' from '{userRecord.Email}' to '{input.Email}'. Message: {error.Description}");
+						Logger.LogError($"Error modifying email by '{ContextUser.ApplicationUser.DisplayName}' from '{userRecord.Email}' to '{input.Email}'. Message: {error.Description}");
 						serviceResponse.Error(error.Description);
 					}
 
@@ -175,14 +194,14 @@ namespace Forum3.Services {
 
 				if (!identityResult.Succeeded) {
 					foreach (var error in identityResult.Errors) {
-						Logger.LogError($"Error modifying username by '{ContextUser.ApplicationUser.Email}' from '{userRecord.Id}' to '{input.Email}'. Message: {error.Description}");
+						Logger.LogError($"Error modifying username by '{ContextUser.ApplicationUser.DisplayName}' from '{userRecord.Email}' to '{input.Email}'. Message: {error.Description}");
 						serviceResponse.Error(error.Description);
 					}
 
 					return serviceResponse;
 				}
 
-				Logger.LogInformation($"Email address was modified by '{ContextUser.ApplicationUser.Email}' from '{userRecord.Id}' to '{input.Email}'.");
+				Logger.LogInformation($"Email address was modified by '{ContextUser.ApplicationUser.DisplayName}' from '{userRecord.Email}' to '{input.Email}'.");
 
 				var code = await UserManager.GenerateEmailConfirmationTokenAsync(account);
 
@@ -216,17 +235,95 @@ namespace Forum3.Services {
 
 				if (!identityResult.Succeeded) {
 					foreach (var error in identityResult.Errors) {
-						Logger.LogError($"Error modifying password by '{ContextUser.ApplicationUser.Email}' for '{userRecord.Email}'. Message: {error.Description}");
+						Logger.LogError($"Error modifying password by '{ContextUser.ApplicationUser.DisplayName}' for '{userRecord.DisplayName}'. Message: {error.Description}");
 						serviceResponse.Error(nameof(InputModels.UpdateAccountInput.NewPassword), error.Description);
 					}
 				}
 				else if (account.Id == ContextUser.ApplicationUser.Id) {
-					Logger.LogInformation($"Password was modified by '{ContextUser.ApplicationUser.Email}' for '{userRecord.Email}'.");
+					Logger.LogInformation($"Password was modified by '{ContextUser.ApplicationUser.DisplayName}' for '{userRecord.DisplayName}'.");
 					await SignOut();
 					serviceResponse.RedirectPath = UrlHelper.Action(nameof(Login));
 					return serviceResponse;
 				}
 			}
+
+			if (serviceResponse.Success)
+				serviceResponse.RedirectPath = UrlHelper.Action(nameof(Account.Details), nameof(Account), new { id = input.DisplayName });
+
+			return serviceResponse;
+		}
+
+		public async Task<ServiceModels.ServiceResponse> UpdateAvatar(InputModels.UpdateAvatarInput input) {
+			var serviceResponse = new ServiceModels.ServiceResponse();
+
+			var userRecord = await DbContext.Users.FindAsync(input.Id);
+
+			if (userRecord == null) {
+				var message = $"No user record found for '{input.DisplayName}'.";
+				serviceResponse.Error(string.Empty, message);
+				Logger.LogCritical(message);
+			}
+
+			CanEdit(input.Id);
+
+			if (!serviceResponse.Success)
+				return serviceResponse;
+
+			var allowedExtensions = new[] { ".gif", ".jpg", ".png" };
+			var extension = Path.GetExtension(input.NewAvatar.FileName);
+
+			if (!allowedExtensions.Contains(extension))
+				serviceResponse.Error(nameof(input.NewAvatar), "Your avatar must end with .gif, .jpg, or .png");
+
+			if (!serviceResponse.Success)
+				return serviceResponse;
+
+			var container = CloudBlobClient.GetContainerReference("avatars");
+
+			if (await container.CreateIfNotExistsAsync())
+				await container.SetPermissionsAsync(new BlobContainerPermissions { PublicAccess = BlobContainerPublicAccessType.Blob });
+
+			var blobReference = container.GetBlockBlobReference($"avatar{userRecord.Id}.png");
+			blobReference.Properties.ContentType = "image/png";
+
+			using (var inputStream = input.NewAvatar.OpenReadStream()) {
+				inputStream.Position = 0;
+
+				using (var src = Image.FromStream(inputStream)) {
+					var largestDimension = src.Width > src.Height ? src.Width : src.Height;
+					var avatarMax = Constants.Defaults.AvatarSize;
+
+					if (largestDimension > avatarMax || extension != ".png") {
+						var ratio = (double)avatarMax / largestDimension;
+
+						var destinationWidth = Convert.ToInt32(src.Width * ratio);
+						var destinationHeight = Convert.ToInt32(src.Height * ratio);
+
+						using (var dst = new Bitmap(destinationWidth, destinationHeight)) {
+							using (var g = Graphics.FromImage(dst)) {
+								g.SmoothingMode = SmoothingMode.AntiAlias;
+								g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+								g.DrawImage(src, 0, 0, dst.Width, dst.Height);
+							}
+
+							var ms = new MemoryStream();
+							dst.Save(ms, ImageFormat.Png);
+							ms.Position = 0;
+
+							await blobReference.UploadFromStreamAsync(ms);
+						}
+					}
+					else
+						await blobReference.UploadFromStreamAsync(inputStream);
+				}
+			}
+
+			userRecord.AvatarPath = blobReference.Uri.AbsoluteUri;
+			DbContext.Entry(userRecord).State = EntityState.Modified;
+
+			await DbContext.SaveChangesAsync();
+
+			Logger.LogInformation($"Avatar was modified by '{ContextUser.ApplicationUser.DisplayName}' for account '{userRecord.DisplayName}'.");
 
 			if (serviceResponse.Success)
 				serviceResponse.RedirectPath = UrlHelper.Action(nameof(Account.Details), nameof(Account), new { id = input.DisplayName });
@@ -399,5 +496,14 @@ namespace Forum3.Services {
 
 		public string EmailConfirmationLink(string userId, string code) => UrlHelper.AbsoluteAction(nameof(Account.ConfirmEmail), nameof(Account), new { userId, code });
 		public string ResetPasswordCallbackLink(string userId, string code) => UrlHelper.AbsoluteAction(nameof(Account.ResetPassword), nameof(Account), new { userId, code });
+
+		void CanEdit(string userId) {
+			if (userId == ContextUser.ApplicationUser.Id || ContextUser.IsAdmin)
+				return;
+
+			Logger.LogWarning($"A user tried to edit another user's profile. {ContextUser.ApplicationUser.DisplayName}");
+
+			throw new ApplicationException("You hackin' bro?");
+		}
 	}
 }

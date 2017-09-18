@@ -1,45 +1,66 @@
 ﻿@model ViewModels.DetailsPage
 
 <div class="content-box pad">
-	<form method="post"
-		  asp-action="@nameof(Account.Details)">
+	<div class="gap-bottom">
+		<form method="post" enctype="multipart/form-data"
+			  asp-action="@nameof(Account.UpdateAvatar)">
 
-		<div asp-validation-summary="All" class="error"></div>
-
-		<input type="hidden" asp-for="@Model.Id" />
-
-		<dl>
-			<dt>Display Name</dt>
-			<dd><input asp-for="@Model.DisplayName" /></dd>
-			<dd><span asp-validation-for="@Model.DisplayName" class="error"></span></dd>
-		</dl>
-
-		<dl>
-			<dt>Email</dt>
-			<dd><input asp-for="@Model.Email" /></dd>
-			@if (!Model.EmailConfirmed) {
-				<dd><a asp-action="@nameof(Account.SendVerificationEmail)" class="button">Send verification email</a></dd>
+			<div asp-validation-summary="All" class="error"></div>
+			<input type="hidden" asp-for="@Model.Id" />
+			<input type="hidden" asp-for="@Model.DisplayName" />
+			@if (!string.IsNullOrEmpty(Model.AvatarPath)) {
+				<p><img src="@Model.AvatarPath" /></p>
 			}
-			<dd><span asp-validation-for="@Model.Email" class="error"></span></dd>
-		</dl>
+			<p><input asp-for="@Model.NewAvatar" /></p>
+			<p asp-validation-for="@Model.NewAvatar" class="error"></p>
 
-		<dl>
-			<dt>New Password</dt>
-			<dd><input asp-for="@Model.NewPassword" /></dd>
-			<dd><span asp-validation-for="@Model.NewPassword" class="error"></span></dd>
-		</dl>
+			<ul>
+				<li><button>Update Avatar</button></li>
+			</ul>
+		</form>
+	</div>
+	<hr />
+	<div>
+		<form method="post"
+			  asp-action="@nameof(Account.Details)">
 
-		<dl>
-			<dt>Current Password <span class="note">(Required for all changes)</span></dt>
-			<dd><input asp-for="@Model.Password" /></dd>
-			<dd><span asp-validation-for="@Model.Password" class="error"></span></dd>
-		</dl>
+			<div asp-validation-summary="All" class="error"></div>
 
-		<ul>
-			<li><button>Save</button></li>
-			<li><a href="@ViewData["Referrer"]" class="button">Cancel</a></li>
-		</ul>
-	</form>
+			<input type="hidden" asp-for="@Model.Id" />
+
+			<dl>
+				<dt>Display Name</dt>
+				<dd><input asp-for="@Model.DisplayName" /></dd>
+				<dd><span asp-validation-for="@Model.DisplayName" class="error"></span></dd>
+			</dl>
+
+			<dl>
+				<dt>Email</dt>
+				<dd><input asp-for="@Model.Email" /></dd>
+				@if (!Model.EmailConfirmed) {
+					<dd><a asp-action="@nameof(Account.SendVerificationEmail)" class="button">Send verification email</a></dd>
+				}
+				<dd><span asp-validation-for="@Model.Email" class="error"></span></dd>
+			</dl>
+
+			<dl>
+				<dt>New Password</dt>
+				<dd><input asp-for="@Model.NewPassword" /></dd>
+				<dd><span asp-validation-for="@Model.NewPassword" class="error"></span></dd>
+			</dl>
+
+			<dl>
+				<dt>Current Password <span class="note">(Required for all changes)</span></dt>
+				<dd><input asp-for="@Model.Password" /></dd>
+				<dd><span asp-validation-for="@Model.Password" class="error"></span></dd>
+			</dl>
+
+			<ul>
+				<li><button>Save Details</button></li>
+				<li><a href="@ViewData["Referrer"]" class="button">Cancel</a></li>
+			</ul>
+		</form>
+	</div>
 </div>
 
 @{ ViewData["Title"] = $"{Model.DisplayName}'s Account Details"; }

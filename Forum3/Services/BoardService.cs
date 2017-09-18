@@ -165,7 +165,7 @@ namespace Forum3.Services {
 			if (existingRecord != null)
 				serviceResponse.Error(nameof(input.Name), "A board with that name already exists");
 
-			if (serviceResponse.Success)
+			if (!serviceResponse.Success)
 				return serviceResponse;
 
 			await DbContext.SaveChangesAsync();
@@ -233,7 +233,7 @@ namespace Forum3.Services {
 			if (!string.IsNullOrEmpty(input.Description))
 				input.Description = input.Description.Trim();
 
-			if (serviceResponse.Success)
+			if (!serviceResponse.Success)
 				return serviceResponse;
 
 			record.Name = input.Name;
@@ -343,7 +343,7 @@ namespace Forum3.Services {
 			if (toCategory == null)
 				serviceResponse.Error(string.Empty, $"A record does not exist with ID '{input.ToId}'");
 
-			if (serviceResponse.Success)
+			if (!serviceResponse.Success)
 				return serviceResponse;
 
 			var displacedBoards = await DbContext.Boards.Where(b => b.CategoryId == fromCategory.Id).ToListAsync();
@@ -374,7 +374,7 @@ namespace Forum3.Services {
 			if (toBoard == null)
 				serviceResponse.Error(string.Empty, $"A record does not exist with ID '{input.ToId}'");
 
-			if (serviceResponse.Success)
+			if (!serviceResponse.Success)
 				return serviceResponse;
 
 			var messageBoards = await DbContext.MessageBoards.Where(m => m.BoardId == fromBoard.Id).ToListAsync();
@@ -420,7 +420,7 @@ namespace Forum3.Services {
 				};
 
 				foreach (var boardRecord in boardRecords.Where(r => r.CategoryId == categoryRecord.Id)) {
-					var indexBoard = GetIndexBoard(boardRecord);
+					var indexBoard = await GetIndexBoard(boardRecord);
 
 					// TODO check board roles here
 
@@ -435,7 +435,7 @@ namespace Forum3.Services {
 			return indexCategories;
 		}
 
-		public ItemViewModels.IndexBoard GetIndexBoard(DataModels.Board boardRecord) {
+		public async Task<ItemViewModels.IndexBoard> GetIndexBoard(DataModels.Board boardRecord) {
 			var indexBoard = new ItemViewModels.IndexBoard {
 				Id = boardRecord.Id,
 				Name = boardRecord.Name,
@@ -445,17 +445,18 @@ namespace Forum3.Services {
 			};
 
 			if (boardRecord.LastMessageId != null) {
-				var lastMessage = DbContext.Messages.Find(boardRecord.LastMessageId);
+				var lastMessageQuery = from lastReply in DbContext.Messages
+									   where lastReply.Id == boardRecord.LastMessageId
+									   join lastReplyBy in DbContext.Users on lastReply.LastReplyById equals lastReplyBy.Id
+									   select new Models.ViewModels.Topics.Items.MessagePreview {
+										   Id = lastReply.Id,
+										   ShortPreview = lastReply.ShortPreview,
+										   LastReplyByName = lastReplyBy.DisplayName,
+										   LastReplyId = lastReply.LastReplyId,
+										   LastReplyPosted = lastReply.LastReplyPosted.ToPassedTimeString()
+									   };
 
-				if (lastMessage != null) {
-					indexBoard.LastMessage = new Models.ViewModels.Topics.Items.MessagePreview {
-						Id = lastMessage.Id,
-						ShortPreview = lastMessage.ShortPreview,
-						LastReplyByName = lastMessage.LastReplyByName,
-						LastReplyId = lastMessage.LastReplyId,
-						LastReplyPosted = lastMessage.LastReplyPosted.ToPassedTimeString()
-					};
-				}
+				indexBoard.LastMessage = await lastMessageQuery.SingleOrDefaultAsync();
 			}
 
 			return indexBoard;

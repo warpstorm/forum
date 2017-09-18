@@ -73,12 +73,12 @@ namespace Forum3.Services {
 			if (boardRecord == null)
 				serviceResponse.Error(string.Empty, $"A record does not exist with ID '{boardId}'");
 
-			if (serviceResponse.Success)
+			if (!serviceResponse.Success)
 				return serviceResponse;
 
 			var processedMessage = await ProcessMessageInput(serviceResponse, input.Body);
 
-			if (serviceResponse.Success)
+			if (!serviceResponse.Success)
 				return serviceResponse;
 
 			var record = await CreateMessageRecord(processedMessage, null);
@@ -117,7 +117,7 @@ namespace Forum3.Services {
 			if (replyRecord == null)
 				serviceResponse.Error(string.Empty, $"A record does not exist with ID '{input.Id}'");
 
-			if (serviceResponse.Success)
+			if (!serviceResponse.Success)
 				return serviceResponse;
 
 			var record = await CreateMessageRecord(processedMessage, replyRecord);
@@ -168,7 +168,7 @@ namespace Forum3.Services {
 			if (record == null)
 				serviceResponse.Error(string.Empty, $@"No record was found with the id '{messageId}'");
 
-			if (serviceResponse.Success)
+			if (!serviceResponse.Success)
 				return serviceResponse;
 
 			if (record.ParentId != 0) {
@@ -258,7 +258,7 @@ namespace Forum3.Services {
 			if (messageRecord == null)
 				serviceResponse.Error(string.Empty, $@"No smiley was found with the id '{input.SmileyId}'");
 
-			if (serviceResponse.Success)
+			if (!serviceResponse.Success)
 				return serviceResponse;
 
 			var existingRecord = await DbContext.MessageThoughts
@@ -631,11 +631,8 @@ namespace Forum3.Services {
 				LastReplyPosted = currentTime,
 
 				PostedById = ContextUser.ApplicationUser.Id,
-				PostedByName = ContextUser.ApplicationUser.DisplayName,
 				EditedById = ContextUser.ApplicationUser.Id,
-				EditedByName = ContextUser.ApplicationUser.DisplayName,
 				LastReplyById = ContextUser.ApplicationUser.Id,
-				LastReplyByName = ContextUser.ApplicationUser.DisplayName,
 
 				ParentId = parentId,
 				ReplyId = replyId,
@@ -648,7 +645,6 @@ namespace Forum3.Services {
 			if (replyRecord != null) {
 				replyRecord.LastReplyId = record.Id;
 				replyRecord.LastReplyById = ContextUser.ApplicationUser.Id;
-				replyRecord.LastReplyByName = ContextUser.ApplicationUser.DisplayName;
 				replyRecord.LastReplyPosted = currentTime;
 
 				DbContext.Entry(replyRecord).State = EntityState.Modified;
@@ -670,7 +666,6 @@ namespace Forum3.Services {
 			if (parentMessage != null && parentMessage.Id != replyRecord.Id) {
 				parentMessage.LastReplyId = record.Id;
 				parentMessage.LastReplyById = ContextUser.ApplicationUser.Id;
-				parentMessage.LastReplyByName = ContextUser.ApplicationUser.DisplayName;
 				parentMessage.LastReplyPosted = currentTime;
 
 				DbContext.Entry(parentMessage).State = EntityState.Modified;
@@ -718,11 +713,8 @@ namespace Forum3.Services {
 			record.ShortPreview = message.ShortPreview;
 			record.LongPreview = message.LongPreview;
 			record.Cards = message.Cards;
-
 			record.TimeEdited = DateTime.Now;
-
 			record.EditedById = ContextUser.ApplicationUser.Id;
-			record.EditedByName = ContextUser.ApplicationUser.DisplayName;
 
 			DbContext.Update(record);
 

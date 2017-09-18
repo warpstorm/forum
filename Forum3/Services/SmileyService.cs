@@ -114,7 +114,7 @@ namespace Forum3.Services {
 			if (DbContext.Smileys.Any(s => s.Code == input.Code))
 				serviceResponse.Error(nameof(input.Code), "Another smiley exists with that code.");
 
-			if (serviceResponse.Success)
+			if (!serviceResponse.Success)
 				return serviceResponse;
 
 			var smileyRecord = new DataModels.Smiley {
@@ -172,7 +172,7 @@ namespace Forum3.Services {
 				}
 			}
 
-			if (serviceResponse.Success)
+			if (!serviceResponse.Success)
 				return serviceResponse;
 
 			await DbContext.SaveChangesAsync();
@@ -189,7 +189,7 @@ namespace Forum3.Services {
 			if (smileyRecord == null)
 				serviceResponse.Error(string.Empty, $@"No smiley was found with the id '{id}'");
 
-			if (serviceResponse.Success)
+			if (!serviceResponse.Success)
 				return serviceResponse;
 
 			var otherSmileys = DbContext.Smileys.Where(s => s.FileName == smileyRecord.FileName).ToList();

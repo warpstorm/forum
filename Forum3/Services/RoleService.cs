@@ -90,13 +90,13 @@ namespace Forum3.Services {
 			if (string.IsNullOrEmpty(input.Description))
 				serviceResponse.Error(nameof(InputModels.CreateRoleInput.Description), "Description is required");
 
-			if (serviceResponse.Success)
+			if (!serviceResponse.Success)
 				return serviceResponse;
 
 			if (await RoleManager.FindByNameAsync(input.Name) != null)
 				serviceResponse.Error(nameof(InputModels.CreateRoleInput.Name), "A role with this name already exists");
 
-			if (serviceResponse.Success)
+			if (!serviceResponse.Success)
 				return serviceResponse;
 
 			await CreateRecord(input);
@@ -155,7 +155,7 @@ namespace Forum3.Services {
 			if (string.IsNullOrEmpty(input.Description))
 				serviceResponse.Error(nameof(InputModels.EditRoleInput.Description), "Description is required");
 
-			if (serviceResponse.Success)
+			if (!serviceResponse.Success)
 				return serviceResponse;
 
 			var existingRole = await RoleManager.FindByNameAsync(input.Name);
@@ -163,7 +163,7 @@ namespace Forum3.Services {
 			if (existingRole != null && existingRole.Id != input.Id)
 				serviceResponse.Error(nameof(InputModels.EditRoleInput.Name), "A role with this name already exists");
 
-			if (serviceResponse.Success)
+			if (!serviceResponse.Success)
 				return serviceResponse;
 
 			var modified = false;
@@ -237,7 +237,7 @@ namespace Forum3.Services {
 			if (userRecord == null)
 				serviceResponse.Error(string.Empty, $"A record does not exist with ID '{roleId}'");
 
-			if (serviceResponse.Success)
+			if (!serviceResponse.Success)
 				return serviceResponse;
 
 			var result = await UserManager.AddToRoleAsync(userRecord, roleRecord.Name);
@@ -265,7 +265,7 @@ namespace Forum3.Services {
 			if (userRecord == null)
 				serviceResponse.Error(string.Empty, $"A record does not exist with ID '{roleId}'");
 
-			if (serviceResponse.Success)
+			if (!serviceResponse.Success)
 				return serviceResponse;
 
 			var result = await UserManager.RemoveFromRoleAsync(userRecord, roleRecord.Name);

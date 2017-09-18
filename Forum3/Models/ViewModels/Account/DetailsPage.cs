@@ -1,9 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Forum3.Annotations;
+using Microsoft.AspNetCore.Http;
 
 namespace Forum3.Models.ViewModels.Account {
 	public class DetailsPage {
-		[Required]
-		[EmailAddress]
 		public string Id { get; set; }
 
 		[Required]
@@ -25,5 +25,9 @@ namespace Forum3.Models.ViewModels.Account {
 		[MaxLength(100)]
 		[DataType(DataType.Password)]
 		public string NewPassword { get; set; }
+
+		[MaxFileSize(256, ErrorMessage = "Maximum allowed file size is {0} KB")]
+		public IFormFile NewAvatar { get; set; }
+		public string AvatarPath { get; set; }
 	}
 }

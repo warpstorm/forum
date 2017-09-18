@@ -44,6 +44,7 @@ namespace Forum3.Services {
 
 			var messageRecordQuery = from message in DbContext.Messages
 									 join messageBoard in DbContext.MessageBoards on message.Id equals messageBoard.MessageId
+									 join replyPostedBy in DbContext.Users on message.LastReplyById equals replyPostedBy.Id
 									 join pin in DbContext.Pins on message.Id equals pin.MessageId into pins
 									 from pin in pins.DefaultIfEmpty()
 									 let pinned = pin != null && pin.UserId == ContextUser.ApplicationUser.Id
@@ -55,7 +56,7 @@ namespace Forum3.Services {
 										 ShortPreview = message.ShortPreview,
 										 LastReplyId = message.LastReplyId == 0 ? message.Id : message.LastReplyId,
 										 LastReplyById = message.LastReplyById,
-										 LastReplyByName = message.LastReplyByName,
+										 LastReplyByName = replyPostedBy.DisplayName,
 										 LastReplyPostedDT = message.LastReplyPosted,
 										 Views = message.ViewCount,
 										 Replies = message.ReplyCount,
@@ -141,8 +142,10 @@ namespace Forum3.Services {
 				select board
 			).ToListAsync();
 
-			foreach (var assignedBoard in assignedBoards)
-				topic.AssignedBoards.Add(BoardService.GetIndexBoard(assignedBoard));
+			foreach (var assignedBoard in assignedBoards) {
+				var indexBoard = await BoardService.GetIndexBoard(assignedBoard);
+				topic.AssignedBoards.Add(indexBoard);
+			}
 
 			await MarkTopicRead(topic);
 
@@ -150,26 +153,30 @@ namespace Forum3.Services {
 		}
 
 		async Task<List<ItemModels.Message>> GetTopicMessages(IEnumerable<int> pageMessageIds) {
-			var messageQuery = from m in DbContext.Messages
-							   join im in DbContext.Messages on m.ReplyId equals im.Id into Replies
-							   from r in Replies.DefaultIfEmpty()
-							   where pageMessageIds.Contains(m.Id)
-							   orderby m.Id
+			var messageQuery = from message in DbContext.Messages
+							   join postedBy in DbContext.Users on message.PostedById equals postedBy.Id
+							   join reply in DbContext.Messages on message.ReplyId equals reply.Id into Replies
+							   from reply in Replies.DefaultIfEmpty()
+							   join replyPostedBy in DbContext.Users on reply.PostedById equals replyPostedBy.Id into RepliesBy
+							   from replyPostedBy in RepliesBy.DefaultIfEmpty()
+							   where pageMessageIds.Contains(message.Id)
+							   orderby message.Id
 							   select new ItemModels.Message {
-								   Id = m.Id,
-								   ParentId = m.ParentId,
-								   ReplyId = m.ReplyId,
-								   ReplyBody = r == null ? string.Empty : r.DisplayBody,
-								   ReplyPreview = r == null ? string.Empty : r.LongPreview,
-								   ReplyPostedBy = r == null ? string.Empty : r.PostedByName,
-								   Body = m.DisplayBody,
-								   Cards = m.Cards,
-								   OriginalBody = m.OriginalBody,
-								   PostedByName = m.PostedByName,
-								   PostedById = m.PostedById,
-								   TimePostedDT = m.TimePosted,
-								   TimeEditedDT = m.TimeEdited,
-								   RecordTime = m.TimeEdited
+								   Id = message.Id,
+								   ParentId = message.ParentId,
+								   ReplyId = message.ReplyId,
+								   ReplyBody = reply == null ? string.Empty : reply.DisplayBody,
+								   ReplyPreview = reply == null ? string.Empty : reply.LongPreview,
+								   ReplyPostedBy = replyPostedBy == null ? string.Empty : replyPostedBy.DisplayName,
+								   Body = message.DisplayBody,
+								   Cards = message.Cards,
+								   OriginalBody = message.OriginalBody,
+								   PostedByName = postedBy.DisplayName,
+								   PostedById = message.PostedById,
+								   PostedByAvatarPath = postedBy.AvatarPath,
+								   TimePostedDT = message.TimePosted,
+								   TimeEditedDT = message.TimeEdited,
+								   RecordTime = message.TimeEdited
 							   };
 
 			var messages = await messageQuery.ToListAsync();

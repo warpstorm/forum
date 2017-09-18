@@ -20,6 +20,7 @@ namespace Forum3.Controllers {
 		[Authorize]
 		public async Task<IActionResult> Details(string id) {
 			var viewModel = await AccountService.DetailsPage(id);
+			ModelState.Clear();
 			return View(viewModel);
 		}
 
@@ -41,6 +42,26 @@ namespace Forum3.Controllers {
 
 			var viewModel = await AccountService.DetailsPage(input);
 			return View(viewModel);
+		}
+
+		[HttpPost]
+		[Authorize]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> UpdateAvatar(InputModels.UpdateAvatarInput input) {
+			if (ModelState.IsValid) {
+				var serviceResponse = await AccountService.UpdateAvatar(input);
+				ProcessServiceResponse(serviceResponse);
+
+				if (serviceResponse.Success) {
+					if (!string.IsNullOrEmpty(serviceResponse.RedirectPath))
+						return Redirect(serviceResponse.RedirectPath);
+					else
+						return RedirectToReferrer();
+				}
+			}
+
+			var viewModel = await AccountService.DetailsPage(input.DisplayName);
+			return View(nameof(Details), viewModel);
 		}
 
 		[HttpPost]
@@ -85,7 +106,7 @@ namespace Forum3.Controllers {
 			var viewModel = await AccountService.LoginPage();
 			return View(viewModel);
 		}
-		
+
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> Login(InputModels.LoginInput input) {

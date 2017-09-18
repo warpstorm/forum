@@ -4,6 +4,7 @@
 			public const int MessagesPerPage = 15;
 			public const int HistoryTimeLimit = -14;
 			public const int OnlineTimeLimit = 5;
+			public const int AvatarSize = 100;
 		}
 
 		public static class Keys {

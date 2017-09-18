@@ -11,5 +11,7 @@ namespace Forum3.Models.DataModels {
 		public DateTime Birthday { get; set; }
 		public DateTime Registered { get; set; }
 		public DateTime LastOnline { get; set; }
+
+		public string AvatarPath { get; set; }
 	}
 }
