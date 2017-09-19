@@ -44,6 +44,20 @@
 			</dl>
 
 			<dl>
+				<dt>Birthday</dt>
+				<dd>
+					<select asp-for="@Model.BirthdayYear" asp-items="@Model.BirthdayYears"></select>
+					<select asp-for="@Model.BirthdayMonth" asp-items="@Model.BirthdayMonths"></select>
+					<select asp-for="@Model.BirthdayDay" asp-items="@Model.BirthdayDays"></select>
+				</dd>
+				<dd>
+					<span asp-validation-for="@Model.BirthdayYear" class="error"></span>
+					<span asp-validation-for="@Model.BirthdayMonth" class="error"></span>
+					<span asp-validation-for="@Model.BirthdayDay" class="error"></span>
+				</dd>
+			</dl>
+
+			<dl>
 				<dt>New Password</dt>
 				<dd><input asp-for="@Model.NewPassword" /></dd>
 				<dd><span asp-validation-for="@Model.NewPassword" class="error"></span></dd>

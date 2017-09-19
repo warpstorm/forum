@@ -21,5 +21,14 @@ namespace Forum3.Models.InputModels {
 
 		[Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
 		public string ConfirmPassword { get; set; }
+
+		[Range(1, 31)]
+		public int BirthdayDay { get; set; }
+
+		[Range(1, 12)]
+		public int BirthdayMonth { get; set; }
+
+		[Range(1900, 2100)]
+		public int BirthdayYear { get; set; }
 	}
 }

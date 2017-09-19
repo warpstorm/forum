@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -18,8 +21,6 @@ using DataModels = Forum3.Models.DataModels;
 using InputModels = Forum3.Models.InputModels;
 using ServiceModels = Forum3.Models.ServiceModels;
 using ViewModels = Forum3.Models.ViewModels.Account;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
 
 namespace Forum3.Services {
 	public class AccountService {
@@ -105,15 +106,7 @@ namespace Forum3.Services {
 
 			CanEdit(userRecord.Id);
 
-			var viewModel = new ViewModels.DetailsPage {
-				AvatarPath = userRecord.AvatarPath,
-				Id = userRecord.Id,
-				DisplayName = userRecord.DisplayName,
-				Email = userRecord.Email,
-				EmailConfirmed = userRecord.EmailConfirmed
-			};
-
-			return viewModel;
+			return DetailsPageViewModel(userRecord);
 		}
 
 		public async Task<ViewModels.DetailsPage> DetailsPage(InputModels.UpdateAccountInput input) {
@@ -127,12 +120,13 @@ namespace Forum3.Services {
 
 			CanEdit(userRecord.Id);
 
-			var viewModel = new ViewModels.DetailsPage {
-				Id = input.Id,
-				DisplayName = input.DisplayName,
-				Email = input.Email,
-				EmailConfirmed = userRecord.EmailConfirmed
-			};
+			var viewModel = DetailsPageViewModel(userRecord);
+
+			viewModel.DisplayName = input.DisplayName;
+			viewModel.Email = input.Email;
+			viewModel.BirthdayDay = input.BirthdayDay.ToString();
+			viewModel.BirthdayMonth = input.BirthdayMonth.ToString();
+			viewModel.BirthdayYear = input.BirthdayYear.ToString();
 
 			return viewModel;
 		}
@@ -172,6 +166,15 @@ namespace Forum3.Services {
 				DbContext.Entry(userRecord).State = EntityState.Modified;
 
 				Logger.LogInformation($"Display name was modified by '{ContextUser.ApplicationUser.DisplayName}' for account '{userRecord.DisplayName}'.");
+			}
+
+			var birthday = new DateTime(input.BirthdayYear, input.BirthdayMonth, input.BirthdayDay);
+
+			if (birthday != userRecord.Birthday) {
+				userRecord.Birthday = birthday;
+				DbContext.Entry(userRecord).State = EntityState.Modified;
+
+				Logger.LogInformation($"Birthday was modified by '{ContextUser.ApplicationUser.DisplayName}' for account '{userRecord.DisplayName}'.");
 			}
 
 			await DbContext.SaveChangesAsync();
@@ -334,7 +337,46 @@ namespace Forum3.Services {
 		public async Task<ViewModels.RegisterPage> RegisterPage() {
 			await SignOut();
 
-			var viewModel = new ViewModels.RegisterPage();
+			var months = from number in Enumerable.Range(1, 12)
+						 select new SelectListItem {
+							 Value = number.ToString(),
+							 Text = System.Globalization.CultureInfo.InvariantCulture.DateTimeFormat.GetMonthName(number),
+						 };
+
+			months.Prepend(new SelectListItem {
+				Disabled = true,
+				Text = "Month"
+			});
+
+			var days = from number in Enumerable.Range(1, 31)
+					   select new SelectListItem {
+						   Value = number.ToString(),
+						   Text = number.ToString(),
+					   };
+
+			days.Prepend(new SelectListItem {
+				Disabled = true,
+				Text = "Day"
+			});
+
+			var years = from number in Enumerable.Range(1900, DateTime.Now.Year - 1900)
+						orderby number descending
+						select new SelectListItem {
+							Value = number.ToString(),
+							Text = number.ToString(),
+						};
+
+			years.Prepend(new SelectListItem {
+				Disabled = true,
+				Text = "Year"
+			});
+
+			var viewModel = new ViewModels.RegisterPage {
+				BirthdayDays = days,
+				BirthdayMonths = months,
+				BirthdayYears = years
+			};
+
 			return viewModel;
 		}
 
@@ -346,6 +388,9 @@ namespace Forum3.Services {
 			viewModel.ConfirmEmail = input.ConfirmEmail;
 			viewModel.Password = input.Password;
 			viewModel.ConfirmPassword = input.ConfirmPassword;
+			viewModel.BirthdayDay = input.BirthdayDay.ToString();
+			viewModel.BirthdayMonth = input.BirthdayMonth.ToString();
+			viewModel.BirthdayYear = input.BirthdayYear.ToString();
 
 			return viewModel;
 		}
@@ -353,10 +398,15 @@ namespace Forum3.Services {
 		public async Task<ServiceModels.ServiceResponse> Register(InputModels.RegisterInput input) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
+			var birthday = new DateTime(input.BirthdayYear, input.BirthdayMonth, input.BirthdayDay);
+
 			var user = new DataModels.ApplicationUser {
 				DisplayName = input.DisplayName,
+				Registered = DateTime.Now,
+				LastOnline = DateTime.Now,
 				UserName = input.Email,
-				Email = input.Email
+				Email = input.Email,
+				Birthday = birthday
 			};
 
 			var identityResult = await UserManager.CreateAsync(user, input.Password);
@@ -504,6 +554,58 @@ namespace Forum3.Services {
 			Logger.LogWarning($"A user tried to edit another user's profile. {ContextUser.ApplicationUser.DisplayName}");
 
 			throw new ApplicationException("You hackin' bro?");
+		}
+
+		ViewModels.DetailsPage DetailsPageViewModel(DataModels.ApplicationUser userRecord) {
+			var months = from number in Enumerable.Range(1, 12)
+						select new SelectListItem {
+							Value = number.ToString(),
+							Text = System.Globalization.CultureInfo.InvariantCulture.DateTimeFormat.GetMonthName(number),
+							Selected = number == userRecord.Birthday.Month
+						};
+
+			months.Prepend(new SelectListItem {
+				Disabled = true,
+				Text = "Month"
+			});
+
+			var days = from number in Enumerable.Range(1, 31)
+					   select new SelectListItem {
+						   Value = number.ToString(),
+						   Text = number.ToString(),
+						   Selected = number == userRecord.Birthday.Day
+					   };
+
+			days.Prepend(new SelectListItem {
+				Disabled = true,
+				Text = "Day"
+			});
+			
+			var years = from number in Enumerable.Range(1900, DateTime.Now.Year - 1900)
+						orderby number descending
+						select new SelectListItem {
+						    Value = number.ToString(),
+						    Text = number.ToString(),
+						    Selected = number == userRecord.Birthday.Year
+					    };
+
+			years.Prepend(new SelectListItem {
+				Disabled = true,
+				Text = "Year"
+			});
+
+			var viewModel = new ViewModels.DetailsPage {
+				AvatarPath = userRecord.AvatarPath,
+				Id = userRecord.Id,
+				DisplayName = userRecord.DisplayName,
+				Email = userRecord.Email,
+				EmailConfirmed = userRecord.EmailConfirmed,
+				BirthdayDays = days,
+				BirthdayMonths = months,
+				BirthdayYears = years
+			};
+
+			return viewModel;
 		}
 	}
 }

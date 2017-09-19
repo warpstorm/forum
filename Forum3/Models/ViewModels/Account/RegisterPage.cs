@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Forum3.Models.ViewModels.Account {
 	public class RegisterPage {
@@ -27,5 +28,13 @@ namespace Forum3.Models.ViewModels.Account {
 		[DataType(DataType.Password)]
 		[Compare(nameof(Password), ErrorMessage = "The password and confirmation password do not match.")]
 		public string ConfirmPassword { get; set; }
+
+		public string BirthdayDay { get; set; }
+		public string BirthdayMonth { get; set; }
+		public string BirthdayYear { get; set; }
+
+		public IEnumerable<SelectListItem> BirthdayMonths { get; set; }
+		public IEnumerable<SelectListItem> BirthdayDays { get; set; }
+		public IEnumerable<SelectListItem> BirthdayYears { get; set; }
 	}
 }
