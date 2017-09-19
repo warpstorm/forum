@@ -6,7 +6,6 @@ using Forum3.Services;
 using InputModels = Forum3.Models.InputModels;
 
 namespace Forum3.Controllers {
-	[AllowAnonymous]
 	public class Account : ForumController {
 		AccountService AccountService { get; }
 
@@ -17,7 +16,6 @@ namespace Forum3.Controllers {
 		}
 
 		[HttpGet]
-		[Authorize]
 		public async Task<IActionResult> Details(string id) {
 			var viewModel = await AccountService.DetailsPage(id);
 			ModelState.Clear();
@@ -25,7 +23,6 @@ namespace Forum3.Controllers {
 		}
 
 		[HttpPost]
-		[Authorize]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> Details(InputModels.UpdateAccountInput input) {
 			if (ModelState.IsValid) {
@@ -45,7 +42,6 @@ namespace Forum3.Controllers {
 		}
 
 		[HttpPost]
-		[Authorize]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> UpdateAvatar(InputModels.UpdateAvatarInput input) {
 			if (ModelState.IsValid) {
@@ -65,7 +61,6 @@ namespace Forum3.Controllers {
 		}
 
 		[HttpPost]
-		[Authorize]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> SendVerificationEmail() {
 			if (ModelState.IsValid) {
@@ -84,7 +79,6 @@ namespace Forum3.Controllers {
 		}
 
 		[HttpGet]
-		[Authorize]
 		public async Task<IActionResult> ConfirmEmail(InputModels.ConfirmEmailInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await AccountService.ConfirmEmail(input);
@@ -94,7 +88,7 @@ namespace Forum3.Controllers {
 					if (!string.IsNullOrEmpty(serviceResponse.RedirectPath))
 						return Redirect(serviceResponse.RedirectPath);
 					else
-						return RedirectToAction(nameof(Details));
+						return RedirectToAction(nameof(Boards.Index), nameof(Boards));
 				}
 			}
 
@@ -102,12 +96,14 @@ namespace Forum3.Controllers {
 		}
 
 		[HttpGet]
+		[AllowAnonymous]
 		public async Task<IActionResult> Login() {
 			var viewModel = await AccountService.LoginPage();
 			return View(viewModel);
 		}
 
 		[HttpPost]
+		[AllowAnonymous]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> Login(InputModels.LoginInput input) {
 			if (ModelState.IsValid) {
@@ -127,19 +123,18 @@ namespace Forum3.Controllers {
 		}
 
 		[HttpGet]
-		[Authorize]
 		public IActionResult AccessDenied() {
 			return View();
 		}
 
 		[HttpGet]
+		[AllowAnonymous]
 		public async Task<IActionResult> Lockout() {
 			await AccountService.SignOut();
 			return View();
 		}
 
 		[HttpPost]
-		[Authorize]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> Logout() {
 			await AccountService.SignOut();
@@ -147,12 +142,14 @@ namespace Forum3.Controllers {
 		}
 
 		[HttpGet]
+		[AllowAnonymous]
 		public async Task<IActionResult> Register() {
 			var viewModel = await AccountService.RegisterPage();
 			return View(viewModel);
 		}
 
 		[HttpPost]
+		[AllowAnonymous]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> Register(InputModels.RegisterInput input) {
 			if (ModelState.IsValid) {
@@ -172,12 +169,14 @@ namespace Forum3.Controllers {
 		}
 
 		[HttpGet]
+		[AllowAnonymous]
 		public async Task<IActionResult> ForgotPassword() {
 			var viewModel = await AccountService.ForgotPasswordPage();
 			return View(viewModel);
 		}
 
 		[HttpPost]
+		[AllowAnonymous]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> ForgotPassword(InputModels.ForgotPasswordInput input) {
 			if (ModelState.IsValid) {
@@ -197,15 +196,18 @@ namespace Forum3.Controllers {
 		}
 
 		[HttpGet]
+		[AllowAnonymous]
 		public IActionResult ForgotPasswordConfirmation() => View();
 
 		[HttpGet]
+		[AllowAnonymous]
 		public async Task<IActionResult> ResetPassword(string code) {
 			var viewModel = await AccountService.ResetPasswordPage(code);
 			return View(viewModel);
 		}
 
 		[HttpPost]
+		[AllowAnonymous]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> ResetPassword(InputModels.ResetPasswordInput input) {
 			if (ModelState.IsValid) {
@@ -225,6 +227,7 @@ namespace Forum3.Controllers {
 		}
 
 		[HttpGet]
+		[AllowAnonymous]
 		public IActionResult ResetPasswordConfirmation() => View();
 	}
 }

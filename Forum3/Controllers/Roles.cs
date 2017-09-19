@@ -6,7 +6,6 @@ using InputModels = Forum3.Models.InputModels;
 using PageViewModels = Forum3.Models.ViewModels.Roles.Pages;
 
 namespace Forum3.Controllers {
-	[Authorize]
 	public class Roles : ForumController {
 		RoleService RoleService { get; }
 

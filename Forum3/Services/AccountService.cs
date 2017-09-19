@@ -475,6 +475,8 @@ namespace Forum3.Services {
 					Logger.LogInformation($"User confirmed email '{account.Id}'.");
 			}
 
+			await SignOut();
+
 			return serviceResponse;
 		}
 

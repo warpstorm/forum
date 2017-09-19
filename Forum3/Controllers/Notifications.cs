@@ -33,6 +33,7 @@ namespace Forum3.Controllers {
 				return Redirect(serviceResponse.RedirectPath);
 		}
 
+		[HttpGet]
 		public ActionResult MarkAllRead() {
 			return RedirectToAction(nameof(Notifications.Index), nameof(Notifications));
 		}

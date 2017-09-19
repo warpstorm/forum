@@ -9,6 +9,8 @@ using Forum3.Annotations;
 using Forum3.Controllers;
 using Forum3.Helpers;
 using Forum3.Models.DataModels;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Authorization;
 
 namespace Forum3 {
 	public class Startup {
@@ -53,7 +55,13 @@ namespace Forum3 {
 			services.AddDistributedMemoryCache();
 			services.AddSession();
 
-			services.AddMvc();
+			services.AddMvc(config => {
+				var policy = new AuthorizationPolicyBuilder()
+								 .RequireAuthenticatedUser()
+								 .Build();
+
+				config.Filters.Add(new AuthorizeFilter(policy));
+			});
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

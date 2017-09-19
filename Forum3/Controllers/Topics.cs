@@ -6,7 +6,6 @@ using Forum3.Models.InputModels;
 using Forum3.Services;
 
 namespace Forum3.Controllers {
-	[Authorize]
 	public class Topics : ForumController {
 		TopicService TopicService { get; }
 		MessageService MessageService { get; }

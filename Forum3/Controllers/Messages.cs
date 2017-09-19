@@ -7,7 +7,6 @@ using Forum3.Models.ViewModels.Messages;
 using Forum3.Services;
 
 namespace Forum3.Controllers {
-	[Authorize]
 	public class Messages : ForumController {
 		MessageService MessageService { get; }
 
