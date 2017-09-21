@@ -7,6 +7,7 @@ namespace Forum3.Models.MigrationModels {
 		public DbSet<Board> Boards { get; set; }
 		public DbSet<BoardRelationship> BoardRelationships { get; set; }
 		public DbSet<InviteOnlyTopicUsers> InviteOnlyTopicUsers { get; set; }
+		public DbSet<Membership> Membership { get; set; }
 		public DbSet<MessageBoard> MessageBoards { get; set; }
 		public DbSet<Message> Messages { get; set; }
 		public DbSet<MessageThought> MessageThoughts { get; set; }
