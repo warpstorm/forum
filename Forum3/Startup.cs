@@ -11,6 +11,7 @@ using Forum3.Helpers;
 using Forum3.Models.DataModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
+using Forum3.Services;
 
 namespace Forum3 {
 	public class Startup {
@@ -62,6 +63,8 @@ namespace Forum3 {
 
 				config.Filters.Add(new AuthorizeFilter(policy));
 			});
+
+			services.AddMigrator(Configuration);
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
