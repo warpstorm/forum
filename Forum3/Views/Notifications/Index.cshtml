@@ -2,9 +2,9 @@
 
 <div class="roundedBox">
 	<div class="roundedBoxHead">
-		@ViewBag.Title
-		@if (ViewBag.BoardName != null) {
-			@:for @ViewBag.BoardName
+		@ViewData["Title"]
+		@if (ViewData["BoardName"] != null) {
+			@:for @ViewData["BoardName"]
         }
 	</div>
 

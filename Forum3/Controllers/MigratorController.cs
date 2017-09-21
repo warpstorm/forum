@@ -11,7 +11,9 @@ namespace Forum3.Controllers {
 			MigratorService = migratorService;
 		}
 
-		public IActionResult Index() {
+		public IActionResult Test() {
+			ViewData["result"] = MigratorService.Test();
+
 			return View();
 		}
 	}

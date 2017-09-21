@@ -27,5 +27,10 @@ namespace Forum3.Models.MigrationModels {
 		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
 			optionsBuilder.UseSqlServer(ConnectionString);
 		}
+
+		protected override void OnModelCreating(ModelBuilder modelBuilder) {
+			modelBuilder.Entity<UserInRole>()
+				.HasKey(u => new { u.RoleId, u.UserId });
+		}
 	}
 }
