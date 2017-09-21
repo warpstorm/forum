@@ -9,6 +9,10 @@
 	padding: 8px 0;
 }
 
+#topic-header {
+	margin-left: 140px;
+}
+
 .message-container, .message-thoughts, .message-cards {
 	margin-left: 135px;
 }
@@ -37,10 +41,16 @@ blockquote.reply {
 	width: 98%;
 	padding: 15px 30px;
 	margin: 5px auto 25px auto;
-	border-left: 5px solid #253248;
-	border-radius: 25px;
-	background-color: #1d2737;
+	border-left: 5px solid #1d2737;
+	border-top-left-radius: 25px;
+	border-bottom-left-radius: 25px;
+	background-color: #0c0f14;
 }
+
+	blockquote.reply:hover {
+		background-color: #1d2737;
+		border-left-color: #253248;
+	}
 
 	blockquote.reply div {
 		white-space: pre-line;
