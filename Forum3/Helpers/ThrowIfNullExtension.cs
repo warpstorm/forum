@@ -6,6 +6,9 @@ namespace Forum3.Helpers {
 		public static void ThrowIfNull<T>(this T o, string paramName) where T : class {
 			if (o == null)
 				throw new ArgumentNullException(paramName);
+
+			if (o is string && string.IsNullOrEmpty(o.ToString()))
+				throw new ArgumentNullException(paramName);
 		}
 
 		public static void ThrowIfNullOrEmpty(this string o, string paramName) {
