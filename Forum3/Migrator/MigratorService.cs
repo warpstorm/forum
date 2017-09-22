@@ -112,12 +112,12 @@ namespace Forum3.Migrator {
 		}
 
 		async Task MigrateRoles() {
-			var usersInRolesRecords = await MigrationDbContext.UsersInRoles.ToListAsync();
-			var rolesRecords = await MigrationDbContext.Roles.ToListAsync();
+			var legacyUsersInRoles = await MigrationDbContext.UsersInRoles.ToListAsync();
+			var legacyRoles = await MigrationDbContext.Roles.ToListAsync();
 
 			var query = from user in ApplicationDbContext.Users
-						join userInRole in usersInRolesRecords on user.LegacyId equals userInRole.UserId
-						join role in rolesRecords on userInRole.RoleId equals role.Id
+						join userInRole in legacyUsersInRoles on user.LegacyId equals userInRole.UserId
+						join role in legacyRoles on userInRole.RoleId equals role.Id
 						select new {
 							User = user,
 							RoleName = role.Name
@@ -136,11 +136,34 @@ namespace Forum3.Migrator {
 			}
 		}
 
-		// Unfinished
-		async Task MigrateSmileys() {
-			var records = await MigrationDbContext.Smileys.ToListAsync();
+		async Task MigratePins() {
+			if (!ApplicationDbContext.Messages.Any())
+				throw new Exception("You must migrate messages first!");
 
-			foreach (var record in records) {
+			var legacyPins = await MigrationDbContext.Pins.ToListAsync();
+
+			var query = from user in ApplicationDbContext.Users
+						join pin in legacyPins on user.LegacyId equals pin.UserId
+						join message in ApplicationDbContext.Messages on pin.MessageId equals message.LegacyId
+						select new DataModels.Pin {
+							MessageId = message.Id,
+							Time = pin.Time,
+							UserId = user.Id
+						};
+
+			var records = await query.ToListAsync();
+
+			foreach (var record in records)
+				await ApplicationDbContext.Pins.AddAsync(record);
+
+			await ApplicationDbContext.SaveChangesAsync();
+		}
+
+		// Unfinished. Needs image uploading.
+		async Task MigrateSmileys() {
+			var legacySmileys = await MigrationDbContext.Smileys.ToListAsync();
+
+			foreach (var record in legacySmileys) {
 				var column = Convert.ToInt32(1000 * Math.Floor(record.DisplayOrder));
 				var row = Convert.ToInt32(100 * (record.DisplayOrder - column));
 

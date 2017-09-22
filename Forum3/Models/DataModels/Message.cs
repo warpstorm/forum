@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Forum3.Models.DataModels {
 	public class Message {
 		public int Id { get; set; }
+		public int LegacyId { get; set; }
 
 		/// <summary>
 		/// Original unmodified source for the post.
