@@ -12,16 +12,14 @@ namespace Forum3.Migrator {
 			MigratorService = migratorService;
 		}
 
-		public IActionResult Test() {
-			ViewData["result"] = MigratorService.Test();
-
+		public async Task<IActionResult> ConnectionTest() {
+			ViewData["result"] = await MigratorService.ConnectionTest();
 			return View("Done");
 		}
 
 		[AllowAnonymous]
 		public async Task<IActionResult> Run() {
 			ViewData["result"] = await MigratorService.Execute();
-
 			return View("Done");
 		}
 	}

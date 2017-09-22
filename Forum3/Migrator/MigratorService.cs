@@ -26,14 +26,7 @@ namespace Forum3.Migrator {
 			UserManager = userManager;
 		}
 
-		public bool Test() {
-			var test = MigrationDbContext.Messages.Where(m => m.TimePosted > DateTime.Now.AddDays(-1)).ToList();
-
-			if (test.Any())
-				return true;
-
-			return false;
-		}
+		public async Task<bool> ConnectionTest() => await MigrationDbContext.Messages.AnyAsync();
 
 		public async Task<bool> Execute() {
 			if (!ApplicationDbContext.Users.Any())
