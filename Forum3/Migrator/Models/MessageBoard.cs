@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Forum3.Models.MigrationModels {
+namespace Forum3.Migrator.Models {
 	[Table("MessageBoards")]
 	public class MessageBoard
 	{

@@ -1,4 +1,4 @@
-﻿namespace Forum3.Models.MigrationModels {
+﻿namespace Forum3.Migrator.Models {
     public class SiteSetting
     {
         public int Id { get; set; }

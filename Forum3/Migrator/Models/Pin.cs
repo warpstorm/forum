@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Forum3.Models.MigrationModels {
+namespace Forum3.Migrator.Models {
     public class Pin
     {
         public int Id { get; set; }

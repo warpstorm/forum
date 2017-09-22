@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace Forum3.Models.MigrationModels {
+namespace Forum3.Migrator.Models {
 	public class MigrationDbContext : DbContext {
 		public string ConnectionString { get; set; }
 

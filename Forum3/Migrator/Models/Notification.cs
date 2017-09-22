@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Forum3.Models.MigrationModels {
+namespace Forum3.Migrator.Models {
     public class Notification
     {
         public int Id { get; set; }

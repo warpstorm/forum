@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Security.Cryptography;
 using System.Text;
-using Forum3.Models.DataModels;
 using Microsoft.AspNetCore.Identity;
+using Forum3.Helpers;
+using Forum3.Models.DataModels;
 
-namespace Forum3.Helpers {
+namespace Forum3.Migrator {
 	
 	// All of this turned out to be unnecessary! ASP.NET Auth 2 already supports auto-updating old hashes.
 	

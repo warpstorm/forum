@@ -1,11 +1,9 @@
-﻿using System;
-using System.Threading.Tasks;
-using Forum3.Helpers;
+﻿using System.Threading.Tasks;
 using Forum3.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Forum3.Controllers {
+namespace Forum3.Migrator {
 	public class MigratorController : Controller {
 		MigratorService MigratorService { get; }
 
@@ -22,8 +20,8 @@ namespace Forum3.Controllers {
 		}
 
 		[AllowAnonymous]
-		public async Task<IActionResult> Users() {
-			ViewData["result"] = await MigratorService.MigrateUsers();
+		public async Task<IActionResult> Run() {
+			ViewData["result"] = await MigratorService.Execute();
 
 			return View("Done");
 		}
