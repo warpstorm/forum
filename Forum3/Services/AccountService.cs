@@ -515,7 +515,7 @@ namespace Forum3.Services {
 		}
 
 		public async Task<ViewModels.ResetPasswordPage> ResetPasswordPage(string code) {
-			code.ThrowIfNullOrEmpty(nameof(code));
+			code.ThrowIfNull(nameof(code));
 
 			await SignOut();
 

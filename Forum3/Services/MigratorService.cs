@@ -44,19 +44,20 @@ namespace Forum3.Services {
 
 		public async Task<bool> MigrateUsers() {
 			var userQuery = from user in MigrationDbContext.UserProfiles
-							  join membership in MigrationDbContext.Membership on user.UserId equals membership.UserId
-							  select new ApplicationUser {
-									LegacyId = user.UserId,
-									LegacyPassword = membership.Password,
-									DisplayName = user.DisplayName,
-									Birthday = user.Birthday,
-									Email = user.UserName,
-									UserName = user.UserName,
-									Registered = user.Registered,
-									LastOnline = user.LastOnline,
-									NormalizedEmail = user.UserName.ToUpper(),
-									NormalizedUserName = user.UserName.ToUpper()
-							  };
+							join membership in MigrationDbContext.Membership on user.UserId equals membership.UserId
+							select new ApplicationUser {
+								LegacyId = user.UserId,
+								PasswordHash = membership.Password,
+								DisplayName = user.DisplayName,
+								Birthday = user.Birthday,
+								Email = user.UserName,
+								EmailConfirmed = true,
+								NormalizedEmail = user.UserName.ToUpper(),
+								NormalizedUserName = user.UserName.ToUpper(),
+								UserName = user.UserName,
+								Registered = user.Registered,
+								LastOnline = user.LastOnline,
+							};
 
 			var users = await userQuery.ToListAsync();
 
