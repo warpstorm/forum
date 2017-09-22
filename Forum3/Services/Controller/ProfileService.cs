@@ -5,7 +5,7 @@ using DataModels = Forum3.Models.DataModels;
 using ServiceModels = Forum3.Models.ServiceModels;
 using ViewModels = Forum3.Models.ViewModels.Profile;
 
-namespace Forum3.Services {
+namespace Forum3.Services.Controller {
 	public class ProfileService {
 		DataModels.ApplicationDbContext DbContext { get; }
 		ServiceModels.ContextUser ContextUser { get; }

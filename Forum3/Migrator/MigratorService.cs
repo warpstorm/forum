@@ -10,13 +10,13 @@ using MigrationModels = Forum3.Migrator.Models;
 namespace Forum3.Migrator {
 	public class MigratorService {
 		DataModels.ApplicationDbContext ApplicationDbContext { get; }
-		MigrationModels.MigrationDbContext MigrationDbContext { get; }
+		MigrationModels.MigratorDbContext MigrationDbContext { get; }
 		RoleManager<DataModels.ApplicationRole> RoleManager { get; }
 		UserManager<DataModels.ApplicationUser> UserManager { get; }
 
 		public MigratorService(
 			DataModels.ApplicationDbContext applicationDbContext,
-			MigrationModels.MigrationDbContext migrationDbContext,
+			MigrationModels.MigratorDbContext migrationDbContext,
 			RoleManager<DataModels.ApplicationRole> roleManager,
 			UserManager<DataModels.ApplicationUser> userManager
 		) {

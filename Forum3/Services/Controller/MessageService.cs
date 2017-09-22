@@ -17,7 +17,7 @@ using Forum3.Models.InputModels;
 using Forum3.Models.ServiceModels;
 using Forum3.Models.ViewModels.Messages;
 
-namespace Forum3.Services {
+namespace Forum3.Services.Controller {
 	public class MessageService {
 		ApplicationDbContext DbContext { get; }
 		ContextUser ContextUser { get; }

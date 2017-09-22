@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
 namespace Forum3.Migrator.Models {
-	public class MigrationDbContext : DbContext {
+	public class MigratorDbContext : DbContext {
 		public string ConnectionString { get; set; }
 
 		public DbSet<Board> Boards { get; set; }
@@ -21,7 +21,7 @@ namespace Forum3.Migrator.Models {
 		public DbSet<UserProfile> UserProfiles { get; set; }
 		public DbSet<ViewLog> ViewLogs { get; set; }
 
-		public MigrationDbContext(string connectionString) {
+		public MigratorDbContext(string connectionString) {
 			ConnectionString = connectionString;
 		}
 

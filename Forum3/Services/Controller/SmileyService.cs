@@ -13,7 +13,7 @@ using InputModels = Forum3.Models.InputModels;
 using ServiceModels = Forum3.Models.ServiceModels;
 using ViewModels = Forum3.Models.ViewModels.Smileys;
 
-namespace Forum3.Services {
+namespace Forum3.Services.Controller {
 	public class SmileyService {
 		DataModels.ApplicationDbContext DbContext { get; }
 		CloudBlobClient CloudBlobClient { get; }

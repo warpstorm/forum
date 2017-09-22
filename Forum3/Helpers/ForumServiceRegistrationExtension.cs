@@ -6,6 +6,7 @@ using Microsoft.WindowsAzure.Storage;
 using Forum3.Interfaces.Users;
 using Forum3.Models.ServiceModels;
 using Forum3.Services;
+using Forum3.Services.Controller;
 
 namespace Forum3.Helpers {
 	public static class ForumServiceRegistrationExtension {

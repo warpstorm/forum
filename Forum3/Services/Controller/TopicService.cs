@@ -16,7 +16,7 @@ using ItemModels = Forum3.Models.ViewModels.Topics.Items;
 using PageModels = Forum3.Models.ViewModels.Topics.Pages;
 using ServiceModels = Forum3.Models.ServiceModels;
 
-namespace Forum3.Services {
+namespace Forum3.Services.Controller {
 	public class TopicService {
 		DataModels.ApplicationDbContext DbContext { get; }
 		BoardService BoardService { get; }

@@ -16,7 +16,7 @@ using InputModels = Forum3.Models.InputModels;
 using PageViewModels = Forum3.Models.ViewModels.Roles.Pages;
 using ItemViewModels = Forum3.Models.ViewModels.Roles.Items;
 
-namespace Forum3.Services {
+namespace Forum3.Services.Controller {
 	public class RoleService {
 		UserManager<ApplicationUser> UserManager { get; }
 		RoleManager<ApplicationRole> RoleManager { get; }

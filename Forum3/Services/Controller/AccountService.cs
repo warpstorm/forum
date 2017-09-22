@@ -22,7 +22,7 @@ using InputModels = Forum3.Models.InputModels;
 using ServiceModels = Forum3.Models.ServiceModels;
 using ViewModels = Forum3.Models.ViewModels.Account;
 
-namespace Forum3.Services {
+namespace Forum3.Services.Controller {
 	public class AccountService {
 		DataModels.ApplicationDbContext DbContext { get; }
 		SiteSettingsService SiteSettingsService { get; }

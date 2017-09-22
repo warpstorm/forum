@@ -1,7 +1,7 @@
 ﻿using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Forum3.Services;
+using Forum3.Services.Controller;
 
 namespace Forum3.Controllers {
 	public class Profile : ForumController {

@@ -29,4 +29,8 @@
     <ProjectReference Include="..\CodeKicker.BBCode\CodeKicker.BBCode.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\css\min\" />
+  </ItemGroup>
+
 </Project>

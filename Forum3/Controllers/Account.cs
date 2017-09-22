@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Forum3.Services;
+using Forum3.Services.Controller;
 
 using InputModels = Forum3.Models.InputModels;
 

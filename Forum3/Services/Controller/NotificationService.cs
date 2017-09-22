@@ -14,7 +14,7 @@ using DataModels = Forum3.Models.DataModels;
 using ServiceModels = Forum3.Models.ServiceModels;
 using ViewModels = Forum3.Models.ViewModels.Notifications;
 
-namespace Forum3.Services {
+namespace Forum3.Services.Controller {
 	public class NotificationService {
 		DataModels.ApplicationDbContext DbContext { get; }
 		ServiceModels.ContextUser ContextUser { get; }

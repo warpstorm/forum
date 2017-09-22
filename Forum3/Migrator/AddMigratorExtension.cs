@@ -6,7 +6,7 @@ namespace Forum3.Migrator {
 		public static IServiceCollection AddMigrator(this IServiceCollection services, IConfiguration configuration) {
 			services.AddScoped((serviceProvider) => {
 				var connectionString = configuration["Version2Connection"];
-				return new Models.MigrationDbContext(connectionString);
+				return new Models.MigratorDbContext(connectionString);
 			});
 
 			services.AddScoped<MigratorService>();
