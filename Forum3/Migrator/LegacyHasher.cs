@@ -7,7 +7,7 @@ using Forum3.Models.DataModels;
 
 namespace Forum3.Migrator {
 	
-	// All of this turned out to be unnecessary! ASP.NET Auth 2 already supports auto-updating old hashes.
+	// All of this turned out to be unnecessary! ASP.NET Auth 2.0 already supports auto-updating old hashes.
 	
 	// Some sources I was looking at for this:
 	// https://github.com/jsgoupil/membership2owin/blob/master/Identity/SQLMembershipPasswordHasher.cs

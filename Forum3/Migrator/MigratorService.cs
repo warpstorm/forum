@@ -3,26 +3,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 
 using DataModels = Forum3.Models.DataModels;
 using MigrationModels = Forum3.Migrator.Models;
 
 namespace Forum3.Migrator {
-	public static class MigratorExtension {
-		public static IServiceCollection AddMigrator(this IServiceCollection services, IConfiguration configuration) {
-			services.AddScoped((serviceProvider) => {
-				var connectionString = configuration["Version2Connection"];
-				return new MigrationModels.MigrationDbContext(connectionString);
-			});
-
-			services.AddScoped<MigratorService>();
-
-			return services;
-		}
-	}
-
 	public class MigratorService {
 		DataModels.ApplicationDbContext ApplicationDbContext { get; }
 		MigrationModels.MigrationDbContext MigrationDbContext { get; }
