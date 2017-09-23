@@ -30,6 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Migrator\Smileys\" />
     <Folder Include="wwwroot\css\min\" />
   </ItemGroup>
 
