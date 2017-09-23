@@ -2,11 +2,13 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+using InputModels = Forum3.Models.InputModels;
+
 namespace Forum3.Migrator {
-	public class MigratorController : Controller {
+	public class Migrator : Controller {
 		MigratorService MigratorService { get; }
 
-		public MigratorController(
+		public Migrator(
 			MigratorService migratorService
 		) {
 			MigratorService = migratorService;
@@ -18,9 +20,9 @@ namespace Forum3.Migrator {
 		}
 
 		[AllowAnonymous]
-		public async Task<IActionResult> Run() {
-			ViewData["result"] = await MigratorService.Execute();
-			return View("Done");
+		public async Task<IActionResult> Run(InputModels.Continue input = null) {
+			var viewModel = await MigratorService.Execute(input);
+			return View("Delay", viewModel);
 		}
 	}
 }

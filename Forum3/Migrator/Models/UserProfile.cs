@@ -35,7 +35,5 @@ namespace Forum3.Migrator.Models {
 	        get { return _registered; }
 	        set { _registered = value; }
 	    }
-
-	    public virtual List<InviteOnlyTopicUsers> Invitations { get; set; }
 	}
 }

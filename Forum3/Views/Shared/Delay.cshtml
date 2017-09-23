@@ -1,0 +1,15 @@
+﻿@model ViewModels.Delay
+
+<div class="content-box pad">
+	<script>
+        setTimeout(function() {
+            window.location.href = "@Html.Raw(Model.NextAction)";
+        }, 300)
+	</script>
+	<div class="roundedBoxContent">
+		<div style="background-color: #00003b; width: 90%; height: 25px; margin: 0 auto;"><div style="background-color: #000080; width: @Model.Percent%; height: 25px; text-align: center;">@(Math.Ceiling(Model.Percent))%</div></div>
+	</div>
+</div>
+
+@{ViewData["Title"] = $"Delayed fuse ({@Model.CurrentPage} of {@Model.TotalPages})";}
+@section Header {@ViewData["Title"]}

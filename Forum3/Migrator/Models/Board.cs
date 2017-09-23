@@ -12,7 +12,5 @@ namespace Forum3.Migrator.Models
 		public int? ParentId { get; set; }
 	    public int? LastMessageId { get; set; }
 	    public int DisplayOrder { get; set; }
-
-	    public virtual Board Parent { get; set; }
 	}
 }

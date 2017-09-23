@@ -10,7 +10,7 @@ using ViewModels = Forum3.Models.ViewModels;
 
 namespace Forum3.Controllers {
 	public class ForumController : Controller {
-		public IActionResult Error() => View(new ViewModels.ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+		public IActionResult Error() => View(new ViewModels.Error { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
 
 		string Referrer => GetReferrer();
 

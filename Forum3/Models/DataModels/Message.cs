@@ -60,6 +60,14 @@ namespace Forum3.Models.DataModels {
 		public int ViewCount { get; set; }
 		public int ReplyCount { get; set; }
 
+		public bool Processed { get; set; }
+
 		public List<MessageThought> Thoughts { get; set; }
+
+		public int LegacyParentId { get; set; }
+		public int LegacyReplyId { get; set; }
+		public int LegacyPostedById { get; set; }
+		public int LegacyEditedById { get; set; }
+		public int LegacyLastReplyById { get; set; }
 	}
 }

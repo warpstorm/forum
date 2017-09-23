@@ -7,8 +7,5 @@ namespace Forum3.Migrator.Models {
 		public int Id { get; set; }
 		public int ParentId { get; set; }
 		public int ChildId { get; set; }
-
-	    public virtual Board Parent { get; set; }
-	    public virtual Board Child { get; set; }
 	}
 }

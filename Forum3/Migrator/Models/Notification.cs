@@ -11,9 +11,6 @@ namespace Forum3.Migrator.Models {
         public DateTime Time { get; set; }
         public bool Unread { get; set; }
         public OldNotificationType Type { get; set; }
-
-		public virtual UserProfile TargetUser { get; set; }
-		public virtual Message Message { get; set; }
 	}
 
 	public enum OldNotificationType {

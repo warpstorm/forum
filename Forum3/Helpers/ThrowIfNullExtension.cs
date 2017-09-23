@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Forum3.Helpers {
 	/// Source: https://stackoverflow.com/questions/11522104
@@ -11,9 +13,11 @@ namespace Forum3.Helpers {
 				throw new ArgumentNullException(paramName);
 		}
 
-		public static void ThrowIfNullOrEmpty(this string o, string paramName) {
-			if (string.IsNullOrEmpty(o))
-				throw new ArgumentNullException(paramName);
+		public static void ThrowIfEmpty<T>(this IEnumerable<T> o, string name) 
+			where T : class {
+
+			if (!o.Any())
+				throw new ArgumentException($"{name} is an empty collection.");
 		}
 	}
 }

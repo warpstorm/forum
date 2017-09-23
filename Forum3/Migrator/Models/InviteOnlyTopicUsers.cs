@@ -7,8 +7,5 @@ namespace Forum3.Migrator.Models {
         public int Id { get; set; }
         public int MessageId { get; set; }
         public int UserId { get; set; }
-
-        public virtual UserProfile User { get; set; }
-        public virtual Message Message { get; set; }
     }
 }
