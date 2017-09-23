@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Forum3.Controllers;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.WindowsAzure.Storage.Blob;
 
 using DataModels = Forum3.Models.DataModels;
 using InputModels = Forum3.Models.InputModels;
@@ -21,6 +23,7 @@ namespace Forum3.Migrator {
 		RoleManager<DataModels.ApplicationRole> RoleManager { get; }
 		UserManager<DataModels.ApplicationUser> UserManager { get; }
 		IUrlHelper UrlHelper { get; }
+		CloudBlobClient CloudBlobClient { get; }
 
 		public MigratorService(
 			DataModels.ApplicationDbContext applicationDbContext,
@@ -28,13 +31,15 @@ namespace Forum3.Migrator {
 			RoleManager<DataModels.ApplicationRole> roleManager,
 			UserManager<DataModels.ApplicationUser> userManager,
 			IActionContextAccessor actionContextAccessor,
-			IUrlHelperFactory urlHelperFactory
+			IUrlHelperFactory urlHelperFactory,
+			CloudBlobClient cloudBlobClient
 		) {
 			AppDb = applicationDbContext;
 			LegacyDb = migratorDbContext;
 			RoleManager = roleManager;
 			UserManager = userManager;
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
+			CloudBlobClient = cloudBlobClient;
 		}
 
 		public async Task<bool> ConnectionTest() => await LegacyDb.Messages.AnyAsync();
@@ -142,7 +147,8 @@ namespace Forum3.Migrator {
 		}
 
 		async Task MigrateRoles(InputModels.Continue input) {
-			AppDb.Users.ThrowIfEmpty(nameof(AppDb.Users));
+			if (!await AppDb.Users.AnyAsync())
+				return;
 
 			input.TotalSteps = 1;
 			input.CurrentStep = 1;
@@ -206,8 +212,11 @@ namespace Forum3.Migrator {
 		}
 
 		async Task MigrateMessages(InputModels.Continue input) {
-			AppDb.Users.ThrowIfEmpty(nameof(AppDb.Users));
-			AppDb.Boards.ThrowIfEmpty(nameof(AppDb.Boards));
+			if (!await AppDb.Users.AnyAsync())
+				return;
+
+			if (!await AppDb.Boards.AnyAsync())
+				return;
 
 			if (input.CurrentStep == 0 && await AppDb.Messages.AnyAsync()) {
 				input.TotalSteps = 1;
@@ -215,7 +224,7 @@ namespace Forum3.Migrator {
 				return;
 			}
 
-			var take = 100;
+			var take = 500;
 
 			if (input.CurrentStep == 0) {
 				var legacyMessageCount = await LegacyDb.Messages.CountAsync();
@@ -264,43 +273,15 @@ namespace Forum3.Migrator {
 			input.CurrentStep++;
 		}
 
-		async Task MigrateMessageThoughts(InputModels.Continue input) {
-			AppDb.Users.ThrowIfEmpty(nameof(AppDb.Users));
-			AppDb.Messages.ThrowIfEmpty(nameof(AppDb.Messages));
-			AppDb.Smileys.ThrowIfEmpty(nameof(AppDb.Smileys));
-
-			input.TotalSteps = 1;
-			input.CurrentStep = 1;
-
-			if (await AppDb.MessageThoughts.AnyAsync())
+		async Task MigrateMessageBoards(InputModels.Continue input) {
+			if (!await AppDb.Users.AnyAsync())
 				return;
 
-			var legacyThoughts = await LegacyDb.MessageThoughts.ToListAsync();
-			var legacySmileys = await LegacyDb.Smileys.ToListAsync();
+			if (!await AppDb.Messages.AnyAsync())
+				return;
 
-			var query = from user in AppDb.Users
-						join thought in legacyThoughts on user.LegacyId equals thought.UserId
-						join message in AppDb.Messages on thought.MessageId equals message.LegacyId
-						join legacySmiley in legacySmileys on thought.SmileyId equals legacySmiley.Id
-						join smiley in AppDb.Smileys on legacySmiley.Code equals smiley.Code
-						select new DataModels.MessageThought {
-							MessageId = message.Id,
-							SmileyId = smiley.Id,
-							UserId = user.Id
-						};
-
-			var records = await query.ToListAsync();
-
-			foreach (var record in records)
-				await AppDb.AddAsync(record);
-
-			await AppDb.SaveChangesAsync();
-		}
-
-		async Task MigrateMessageBoards(InputModels.Continue input) {
-			AppDb.Users.ThrowIfEmpty(nameof(AppDb.Users));
-			AppDb.Messages.ThrowIfEmpty(nameof(AppDb.Messages));
-			AppDb.Boards.ThrowIfEmpty(nameof(AppDb.Boards));
+			if (!await AppDb.Boards.AnyAsync())
+				return;
 
 			input.TotalSteps = 1;
 			input.CurrentStep = 1;
@@ -331,8 +312,11 @@ namespace Forum3.Migrator {
 		}
 
 		async Task MigratePins(InputModels.Continue input) {
-			AppDb.Users.ThrowIfEmpty(nameof(AppDb.Users));
-			AppDb.Messages.ThrowIfEmpty(nameof(AppDb.Messages));
+			if (!await AppDb.Users.AnyAsync())
+				return;
+
+			if (!await AppDb.Messages.AnyAsync())
+				return;
 
 			input.TotalSteps = 1;
 			input.CurrentStep = 1;
@@ -361,13 +345,16 @@ namespace Forum3.Migrator {
 
 		// Unfinished. Needs image uploading.
 		async Task MigrateSmileys(InputModels.Continue input) {
-			AppDb.Users.ThrowIfEmpty(nameof(AppDb.Users));
-			AppDb.Messages.ThrowIfEmpty(nameof(AppDb.Messages));
+			if (!await AppDb.Users.AnyAsync())
+				return;
+
+			if (!await AppDb.Messages.AnyAsync())
+				return;
 
 			input.TotalSteps = 1;
 			input.CurrentStep = 1;
 
-			if (await AppDb.MessageBoards.AnyAsync())
+			if (await AppDb.Smileys.AnyAsync())
 				return;
 
 			var legacySmileys = await LegacyDb.Smileys.ToListAsync();
@@ -383,8 +370,65 @@ namespace Forum3.Migrator {
 					SortOrder = Convert.ToInt32((1000 * column) + (100 * row)),
 				};
 
+				var container = CloudBlobClient.GetContainerReference("smileys");
+
+				if (await container.CreateIfNotExistsAsync())
+					await container.SetPermissionsAsync(new BlobContainerPermissions { PublicAccess = BlobContainerPublicAccessType.Blob });
+
+				var blobReference = container.GetBlockBlobReference(record.Path);
+
+				// Multiple smileys can point to the same image.
+				if (!await blobReference.ExistsAsync()) {
+					blobReference.Properties.ContentType = "image/gif";
+
+					using (var fileStream = new FileStream($"Migrator/Smileys/{record.Path}", FileMode.Open, FileAccess.Read, FileShare.Read)) {
+						fileStream.Position = 0;
+						await blobReference.UploadFromStreamAsync(fileStream);
+					}
+				}
+
+				newSmiley.Path = blobReference.Uri.AbsoluteUri;
+
 				await AppDb.AddAsync(newSmiley);
 			}
+
+			await AppDb.SaveChangesAsync();
+		}
+
+		async Task MigrateMessageThoughts(InputModels.Continue input) {
+			if (!await AppDb.Users.AnyAsync())
+				return;
+
+			if (!await AppDb.Messages.AnyAsync())
+				return;
+
+			if (!await AppDb.Smileys.AnyAsync())
+				return;
+
+			input.TotalSteps = 1;
+			input.CurrentStep = 1;
+
+			if (await AppDb.MessageThoughts.AnyAsync())
+				return;
+
+			var legacyThoughts = await LegacyDb.MessageThoughts.ToListAsync();
+			var legacySmileys = await LegacyDb.Smileys.ToListAsync();
+
+			var query = from user in AppDb.Users
+						join thought in legacyThoughts on user.LegacyId equals thought.UserId
+						join message in AppDb.Messages on thought.MessageId equals message.LegacyId
+						join legacySmiley in legacySmileys on thought.SmileyId equals legacySmiley.Id
+						join smiley in AppDb.Smileys on legacySmiley.Code equals smiley.Code
+						select new DataModels.MessageThought {
+							MessageId = message.Id,
+							SmileyId = smiley.Id,
+							UserId = user.Id
+						};
+
+			var records = await query.ToListAsync();
+
+			foreach (var record in records)
+				await AppDb.AddAsync(record);
 
 			await AppDb.SaveChangesAsync();
 		}
