@@ -25,7 +25,7 @@
 				@if (contextUser.IsAdmin) {
 					<li class="open-menu">
 						<span class="small-button pointer">Admin</span>
-						<div class="drop-down-menu-wrapper">
+						<div class="drop-down-menu-wrapper hidden">
 							<ul class="drop-down-menu content-box">
 								<li clickable-link-parent><a asp-controller="@nameof(Boards)" asp-action="@nameof(Boards.Manage)">Boards</a></li>
 								<li clickable-link-parent><a asp-controller="@nameof(Roles)" asp-action="@nameof(Roles.Index)">Roles</a></li>

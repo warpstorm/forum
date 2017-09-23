@@ -40,54 +40,54 @@ namespace Forum3.Migrator {
 		public async Task<bool> ConnectionTest() => await LegacyDb.Messages.AnyAsync();
 
 		public async Task<ViewModels.Delay> Execute(InputModels.Continue input) {
-			var routeValueModel = new InputModels.Continue();
 			var viewModel = new ViewModels.Delay();
 
-			var stage = input?.Stage ?? nameof(MigrateUsers);
-			var step = input?.Step ?? 0;
+			if (input == null || string.IsNullOrEmpty(input.Stage))
+				input = new InputModels.Continue {
+					Stage = nameof(MigrateUsers),
+					CurrentStep = 0
+				};
 
 			var nextStage = string.Empty;
 
-			var result = new MigrationResult(0, 0);
-
-			switch (stage) {
+			switch (input.Stage) {
 				case nameof(MigrateUsers):
-					result = await MigrateUsers(step);
+					await MigrateUsers(input);
 					nextStage = nameof(MigrateRoles);
 					break;
 
 				case nameof(MigrateRoles):
-					result = await MigrateRoles(step);
+					await MigrateRoles(input);
 					nextStage = nameof(MigrateBoards);
 					break;
 
 				case nameof(MigrateBoards):
-					result = await MigrateBoards(step);
+					await MigrateBoards(input);
 					nextStage = nameof(MigrateMessages);
 					break;
 
 				case nameof(MigrateMessages):
-					result = await MigrateMessages(step);
+					await MigrateMessages(input);
 					nextStage = nameof(MigratePins);
 					break;
 
 				case nameof(MigratePins):
-					result = await MigratePins(step);
-					nextStage = nameof(MigrateSmileys);
-					break;
-
-				case nameof(MigrateSmileys):
-					result = await MigrateSmileys(step);
-					nextStage = nameof(MigrateMessageThoughts);
-					break;
-
-				case nameof(MigrateMessageThoughts):
-					result = await MigrateMessageThoughts(step);
+					await MigratePins(input);
 					nextStage = nameof(MigrateMessageBoards);
 					break;
 
 				case nameof(MigrateMessageBoards):
-					result = await MigrateMessageBoards(step);
+					await MigrateMessageBoards(input);
+					nextStage = nameof(MigrateSmileys);
+					break;
+
+				case nameof(MigrateSmileys):
+					await MigrateSmileys(input);
+					nextStage = nameof(MigrateMessageThoughts);
+					break;
+
+				case nameof(MigrateMessageThoughts):
+					await MigrateMessageThoughts(input);
 					nextStage = string.Empty;
 					break;
 
@@ -95,31 +95,29 @@ namespace Forum3.Migrator {
 					throw new ArgumentException(nameof(input.Stage));
 			}
 
-			if (result.Next < result.Total) {
-				routeValueModel.Stage = stage;
-				routeValueModel.Step = result.Next;
-			}
-			else {
-				routeValueModel.Stage = nextStage;
-				routeValueModel.Step = 0;
+			viewModel.ActionName = input.Stage;
+			viewModel.CurrentPage = input.CurrentStep;
+			viewModel.TotalPages = input.TotalSteps;
+
+			if (input.CurrentStep == input.TotalSteps) {
+				input.Stage = nextStage;
+				input.CurrentStep = 0;
 			}
 
-			viewModel.CurrentPage = step;
-			viewModel.TotalPages = result.Total;
-
-			if (string.IsNullOrEmpty(routeValueModel.Stage))
+			if (string.IsNullOrEmpty(input.Stage))
 				viewModel.NextAction = UrlHelper.Action(nameof(Boards.Index), nameof(Boards));
 			else
-				viewModel.NextAction = UrlHelper.Action(nameof(Migrator.Run), nameof(Migrator), routeValueModel);
+				viewModel.NextAction = UrlHelper.Action(nameof(Migrator.Run), nameof(Migrator), input);
 
 			return viewModel;
 		}
 
-		async Task<MigrationResult> MigrateUsers(int current) {
-			var result = new MigrationResult(0, 0);
+		async Task MigrateUsers(InputModels.Continue input) {
+			input.TotalSteps = 1;
+			input.CurrentStep = 1;
 
 			if (await AppDb.Users.AnyAsync())
-				return result;
+				return;
 
 			var query = from user in LegacyDb.UserProfiles
 						join membership in LegacyDb.Membership on user.UserId equals membership.UserId
@@ -141,20 +139,16 @@ namespace Forum3.Migrator {
 
 			foreach (var record in records)
 				await UserManager.CreateAsync(record);
-
-			result.Total = 1;
-			result.Next = 1;
-
-			return result;
 		}
 
-		async Task<MigrationResult> MigrateRoles(int current) {
+		async Task MigrateRoles(InputModels.Continue input) {
 			AppDb.Users.ThrowIfEmpty(nameof(AppDb.Users));
 
-			var result = new MigrationResult(0, 0);
+			input.TotalSteps = 1;
+			input.CurrentStep = 1;
 
 			if (await AppDb.Roles.AnyAsync())
-				return result;
+				return;
 
 			var legacyUsersInRoles = await LegacyDb.UsersInRoles.ToListAsync();
 			var legacyRoles = await LegacyDb.Roles.ToListAsync();
@@ -178,18 +172,14 @@ namespace Forum3.Migrator {
 
 				await UserManager.AddToRoleAsync(record.User, record.RoleName);
 			}
-
-			result.Total = 1;
-			result.Next = 1;
-
-			return result;
 		}
 
-		async Task<MigrationResult> MigrateBoards(int current) {
-			var result = new MigrationResult(0, 0);
+		async Task MigrateBoards(InputModels.Continue input) {
+			input.TotalSteps = 1;
+			input.CurrentStep = 1;
 
 			if (await AppDb.Categories.AnyAsync())
-				return result;
+				return;
 
 			var category = new DataModels.Category {
 				Name = "Migration Category",
@@ -213,75 +203,77 @@ namespace Forum3.Migrator {
 				await AppDb.AddAsync(record);
 
 			await AppDb.SaveChangesAsync();
-
-			result.Total = 1;
-			result.Next = 1;
-
-			return result;
 		}
 
-		async Task<MigrationResult> MigrateMessages(int current) {
+		async Task MigrateMessages(InputModels.Continue input) {
 			AppDb.Users.ThrowIfEmpty(nameof(AppDb.Users));
 			AppDb.Boards.ThrowIfEmpty(nameof(AppDb.Boards));
 
-			var result = new MigrationResult(0, 0);
-
-			if (await AppDb.Messages.AnyAsync())
-				return result;
+			if (input.CurrentStep == 0 && await AppDb.Messages.AnyAsync()) {
+				input.TotalSteps = 1;
+				input.CurrentStep = 1;
+				return;
+			}
 
 			var take = 100;
 
-			if (current == 0) {
+			if (input.CurrentStep == 0) {
 				var legacyMessageCount = await LegacyDb.Messages.CountAsync();
 
-				result.Total = Convert.ToInt32(Math.Ceiling(1D * legacyMessageCount / take));
-				result.Next = 1;
-			}
-			else {
-				var query = from message in LegacyDb.Messages
-							select new DataModels.Message {
-								Processed = false,
-								OriginalBody = message.OriginalBody,
-								ShortPreview = message.Subject,
-								TimePosted = message.TimePosted,
-								TimeEdited = message.TimeEdited,
-								LastReplyPosted = message.LastChildTimePosted,
-								ReplyCount = message.Replies,
-								ViewCount = message.Views,
-								LegacyId = message.Id,
-								LegacyParentId = message.ParentId,
-								LegacyReplyId = message.ReplyId,
-								LegacyPostedById = message.PostedById,
-								LegacyEditedById = message.EditedById,
-								LegacyLastReplyById = message.LastChildById,
-							};
+				input.TotalSteps = Convert.ToInt32(Math.Ceiling(1D * legacyMessageCount / take));
+				input.CurrentStep = 1;
 
-				var skip = take * (current - 1);
-
-				var records = await query.Skip(skip).Take(take).ToListAsync();
-				var users = await AppDb.Users.ToListAsync();
-
-				foreach (var record in records) {
-					record.PostedById = users.Single(u => u.LegacyId == record.LegacyPostedById).Id;
-					record.EditedById = users.Single(u => u.LegacyId == record.LegacyEditedById).Id;
-					record.LastReplyById = users.Single(u => u.LegacyId == record.LegacyLastReplyById).Id;
-
-					await AppDb.AddAsync(record);
-				}
+				return;
 			}
 
-			return result;
+			var query = from message in LegacyDb.Messages
+						select new DataModels.Message {
+							Processed = false,
+							OriginalBody = message.OriginalBody,
+							ShortPreview = message.Subject,
+							LongPreview = string.Empty,
+							DisplayBody = string.Empty,
+							TimePosted = message.TimePosted,
+							TimeEdited = message.TimeEdited,
+							LastReplyPosted = message.LastChildTimePosted,
+							ReplyCount = message.Replies,
+							ViewCount = message.Views,
+							LegacyId = message.Id,
+							LegacyParentId = message.ParentId,
+							LegacyReplyId = message.ReplyId,
+							LegacyPostedById = message.PostedById,
+							LegacyEditedById = message.EditedById,
+							LegacyLastReplyById = message.LastChildById,
+						};
+
+			var skip = take * (input.CurrentStep - 1);
+
+			var records = await query.Skip(skip).Take(take).ToListAsync();
+			var users = await AppDb.Users.ToListAsync();
+
+			foreach (var record in records) {
+				record.PostedById = users.SingleOrDefault(u => u.LegacyId == record.LegacyPostedById)?.Id ?? string.Empty;
+				record.EditedById = users.SingleOrDefault(u => u.LegacyId == record.LegacyEditedById)?.Id ?? string.Empty;
+				record.LastReplyById = users.SingleOrDefault(u => u.LegacyId == record.LegacyLastReplyById)?.Id ?? string.Empty;
+
+				await AppDb.AddAsync(record);
+			}
+
+			await AppDb.SaveChangesAsync();
+
+			input.CurrentStep++;
 		}
 
-		async Task<MigrationResult> MigrateMessageThoughts(int current) {
+		async Task MigrateMessageThoughts(InputModels.Continue input) {
 			AppDb.Users.ThrowIfEmpty(nameof(AppDb.Users));
 			AppDb.Messages.ThrowIfEmpty(nameof(AppDb.Messages));
 			AppDb.Smileys.ThrowIfEmpty(nameof(AppDb.Smileys));
 
-			var result = new MigrationResult(0, 0);
+			input.TotalSteps = 1;
+			input.CurrentStep = 1;
 
 			if (await AppDb.MessageThoughts.AnyAsync())
-				return result;
+				return;
 
 			var legacyThoughts = await LegacyDb.MessageThoughts.ToListAsync();
 			var legacySmileys = await LegacyDb.Smileys.ToListAsync();
@@ -303,22 +295,18 @@ namespace Forum3.Migrator {
 				await AppDb.AddAsync(record);
 
 			await AppDb.SaveChangesAsync();
-
-			result.Total = 1;
-			result.Next = 1;
-
-			return result;
 		}
 
-		async Task<MigrationResult> MigrateMessageBoards(int current) {
+		async Task MigrateMessageBoards(InputModels.Continue input) {
 			AppDb.Users.ThrowIfEmpty(nameof(AppDb.Users));
 			AppDb.Messages.ThrowIfEmpty(nameof(AppDb.Messages));
 			AppDb.Boards.ThrowIfEmpty(nameof(AppDb.Boards));
 
-			var result = new MigrationResult(0, 0);
+			input.TotalSteps = 1;
+			input.CurrentStep = 1;
 
 			if (await AppDb.MessageBoards.AnyAsync())
-				return result;
+				return;
 
 			var legacyMessageBoards = await LegacyDb.MessageBoards.ToListAsync();
 
@@ -340,21 +328,17 @@ namespace Forum3.Migrator {
 				await AppDb.AddAsync(record);
 
 			await AppDb.SaveChangesAsync();
-
-			result.Total = 1;
-			result.Next = 1;
-
-			return result;
 		}
 
-		async Task<MigrationResult> MigratePins(int current) {
+		async Task MigratePins(InputModels.Continue input) {
 			AppDb.Users.ThrowIfEmpty(nameof(AppDb.Users));
 			AppDb.Messages.ThrowIfEmpty(nameof(AppDb.Messages));
 
-			var result = new MigrationResult(0, 0);
+			input.TotalSteps = 1;
+			input.CurrentStep = 1;
 
 			if (await AppDb.MessageBoards.AnyAsync())
-				return result;
+				return;
 
 			var legacyPins = await LegacyDb.Pins.ToListAsync();
 
@@ -373,22 +357,18 @@ namespace Forum3.Migrator {
 				await AppDb.AddAsync(record);
 
 			await AppDb.SaveChangesAsync();
-
-			result.Total = 1;
-			result.Next = 1;
-
-			return result;
 		}
 
 		// Unfinished. Needs image uploading.
-		async Task<MigrationResult> MigrateSmileys(int current) {
+		async Task MigrateSmileys(InputModels.Continue input) {
 			AppDb.Users.ThrowIfEmpty(nameof(AppDb.Users));
 			AppDb.Messages.ThrowIfEmpty(nameof(AppDb.Messages));
 
-			var result = new MigrationResult(0, 0);
+			input.TotalSteps = 1;
+			input.CurrentStep = 1;
 
 			if (await AppDb.MessageBoards.AnyAsync())
-				return result;
+				return;
 
 			var legacySmileys = await LegacyDb.Smileys.ToListAsync();
 
@@ -407,21 +387,6 @@ namespace Forum3.Migrator {
 			}
 
 			await AppDb.SaveChangesAsync();
-
-			result.Total = 1;
-			result.Next = 1;
-
-			return result;
-		}
-
-		class MigrationResult {
-			public int Total { get; set; }
-			public int Next { get; set; }
-
-			public MigrationResult(int total, int next) {
-				Total = total;
-				Next = next;
-			}
 		}
 	}
 }
