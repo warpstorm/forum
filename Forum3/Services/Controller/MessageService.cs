@@ -336,16 +336,21 @@ namespace Forum3.Services.Controller {
 
 			serviceResponse.RedirectPath = UrlHelper.DirectMessage(record.Id);
 
-			var processedMessage = await ProcessMessageInput(serviceResponse, record.OriginalBody);
+			MigrateMessageRecord(record);
 
-			await UpdateMessageRecord(processedMessage, record);
-
-			var replies = DbContext.Messages.Where(m => m.ParentId == record.Id);
+			var replies = await DbContext.Messages.Where(m => m.LegacyParentId == record.LegacyId).OrderBy(m => m.TimePosted).ToListAsync();
 
 			foreach (var reply in replies) {
-				processedMessage = await ProcessMessageInput(serviceResponse, reply.OriginalBody);
-				await UpdateMessageRecord(processedMessage, record);
+				reply.ParentId = record.Id;
+				MigrateMessageRecord(reply);
 			}
+
+			record.LastReplyId = replies.Last().Id;
+			record.LastReplyById = replies.Last().PostedById;
+			record.LastReplyPosted = replies.Last().TimePosted;
+
+			DbContext.Update(record);
+			await DbContext.SaveChangesAsync();
 
 			return serviceResponse;
 		}
@@ -774,5 +779,32 @@ namespace Forum3.Services.Controller {
 
 			await DbContext.SaveChangesAsync();
 		}
+
+		void MigrateMessageRecord(Message record) {
+			var processMessageTask = ProcessMessageInput(new ServiceResponse(), record.OriginalBody);
+			var replyTask = DbContext.Messages.SingleOrDefaultAsync(m => m.LegacyId == record.LegacyReplyId);
+			var postedByTask = DbContext.Users.SingleOrDefaultAsync(u => u.LegacyId == record.LegacyPostedById);
+			var editedByTask = DbContext.Users.SingleOrDefaultAsync(u => u.LegacyId == record.LegacyPostedById);
+
+			Task.WaitAll(processMessageTask, replyTask, postedByTask, editedByTask);
+
+			var message = processMessageTask.Result;
+
+			record.OriginalBody = message.OriginalBody;
+			record.DisplayBody = message.DisplayBody;
+			record.ShortPreview = message.ShortPreview;
+			record.LongPreview = message.LongPreview;
+			record.Cards = message.Cards;
+			record.TimeEdited = DateTime.Now;
+			record.EditedById = ContextUser.ApplicationUser.Id;
+			record.Processed = true;
+
+			record.ReplyId = replyTask.Result?.Id ?? 0;
+			record.PostedById = postedByTask.Result?.Id ?? string.Empty;
+			record.EditedById = postedByTask.Result?.Id ?? string.Empty;
+
+			DbContext.Update(record);
+		}
 	}
 }
+ 
