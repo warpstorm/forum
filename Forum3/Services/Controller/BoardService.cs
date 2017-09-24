@@ -479,7 +479,7 @@ namespace Forum3.Services.Controller {
 		}
 		
 		async Task<List<ItemViewModels.OnlineUser>> GetOnlineUsers() {
-			var onlineTimeLimitSetting = SiteSettingsService.GetInt(Constants.SiteSettings.OnlineTimeLimit);
+			var onlineTimeLimitSetting = await SiteSettingsService.GetInt(Constants.SiteSettings.OnlineTimeLimit);
 
 			if (onlineTimeLimitSetting == 0)
 				onlineTimeLimitSetting = Constants.Defaults.OnlineTimeLimit;

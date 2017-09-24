@@ -94,6 +94,9 @@ namespace Forum3.Services.Controller {
 			if (parentId != messageId)
 				return GetRedirectViewModel(messageId, record.ParentId, messageIds);
 
+			if (!record.Processed)
+				return GetMigrationRedirectViewModel(messageId);
+
 			if (target > 0) {
 				var targetPage = GetMessagePage(target, messageIds);
 
@@ -176,7 +179,8 @@ namespace Forum3.Services.Controller {
 								   PostedByAvatarPath = postedBy.AvatarPath,
 								   TimePostedDT = message.TimePosted,
 								   TimeEditedDT = message.TimeEdited,
-								   RecordTime = message.TimeEdited
+								   RecordTime = message.TimeEdited,
+								   Processed = message.Processed
 							   };
 
 			var messages = await messageQuery.ToListAsync();
@@ -257,6 +261,12 @@ namespace Forum3.Services.Controller {
 			viewModel.RedirectPath = UrlHelper.Action(nameof(Topics.Display), nameof(Topics), routeValues) + "#message" + messageId;
 
 			return viewModel;
+		}
+
+		PageModels.TopicDisplayPage GetMigrationRedirectViewModel(int messageId) {
+			return new PageModels.TopicDisplayPage {
+				RedirectPath = UrlHelper.Action(nameof(Messages.Migrate), nameof(Messages), new { id = messageId })
+			};
 		}
 
 		int GetMessagePage(int messageId, List<int> messageIds) {

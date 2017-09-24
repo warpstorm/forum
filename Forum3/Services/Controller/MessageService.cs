@@ -16,6 +16,7 @@ using Forum3.Models.DataModels;
 using Forum3.Models.InputModels;
 using Forum3.Models.ServiceModels;
 using Forum3.Models.ViewModels.Messages;
+using Forum3.Helpers;
 
 namespace Forum3.Services.Controller {
 	public class MessageService {
@@ -61,6 +62,22 @@ namespace Forum3.Services.Controller {
 			return viewModel;
 		}
 
+		public async Task<MigrateMessagePage> MigratePage(int messageId) {
+			var viewModel = new MigrateMessagePage();
+
+			var record = await DbContext.Messages.FindAsync(messageId);
+
+			if (record == null)
+				throw new Exception($@"No record was found with the id '{messageId}'");
+
+			if (record.ParentId > 0)
+				viewModel.RedirectPath = UrlHelper.Action(nameof(Messages.Migrate), nameof(Messages), new { id = record.ParentId });
+			else
+				viewModel.RedirectPath = UrlHelper.Action(nameof(Messages.FinishMigration), nameof(Messages), new { id = record.Id });
+
+			return viewModel;
+		}
+
 		public async Task<ServiceResponse> CreateTopic(MessageInput input) {
 			var serviceResponse = new ServiceResponse();
 
@@ -95,8 +112,7 @@ namespace Forum3.Services.Controller {
 
 			await DbContext.SaveChangesAsync();
 
-			serviceResponse.RedirectPath = UrlHelper.Action(nameof(Topics.Display), nameof(Topics), new { id = record.Id });
-
+			serviceResponse.RedirectPath = UrlHelper.DirectMessage(record.Id);
 			return serviceResponse;
 		}
 
@@ -134,7 +150,7 @@ namespace Forum3.Services.Controller {
 				await DbContext.SaveChangesAsync();
 			}
 
-			serviceResponse.RedirectPath = UrlHelper.Action(nameof(Topics.Display), nameof(Topics), new { id = record.Id });
+			serviceResponse.RedirectPath = UrlHelper.DirectMessage(record.Id);
 			return serviceResponse;
 		}
 
@@ -152,9 +168,9 @@ namespace Forum3.Services.Controller {
 			var record = await recordTask;
 			var processedMessage = await processedMessageTask;
 
-			if (!serviceResponse.Success) {
+			if (serviceResponse.Success) {
+				serviceResponse.RedirectPath = UrlHelper.DirectMessage(record.Id);
 				await UpdateMessageRecord(processedMessage, record);
-				serviceResponse.RedirectPath = UrlHelper.Action(nameof(Topics.Display), nameof(Topics), new { id = record.Id });
 			}
 
 			return serviceResponse;
@@ -172,6 +188,8 @@ namespace Forum3.Services.Controller {
 				return serviceResponse;
 
 			if (record.ParentId != 0) {
+				serviceResponse.RedirectPath = UrlHelper.DirectMessage(record.ParentId);
+
 				var directReplies = await DbContext.Messages.Where(m => m.ReplyId == messageId).ToListAsync();
 
 				foreach (var reply in directReplies) {
@@ -184,7 +202,11 @@ namespace Forum3.Services.Controller {
 
 					DbContext.Entry(reply).State = EntityState.Modified;
 				}
+
+				await DbContext.SaveChangesAsync();
 			}
+			else
+				serviceResponse.RedirectPath = UrlHelper.TopicIndex();
 
 			var topicReplies = await DbContext.Messages.Where(m => m.ParentId == messageId).ToListAsync();
 
@@ -211,7 +233,6 @@ namespace Forum3.Services.Controller {
 
 			await DbContext.SaveChangesAsync();
 
-			serviceResponse.Message = $"The smiley was deleted.";
 			return serviceResponse;
 		}
 
@@ -242,6 +263,7 @@ namespace Forum3.Services.Controller {
 
 			await DbContext.SaveChangesAsync();
 
+			serviceResponse.RedirectPath = UrlHelper.TopicIndex();
 			return serviceResponse;
 		}
 
@@ -294,9 +316,33 @@ namespace Forum3.Services.Controller {
 
 			await DbContext.SaveChangesAsync();
 
+			serviceResponse.RedirectPath = UrlHelper.DirectMessage(input.MessageId);
 			return serviceResponse;
 		}
 		
+		public async Task<ServiceResponse> FinishMigration(int messageId) {
+			var serviceResponse = new ServiceResponse();
+
+			var record = await DbContext.Messages.FindAsync(messageId);
+
+			if (record == null)
+				serviceResponse.Error(string.Empty, $@"No record was found with the id '{messageId}'");
+
+			if (record.ParentId > 0) {
+				serviceResponse.RedirectPath = UrlHelper.Action(nameof(Messages.Migrate), nameof(Messages), new { id = record.ParentId });
+				return serviceResponse;
+			}
+
+			var processedMessage = await ProcessMessageInput(serviceResponse, record.OriginalBody);
+
+			if (serviceResponse.Success) {
+				serviceResponse.RedirectPath = UrlHelper.DirectMessage(record.Id);
+				await UpdateMessageRecord(processedMessage, record);
+			}
+
+			return serviceResponse;
+		}
+
 		async Task<ProcessedMessageInput> ProcessMessageInput(ServiceResponse serviceResponse, string messageBody) {
 			var processedMessage = PreProcessMessageInput(messageBody);
 
@@ -715,6 +761,7 @@ namespace Forum3.Services.Controller {
 			record.Cards = message.Cards;
 			record.TimeEdited = DateTime.Now;
 			record.EditedById = ContextUser.ApplicationUser.Id;
+			record.Processed = true;
 
 			DbContext.Update(record);
 

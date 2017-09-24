@@ -74,15 +74,35 @@ namespace Forum3.Controllers {
 
 		[HttpGet]
 		public async Task<IActionResult> Delete(int id) {
-			await MessageService.DeleteMessage(id);
+			var serviceResponse = await MessageService.DeleteMessage(id);
+			ProcessServiceResponse(serviceResponse);
 
-			// TODO - Redirect to topic if we didn't delete the whole thing.
+			if (serviceResponse.Success) {
+				if (!string.IsNullOrEmpty(serviceResponse.RedirectPath))
+					return Redirect(serviceResponse.RedirectPath);
+
+				return RedirectToAction(nameof(Topics.Index), nameof(Topics));
+			}
+
+			// TODO replace this return with error handling
+
 			return RedirectToAction(nameof(Topics.Index), nameof(Topics));
 		}
 
 		[HttpGet]
 		public async Task<IActionResult> Pin(int id) {
-			await MessageService.PinMessage(id);
+			var serviceResponse = await MessageService.PinMessage(id);
+			ProcessServiceResponse(serviceResponse);
+
+			if (serviceResponse.Success) {
+				if (!string.IsNullOrEmpty(serviceResponse.RedirectPath))
+					return Redirect(serviceResponse.RedirectPath);
+
+				return RedirectToReferrer();
+			}
+
+			// TODO replace this return with error handling
+
 			return RedirectToReferrer();
 		}
 
@@ -90,8 +110,41 @@ namespace Forum3.Controllers {
 		[ValidateAntiForgeryToken]
 		[PreventRapidRequests]
 		public async Task<IActionResult> AddThought(ThoughtInput input) {
-			await MessageService.AddThought(input);
+			var serviceResponse = await MessageService.AddThought(input);
+			ProcessServiceResponse(serviceResponse);
+
+			if (serviceResponse.Success) {
+				if (!string.IsNullOrEmpty(serviceResponse.RedirectPath))
+					return Redirect(serviceResponse.RedirectPath);
+
+				return RedirectToAction(nameof(Topics.Display), nameof(Topics), new { id = input.MessageId });
+			}
+
+			// TODO replace this return with error handling
+
 			return RedirectToAction(nameof(Topics.Display), nameof(Topics), new { id = input.MessageId });
+		}
+
+		[HttpGet]
+		public async Task<IActionResult> Migrate(int id) {
+			var viewModel = await MessageService.MigratePage(id);
+			return View(viewModel);
+		}
+
+		[HttpGet]
+		public async Task<IActionResult> FinishMigration(int id) {
+			var serviceResponse = await MessageService.FinishMigration(id);
+
+			if (serviceResponse.Success) {
+				if (!string.IsNullOrEmpty(serviceResponse.RedirectPath))
+					return Redirect(serviceResponse.RedirectPath);
+
+				return RedirectToAction(nameof(Topics.Display), nameof(Topics), new { id = id });
+			}
+
+			// TODO replace this return with error handling
+
+			return RedirectToAction(nameof(Topics.Display), nameof(Topics), new { id = id });
 		}
 	}
 }

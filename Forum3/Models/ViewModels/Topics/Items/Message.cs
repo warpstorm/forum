@@ -11,6 +11,7 @@ namespace Forum3.Models.ViewModels.Topics.Items {
 		public bool CanEdit { get; set; }
 		public bool CanReply { get; set; }
 		public bool CanDelete { get; set; }
+		public bool Processed { get; set; }
 		public int Id { get; set; }
 		public int ParentId { get; set; }
 		public int ReplyId { get; set; }

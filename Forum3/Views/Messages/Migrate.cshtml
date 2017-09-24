@@ -1,0 +1,14 @@
+﻿@model ViewModels.Messages.MigrateMessagePage
+
+<div class="content-box pad">
+	<p>Filing your request with the Imperial Archives.</p>
+</div>
+
+<script>
+    setTimeout(function() {
+        window.location.href = "@Html.Raw(Model.RedirectPath)";
+    }, 300)
+</script>
+
+@{ViewData["Title"] = "Migrating your topic";}
+@section Header {@ViewData["Title"]}
