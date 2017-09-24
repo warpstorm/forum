@@ -12,7 +12,19 @@ namespace Forum3.Controllers {
 	public class ForumController : Controller {
 		public IActionResult Error() => View(new ViewModels.Error { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
 
-		string Referrer => GetReferrer();
+		string Referrer {
+			get {
+				var referrer = Request.Query["ReturnUrl"].ToString();
+
+				if (string.IsNullOrEmpty(referrer))
+					referrer = Request.Headers["Referer"].ToString();
+
+				if (string.IsNullOrEmpty(referrer))
+					return "/";
+
+				return referrer;
+			}
+		}
 
 		public override ViewResult View(object model) => View(null, model);
 		public override ViewResult View(string viewName, object model = null) {
@@ -59,18 +71,6 @@ namespace Forum3.Controllers {
 
 			ViewData["LogoPath"] = "/images/logos/" + GetLogoPath();
 			ViewData["Referrer"] = Referrer;
-		}
-
-		string GetReferrer() {
-			var referrer = Request.Query["ReturnUrl"].ToString();
-
-			if (string.IsNullOrEmpty(referrer))
-				referrer = Request.Headers["Referer"].ToString();
-
-			if (string.IsNullOrEmpty(referrer))
-				return "/";
-
-			return referrer;
 		}
 
 		string GetLogoPath() {
