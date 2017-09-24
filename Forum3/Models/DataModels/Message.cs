@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Forum3.Models.DataModels {
@@ -61,8 +60,6 @@ namespace Forum3.Models.DataModels {
 		public int ReplyCount { get; set; }
 
 		public bool Processed { get; set; }
-
-		public List<MessageThought> Thoughts { get; set; }
 
 		public int LegacyParentId { get; set; }
 		public int LegacyReplyId { get; set; }
