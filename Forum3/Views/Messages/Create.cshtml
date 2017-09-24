@@ -1,7 +1,6 @@
-@model CreateTopicPage
-
-@{
-    ViewData["Title"] = "Create a Topic";
-}
+@model ViewModels.Messages.CreateTopicPage
 
 @await Html.PartialAsync("_MessageForm", Model)
+
+@{ViewData["Title"] = "Create a Topic";}
+@section Header {@ViewData["Title"]}

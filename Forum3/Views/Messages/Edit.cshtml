@@ -1,7 +1,6 @@
-@model EditMessagePage
-
-@{
-    ViewData["Title"] = "Edit";
-}
+@model ViewModels.Messages.EditMessagePage
 
 @Html.Partial("_MessageForm", Model)
+
+@{ViewData["Title"] = "Edit";}
+@section Header {@ViewData["Title"]}
