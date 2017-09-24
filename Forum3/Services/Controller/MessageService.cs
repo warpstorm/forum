@@ -338,11 +338,23 @@ namespace Forum3.Services.Controller {
 
 			MigrateMessageRecord(record);
 
+			DbContext.Participants.Add(new Participant {
+				MessageId = record.Id,
+				Time = record.TimePosted,
+				UserId = record.PostedById
+			});
+
 			var replies = await DbContext.Messages.Where(m => m.LegacyParentId == record.LegacyId).OrderBy(m => m.TimePosted).ToListAsync();
 
 			foreach (var reply in replies) {
 				reply.ParentId = record.Id;
 				MigrateMessageRecord(reply);
+
+				DbContext.Participants.Add(new Participant {
+					MessageId = record.Id,
+					Time = reply.TimePosted,
+					UserId = reply.PostedById
+				});
 			}
 
 			record.LastReplyId = replies.Last().Id;
@@ -807,4 +819,3 @@ namespace Forum3.Services.Controller {
 		}
 	}
 }
- 
