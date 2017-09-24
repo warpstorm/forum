@@ -14,11 +14,6 @@ namespace Forum3.Migrator {
 			MigratorService = migratorService;
 		}
 
-		public async Task<IActionResult> ConnectionTest() {
-			ViewData["result"] = await MigratorService.ConnectionTest();
-			return View("Done");
-		}
-
 		[AllowAnonymous]
 		public async Task<IActionResult> Run(InputModels.Continue input = null) {
 			var viewModel = await MigratorService.Execute(input);

@@ -42,8 +42,6 @@ namespace Forum3.Migrator {
 			CloudBlobClient = cloudBlobClient;
 		}
 
-		public async Task<bool> ConnectionTest() => await LegacyDb.Messages.AnyAsync();
-
 		public async Task<ViewModels.Delay> Execute(InputModels.Continue input) {
 			var viewModel = new ViewModels.Delay();
 
