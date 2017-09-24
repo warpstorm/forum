@@ -79,7 +79,7 @@ namespace Forum3.Services {
 
 				contextUser.ApplicationUser.LastOnline = DateTime.Now;
 
-				DbContext.Entry(contextUser.ApplicationUser).State = EntityState.Modified;
+				DbContext.Update(contextUser.ApplicationUser);
 				DbContext.SaveChanges();
 			}
 

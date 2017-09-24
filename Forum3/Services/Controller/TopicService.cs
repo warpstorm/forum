@@ -114,7 +114,7 @@ namespace Forum3.Services.Controller {
 			var pageMessageIds = messageIds.Skip(skip).Take(take);
 
 			record.ViewCount++;
-			DbContext.Entry(record).State = EntityState.Modified;
+			DbContext.Update(record);
 			DbContext.SaveChanges();
 
 			var messages = await GetTopicMessages(pageMessageIds);

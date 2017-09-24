@@ -163,7 +163,7 @@ namespace Forum3.Services.Controller {
 
 			if (input.DisplayName != userRecord.DisplayName) {
 				userRecord.DisplayName = input.DisplayName;
-				DbContext.Entry(userRecord).State = EntityState.Modified;
+				DbContext.Update(userRecord);
 
 				Logger.LogInformation($"Display name was modified by '{ContextUser.ApplicationUser.DisplayName}' for account '{userRecord.DisplayName}'.");
 			}
@@ -172,7 +172,7 @@ namespace Forum3.Services.Controller {
 
 			if (birthday != userRecord.Birthday) {
 				userRecord.Birthday = birthday;
-				DbContext.Entry(userRecord).State = EntityState.Modified;
+				DbContext.Update(userRecord);
 
 				Logger.LogInformation($"Birthday was modified by '{ContextUser.ApplicationUser.DisplayName}' for account '{userRecord.DisplayName}'.");
 			}
@@ -322,8 +322,8 @@ namespace Forum3.Services.Controller {
 			}
 
 			userRecord.AvatarPath = blobReference.Uri.AbsoluteUri;
-			DbContext.Entry(userRecord).State = EntityState.Modified;
 
+			DbContext.Update(userRecord);
 			await DbContext.SaveChangesAsync();
 
 			Logger.LogInformation($"Avatar was modified by '{ContextUser.ApplicationUser.DisplayName}' for account '{userRecord.DisplayName}'.");

@@ -163,12 +163,12 @@ namespace Forum3.Services.Controller {
 
 				if (smileyRecord.Code != smileyInput.Code) {
 					smileyRecord.Code = smileyInput.Code;
-					DbContext.Entry(smileyRecord).State = EntityState.Modified;
+					DbContext.Update(smileyRecord);
 				}
 
 				if (smileyRecord.Thought != smileyInput.Thought) {
 					smileyRecord.Thought = smileyInput.Thought;
-					DbContext.Entry(smileyRecord).State = EntityState.Modified;
+					DbContext.Update(smileyRecord);
 				}
 			}
 

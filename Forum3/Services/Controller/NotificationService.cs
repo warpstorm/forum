@@ -82,7 +82,7 @@ namespace Forum3.Services.Controller {
 
 			if (record.Unread) {
 				record.Unread = false;
-				DbContext.Entry(record).State = EntityState.Modified;
+				DbContext.Update(record);
 				await DbContext.SaveChangesAsync();
 			}
 

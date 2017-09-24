@@ -250,7 +250,7 @@ namespace Forum3.Services.Controller {
 				record.CategoryId = newCategoryRecord.Id;
 			}
 
-			DbContext.Entry(record).State = EntityState.Modified;
+			DbContext.Update(record);
 			await DbContext.SaveChangesAsync();
 
 			if (oldCategoryId >= 0) {
@@ -278,10 +278,10 @@ namespace Forum3.Services.Controller {
 				var displacedCategory = DbContext.Categories.First(b => b.DisplayOrder == targetCategory.DisplayOrder - 1);
 
 				displacedCategory.DisplayOrder++;
-				DbContext.Entry(displacedCategory).State = EntityState.Modified;
+				DbContext.Update(displacedCategory);
 
 				targetCategory.DisplayOrder--;
-				DbContext.Entry(targetCategory).State = EntityState.Modified;
+				DbContext.Update(targetCategory);
 
 				await DbContext.SaveChangesAsync();
 			}
@@ -305,7 +305,7 @@ namespace Forum3.Services.Controller {
 
 			foreach (var board in categoryBoards) {
 				board.DisplayOrder = currentIndex++;
-				DbContext.Entry(board).State = EntityState.Modified;
+				DbContext.Update(board);
 			}
 
 			await DbContext.SaveChangesAsync();
@@ -317,11 +317,11 @@ namespace Forum3.Services.Controller {
 
 				if (displacedBoard != null) {
 					displacedBoard.DisplayOrder++;
-					DbContext.Entry(displacedBoard).State = EntityState.Modified;
+					DbContext.Update(displacedBoard);
 				}
 
 				targetBoard.DisplayOrder--;
-				DbContext.Entry(targetBoard).State = EntityState.Modified;
+				DbContext.Update(targetBoard);
 
 				await DbContext.SaveChangesAsync();
 			}
@@ -350,7 +350,7 @@ namespace Forum3.Services.Controller {
 
 			foreach (var displacedBoard in displacedBoards) {
 				displacedBoard.CategoryId = toCategory.Id;
-				DbContext.Entry(displacedBoard).State = EntityState.Modified;
+				DbContext.Update(displacedBoard);
 			}
 
 			await DbContext.SaveChangesAsync();
@@ -382,7 +382,7 @@ namespace Forum3.Services.Controller {
 			// Reassign messages to new board
 			foreach (var messageBoard in messageBoards) {
 				messageBoard.BoardId = toBoard.Id;
-				DbContext.Entry(messageBoard).State = EntityState.Modified;
+				DbContext.Update(messageBoard);
 			}
 
 			await DbContext.SaveChangesAsync();

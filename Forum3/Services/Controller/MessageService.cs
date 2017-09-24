@@ -108,8 +108,8 @@ namespace Forum3.Services.Controller {
 			});
 
 			boardRecord.LastMessageId = record.Id;
-			DbContext.Entry(boardRecord).State = EntityState.Modified;
 
+			DbContext.Update(boardRecord);
 			await DbContext.SaveChangesAsync();
 
 			serviceResponse.RedirectPath = UrlHelper.DirectMessage(record.Id);
@@ -146,7 +146,8 @@ namespace Forum3.Services.Controller {
 
 			if (boardRecord != null) {
 				boardRecord.LastMessageId = record.Id;
-				DbContext.Entry(boardRecord).State = EntityState.Modified;
+
+				DbContext.Update(boardRecord);
 				await DbContext.SaveChangesAsync();
 			}
 
@@ -200,7 +201,7 @@ namespace Forum3.Services.Controller {
 
 					reply.ReplyId = 0;
 
-					DbContext.Entry(reply).State = EntityState.Modified;
+					DbContext.Update(reply);
 				}
 
 				await DbContext.SaveChangesAsync();
@@ -333,10 +334,16 @@ namespace Forum3.Services.Controller {
 				return serviceResponse;
 			}
 
+			serviceResponse.RedirectPath = UrlHelper.DirectMessage(record.Id);
+
 			var processedMessage = await ProcessMessageInput(serviceResponse, record.OriginalBody);
 
-			if (serviceResponse.Success) {
-				serviceResponse.RedirectPath = UrlHelper.DirectMessage(record.Id);
+			await UpdateMessageRecord(processedMessage, record);
+
+			var replies = DbContext.Messages.Where(m => m.ParentId == record.Id);
+
+			foreach (var reply in replies) {
+				processedMessage = await ProcessMessageInput(serviceResponse, reply.OriginalBody);
 				await UpdateMessageRecord(processedMessage, record);
 			}
 
@@ -693,7 +700,7 @@ namespace Forum3.Services.Controller {
 				replyRecord.LastReplyById = ContextUser.ApplicationUser.Id;
 				replyRecord.LastReplyPosted = currentTime;
 
-				DbContext.Entry(replyRecord).State = EntityState.Modified;
+				DbContext.Update(replyRecord);
 
 				if (replyRecord.PostedById != ContextUser.ApplicationUser.Id) {
 					var notification = new Notification {
@@ -714,7 +721,7 @@ namespace Forum3.Services.Controller {
 				parentMessage.LastReplyById = ContextUser.ApplicationUser.Id;
 				parentMessage.LastReplyPosted = currentTime;
 
-				DbContext.Entry(parentMessage).State = EntityState.Modified;
+				DbContext.Update(parentMessage);
 
 				if (parentMessage.PostedById != ContextUser.ApplicationUser.Id) {
 					var notification = new Notification {
@@ -745,7 +752,7 @@ namespace Forum3.Services.Controller {
 			}
 			else {
 				participation.Time = DateTime.Now;
-				DbContext.Entry(participation).State = EntityState.Modified;
+				DbContext.Update(participation);
 			}
 
 			await DbContext.SaveChangesAsync();
