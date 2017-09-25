@@ -346,7 +346,6 @@ namespace Forum3.Migrator {
 			await AppDb.SaveChangesAsync();
 		}
 
-		// Unfinished. Needs image uploading.
 		async Task MigrateSmileys(InputModels.Continue input) {
 			if (!await AppDb.Users.AnyAsync())
 				return;

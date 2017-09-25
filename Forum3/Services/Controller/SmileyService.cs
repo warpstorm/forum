@@ -26,18 +26,18 @@ namespace Forum3.Services.Controller {
 			CloudBlobClient = cloudBlobClient;
 		}
 
-		public async Task<List<List<ViewModels.IndexSmiley>>> GetSelectorList() {
+		public async Task<List<List<ViewModels.IndexItem>>> GetSelectorList() {
 			var smileysQuery = from smiley in DbContext.Smileys
 							   orderby smiley.SortOrder
 							   select smiley;
 
 			var smileys = await smileysQuery.ToListAsync();
 
-			var results = new List<List<ViewModels.IndexSmiley>>();
+			var results = new List<List<ViewModels.IndexItem>>();
 
 			var currentColumn = -1;
 
-			List<ViewModels.IndexSmiley> currentColumnList = null;
+			List<ViewModels.IndexItem> currentColumnList = null;
 
 			foreach (var smiley in smileys) {
 				var sortColumn = smiley.SortOrder / 1000;
@@ -45,11 +45,11 @@ namespace Forum3.Services.Controller {
 
 				if (currentColumn != sortColumn) {
 					currentColumn = sortColumn;
-					currentColumnList = new List<ViewModels.IndexSmiley>();
+					currentColumnList = new List<ViewModels.IndexItem>();
 					results.Add(currentColumnList);
 				}
 
-				currentColumnList.Add(new ViewModels.IndexSmiley {
+				currentColumnList.Add(new ViewModels.IndexItem {
 					Id = smiley.Id,
 					Code = smiley.Code,
 					Path = smiley.Path,
@@ -75,7 +75,7 @@ namespace Forum3.Services.Controller {
 				var sortColumn = smiley.SortOrder / 1000;
 				var sortRow = smiley.SortOrder % 1000;
 
-				viewModel.Smileys.Add(new ViewModels.IndexSmiley {
+				viewModel.Items.Add(new ViewModels.IndexItem {
 					Id = smiley.Id,
 					Code = smiley.Code,
 					Path = smiley.Path,

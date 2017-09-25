@@ -4,9 +4,12 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
 using DataModels = Forum3.Models.DataModels;
+using ViewModels = Forum3.Models.ViewModels.SiteSettings;
 
 namespace Forum3.Services {
 	public class SiteSettingsService {
+		Dictionary<string, string> Settings { get; set; } = new Dictionary<string, string>();
+
 		DataModels.ApplicationDbContext DbContext { get; }
 
 		public SiteSettingsService(
@@ -15,7 +18,40 @@ namespace Forum3.Services {
 			DbContext = dbContext;
 		}
 
-		public Dictionary<string, string> Settings { get; set; } = new Dictionary<string, string>();
+		public async Task<ViewModels.IndexPage> IndexPage() {
+			var viewModel = new ViewModels.IndexPage();
+
+			var siteSettings = await DbContext.SiteSettings.ToListAsync();
+
+			foreach (var item in siteSettings) {
+				viewModel.Items.Add(new ViewModels.IndexItem {
+				});
+			}
+
+			return viewModel;
+		}
+
+		public async Task<string> Get(string name, string userId = "") {
+			return await GetSetting(name, userId);
+		}
+
+		public async Task<int> GetInt(string name, string userId = "") {
+			var setting = await GetSetting(name, userId);
+
+			if (string.IsNullOrEmpty(setting))
+				return 0;
+
+			return Convert.ToInt32(setting);
+		}
+
+		public async Task<bool> GetBool(string name, string userId = "") {
+			var setting = await GetSetting(name, userId);
+
+			if (string.IsNullOrEmpty(setting))
+				return false;
+
+			return Convert.ToBoolean(setting);
+		}
 
 		async Task<string> GetSetting(string name, string userId = "") {
 			DataModels.SiteSetting setting = null;
@@ -41,28 +77,6 @@ namespace Forum3.Services {
 			}
 
 			return settingValue;
-		}
-
-		public async Task<string> Get(string name, string userId = "") {
-			return await GetSetting(name, userId);
-		}
-
-		public async Task<int> GetInt(string name, string userId = "") {
-			var setting = await GetSetting(name, userId);
-
-			if (string.IsNullOrEmpty(setting))
-				return 0;
-
-			return Convert.ToInt32(setting);
-		}
-
-		public async Task<bool> GetBool(string name, string userId = "") {
-			var setting = await GetSetting(name, userId);
-
-			if (string.IsNullOrEmpty(setting))
-				return false;
-
-			return Convert.ToBoolean(setting);
 		}
 	}
 }

@@ -1,5 +1,5 @@
 ﻿namespace Forum3.Models.ViewModels.Smileys {
-	public class IndexSmiley {
+	public class IndexItem {
 		public int Id { get; set; }
 		public string Code { get; set; }
 		public string Path { get; set; }

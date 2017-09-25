@@ -2,6 +2,6 @@
 
 namespace Forum3.Models.ViewModels.Smileys {
 	public class IndexPage {
-		public List<IndexSmiley> Smileys { get; set; } = new List<IndexSmiley>();
+		public List<IndexItem> Items { get; set; } = new List<IndexItem>();
 	}
 }
