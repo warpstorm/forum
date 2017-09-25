@@ -5,15 +5,15 @@
 
 	<form method="post" asp-action="@nameof(Smileys.Edit)">
 		<ol>
-			@if(Model.Smileys.Any()) {
-				@for (int i = 0; i < Model.Smileys.Count; i++) {
+			@if(Model.Items.Any()) {
+				@for (int i = 0; i < Model.Items.Count; i++) {
 					<li>
-						<input hidden="hidden" asp-for="@Model.Smileys[i].Id" />
-						<a asp-action="@nameof(Smileys.Delete)" asp-route-id="@Model.Smileys[i].Id" class="borderless spaced"><img alt="Delete" src="~/images/deleteSmall.png" /></a>
-						<img src="@Model.Smileys[i].Path" />
-						<span asp-validation-for="@Model.Smileys[i].Code" class="error"></span>
-						<input asp-for="@Model.Smileys[i].Code" />
-						<input asp-for="@Model.Smileys[i].Thought" />
+						<input hidden="hidden" asp-for="@Model.Items[i].Id" />
+						<a asp-action="@nameof(Smileys.Delete)" asp-route-id="@Model.Items[i].Id" class="borderless spaced"><img alt="Delete" src="~/images/deleteSmall.png" /></a>
+						<img src="@Model.Items[i].Path" />
+						<span asp-validation-for="@Model.Items[i].Code" class="error"></span>
+						<input asp-for="@Model.Items[i].Code" />
+						<input asp-for="@Model.Items[i].Thought" />
 					</li>
 				}
 			}
