@@ -91,6 +91,11 @@ namespace Forum3.Migrator {
 
 				case nameof(MigrateMessageThoughts):
 					await MigrateMessageThoughts(input);
+					nextStage = nameof(RemoveInviteOnlyTopics);
+					break;
+
+				case nameof(RemoveInviteOnlyTopics):
+					await RemoveInviteOnlyTopics(input);
 					nextStage = string.Empty;
 					break;
 
@@ -255,7 +260,7 @@ namespace Forum3.Migrator {
 
 			var skip = take * (input.CurrentStep - 1);
 
-			var records = await query.Skip(skip).Take(take).ToListAsync();
+			var records = await query.OrderBy(m => m.TimePosted).Skip(skip).Take(take).ToListAsync();
 			var users = await AppDb.Users.ToListAsync();
 
 			foreach (var record in records) {
@@ -319,7 +324,7 @@ namespace Forum3.Migrator {
 			input.TotalSteps = 1;
 			input.CurrentStep = 1;
 
-			if (await AppDb.MessageBoards.AnyAsync())
+			if (await AppDb.Pins.AnyAsync())
 				return;
 
 			var legacyPins = await LegacyDb.Pins.ToListAsync();
@@ -428,6 +433,42 @@ namespace Forum3.Migrator {
 			foreach (var record in records)
 				await AppDb.AddAsync(record);
 
+			await AppDb.SaveChangesAsync();
+		}
+
+		async Task RemoveInviteOnlyTopics(InputModels.Continue input) {
+			if (!await AppDb.Messages.AnyAsync())
+				return;
+
+			if (!await AppDb.Pins.AnyAsync())
+				return;
+
+			if (!await AppDb.MessageBoards.AnyAsync())
+				return;
+
+			if (!await AppDb.MessageThoughts.AnyAsync())
+				return;
+
+			input.TotalSteps = 1;
+			input.CurrentStep = 1;
+
+			var legacyInviteOnlyTopics = await LegacyDb.InviteOnlyTopicUsers.Select(r => r.MessageId).Distinct().ToListAsync();
+			var messages = await AppDb.Messages.Where(m => legacyInviteOnlyTopics.Contains(m.LegacyId) || legacyInviteOnlyTopics.Contains(m.LegacyParentId)).ToListAsync();
+			var messageIds = messages.Select(m => m.Id).Distinct();
+
+			foreach (var messageId in messageIds) {
+				var pinsTask = AppDb.Pins.Where(r => r.MessageId == messageId).ToListAsync();
+				var messageBoardsTask = AppDb.MessageBoards.Where(r => r.MessageId == messageId).ToListAsync();
+				var messageThoughtsTask = AppDb.MessageThoughts.Where(r => r.MessageId == messageId).ToListAsync();
+
+				Task.WaitAll(pinsTask, messageBoardsTask, messageThoughtsTask);
+
+				AppDb.Pins.RemoveRange(pinsTask.Result);
+				AppDb.MessageBoards.RemoveRange(messageBoardsTask.Result);
+				AppDb.MessageThoughts.RemoveRange(messageThoughtsTask.Result);
+			}
+
+			AppDb.Messages.RemoveRange(messages);
 			await AppDb.SaveChangesAsync();
 		}
 	}
