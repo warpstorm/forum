@@ -5,41 +5,25 @@ using System.Threading.Tasks;
 
 namespace Forum3.Services {
 	using DataModels = Models.DataModels;
-	using ViewModels = Models.ViewModels.SiteSettings;
 
-	public class SiteSettingsService {
-		Dictionary<string, string> Settings { get; set; } = new Dictionary<string, string>();
+	public class SiteSettingsRepository {
+		Dictionary<string, string> Settings { get; } = new Dictionary<string, string>();
 
 		DataModels.ApplicationDbContext DbContext { get; }
 
-		public SiteSettingsService(
+		public SiteSettingsRepository(
 			DataModels.ApplicationDbContext dbContext
 		) {
 			DbContext = dbContext;
 		}
 
-		public async Task<ViewModels.IndexPage> IndexPage() {
-			var viewModel = new ViewModels.IndexPage();
-
-			var siteSettings = await DbContext.SiteSettings.ToListAsync();
-
-			foreach (var item in siteSettings) {
-				viewModel.Items.Add(new ViewModels.IndexItem {
-				});
-			}
-
-			return viewModel;
-		}
-
-		public async Task<string> Get(string name, string userId = "") {
-			return await GetSetting(name, userId);
-		}
+		public async Task<string> Get(string name, string userId = "") => await GetSetting(name, userId);
 
 		public async Task<int> GetInt(string name, string userId = "") {
 			var setting = await GetSetting(name, userId);
 
 			if (string.IsNullOrEmpty(setting))
-				return 0;
+				return default(int);
 
 			return Convert.ToInt32(setting);
 		}
@@ -48,7 +32,7 @@ namespace Forum3.Services {
 			var setting = await GetSetting(name, userId);
 
 			if (string.IsNullOrEmpty(setting))
-				return false;
+				return default(bool);
 
 			return Convert.ToBoolean(setting);
 		}
@@ -63,7 +47,7 @@ namespace Forum3.Services {
 
 					lock (Settings) {
 						if (!Settings.ContainsKey(name))
-							Settings.Add(name, setting == null ? "" : setting.Value);
+							Settings.Add(name, setting == null ? string.Empty : setting.Value);
 					}
 				}
 

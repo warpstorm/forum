@@ -25,7 +25,7 @@ namespace Forum3.Services.Controller {
 
 	public class AccountService {
 		DataModels.ApplicationDbContext DbContext { get; }
-		SiteSettingsService SiteSettingsService { get; }
+		SiteSettingsRepository Settings { get; }
 		CloudBlobClient CloudBlobClient { get; }
 		ServiceModels.ContextUser ContextUser { get; }
 		UserManager<DataModels.ApplicationUser> UserManager { get; }
@@ -36,7 +36,7 @@ namespace Forum3.Services.Controller {
 
 		public AccountService(
 			DataModels.ApplicationDbContext dbContext,
-			SiteSettingsService siteSettingsService,
+			SiteSettingsRepository siteSettingsRepository,
 			CloudBlobClient cloudBlobClient,
 			ContextUserFactory contextUserFactory,
 			UserManager<DataModels.ApplicationUser> userManager,
@@ -47,7 +47,7 @@ namespace Forum3.Services.Controller {
 			ILogger<AccountService> logger
 		) {
 			DbContext = dbContext;
-			SiteSettingsService = siteSettingsService;
+			Settings = siteSettingsRepository;
 			CloudBlobClient = cloudBlobClient;
 			ContextUser = contextUserFactory.GetContextUser();
 			UserManager = userManager;

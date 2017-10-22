@@ -42,6 +42,8 @@ namespace Forum3.Helpers {
 			services.AddScoped<SmileyService>();
 			services.AddScoped<TopicService>();
 
+			services.AddScoped<SiteSettingsRepository>();
+
 			services.AddScoped((serviceProvider) => {
 				var storageConnectionString = configuration[Constants.Keys.StorageConnection];
 

@@ -1,4 +1,4 @@
-﻿using Forum3.Services;
+﻿using Forum3.Services.Controller;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 

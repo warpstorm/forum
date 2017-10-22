@@ -19,21 +19,21 @@ namespace Forum3.Services.Controller {
 
 	public class BoardService {
 		DataModels.ApplicationDbContext DbContext { get; }
-		SiteSettingsService SiteSettingsService { get; }
+		SiteSettingsRepository Settings { get; }
 		NotificationService NotificationService { get; }
 		ServiceModels.ContextUser ContextUser { get; }
 		IUrlHelper UrlHelper { get; }
 
 		public BoardService(
 			DataModels.ApplicationDbContext dbContext,
-			SiteSettingsService siteSettingsService,
+			SiteSettingsRepository siteSettingsRepository,
 			NotificationService notificationService,
 			ContextUserFactory contextUserFactory,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory
 		) {
 			DbContext = dbContext;
-			SiteSettingsService = siteSettingsService;
+			Settings = siteSettingsRepository;
 			NotificationService = notificationService;
 			ContextUser = contextUserFactory.GetContextUser();
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
@@ -479,7 +479,7 @@ namespace Forum3.Services.Controller {
 		}
 		
 		async Task<List<ItemViewModels.OnlineUser>> GetOnlineUsers() {
-			var onlineTimeLimitSetting = await SiteSettingsService.GetInt(Constants.SiteSettings.OnlineTimeLimit);
+			var onlineTimeLimitSetting = await Settings.GetInt(Constants.SiteSettings.OnlineTimeLimit);
 
 			if (onlineTimeLimitSetting == 0)
 				onlineTimeLimitSetting = Constants.Defaults.OnlineTimeLimit;
