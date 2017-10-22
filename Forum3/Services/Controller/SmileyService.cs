@@ -1,6 +1,4 @@
-﻿using Forum3.Models.InputModels;
-using Forum3.Models.ServiceModels;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.WindowsAzure.Storage.Blob;
 using System.Collections.Generic;
 using System.IO;
@@ -100,7 +98,7 @@ namespace Forum3.Services.Controller {
 		}
 
 		public async Task<ServiceModels.ServiceResponse> Create(InputModels.CreateSmileyInput input) {
-			var serviceResponse = new ServiceResponse();
+			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			var allowedExtensions = new[] { ".gif" };
 			var extension = Path.GetExtension(input.File.FileName);
@@ -150,8 +148,8 @@ namespace Forum3.Services.Controller {
 			return serviceResponse;
 		}
 
-		public async Task<ServiceModels.ServiceResponse> Edit(EditSmileysInput input) {
-			var serviceResponse = new ServiceResponse();
+		public async Task<ServiceModels.ServiceResponse> Edit(InputModels.EditSmileysInput input) {
+			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			foreach (var smileyInput in input.Smileys) {
 				var smileyRecord = await DbContext.Smileys.FindAsync(smileyInput.Id);
@@ -182,7 +180,7 @@ namespace Forum3.Services.Controller {
 		}
 
 		public async Task<ServiceModels.ServiceResponse> Delete(int id) {
-			var serviceResponse = new ServiceResponse();
+			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			var smileyRecord = await DbContext.Smileys.FindAsync(id);
 

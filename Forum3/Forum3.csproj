@@ -31,7 +31,6 @@
 
   <ItemGroup>
     <Folder Include="Migrator\Smileys\" />
-    <Folder Include="Views\SiteSettings\" />
     <Folder Include="wwwroot\css\min\" />
   </ItemGroup>
 

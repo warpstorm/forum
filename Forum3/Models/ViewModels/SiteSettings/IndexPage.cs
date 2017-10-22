@@ -2,6 +2,6 @@
 
 namespace Forum3.Models.ViewModels.SiteSettings {
 	public class IndexPage {
-		public Dictionary<string, string> Settings { get; set; }
+		public List<KeyValuePair<string, string>> Settings { get; } = new List<KeyValuePair<string, string>>();
 	}
 }

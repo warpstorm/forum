@@ -358,9 +358,11 @@ namespace Forum3.Services.Controller {
 				});
 			}
 
-			record.LastReplyId = replies.Last().Id;
-			record.LastReplyById = replies.Last().PostedById;
-			record.LastReplyPosted = replies.Last().TimePosted;
+			if (replies.Any()) {
+				record.LastReplyId = replies.Last().Id;
+				record.LastReplyById = replies.Last().PostedById;
+				record.LastReplyPosted = replies.Last().TimePosted;
+			}
 
 			DbContext.Update(record);
 			await DbContext.SaveChangesAsync();

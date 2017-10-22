@@ -12,7 +12,6 @@ namespace Forum3.Models.DataModels {
 		[StringLength(64)]
 		public string Value { get; set; }
 
-		[Required]
 		public string UserId { get; set; }
 	}
 }
