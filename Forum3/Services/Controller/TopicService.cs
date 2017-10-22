@@ -40,7 +40,7 @@ namespace Forum3.Services.Controller {
 		}
 
 		public async Task<PageModels.TopicIndexPage> IndexPage(int boardId, int page) {
-			var take = await Settings.MessagesPerPage();
+			var take = await Settings.TopicsPerPage();
 			var skip = (page * take) - take;
 
 			var boardRecord = await DbContext.Boards.FindAsync(boardId);
