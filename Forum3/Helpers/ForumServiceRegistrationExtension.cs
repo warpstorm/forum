@@ -11,6 +11,27 @@ using Forum3.Services.Controller;
 namespace Forum3.Helpers {
 	public static class ForumServiceRegistrationExtension {
 		public static IServiceCollection AddForum(this IServiceCollection services, IConfiguration configuration) {
+			AddTransientServices(services, configuration);
+			AddScopedServices(services, configuration);
+			AddSingletonServices(services, configuration);
+
+			return services;
+		}
+
+		/// <summary>
+		/// Transient lifetime services are created each time they are requested. This lifetime works best for lightweight, stateless services.
+		/// </summary>
+		static void AddTransientServices(IServiceCollection services, IConfiguration configuration) {
+			services.AddTransient<ContextUserFactory>();
+
+			services.Configure<EmailSenderOptions>(configuration);
+			services.AddTransient<IEmailSender, EmailSender>();
+		}
+
+		/// <summary>
+		/// Scoped lifetime services are created once per request.
+		/// </summary>
+		static void AddScopedServices(IServiceCollection services, IConfiguration configuration) {
 			services.AddScoped<AccountService>();
 			services.AddScoped<BoardService>();
 			services.AddScoped<MessageService>();
@@ -20,14 +41,6 @@ namespace Forum3.Helpers {
 			services.AddScoped<SiteSettingsService>();
 			services.AddScoped<SmileyService>();
 			services.AddScoped<TopicService>();
-
-			services.AddTransient<ContextUserFactory>();
-
-			services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
-			services.AddSingleton<IUrlHelperFactory, UrlHelperFactory>();
-
-			services.Configure<EmailSenderOptions>(configuration);
-			services.AddTransient<IEmailSender, EmailSender>();
 
 			services.AddScoped((serviceProvider) => {
 				var storageConnectionString = configuration["StorageConnection"];
@@ -39,8 +52,14 @@ namespace Forum3.Helpers {
 
 				return storageAccount.CreateCloudBlobClient();
 			});
+		}
 
-			return services;
+		/// <summary>
+		/// Singleton lifetime services are created the first time they are requested (or when ConfigureServices is run if you specify an instance there) and then every subsequent request will use the same instance.
+		/// </summary>
+		static void AddSingletonServices(IServiceCollection services, IConfiguration configuration) {
+			services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
+			services.AddSingleton<IUrlHelperFactory, UrlHelperFactory>();
 		}
 	}
 }
