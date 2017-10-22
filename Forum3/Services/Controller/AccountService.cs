@@ -1,10 +1,6 @@
-﻿using System;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Forum3.Controllers;
+using Forum3.Helpers;
+using Forum3.Interfaces.Users;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -13,16 +9,20 @@ using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.WindowsAzure.Storage.Blob;
-using Forum3.Controllers;
-using Forum3.Helpers;
-using Forum3.Interfaces.Users;
-
-using DataModels = Forum3.Models.DataModels;
-using InputModels = Forum3.Models.InputModels;
-using ServiceModels = Forum3.Models.ServiceModels;
-using ViewModels = Forum3.Models.ViewModels.Account;
+using System;
+using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Forum3.Services.Controller {
+	using DataModels = Models.DataModels;
+	using InputModels = Models.InputModels;
+	using ServiceModels = Models.ServiceModels;
+	using ViewModels = Models.ViewModels.Account;
+
 	public class AccountService {
 		DataModels.ApplicationDbContext DbContext { get; }
 		SiteSettingsService SiteSettingsService { get; }

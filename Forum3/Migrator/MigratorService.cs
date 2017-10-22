@@ -1,22 +1,21 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using Forum3.Controllers;
-using Forum3.Helpers;
+﻿using Forum3.Controllers;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.WindowsAzure.Storage.Blob;
-
-using DataModels = Forum3.Models.DataModels;
-using InputModels = Forum3.Models.InputModels;
-using MigratorModels = Forum3.Migrator.Models;
-using ViewModels = Forum3.Models.ViewModels;
+using System;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Forum3.Migrator {
+	using DataModels = Forum3.Models.DataModels;
+	using InputModels = Forum3.Models.InputModels;
+	using MigratorModels = Models;
+	using ViewModels = Forum3.Models.ViewModels;
+
 	public class MigratorService {
 		DataModels.ApplicationDbContext AppDb { get; }
 		MigratorModels.MigratorDbContext LegacyDb { get; }

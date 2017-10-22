@@ -1,12 +1,12 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-
-using DataModels = Forum3.Models.DataModels;
-using ViewModels = Forum3.Models.ViewModels.SiteSettings;
 
 namespace Forum3.Services {
+	using DataModels = Models.DataModels;
+	using ViewModels = Models.ViewModels.SiteSettings;
+
 	public class SiteSettingsService {
 		Dictionary<string, string> Settings { get; set; } = new Dictionary<string, string>();
 

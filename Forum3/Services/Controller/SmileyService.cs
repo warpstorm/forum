@@ -1,19 +1,19 @@
-﻿using System.Collections.Generic;
+﻿using Forum3.Models.InputModels;
+using Forum3.Models.ServiceModels;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.WindowsAzure.Storage.Blob;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Forum3.Models.InputModels;
-using Forum3.Models.ServiceModels;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.WindowsAzure.Storage.Blob;
-
-using DataModels = Forum3.Models.DataModels;
-using InputModels = Forum3.Models.InputModels;
-using ServiceModels = Forum3.Models.ServiceModels;
-using ViewModels = Forum3.Models.ViewModels.Smileys;
 
 namespace Forum3.Services.Controller {
+	using DataModels = Models.DataModels;
+	using InputModels = Models.InputModels;
+	using ServiceModels = Models.ServiceModels;
+	using ViewModels = Models.ViewModels.Smileys;
+
 	public class SmileyService {
 		DataModels.ApplicationDbContext DbContext { get; }
 		CloudBlobClient CloudBlobClient { get; }

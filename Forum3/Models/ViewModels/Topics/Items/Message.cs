@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Forum3.Interfaces.Models.ViewModels;
+using System;
 using System.Collections.Generic;
-using Forum3.Interfaces.Models.ViewModels;
 
 namespace Forum3.Models.ViewModels.Topics.Items {
 	public class Message {

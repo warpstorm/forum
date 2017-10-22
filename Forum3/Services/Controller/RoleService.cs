@@ -1,22 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.EntityFrameworkCore;
-using Forum3.Controllers;
+﻿using Forum3.Controllers;
 using Forum3.Helpers;
 using Forum3.Models.DataModels;
 using Forum3.Models.ServiceModels;
-using InputModels = Forum3.Models.InputModels;
-using PageViewModels = Forum3.Models.ViewModels.Roles.Pages;
-using ItemViewModels = Forum3.Models.ViewModels.Roles.Items;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Forum3.Services.Controller {
+	using InputModels = Models.InputModels;
+	using ItemViewModels = Models.ViewModels.Roles.Items;
+	using PageViewModels = Models.ViewModels.Roles.Pages;
+
 	public class RoleService {
 		UserManager<ApplicationUser> UserManager { get; }
 		RoleManager<ApplicationRole> RoleManager { get; }

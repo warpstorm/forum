@@ -1,20 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Forum3.Controllers;
+using Forum3.Enums;
+using Forum3.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
-using Forum3.Controllers;
-using Forum3.Enums;
-using Forum3.Helpers;
-
-using DataModels = Forum3.Models.DataModels;
-using ServiceModels = Forum3.Models.ServiceModels;
-using ViewModels = Forum3.Models.ViewModels.Notifications;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Forum3.Services.Controller {
+	using DataModels = Models.DataModels;
+	using ServiceModels = Models.ServiceModels;
+	using ViewModels = Models.ViewModels.Notifications;
+
 	public class NotificationService {
 		DataModels.ApplicationDbContext DbContext { get; }
 		ServiceModels.ContextUser ContextUser { get; }

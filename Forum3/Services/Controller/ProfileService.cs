@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-using DataModels = Forum3.Models.DataModels;
-using ServiceModels = Forum3.Models.ServiceModels;
-using ViewModels = Forum3.Models.ViewModels.Profile;
-
 namespace Forum3.Services.Controller {
+	using DataModels = Models.DataModels;
+	using ServiceModels = Models.ServiceModels;
+	using ViewModels = Models.ViewModels.Profile;
+
 	public class ProfileService {
 		DataModels.ApplicationDbContext DbContext { get; }
 		ServiceModels.ContextUser ContextUser { get; }

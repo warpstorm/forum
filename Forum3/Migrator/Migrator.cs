@@ -1,10 +1,10 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
-using InputModels = Forum3.Models.InputModels;
+using System.Threading.Tasks;
 
 namespace Forum3.Migrator {
+	using InputModels = Forum3.Models.InputModels;
+
 	public class Migrator : Controller {
 		MigratorService MigratorService { get; }
 

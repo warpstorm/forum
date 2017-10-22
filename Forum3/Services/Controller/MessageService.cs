@@ -1,31 +1,32 @@
-﻿using System;
+﻿using CodeKicker.BBCode;
+using Forum3.Controllers;
+using Forum3.Helpers;
+using HtmlAgilityPack;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Security.Authentication;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.EntityFrameworkCore;
-using CodeKicker.BBCode;
-using HtmlAgilityPack;
-using Forum3.Controllers;
-using Forum3.Models.DataModels;
-using Forum3.Models.InputModels;
-using Forum3.Models.ServiceModels;
-using Forum3.Models.ViewModels.Messages;
-using Forum3.Helpers;
 
 namespace Forum3.Services.Controller {
+	using DataModels = Models.DataModels;
+	using InputModels = Models.InputModels;
+	using ServiceModels = Forum3.Models.ServiceModels;
+	using ViewModels = Forum3.Models.ViewModels.Messages;
+
 	public class MessageService {
-		ApplicationDbContext DbContext { get; }
-		ContextUser ContextUser { get; }
+		DataModels.ApplicationDbContext DbContext { get; }
+		ServiceModels.ContextUser ContextUser { get; }
 		IUrlHelper UrlHelper { get; }
 
 		public MessageService(
-			ApplicationDbContext dbContext,
+			DataModels.ApplicationDbContext dbContext,
 			ContextUserFactory contextUserFactory,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory
@@ -35,26 +36,26 @@ namespace Forum3.Services.Controller {
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
-		public async Task<CreateTopicPage> CreatePage(int boardId = 0) {
+		public async Task<ViewModels.CreateTopicPage> CreatePage(int boardId = 0) {
 			var board = await DbContext.Boards.SingleOrDefaultAsync(b => b.Id == boardId);
 
 			if (board == null)
 				throw new Exception($"A record does not exist with ID '{boardId}'");
 
-			var viewModel = new CreateTopicPage {
+			var viewModel = new ViewModels.CreateTopicPage {
 				BoardId = boardId
 			};
 
 			return viewModel;
 		}
 
-		public async Task<EditMessagePage> EditPage(int messageId) {
+		public async Task<ViewModels.EditMessagePage> EditPage(int messageId) {
 			var record = await DbContext.Messages.SingleOrDefaultAsync(m => m.Id == messageId);
 
 			if (record == null)
 				throw new Exception($"A record does not exist with ID '{messageId}'");
 
-			var viewModel = new EditMessagePage {
+			var viewModel = new ViewModels.EditMessagePage {
 				Id = messageId,
 				Body = record.OriginalBody
 			};
@@ -62,8 +63,8 @@ namespace Forum3.Services.Controller {
 			return viewModel;
 		}
 
-		public async Task<MigrateMessagePage> MigratePage(int messageId) {
-			var viewModel = new MigrateMessagePage();
+		public async Task<ViewModels.MigrateMessagePage> MigratePage(int messageId) {
+			var viewModel = new ViewModels.MigrateMessagePage();
 
 			var record = await DbContext.Messages.FindAsync(messageId);
 
@@ -78,8 +79,8 @@ namespace Forum3.Services.Controller {
 			return viewModel;
 		}
 
-		public async Task<ServiceResponse> CreateTopic(MessageInput input) {
-			var serviceResponse = new ServiceResponse();
+		public async Task<ServiceModels.ServiceResponse> CreateTopic(InputModels.MessageInput input) {
+			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			if (input.BoardId == null)
 				serviceResponse.Error(nameof(input.BoardId), $"Board ID is required");
@@ -100,7 +101,7 @@ namespace Forum3.Services.Controller {
 
 			var record = await CreateMessageRecord(processedMessage, null);
 
-			DbContext.MessageBoards.Add(new MessageBoard {
+			DbContext.MessageBoards.Add(new DataModels.MessageBoard {
 				MessageId = record.Id,
 				BoardId = boardRecord.Id,
 				TimeAdded = DateTime.Now,
@@ -116,8 +117,8 @@ namespace Forum3.Services.Controller {
 			return serviceResponse;
 		}
 
-		public async Task<ServiceResponse> CreateReply(MessageInput input) {
-			var serviceResponse = new ServiceResponse();
+		public async Task<ServiceModels.ServiceResponse> CreateReply(InputModels.MessageInput input) {
+			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			if (input.Id == 0)
 				throw new Exception($"No record ID specified.");
@@ -155,8 +156,8 @@ namespace Forum3.Services.Controller {
 			return serviceResponse;
 		}
 
-		public async Task<ServiceResponse> EditMessage(MessageInput input) {
-			var serviceResponse = new ServiceResponse();
+		public async Task<ServiceModels.ServiceResponse> EditMessage(InputModels.MessageInput input) {
+			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			if (input.Id == 0)
 				throw new Exception($"No record ID specified.");
@@ -177,8 +178,8 @@ namespace Forum3.Services.Controller {
 			return serviceResponse;
 		}
 
-		public async Task<ServiceResponse> DeleteMessage(int messageId) {
-			var serviceResponse = new ServiceResponse();
+		public async Task<ServiceModels.ServiceResponse> DeleteMessage(int messageId) {
+			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			var record = await DbContext.Messages.SingleAsync(m => m.Id == messageId);
 
@@ -237,8 +238,8 @@ namespace Forum3.Services.Controller {
 			return serviceResponse;
 		}
 
-		public async Task<ServiceResponse> PinMessage(int messageId) {
-			var serviceResponse = new ServiceResponse();
+		public async Task<ServiceModels.ServiceResponse> PinMessage(int messageId) {
+			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			var record = await DbContext.Messages.FindAsync(messageId);
 
@@ -251,7 +252,7 @@ namespace Forum3.Services.Controller {
 			var existingRecord = await DbContext.Pins.FirstOrDefaultAsync(p => p.MessageId == messageId && p.UserId == ContextUser.ApplicationUser.Id);
 
 			if (existingRecord == null) {
-				var pinRecord = new Pin {
+				var pinRecord = new DataModels.Pin {
 					MessageId = messageId,
 					Time = DateTime.Now,
 					UserId = ContextUser.ApplicationUser.Id
@@ -268,8 +269,8 @@ namespace Forum3.Services.Controller {
 			return serviceResponse;
 		}
 
-		public async Task<ServiceResponse> AddThought(ThoughtInput input) {
-			var serviceResponse = new ServiceResponse();
+		public async Task<ServiceModels.ServiceResponse> AddThought(InputModels.ThoughtInput input) {
+			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			var messageRecord = await DbContext.Messages.FindAsync(input.MessageId);
 
@@ -291,7 +292,7 @@ namespace Forum3.Services.Controller {
 					&& mt.UserId == ContextUser.ApplicationUser.Id);
 
 			if (existingRecord == null) {
-				var messageThought = new MessageThought {
+				var messageThought = new DataModels.MessageThought {
 					MessageId = messageRecord.Id,
 					SmileyId = smileyRecord.Id,
 					UserId = ContextUser.ApplicationUser.Id
@@ -300,7 +301,7 @@ namespace Forum3.Services.Controller {
 				await DbContext.MessageThoughts.AddAsync(messageThought);
 
 				if (messageRecord.PostedById != ContextUser.ApplicationUser.Id) {
-					var notification = new Notification {
+					var notification = new DataModels.Notification {
 						MessageId = messageRecord.Id,
 						UserId = messageRecord.PostedById,
 						TargetUserId = ContextUser.ApplicationUser.Id,
@@ -321,8 +322,8 @@ namespace Forum3.Services.Controller {
 			return serviceResponse;
 		}
 		
-		public async Task<ServiceResponse> FinishMigration(int messageId) {
-			var serviceResponse = new ServiceResponse();
+		public async Task<ServiceModels.ServiceResponse> FinishMigration(int messageId) {
+			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			var record = await DbContext.Messages.FindAsync(messageId);
 
@@ -338,7 +339,7 @@ namespace Forum3.Services.Controller {
 
 			MigrateMessageRecord(record);
 
-			DbContext.Participants.Add(new Participant {
+			DbContext.Participants.Add(new DataModels.Participant {
 				MessageId = record.Id,
 				Time = record.TimePosted,
 				UserId = record.PostedById
@@ -350,7 +351,7 @@ namespace Forum3.Services.Controller {
 				reply.ParentId = record.Id;
 				MigrateMessageRecord(reply);
 
-				DbContext.Participants.Add(new Participant {
+				DbContext.Participants.Add(new DataModels.Participant {
 					MessageId = record.Id,
 					Time = reply.TimePosted,
 					UserId = reply.PostedById
@@ -367,7 +368,7 @@ namespace Forum3.Services.Controller {
 			return serviceResponse;
 		}
 
-		async Task<ProcessedMessageInput> ProcessMessageInput(ServiceResponse serviceResponse, string messageBody) {
+		async Task<InputModels.ProcessedMessageInput> ProcessMessageInput(ServiceModels.ServiceResponse serviceResponse, string messageBody) {
 			var processedMessage = PreProcessMessageInput(messageBody);
 
 			ParseBBC(processedMessage);
@@ -384,8 +385,8 @@ namespace Forum3.Services.Controller {
 		/// <summary>
 		/// Some minor housekeeping on the message before we get into the heavy lifting.
 		/// </summary>
-		ProcessedMessageInput PreProcessMessageInput(string messageBody) {
-			var processedMessageInput = new ProcessedMessageInput {
+		InputModels.ProcessedMessageInput PreProcessMessageInput(string messageBody) {
+			var processedMessageInput = new InputModels.ProcessedMessageInput {
 				OriginalBody = messageBody ?? string.Empty,
 				DisplayBody = messageBody ?? string.Empty,
 				MentionedUsers = new List<string>()
@@ -414,7 +415,7 @@ namespace Forum3.Services.Controller {
 		/// <summary>
 		/// A drop in replacement for the default CodeKicker BBC parser that handles strike and heart smileys
 		/// </summary>
-		string ParseBBC(ProcessedMessageInput processedMessageInput) {
+		string ParseBBC(InputModels.ProcessedMessageInput processedMessageInput) {
 			var displayBody = processedMessageInput.DisplayBody;
 
 			// eventually expand this to include all smileys that could have a gt/lt in it.
@@ -439,7 +440,7 @@ namespace Forum3.Services.Controller {
 		/// <summary>
 		/// Attempt to replace URLs in the message body with something better
 		/// </summary>
-		void ProcessMessageBodyUrls(ProcessedMessageInput processedMessageInput) {
+		void ProcessMessageBodyUrls(InputModels.ProcessedMessageInput processedMessageInput) {
 			var displayBody = processedMessageInput.DisplayBody;
 
 			var regexUrl = new Regex("(^| )((https?\\://){1}\\S+)", RegexOptions.Compiled | RegexOptions.Multiline);
@@ -470,7 +471,7 @@ namespace Forum3.Services.Controller {
 		/// <summary>
 		/// Attempt to replace the ugly URL with a human readable title.
 		/// </summary>
-		RemoteUrlReplacement GetRemoteUrlReplacement(string remoteUrl) {
+		ServiceModels.RemoteUrlReplacement GetRemoteUrlReplacement(string remoteUrl) {
 			var remotePageDetails = GetRemotePageDetails(remoteUrl);
 
 			const string youtubePattern = @"(?:https?:\/\/)?(?:www\.)?(?:(?:(?:youtube.com\/watch\?[^?]*v=|youtu.be\/)([\w\-]+))(?:[^\s?]+)?)";
@@ -486,7 +487,7 @@ namespace Forum3.Services.Controller {
 				var youtubeVideoId = regexYoutube.Match(remoteUrl).Groups[1].Value;
 				var youtubeIframeClosed = string.Format(youtubeIframePartial, youtubeVideoId);
 
-				return new RemoteUrlReplacement {
+				return new ServiceModels.RemoteUrlReplacement {
 					Regex = regexYoutube,
 					ReplacementText = "<a target='_blank' href='" + remoteUrl + "'>" + remotePageDetails.Title + "</a>",
 					Card = $@"<div class=""embedded-video"">{youtubeIframeClosed}</div>"
@@ -497,7 +498,7 @@ namespace Forum3.Services.Controller {
 				var gifvId = regexGifv.Match(remoteUrl).Groups[2].Value;
 				var gifvEmbedded = string.Format(gifvPartial, gifvId);
 
-				return new RemoteUrlReplacement {
+				return new ServiceModels.RemoteUrlReplacement {
 					Regex = regexGifv,
 					ReplacementText = " <a target='_blank' href='" + remoteUrl + "'>" + remotePageDetails.Title + "</a>",
 					Card = $@"<div class=""embedded-video"">{gifvEmbedded}</div>"
@@ -505,7 +506,7 @@ namespace Forum3.Services.Controller {
 			}
 
 			// replace the URL with the HTML
-			return new RemoteUrlReplacement {
+			return new ServiceModels.RemoteUrlReplacement {
 				Regex = regexUrl,
 				ReplacementText = "$1<a target='_blank' href='" + remoteUrl + "'>" + remotePageDetails.Title + "</a>",
 				Card = remotePageDetails.Card ?? string.Empty
@@ -515,8 +516,8 @@ namespace Forum3.Services.Controller {
 		/// <summary>
 		/// I really should make this async. Load a remote page by URL and attempt to get details about it.
 		/// </summary>
-		RemotePageDetails GetRemotePageDetails(string remoteUrl) {
-			var returnResult = new RemotePageDetails {
+		ServiceModels.RemotePageDetails GetRemotePageDetails(string remoteUrl) {
+			var returnResult = new ServiceModels.RemotePageDetails {
 				Title = remoteUrl
 			};
 
@@ -599,7 +600,7 @@ namespace Forum3.Services.Controller {
 		/// <summary>
 		/// Searches a post for references to other users
 		/// </summary>
-		async Task FindMentionedUsers(ProcessedMessageInput processedMessageInput) {
+		async Task FindMentionedUsers(InputModels.ProcessedMessageInput processedMessageInput) {
 			var regexUsers = new Regex(@"@(\S+)");
 
 			var matches = 0;
@@ -632,7 +633,7 @@ namespace Forum3.Services.Controller {
 		/// <summary>
 		/// Minor post processing
 		/// </summary>
-		void PostProcessMessageInput(ProcessedMessageInput processedMessageInput) {
+		void PostProcessMessageInput(InputModels.ProcessedMessageInput processedMessageInput) {
 			processedMessageInput.DisplayBody = processedMessageInput.DisplayBody.Trim();
 			processedMessageInput.ShortPreview = GetMessagePreview(processedMessageInput.DisplayBody, 100);
 			processedMessageInput.LongPreview = GetMessagePreview(processedMessageInput.DisplayBody, 500, true);
@@ -663,11 +664,11 @@ namespace Forum3.Services.Controller {
 			return preview;
 		}
 
-		async Task<Message> CreateMessageRecord(ProcessedMessageInput processedMessage, Message replyRecord) {
+		async Task<DataModels.Message> CreateMessageRecord(InputModels.ProcessedMessageInput processedMessage, DataModels.Message replyRecord) {
 			var parentId = 0;
 			var replyId = 0;
 
-			Message parentMessage = null;
+			DataModels.Message parentMessage = null;
 
 			if (replyRecord != null) {
 				if (replyRecord.ParentId == 0) {
@@ -689,7 +690,7 @@ namespace Forum3.Services.Controller {
 
 			var currentTime = DateTime.Now;
 
-			var record = new Message {
+			var record = new DataModels.Message {
 				OriginalBody = processedMessage.OriginalBody,
 				DisplayBody = processedMessage.DisplayBody,
 				ShortPreview = processedMessage.ShortPreview,
@@ -720,7 +721,7 @@ namespace Forum3.Services.Controller {
 				DbContext.Update(replyRecord);
 
 				if (replyRecord.PostedById != ContextUser.ApplicationUser.Id) {
-					var notification = new Notification {
+					var notification = new DataModels.Notification {
 						MessageId = record.Id,
 						UserId = replyRecord.PostedById,
 						TargetUserId = ContextUser.ApplicationUser.Id,
@@ -741,7 +742,7 @@ namespace Forum3.Services.Controller {
 				DbContext.Update(parentMessage);
 
 				if (parentMessage.PostedById != ContextUser.ApplicationUser.Id) {
-					var notification = new Notification {
+					var notification = new DataModels.Notification {
 						MessageId = record.Id,
 						UserId = parentMessage.PostedById,
 						TargetUserId = ContextUser.ApplicationUser.Id,
@@ -761,7 +762,7 @@ namespace Forum3.Services.Controller {
 			var participation = await DbContext.Participants.SingleOrDefaultAsync(r => r.MessageId == topicId && r.UserId == ContextUser.ApplicationUser.Id);
 
 			if (participation == null) {
-				DbContext.Participants.Add(new Participant {
+				DbContext.Participants.Add(new DataModels.Participant {
 					MessageId = topicId,
 					UserId = ContextUser.ApplicationUser.Id,
 					Time = DateTime.Now
@@ -777,7 +778,7 @@ namespace Forum3.Services.Controller {
 			return record;
 		}
 
-		async Task UpdateMessageRecord(ProcessedMessageInput message, Message record) {
+		async Task UpdateMessageRecord(InputModels.ProcessedMessageInput message, DataModels.Message record) {
 			record.OriginalBody = message.OriginalBody;
 			record.DisplayBody = message.DisplayBody;
 			record.ShortPreview = message.ShortPreview;
@@ -792,8 +793,8 @@ namespace Forum3.Services.Controller {
 			await DbContext.SaveChangesAsync();
 		}
 
-		void MigrateMessageRecord(Message record) {
-			var processMessageTask = ProcessMessageInput(new ServiceResponse(), record.OriginalBody);
+		void MigrateMessageRecord(DataModels.Message record) {
+			var processMessageTask = ProcessMessageInput(new ServiceModels.ServiceResponse(), record.OriginalBody);
 			var replyTask = DbContext.Messages.SingleOrDefaultAsync(m => m.LegacyId == record.LegacyReplyId);
 			var postedByTask = DbContext.Users.SingleOrDefaultAsync(u => u.LegacyId == record.LegacyPostedById);
 			var editedByTask = DbContext.Users.SingleOrDefaultAsync(u => u.LegacyId == record.LegacyPostedById);

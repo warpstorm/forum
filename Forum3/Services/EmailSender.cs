@@ -1,13 +1,13 @@
-﻿using System.Threading.Tasks;
+﻿using Forum3.Interfaces.Users;
+using Forum3.Models.ServiceModels;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SendGrid;
 using SendGrid.Helpers.Mail;
-using Forum3.Interfaces.Users;
-using Forum3.Models.ServiceModels;
-using System.Text.Encodings.Web;
-using Microsoft.Extensions.Logging;
-using System.Net;
 using System;
+using System.Net;
+using System.Text.Encodings.Web;
+using System.Threading.Tasks;
 
 namespace Forum3.Services {
 	public class EmailSender : IEmailSender {

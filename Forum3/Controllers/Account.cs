@@ -1,11 +1,11 @@
-﻿using System.Threading.Tasks;
+﻿using Forum3.Services.Controller;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Forum3.Services.Controller;
-
-using InputModels = Forum3.Models.InputModels;
+using System.Threading.Tasks;
 
 namespace Forum3.Controllers {
+	using InputModels = Models.InputModels;
+
 	public class Account : ForumController {
 		AccountService AccountService { get; }
 

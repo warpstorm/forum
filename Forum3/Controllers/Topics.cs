@@ -1,8 +1,8 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Forum3.Annotations;
+﻿using Forum3.Annotations;
 using Forum3.Models.InputModels;
 using Forum3.Services.Controller;
+using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace Forum3.Controllers {
 	public class Topics : ForumController {

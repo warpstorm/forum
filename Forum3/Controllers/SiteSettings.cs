@@ -1,6 +1,6 @@
-﻿using System.Threading.Tasks;
-using Forum3.Services;
+﻿using Forum3.Services;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace Forum3.Controllers {
 	public class SiteSettings : ForumController {

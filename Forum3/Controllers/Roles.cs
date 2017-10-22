@@ -1,11 +1,11 @@
-﻿using System.Threading.Tasks;
+﻿using Forum3.Services.Controller;
 using Microsoft.AspNetCore.Mvc;
-using Forum3.Services.Controller;
-
-using InputModels = Forum3.Models.InputModels;
-using PageViewModels = Forum3.Models.ViewModels.Roles.Pages;
+using System.Threading.Tasks;
 
 namespace Forum3.Controllers {
+	using InputModels = Models.InputModels;
+	using PageViewModels = Models.ViewModels.Roles.Pages;
+
 	public class Roles : ForumController {
 		RoleService RoleService { get; }
 

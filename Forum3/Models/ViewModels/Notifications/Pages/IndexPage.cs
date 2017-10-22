@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using Forum3.Models.ViewModels.Boards.Items;
+﻿using Forum3.Models.ViewModels.Boards.Items;
+using System.Collections.Generic;
 
 namespace Forum3.Models.ViewModels.Boards.Pages {
 	public class IndexPage {

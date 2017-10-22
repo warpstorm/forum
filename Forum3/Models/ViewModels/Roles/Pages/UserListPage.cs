@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Forum3.Models.ViewModels.Roles.Items;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using Forum3.Models.ViewModels.Roles.Items;
 
 namespace Forum3.Models.ViewModels.Roles.Pages {
 	public class UserListPage {

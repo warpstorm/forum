@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNetCore.Identity;
 
 namespace Forum3.Helpers {
 	public static class DictionaryMergeExtension {

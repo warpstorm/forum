@@ -1,14 +1,14 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-
-using ServiceModels = Forum3.Models.ServiceModels;
-using ViewModels = Forum3.Models.ViewModels;
 
 namespace Forum3.Controllers {
+	using ServiceModels = Models.ServiceModels;
+	using ViewModels = Models.ViewModels;
+
 	public class ForumController : Controller {
 		public IActionResult Error() => View(new ViewModels.Error { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
 

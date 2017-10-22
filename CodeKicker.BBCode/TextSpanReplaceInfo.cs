@@ -1,5 +1,5 @@
-﻿using System;
-using CodeKicker.BBCode.SyntaxTree;
+﻿using CodeKicker.BBCode.SyntaxTree;
+using System;
 
 namespace CodeKicker.BBCode {
 	public class TextSpanReplaceInfo {

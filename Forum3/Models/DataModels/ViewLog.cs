@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Forum3.Enums;
+using System;
 using System.ComponentModel.DataAnnotations;
-using Forum3.Enums;
 
 namespace Forum3.Models.DataModels {
 	public class ViewLog {

@@ -1,6 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using Forum3.Services.Controller;
 using Microsoft.AspNetCore.Mvc;
-using Forum3.Services.Controller;
+using System.Threading.Tasks;
 
 namespace Forum3.Controllers {
 	public class Notifications : ForumController {

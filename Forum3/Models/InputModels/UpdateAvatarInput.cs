@@ -1,6 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
-using Forum3.Annotations;
+﻿using Forum3.Annotations;
 using Microsoft.AspNetCore.Http;
+using System.ComponentModel.DataAnnotations;
 
 namespace Forum3.Models.InputModels {
 	public class UpdateAvatarInput {

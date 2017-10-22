@@ -1,7 +1,7 @@
-﻿using System;
+﻿using Forum3.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Forum3.Helpers;
+using System;
 
 namespace Forum3.Annotations {
 	/// <summary>

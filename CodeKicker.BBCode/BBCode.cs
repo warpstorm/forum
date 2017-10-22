@@ -1,8 +1,8 @@
-﻿using System;
+﻿using CodeKicker.BBCode.SyntaxTree;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using CodeKicker.BBCode.SyntaxTree;
 
 namespace CodeKicker.BBCode {
 	public static class BBCode {
