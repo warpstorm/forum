@@ -17,8 +17,8 @@ using System.Threading.Tasks;
 namespace Forum3.Services.Controller {
 	using DataModels = Models.DataModels;
 	using InputModels = Models.InputModels;
-	using ServiceModels = Forum3.Models.ServiceModels;
-	using ViewModels = Forum3.Models.ViewModels.Messages;
+	using ServiceModels = Models.ServiceModels;
+	using ViewModels = Models.ViewModels.Messages;
 
 	public class MessageService {
 		DataModels.ApplicationDbContext DbContext { get; }
