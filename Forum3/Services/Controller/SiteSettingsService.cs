@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Forum3.Helpers;
 using System.Threading.Tasks;
 
 namespace Forum3.Services.Controller {
@@ -7,21 +7,24 @@ namespace Forum3.Services.Controller {
 
 	public class SiteSettingsService {
 		DataModels.ApplicationDbContext DbContext { get; }
+		SettingsRepository Settings { get; }
 
 		public SiteSettingsService(
-			DataModels.ApplicationDbContext dbContext
+			DataModels.ApplicationDbContext dbContext,
+			SettingsRepository settingsRepository
 		) {
 			DbContext = dbContext;
+			Settings = settingsRepository;
 		}
 
 		public async Task<ViewModels.IndexPage> IndexPage() {
 			var viewModel = new ViewModels.IndexPage();
 
-			var siteSettings = await DbContext.SiteSettings.ToListAsync();
+			var settingNames = typeof(Constants.Settings).GetConstants();
 
-			foreach (var item in siteSettings) {
-				viewModel.Items.Add(new ViewModels.IndexItem {
-				});
+			foreach (var settingName in settingNames) {
+				var settingValue = await Settings.GetSetting(settingName);
+				viewModel.Settings.Add(settingName, settingValue);
 			}
 
 			return viewModel;

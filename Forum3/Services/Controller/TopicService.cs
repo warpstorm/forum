@@ -20,24 +20,27 @@ namespace Forum3.Services.Controller {
 	public class TopicService {
 		DataModels.ApplicationDbContext DbContext { get; }
 		BoardService BoardService { get; }
+		SettingsRepository Settings { get; }
 		ServiceModels.ContextUser ContextUser { get; }
 		IUrlHelper UrlHelper { get; }
 
 		public TopicService(
 			DataModels.ApplicationDbContext dbContext,
 			BoardService boardService,
+			SettingsRepository settingsRepository,
 			ContextUserFactory contextUserFactory,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory
 		) {
 			DbContext = dbContext;
 			BoardService = boardService;
+			Settings = settingsRepository;
 			ContextUser = contextUserFactory.GetContextUser();
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
 		public async Task<PageModels.TopicIndexPage> IndexPage(int boardId, int page) {
-			var take = Constants.Defaults.MessagesPerPage;
+			var take = await Settings.MessagesPerPage();
 			var skip = (page * take) - take;
 
 			var boardRecord = await DbContext.Boards.FindAsync(boardId);
@@ -92,22 +95,22 @@ namespace Forum3.Services.Controller {
 			var messageIds = await DbContext.Messages.Where(m => m.Id == parentId || m.ParentId == parentId).Select(m => m.Id).ToListAsync();
 
 			if (parentId != messageId)
-				return GetRedirectViewModel(messageId, record.ParentId, messageIds);
+				return await GetRedirectViewModel(messageId, record.ParentId, messageIds);
 
 			if (!record.Processed)
 				return GetMigrationRedirectViewModel(messageId);
 
 			if (target > 0) {
-				var targetPage = GetMessagePage(target, messageIds);
+				var targetPage = await GetMessagePage(target, messageIds);
 
 				if (targetPage != page)
-					return GetRedirectViewModel(target, messageId, messageIds);
+					return await GetRedirectViewModel(target, messageId, messageIds);
 			}
 
 			if (page < 1)
 				page = 1;
 
-			var take = Constants.Defaults.MessagesPerPage;
+			var take = await Settings.MessagesPerPage();
 			var skip = take * (page - 1);
 			var totalPages = Convert.ToInt32(Math.Ceiling(1.0 * messageIds.Count / take));
 
@@ -214,7 +217,8 @@ namespace Forum3.Services.Controller {
 		}
 
 		async Task MarkTopicRead(PageModels.TopicDisplayPage topic) {
-			var historyTimeLimit = DateTime.Now.AddDays(Constants.Defaults.HistoryTimeLimit);
+			var historyTimeLimitSetting = await Settings.HistoryTimeLimit();
+			var historyTimeLimit = DateTime.Now.AddDays(historyTimeLimitSetting);
 
 			var viewLogs = await DbContext.ViewLogs.Where(v =>
 				v.LogTime >= historyTimeLimit
@@ -246,7 +250,7 @@ namespace Forum3.Services.Controller {
 			});
 		}
 
-		PageModels.TopicDisplayPage GetRedirectViewModel(int messageId, int parentMessageId, List<int> messageIds) {
+		async Task<PageModels.TopicDisplayPage> GetRedirectViewModel(int messageId, int parentMessageId, List<int> messageIds) {
 			var viewModel = new PageModels.TopicDisplayPage();
 
 			if (parentMessageId == 0)
@@ -254,7 +258,7 @@ namespace Forum3.Services.Controller {
 
 			var routeValues = new {
 				id = parentMessageId,
-				pageId = GetMessagePage(messageId, messageIds),
+				pageId = await GetMessagePage(messageId, messageIds),
 				target = messageId
 			};
 
@@ -269,11 +273,12 @@ namespace Forum3.Services.Controller {
 			};
 		}
 
-		int GetMessagePage(int messageId, List<int> messageIds) {
+		async Task<int> GetMessagePage(int messageId, List<int> messageIds) {
 			var index = (double) messageIds.FindIndex(id => id == messageId);
 			index++;
 
-			return Convert.ToInt32(Math.Ceiling(index / Constants.Defaults.MessagesPerPage));
+			var messagesPerPage = await Settings.MessagesPerPage();
+			return Convert.ToInt32(Math.Ceiling(index / messagesPerPage));
 		}
 	}
 }

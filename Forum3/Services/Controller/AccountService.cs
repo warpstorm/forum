@@ -25,7 +25,7 @@ namespace Forum3.Services.Controller {
 
 	public class AccountService {
 		DataModels.ApplicationDbContext DbContext { get; }
-		SiteSettingsRepository Settings { get; }
+		SettingsRepository Settings { get; }
 		CloudBlobClient CloudBlobClient { get; }
 		ServiceModels.ContextUser ContextUser { get; }
 		UserManager<DataModels.ApplicationUser> UserManager { get; }
@@ -36,7 +36,7 @@ namespace Forum3.Services.Controller {
 
 		public AccountService(
 			DataModels.ApplicationDbContext dbContext,
-			SiteSettingsRepository siteSettingsRepository,
+			SettingsRepository settingsRepository,
 			CloudBlobClient cloudBlobClient,
 			ContextUserFactory contextUserFactory,
 			UserManager<DataModels.ApplicationUser> userManager,
@@ -47,7 +47,7 @@ namespace Forum3.Services.Controller {
 			ILogger<AccountService> logger
 		) {
 			DbContext = dbContext;
-			Settings = siteSettingsRepository;
+			Settings = settingsRepository;
 			CloudBlobClient = cloudBlobClient;
 			ContextUser = contextUserFactory.GetContextUser();
 			UserManager = userManager;
@@ -294,7 +294,7 @@ namespace Forum3.Services.Controller {
 
 				using (var src = Image.FromStream(inputStream)) {
 					var largestDimension = src.Width > src.Height ? src.Width : src.Height;
-					var avatarMax = Constants.Defaults.AvatarSize;
+					var avatarMax = await Settings.AvatarSize();
 
 					if (largestDimension > avatarMax || extension != ".png") {
 						var ratio = (double)avatarMax / largestDimension;
