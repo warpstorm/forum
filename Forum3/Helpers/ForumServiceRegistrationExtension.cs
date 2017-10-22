@@ -43,10 +43,10 @@ namespace Forum3.Helpers {
 			services.AddScoped<TopicService>();
 
 			services.AddScoped((serviceProvider) => {
-				var storageConnectionString = configuration["StorageConnection"];
+				var storageConnectionString = configuration[Constants.Keys.StorageConnection];
 
 				if (string.IsNullOrEmpty(storageConnectionString))
-					storageConnectionString = configuration.GetConnectionString("StorageConnection");
+					storageConnectionString = configuration.GetConnectionString(Constants.Keys.StorageConnection);
 
 				var storageAccount = CloudStorageAccount.Parse(storageConnectionString);
 
