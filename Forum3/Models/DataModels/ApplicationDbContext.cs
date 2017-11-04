@@ -16,5 +16,12 @@ namespace Forum3.Models.DataModels {
 		public DbSet<ViewLog> ViewLogs { get; set; }
 
 		public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
+
+		protected override void OnModelCreating(ModelBuilder modelBuilder) {
+			base.OnModelCreating(modelBuilder);
+
+			modelBuilder.Entity<Message>()
+				.HasIndex(b => b.LastReplyPosted);
+		}
 	}
 }
