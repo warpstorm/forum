@@ -54,6 +54,12 @@ namespace Forum3.Services {
 				var userId = UserManager.GetUserId(currentPrincipal);
 				contextUser.ApplicationUser = DbContext.Users.SingleOrDefault(u => u.Id == userId);
 
+				// Can occur if a user was logged in when their account was deleted from the database.
+				if (contextUser.ApplicationUser == null) {
+					SignInManager.SignOutAsync().ConfigureAwait(false);
+					return contextUser;
+				}
+
 				var adminRole = DbContext.Roles.SingleOrDefault(r => r.Name == "Admin");
 
 				var adminUsersQuery = from user in DbContext.Users
@@ -64,16 +70,21 @@ namespace Forum3.Services {
 
 				var adminUsers = adminUsersQuery.ToList();
 
+				// Occurs when there is no admin role created yet.
 				if (adminRole == null)
 					contextUser.IsAdmin = true;
+				// Occurs when there is an admin role, but no admin users yet.
 				else if (adminUsers.Count() == 0)
 					contextUser.IsAdmin = true;
 				else if (currentPrincipal.IsInRole("Admin")) {
 					// Force logout if the user was removed from Admin, but their cookie still says they're in Admin.
-					if (!adminUsersQuery.Any(u => u.Id == contextUser.ApplicationUser.Id))
+					if (!adminUsersQuery.Any(u => u.Id == contextUser.ApplicationUser.Id)) {
+						contextUser.IsAdmin = false;
 						SignInManager.SignOutAsync().ConfigureAwait(false);
-					else
-						contextUser.IsAdmin = true;
+						return contextUser;
+					}
+
+					contextUser.IsAdmin = true;
 				}
 
 				contextUser.ApplicationUser.LastOnline = DateTime.Now;
