@@ -61,6 +61,7 @@ namespace Forum3.Controllers {
 		}
 
 		[HttpPost]
+		[AllowAnonymous]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> SendVerificationEmail() {
 			if (ModelState.IsValid) {
@@ -79,6 +80,7 @@ namespace Forum3.Controllers {
 		}
 
 		[HttpGet]
+		[AllowAnonymous]
 		public async Task<IActionResult> ConfirmEmail(InputModels.ConfirmEmailInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await AccountService.ConfirmEmail(input);
@@ -123,6 +125,7 @@ namespace Forum3.Controllers {
 		}
 
 		[HttpGet]
+		[AllowAnonymous]
 		public IActionResult AccessDenied() {
 			return View();
 		}
