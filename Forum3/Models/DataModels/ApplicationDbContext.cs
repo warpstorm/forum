@@ -22,6 +22,9 @@ namespace Forum3.Models.DataModels {
 
 			modelBuilder.Entity<Message>()
 				.HasIndex(b => b.LastReplyPosted);
+
+			modelBuilder.Entity<Pin>()
+				.HasIndex(b => b.MessageId);
 		}
 	}
 }
