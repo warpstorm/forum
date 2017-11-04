@@ -42,6 +42,9 @@ namespace Forum3.Services.Controller {
 		}
 
 		public async Task<List<ViewModels.Items.IndexItem>> GetNotifications(bool showRead = false) {
+			if (ContextUser.ApplicationUser == null)
+				return new List<ViewModels.Items.IndexItem>();
+
 			var hiddenTimeLimit = DateTime.Now.AddDays(-7);
 			var recentTimeLimit = DateTime.Now.AddMinutes(-30);
 
