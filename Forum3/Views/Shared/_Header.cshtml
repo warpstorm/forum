@@ -2,6 +2,10 @@
 
 @{ 
 	var contextUser = ContextUserFactory.GetContextUser();
+
+	if (string.IsNullOrEmpty(ViewData["LogoPath"] as string)) {
+		ViewData["LogoPath"] = "/images/logos/Logo.png";
+	}
 }
 
 	<div id="page-title" class="align-center"><a href="/"><img src=@ViewData["LogoPath"] alt="Warpstorm" /></a></div>
