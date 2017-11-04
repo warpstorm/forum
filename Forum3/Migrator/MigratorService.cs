@@ -226,7 +226,7 @@ namespace Forum3.Migrator {
 				return;
 			}
 
-			var take = 500;
+			var take = 1000;
 
 			if (input.CurrentStep == 0) {
 				var legacyMessageCount = await LegacyDb.Messages.CountAsync();
@@ -238,6 +238,7 @@ namespace Forum3.Migrator {
 			}
 
 			var query = from message in LegacyDb.Messages
+						orderby message.Id ascending
 						select new DataModels.Message {
 							Processed = false,
 							OriginalBody = message.OriginalBody,
@@ -259,7 +260,7 @@ namespace Forum3.Migrator {
 
 			var skip = take * (input.CurrentStep - 1);
 
-			var records = await query.OrderBy(m => m.TimePosted).Skip(skip).Take(take).ToListAsync();
+			var records = await query.Skip(skip).Take(take).ToListAsync();
 			var users = await AppDb.Users.ToListAsync();
 
 			foreach (var record in records) {
