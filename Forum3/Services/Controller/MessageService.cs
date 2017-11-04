@@ -625,7 +625,7 @@ namespace Forum3.Services.Controller {
 
 				// try to guess what they meant
 				if (user == null)
-					user = await DbContext.Users.SingleOrDefaultAsync(u => u.UserName.ToLower().Contains(matchedTag.ToLower()));
+					user = await DbContext.Users.FirstOrDefaultAsync(u => u.UserName.ToLower().Contains(matchedTag.ToLower()));
 
 				if (user != null) {
 					if (user.Id != ContextUser.ApplicationUser.Id)
