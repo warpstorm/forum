@@ -335,6 +335,11 @@ namespace Forum3.Services.Controller {
 				return serviceResponse;
 			}
 
+			if (record.Processed) {
+				serviceResponse.RedirectPath = UrlHelper.Action(nameof(Topics.Display), nameof(Topics), new { id = record.Id });
+				return serviceResponse;
+			}
+
 			serviceResponse.RedirectPath = UrlHelper.DirectMessage(record.Id);
 
 			MigrateMessageRecord(record);
