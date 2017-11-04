@@ -6,14 +6,14 @@
 
 	<title>@Html.Raw(ViewData["Title"])</title>
 
-    <environment include="Development">
+	<environment include="Development">
+		<link rel="stylesheet" href="~/css/StandardClasses.css" asp-append-version="true" />
 		<link rel="stylesheet" href="~/css/GlobalElements.css" asp-append-version="true" />
 		<link rel="stylesheet" href="~/css/GlobalHelpers.css" asp-append-version="true" />
 		<link rel="stylesheet" href="~/css/Layout.css" asp-append-version="true" />
 		<link rel="stylesheet" href="~/css/Forms.css" asp-append-version="true" />
 		<link rel="stylesheet" href="~/css/Buttons.css" asp-append-version="true" />
-		<link rel="stylesheet" href="~/css/StandardClasses.css" asp-append-version="true" />
-    </environment>
+	</environment>
     <environment exclude="Development">
 		<link rel="stylesheet" href="~/css/min/Global.min.css" asp-append-version="true" />
     </environment>

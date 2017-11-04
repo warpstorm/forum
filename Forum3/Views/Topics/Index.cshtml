@@ -1,8 +1,42 @@
 @model TopicIndexPage
 
+<script>
+	var currentPage = @Model.CurrentPage;
+</script>
+
+<header id="topic-header">
+	<ul class="float-right inline pages">
+		<li class="note pointer">Pages: </li>
+		@for (var i = 1; i <= Model.TotalPages; i++) {
+			if (Model.CurrentPage == i) {
+				<li class="small-button highlight page hidden">@i</li>
+			}
+			else {
+				<li class="page hidden"><a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)" asp-route-id="@Model.BoardId" asp-route-pageId="@i" class="small-button">@i.ToString()</a></li>
+			}
+		}
+	</ul>
+
+	<br class="clear" />
+</header>
+
 @foreach (var item in Model.Topics) {
     @await Html.PartialAsync("_IndexItem", item)
 }
+
+<footer>
+	<ul class="inline pages">
+		<li class="note pointer">Pages: </li>
+		@for (var i = 1; i <= Model.TotalPages; i++) {
+			if (Model.CurrentPage == i) {
+				<li class="small-button highlight page hidden">@i</li>
+			}
+			else {
+				<li class="page hidden"><a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)" asp-route-id="@Model.BoardId" asp-route-pageId="@i" class="small-button">@i.ToString()</a></li>
+			}
+		}
+	</ul>
+</footer>
 
 @{ViewData["Title"] = "Topics";}
 

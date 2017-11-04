@@ -7,7 +7,8 @@ namespace Forum3.Models.ViewModels.Topics.Pages {
 		public string BoardName { get; set; }
 		public int Skip { get; set; }
 		public int Take { get; set; }
-		public bool MoreMessages { get; set; }
+		public int TotalPages { get; internal set; }
+		public int CurrentPage { get; internal set; }
 		public List<MessagePreview> Topics { get; set; }
 	}
 }

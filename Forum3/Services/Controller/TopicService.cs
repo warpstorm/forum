@@ -40,44 +40,39 @@ namespace Forum3.Services.Controller {
 		}
 
 		public async Task<PageModels.TopicIndexPage> IndexPage(int boardId, int page) {
-			var take = await Settings.TopicsPerPage();
-			var skip = (page * take) - take;
-
 			var boardRecord = await DbContext.Boards.FindAsync(boardId);
 
-			var messageRecordQuery = from message in DbContext.Messages
-									 join messageBoard in DbContext.MessageBoards on message.Id equals messageBoard.MessageId
-									 join replyPostedBy in DbContext.Users on message.LastReplyById equals replyPostedBy.Id
-									 join pin in DbContext.Pins on message.Id equals pin.MessageId into pins
-									 from pin in pins.DefaultIfEmpty()
-									 let pinned = pin != null && pin.UserId == ContextUser.ApplicationUser.Id
-									 where boardRecord == null || messageBoard.BoardId == boardRecord.Id
-									 where message.ParentId == 0
-									 orderby (pinned ? pin.Id : 0) descending, message.LastReplyPosted descending
-									 select new ItemModels.MessagePreview {
-										 Id = message.Id,
-										 ShortPreview = message.ShortPreview,
-										 LastReplyId = message.LastReplyId == 0 ? message.Id : message.LastReplyId,
-										 LastReplyById = message.LastReplyById,
-										 LastReplyByName = replyPostedBy.DisplayName,
-										 LastReplyPostedDT = message.LastReplyPosted,
-										 Views = message.ViewCount,
-										 Replies = message.ReplyCount,
-										 Pinned = pinned
-									 };
+			var messageIdQuery = from message in DbContext.Messages
+								 orderby message.LastReplyPosted descending
+								 join messageBoard in DbContext.MessageBoards on message.Id equals messageBoard.MessageId
+								 where boardRecord == null || messageBoard.BoardId == boardRecord.Id
+								 join pin in DbContext.Pins on message.Id equals pin.MessageId into pins
+								 from pin in pins.DefaultIfEmpty()
+								 let pinned = pin != null && pin.UserId == ContextUser.ApplicationUser.Id
+								 orderby (pinned ? pin.Id : 0) descending, message.LastReplyPosted descending
+								 select message.Id;
 
-			var messageRecords = await messageRecordQuery.Skip(skip).Take(take).ToListAsync();
+			var messageIds = await messageIdQuery.ToListAsync();
 
-			foreach (var message in messageRecords) {
-				message.LastReplyPosted = message.LastReplyPostedDT.ToPassedTimeString();
-			}
+			if (page < 1)
+				page = 1;
+
+			var take = await Settings.TopicsPerPage();
+			var skip = (page * take) - take;
+			var totalPages = Convert.ToInt32(Math.Ceiling(1.0 * messageIds.Count / take));
+
+			var pageMessageIds = messageIds.Skip(skip).Take(take).ToList();
+
+			var topicPreviews = await GetTopicPreviews(pageMessageIds);
 
 			return new PageModels.TopicIndexPage {
 				BoardId = boardRecord?.Id ?? 0,
 				BoardName = boardRecord?.Name ?? "All Topics",
 				Skip = skip + take,
 				Take = take,
-				Topics = messageRecords
+				TotalPages = totalPages,
+				CurrentPage = page,
+				Topics = topicPreviews
 			};
 		}
 
@@ -118,7 +113,7 @@ namespace Forum3.Services.Controller {
 			var skip = take * (page - 1);
 			var totalPages = Convert.ToInt32(Math.Ceiling(1.0 * messageIds.Count / take));
 
-			var pageMessageIds = messageIds.Skip(skip).Take(take);
+			var pageMessageIds = messageIds.Skip(skip).Take(take).ToList();
 
 			record.ViewCount++;
 			DbContext.Update(record);
@@ -162,14 +157,43 @@ namespace Forum3.Services.Controller {
 			return topic;
 		}
 
-		async Task<List<ItemModels.Message>> GetTopicMessages(IEnumerable<int> pageMessageIds) {
+		async Task<List<ItemModels.MessagePreview>> GetTopicPreviews(List<int> messageIds) {
+			var messageRecordQuery = from message in DbContext.Messages
+									 where message.ParentId == 0
+									 join replyPostedBy in DbContext.Users on message.LastReplyById equals replyPostedBy.Id
+									 join pin in DbContext.Pins on message.Id equals pin.MessageId into pins
+									 from pin in pins.DefaultIfEmpty()
+									 let pinned = pin != null && pin.UserId == ContextUser.ApplicationUser.Id
+									 where messageIds.Contains(message.Id)
+									 orderby (pinned ? pin.Id : 0) descending, message.LastReplyPosted descending
+									 select new ItemModels.MessagePreview {
+										 Id = message.Id,
+										 ShortPreview = message.ShortPreview,
+										 LastReplyId = message.LastReplyId == 0 ? message.Id : message.LastReplyId,
+										 LastReplyById = message.LastReplyById,
+										 LastReplyByName = replyPostedBy.DisplayName,
+										 LastReplyPostedDT = message.LastReplyPosted,
+										 Views = message.ViewCount,
+										 Replies = message.ReplyCount,
+										 Pinned = pinned
+									 };
+
+			var messages = await messageRecordQuery.ToListAsync();
+
+			foreach (var message in messages)
+				message.LastReplyPosted = message.LastReplyPostedDT.ToPassedTimeString();
+
+			return messages;
+		}
+
+		async Task<List<ItemModels.Message>> GetTopicMessages(List<int> messageIds) {
 			var messageQuery = from message in DbContext.Messages
 							   join postedBy in DbContext.Users on message.PostedById equals postedBy.Id
 							   join reply in DbContext.Messages on message.ReplyId equals reply.Id into Replies
 							   from reply in Replies.DefaultIfEmpty()
 							   join replyPostedBy in DbContext.Users on reply.PostedById equals replyPostedBy.Id into RepliesBy
 							   from replyPostedBy in RepliesBy.DefaultIfEmpty()
-							   where pageMessageIds.Contains(message.Id)
+							   where messageIds.Contains(message.Id)
 							   orderby message.Id
 							   select new ItemModels.Message {
 								   Id = message.Id,

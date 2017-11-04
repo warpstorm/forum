@@ -1,51 +1,76 @@
 ﻿$(function () {
-	$(".open-menu").each(function () {
-		CloseMenu(this);
-	});
-	
-	$("[clickable-link-parent]").on("mousedown", function (e) {
-		var url = $(this).find("a").eq(0).attr("href");
+	$(".open-menu").each(CloseMenu);
 
-		switch (e.which) {
-			case 1:
-				if (e.shiftKey)
-					window.open(url, "_blank");
-				else
-					window.location.href = url;
-				break;
+	$("[clickable-link-parent]").on("mousedown", OpenLink);
 
-			case 2:
-				window.open(url, "_blank");
-				break;
-		}
-
-		return true;
-	});
+	ShowPages();
 });
 
-function OpenMenu(menu) {
-	$(menu).find(".drop-down-menu-wrapper").removeClass("hidden");
-	$(menu).off("click.open-menu");
-
-	$(menu).on("click.close-menu", function () {
-		CloseMenu(menu);
+function ShowPages() {
+	$(".pages").find("li:first").on("click", function () {
+		$(this).parent().find(".page").removeClass("hidden");
 	});
 
+	$(".pages").each(function () {
+		var pages = $(this).find(".page");
+
+		for (var i = window.currentPage - 2; i < window.currentPage; i++) {
+			if (i < 0)
+				continue;
+
+			$(pages[i - 1]).removeClass("hidden");
+		}
+
+		for (var i = window.currentPage; i <= window.currentPage + 2; i++) {
+			if (i - 1 > pages.length)
+				continue;
+
+			$(pages[i - 1]).removeClass("hidden");
+		}
+	});
+}
+
+function OpenLink(event) {
+	var url;
+
+	if ($(event.target).is("a"))
+		url = $(event.target).attr("href");
+	else
+		url = $(event.target).find("a").eq(0).attr("href");
+
+	switch (event.which) {
+		case 1:
+			if (event.shiftKey)
+				window.open(url, "_blank");
+			else
+				window.location.href = url;
+			break;
+
+		case 2:
+			window.open(url, "_blank");
+			break;
+	}
+
+	return true;
+}
+
+function OpenMenu(event) {
+	$(event.target).find(".drop-down-menu-wrapper").removeClass("hidden");
+	$(event.target).off("click.open-menu");
+
+	$(event.target).on("click.close-menu", CloseMenu);
+
 	setTimeout(function () {
-		$("body").on("click.close-menu", function () {
-			CloseMenu(menu);
-		});
+		$("body").on("click.close-menu", CloseMenu);
 	}, 50);
 }
 
-function CloseMenu(menu) {
-	$(menu).find(".drop-down-menu-wrapper").addClass("hidden");
-	$(menu).off("click.close-menu");
+function CloseMenu(event) {
+	$(event.target).find(".drop-down-menu-wrapper").addClass("hidden");
+	$(event.target).off("click.close-menu");
 	$("body").off("click.close-menu");
 
-	$(menu).on("click.open-menu", function (e) {
-		OpenMenu(menu);
-	});
+	$(event.target).on("click.open-menu", OpenMenu);
 }
 
 function PostToPath(path, parameters) {

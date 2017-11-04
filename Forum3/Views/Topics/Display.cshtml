@@ -1,14 +1,14 @@
 ﻿@model TopicDisplayPage
 
 <header id="topic-header">
-	<ul class="float-right inline">
-		<li class="note">Pages: </li>
+	<ul class="float-right inline pages">
+		<li class="note pointer">Pages: </li>
 		@for (var i = 1; i <= Model.TotalPages; i++) {
 			if (Model.CurrentPage == i) {
-				<li class="small-button highlight">@i</li>
+				<li class="small-button highlight page hidden">@i</li>
 			}
 			else {
-				<li><a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Display)" asp-route-id="@Model.Id" asp-route-pageId="@i" class="small-button">@i.ToString()</a></li>
+				<li class="page hidden"><a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Display)" asp-route-id="@Model.Id" asp-route-pageId="@i" class="small-button">@i.ToString()</a></li>
 			}
 		}
 	</ul>
@@ -36,14 +36,14 @@
 </div>
 
 <footer>
-	<ul class="inline">
-		<li class="note">Pages: </li>
+	<ul class="inline pages">
+		<li class="note pointer">Pages: </li>
 		@for (var i = 1; i <= Model.TotalPages; i++) {
 			if (Model.CurrentPage == i) {
-				<li class="small-button highlight">@i</li>
+				<li class="small-button highlight page hidden">@i</li>
 			}
 			else {
-				<li><a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Display)" asp-route-id="@Model.Id" asp-route-pageId="@i" class="small-button">@i.ToString()</a></li>
+				<li class="page hidden"><a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Display)" asp-route-id="@Model.Id" asp-route-pageId="@i" class="small-button">@i.ToString()</a></li>
 			}
 		}
 	</ul>
