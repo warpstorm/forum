@@ -92,7 +92,11 @@ namespace Forum3.Services.Controller {
 			if (record.ParentId > 0)
 				parentId = record.ParentId;
 
-			var messageIds = await DbContext.Messages.Where(m => m.Id == parentId || m.ParentId == parentId).Select(m => m.Id).ToListAsync();
+			var messageIdQuery = from message in DbContext.Messages
+								 where message.Id == parentId || message.ParentId == parentId
+								 select message.Id;
+
+			var messageIds = await messageIdQuery.ToListAsync();
 
 			if (parentId != messageId)
 				return await GetRedirectViewModel(messageId, record.ParentId, messageIds);
