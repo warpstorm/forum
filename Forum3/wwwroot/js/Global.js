@@ -1,5 +1,5 @@
 ﻿$(function () {
-	$(".open-menu").each(CloseMenu);
+	$(".open-menu").on("click.open-menu", OpenMenu);
 
 	$("[clickable-link-parent]").on("mousedown", OpenLink);
 
@@ -54,23 +54,33 @@ function OpenLink(event) {
 	return true;
 }
 
-function OpenMenu(event) {
-	$(event.target).find(".drop-down-menu-wrapper").removeClass("hidden");
-	$(event.target).off("click.open-menu");
+function OpenMenu() {
+	CloseMenu();
 
-	$(event.target).on("click.close-menu", CloseMenu);
+	$(this).off("click.open-menu");
+	$(this).on("click.close-menu", CloseMenu);
+	$(this).find(".drop-down-menu-wrapper").removeClass("hidden");
 
 	setTimeout(function () {
 		$("body").on("click.close-menu", CloseMenu);
 	}, 50);
 }
 
-function CloseMenu(event) {
-	$(event.target).find(".drop-down-menu-wrapper").addClass("hidden");
-	$(event.target).off("click.close-menu");
+function CloseMenu() {
+	var dropDownMenus = $(".drop-down-menu-wrapper");
+
+	for (var i = 0; i < dropDownMenus.length; i++) {
+		var dropDownMenu = $(dropDownMenus[i]);
+
+		if (!dropDownMenu.hasClass("hidden"))
+			dropDownMenu.addClass("hidden");
+	}
+
+	$(".open-menu").off("click.close-menu");
 	$("body").off("click.close-menu");
 
-	$(event.target).on("click.open-menu", OpenMenu);
+	$(".open-menu").off("click.open-menu");
+	$(".open-menu").on("click.open-menu", OpenMenu);
 }
 
 function PostToPath(path, parameters) {
