@@ -1,7 +1,7 @@
 @model IndexPage
 
 <div id="side-bar" class="pad overflow-hidden float-right">
-	@if (Model.Birthdays.Count() > 0) {
+	@if (Model.Birthdays.Any()) {
 		<p><img src="/images/birthday.gif" /></p>
 		<h4>Happy birthday!</h4>
 		<ul class="gap-bottom">
