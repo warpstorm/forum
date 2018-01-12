@@ -6,7 +6,7 @@
 
 <script>
     setTimeout(function() {
-        window.location.href = "@Html.Raw(Model.RedirectPath)";
+        window.location.replace("@Html.Raw(Model.RedirectPath)");
     }, 300)
 </script>
 

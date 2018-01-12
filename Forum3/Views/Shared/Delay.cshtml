@@ -3,7 +3,7 @@
 <div class="content-box pad">
 	<script>
         setTimeout(function() {
-            window.location.href = "@Html.Raw(Model.NextAction)";
+            window.location.replace("@Html.Raw(Model.NextAction)");
         }, 300)
 	</script>
 	<div class="roundedBoxContent">
