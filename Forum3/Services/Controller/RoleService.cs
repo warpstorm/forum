@@ -59,7 +59,14 @@ namespace Forum3.Services.Controller {
 				if (role.ModifiedById != null)
 					modifiedBy = await UserManager.FindByIdAsync(role.ModifiedById);
 
-				var usersInRole = await UserManager.GetUsersInRoleAsync(role.Name);
+				IList<ApplicationUser> usersInRole = null;
+
+				try {
+					usersInRole = await UserManager.GetUsersInRoleAsync(role.Name);
+				}
+				catch (OperationCanceledException) {
+					continue;
+				}
 
 				viewModel.Roles.Add(new ItemViewModels.IndexRole {
 					Id = role.Id,
