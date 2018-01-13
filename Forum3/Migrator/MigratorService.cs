@@ -110,6 +110,8 @@ namespace Forum3.Migrator {
 				input.Stage = nextStage;
 				input.CurrentStep = 0;
 			}
+			else
+				input.CurrentStep++;
 
 			if (string.IsNullOrEmpty(input.Stage))
 				viewModel.NextAction = UrlHelper.Action(nameof(Boards.Index), nameof(Boards));
@@ -272,8 +274,6 @@ namespace Forum3.Migrator {
 			}
 
 			await AppDb.SaveChangesAsync();
-
-			input.CurrentStep++;
 		}
 
 		async Task MigrateMessageBoards(InputModels.Continue input) {
