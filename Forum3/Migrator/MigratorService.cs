@@ -69,7 +69,7 @@ namespace Forum3.Migrator {
 					break;
 
 				case nameof(MigrateMessages):
-					await MigrateMessages(input);
+					MigrateMessages(input);
 					nextStage = nameof(MigratePins);
 					break;
 
@@ -223,20 +223,20 @@ namespace Forum3.Migrator {
 			await AppDb.SaveChangesAsync();
 		}
 
-		async Task MigrateMessages(InputModels.Continue input) {
-			if (!await AppDb.Users.AnyAsync())
+		void MigrateMessages(InputModels.Continue input) {
+			if (!AppDb.Users.Any())
 				return;
 
-			if (!await AppDb.Boards.AnyAsync())
+			if (!AppDb.Boards.Any())
 				return;
 
-			if (input.CurrentStep == 0 && await AppDb.Messages.AnyAsync())
+			if (input.CurrentStep == 0 && AppDb.Messages.Any())
 				return;
 
 			var take = 1000;
 
 			if (input.CurrentStep == 0) {
-				var legacyRecordCount = await LegacyDb.Messages.CountAsync();
+				var legacyRecordCount = LegacyDb.Messages.Count();
 
 				input.TotalSteps = Convert.ToInt32(Math.Ceiling(1D * legacyRecordCount / take));
 				input.CurrentStep = input.TotalSteps - 2;
@@ -278,9 +278,8 @@ namespace Forum3.Migrator {
 				newMessage.LastReplyById = users.SingleOrDefault(u => u.LegacyId == newMessage.LegacyLastReplyById)?.Id ?? string.Empty;
 
 				AppDb.Add(newMessage);
+				AppDb.SaveChanges();
 			}
-
-			AppDb.SaveChanges();
 		}
 
 		async Task MigrateMessageBoards(InputModels.Continue input) {
