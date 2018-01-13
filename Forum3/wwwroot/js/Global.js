@@ -32,12 +32,14 @@ function ShowPages() {
 }
 
 function OpenLink(event) {
+	event.stopPropagation();
+
 	var url;
 
 	if ($(event.target).is("a"))
 		url = $(event.target).attr("href");
 	else
-		url = $(event.target).find("a").eq(0).attr("href");
+		url = $(event.target).closest("[clickable-link-parent]").find("a").eq(0).attr("href");
 
 	switch (event.which) {
 		case 1:
