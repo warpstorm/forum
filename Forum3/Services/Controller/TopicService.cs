@@ -159,12 +159,11 @@ namespace Forum3.Services.Controller {
 
 		async Task<List<ItemModels.MessagePreview>> GetTopicPreviews(List<int> messageIds) {
 			var messageRecordQuery = from message in DbContext.Messages
-									 where message.ParentId == 0
+									 where message.ParentId == 0 && messageIds.Contains(message.Id)
 									 join replyPostedBy in DbContext.Users on message.LastReplyById equals replyPostedBy.Id
 									 join pin in DbContext.Pins on message.Id equals pin.MessageId into pins
 									 from pin in pins.DefaultIfEmpty()
 									 let pinned = pin != null && pin.UserId == ContextUser.ApplicationUser.Id
-									 where messageIds.Contains(message.Id)
 									 orderby (pinned ? pin.Id : 0) descending, message.LastReplyPosted descending
 									 select new ItemModels.MessagePreview {
 										 Id = message.Id,
