@@ -243,8 +243,10 @@ namespace Forum3.Services.Controller {
 
 			var record = await DbContext.Messages.FindAsync(messageId);
 
-			if (record == null)
+			if (record == null) {
 				serviceResponse.Error(string.Empty, $@"No record was found with the id '{messageId}'");
+				return serviceResponse;
+			}
 
 			if (record.ParentId > 0)
 				messageId = record.ParentId;
@@ -265,7 +267,6 @@ namespace Forum3.Services.Controller {
 
 			await DbContext.SaveChangesAsync();
 
-			serviceResponse.RedirectPath = UrlHelper.TopicIndex();
 			return serviceResponse;
 		}
 
@@ -377,11 +378,9 @@ namespace Forum3.Services.Controller {
 
 		async Task<InputModels.ProcessedMessageInput> ProcessMessageInput(ServiceModels.ServiceResponse serviceResponse, string messageBody) {
 			var processedMessage = PreProcessMessageInput(messageBody);
-
+			await PreProcessSmileys(processedMessage);
 			ParseBBC(processedMessage);
-
-			// TODO - implement smileys here
-
+			await ProcessSmileys(processedMessage);
 			ProcessMessageBodyUrls(processedMessage);
 			await FindMentionedUsers(processedMessage);
 			PostProcessMessageInput(processedMessage);
@@ -422,11 +421,8 @@ namespace Forum3.Services.Controller {
 		/// <summary>
 		/// A drop in replacement for the default CodeKicker BBC parser that handles strike and heart smileys
 		/// </summary>
-		string ParseBBC(InputModels.ProcessedMessageInput processedMessageInput) {
+		void ParseBBC(InputModels.ProcessedMessageInput processedMessageInput) {
 			var displayBody = processedMessageInput.DisplayBody;
-
-			// eventually expand this to include all smileys that could have a gt/lt in it.
-			displayBody = displayBody.Replace("<3", "*heartsmiley*");
 
 			var parser = new BBCodeParser(new[] {
 				new BBTag("b", "<span style=\"font-weight: bold;\">", "</span>"),
@@ -441,7 +437,7 @@ namespace Forum3.Services.Controller {
 				new BBTag("url", "<a href=\"${href}\" target=\"_blank\">", "</a>", new BBAttribute("href", ""), new BBAttribute("href", "href")),
 			});
 
-			return parser.ToHtml(displayBody);
+			processedMessageInput.DisplayBody = parser.ToHtml(displayBody);
 		}
 
 		/// <summary>
@@ -475,11 +471,26 @@ namespace Forum3.Services.Controller {
 			processedMessageInput.DisplayBody = displayBody;
 		}
 
+		async Task PreProcessSmileys(InputModels.ProcessedMessageInput processedMessageInput) {
+			var smileys = await DbContext.Smileys.Where(s => s.Code != null).ToListAsync();
+
+			for (var i = 0; i < smileys.Count(); i++)
+				processedMessageInput.DisplayBody = new Regex("(^| )(" + Regex.Escape(smileys[i].Code) + ")( |$)", RegexOptions.Compiled | RegexOptions.Multiline).Replace(processedMessageInput.DisplayBody, $"$1SMILEY_{i}_INDEX$3");
+		}
+
+		async Task ProcessSmileys(InputModels.ProcessedMessageInput processedMessageInput) {
+			var smileys = await DbContext.Smileys.Where(s => s.Code != null).ToListAsync();
+
+			for (var i = 0; i < smileys.Count(); i++)
+				processedMessageInput.DisplayBody = new Regex($@"(^| )(SMILEY_{i}_INDEX)( |$)", RegexOptions.Compiled | RegexOptions.Multiline).Replace(processedMessageInput.DisplayBody, "$1<img src='" + smileys[i].Path + "' />$3");
+		}
+
 		/// <summary>
 		/// Attempt to replace the ugly URL with a human readable title.
 		/// </summary>
 		ServiceModels.RemoteUrlReplacement GetRemoteUrlReplacement(string remoteUrl) {
 			var remotePageDetails = GetRemotePageDetails(remoteUrl);
+			remotePageDetails.Title = remotePageDetails.Title.Replace("$", "&#36;");
 
 			const string youtubePattern = @"(?:https?:\/\/)?(?:www\.)?(?:(?:(?:youtube.com\/watch\?[^?]*v=|youtu.be\/)([\w\-]+))(?:[^\s?]+)?)";
 			const string youtubeIframePartial = "<iframe type='text/html' title='YouTube video player' class='youtubePlayer' src='http://www.youtube.com/embed/{0}' frameborder='0' allowfullscreen='1'></iframe>";
