@@ -57,6 +57,7 @@ namespace Forum3.Services {
 				// Can occur if a user was logged in when their account was deleted from the database.
 				if (contextUser.ApplicationUser == null) {
 					SignInManager.SignOutAsync().ConfigureAwait(false);
+					contextUser.IsAuthenticated = false;
 					return contextUser;
 				}
 
