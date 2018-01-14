@@ -1,0 +1,37 @@
+﻿@model ViewModels.Account.IndexPage
+
+<section class="content-box pad">
+	<table>
+		<tr>
+			<td class="pad underline">Name</td>
+			<td class="pad underline">Registered</td>
+			<td class="pad underline">Last Online</td>
+		</tr>
+	@foreach(var item in Model.IndexItems) {
+		<tr>
+			@if (item.CanManage) {
+				<td class="pad">
+					<p><a asp-controller="@nameof(Account)" asp-action="@nameof(Account.Details)" asp-route-id="@item.User.Id">@item.User.DisplayName</a></p>
+					<p class="note">@item.User.Email</p>
+				</td>
+				<td class="pad">
+					<p>@item.Registered</p>
+					<p class="note">@item.User.Registered</p>
+				</td>
+				<td class="pad">
+					<p>@item.LastOnline</p>
+					<p class="note">@item.User.LastOnline</p>
+				</td>
+			}
+			else {
+				<td class="pad">@item.User.DisplayName</td>
+				<td class="pad">@item.Registered</td>
+				<td class="pad">@item.LastOnline</td>
+			}
+		</tr>
+	}
+	</table>
+</section>
+
+@{ ViewData["Title"] = $"User Index"; }
+@section Header {@ViewData["Title"]}

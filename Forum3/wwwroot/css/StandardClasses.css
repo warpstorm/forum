@@ -33,6 +33,10 @@ a.borderless * {
 	border: 1px solid #7090c6 !important;
 }
 
+.underline {
+	text-decoration: underline;
+}
+
 .hover-underline:hover {
 	color: #FFF;
 	text-decoration: underline;

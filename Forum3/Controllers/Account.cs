@@ -16,6 +16,13 @@ namespace Forum3.Controllers {
 		}
 
 		[HttpGet]
+		[Authorize(Roles="Admin")]
+		public async Task<IActionResult> Index() {
+			var viewModel = await AccountService.IndexPage();
+			return View(viewModel);
+		}
+
+		[HttpGet]
 		public async Task<IActionResult> Details(string id) {
 			var viewModel = await AccountService.DetailsPage(id);
 			ModelState.Clear();
@@ -56,7 +63,7 @@ namespace Forum3.Controllers {
 				}
 			}
 
-			var viewModel = await AccountService.DetailsPage(input.DisplayName);
+			var viewModel = await AccountService.DetailsPage(input.Id);
 			return View(nameof(Details), viewModel);
 		}
 

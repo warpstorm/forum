@@ -92,14 +92,32 @@ namespace Forum3.Services.Controller {
 			return serviceResponse;
 		}
 
-		public async Task<ViewModels.DetailsPage> DetailsPage(string displayName) {
-			if (string.IsNullOrEmpty(displayName))
-				displayName = ContextUser.ApplicationUser.DisplayName;
+		public async Task<ViewModels.IndexPage> IndexPage() {
+			var viewModel = new ViewModels.IndexPage();
 
-			var userRecord = await DbContext.Users.SingleOrDefaultAsync(u => u.DisplayName == displayName);
+			var users = await DbContext.Users.OrderBy(u => u.DisplayName).ToListAsync();
+
+			foreach (var user in users) {
+				var indexItem = new ViewModels.IndexItem {
+					User = user,
+					Registered = user.Registered.ToPassedTimeString(),
+					LastOnline = user.LastOnline.ToPassedTimeString()
+				};
+
+				if (ContextUser.IsAdmin || user.Id == ContextUser.ApplicationUser.Id)
+					indexItem.CanManage = true;
+
+				viewModel.IndexItems.Add(indexItem);
+			}
+
+			return viewModel;
+		}
+
+		public async Task<ViewModels.DetailsPage> DetailsPage(string id) {
+			var userRecord = await UserManager.FindByIdAsync(id);
 
 			if (userRecord == null) {
-				var message = $"No record found with the display name '{displayName}'";
+				var message = $"No record found with the id '{id}'";
 				Logger.LogWarning(message);
 				throw new ApplicationException("You hackin' bro?");
 			}
@@ -140,7 +158,7 @@ namespace Forum3.Services.Controller {
 				Logger.LogWarning(message);
 			}
 
-			var userRecord = await DbContext.Users.FindAsync(input.Id);
+			var userRecord = await UserManager.FindByIdAsync(input.Id);
 
 			if (userRecord == null) {
 				var message = $"No user record found for '{input.DisplayName}'.";
@@ -150,9 +168,7 @@ namespace Forum3.Services.Controller {
 
 			CanEdit(userRecord.Id);
 
-			var account = await UserManager.FindByIdAsync(input.Id);
-
-			if (account == null) {
+			if (userRecord == null) {
 				var message = $"No user account found for '{input.DisplayName}'.";
 				serviceResponse.Error(string.Empty, message);
 				Logger.LogCritical(message);
@@ -182,7 +198,7 @@ namespace Forum3.Services.Controller {
 			if (input.Email != userRecord.Email) {
 				serviceResponse.RedirectPath = UrlHelper.Action(nameof(Account.Details), nameof(Account), new { id = input.DisplayName });
 
-				var identityResult = await UserManager.SetEmailAsync(account, input.Email);
+				var identityResult = await UserManager.SetEmailAsync(userRecord, input.Email);
 
 				if (!identityResult.Succeeded) {
 					foreach (var error in identityResult.Errors) {
@@ -193,7 +209,7 @@ namespace Forum3.Services.Controller {
 					return serviceResponse;
 				}
 
-				identityResult = await UserManager.SetUserNameAsync(account, input.Email);
+				identityResult = await UserManager.SetUserNameAsync(userRecord, input.Email);
 
 				if (!identityResult.Succeeded) {
 					foreach (var error in identityResult.Errors) {
@@ -206,27 +222,27 @@ namespace Forum3.Services.Controller {
 
 				Logger.LogInformation($"Email address was modified by '{ContextUser.ApplicationUser.DisplayName}' from '{userRecord.Email}' to '{input.Email}'.");
 
-				var code = await UserManager.GenerateEmailConfirmationTokenAsync(account);
+				var code = await UserManager.GenerateEmailConfirmationTokenAsync(userRecord);
 
 				if (EmailSender.Ready) {
-					var callbackUrl = EmailConfirmationLink(account.Id, code);
+					var callbackUrl = EmailConfirmationLink(userRecord.Id, code);
 
 					await EmailSender.SendEmailConfirmationAsync(input.Email, callbackUrl);
 
-					if (account.Id == ContextUser.ApplicationUser.Id)
+					if (userRecord.Id == ContextUser.ApplicationUser.Id)
 						await SignOut();
 				}
 				else {
-					identityResult = await UserManager.ConfirmEmailAsync(account, code);
+					identityResult = await UserManager.ConfirmEmailAsync(userRecord, code);
 
 					if (!identityResult.Succeeded) {
 						foreach (var error in identityResult.Errors) {
-							Logger.LogError($"Error confirming '{account.Email}'. Message: {error.Description}");
+							Logger.LogError($"Error confirming '{userRecord.Email}'. Message: {error.Description}");
 							serviceResponse.Error(string.Empty, error.Description);
 						}
 					}
 					else
-						Logger.LogInformation($"User confirmed email '{account.Email}'.");
+						Logger.LogInformation($"User confirmed email '{userRecord.Email}'.");
 				}
 
 				return serviceResponse;
@@ -234,7 +250,7 @@ namespace Forum3.Services.Controller {
 
 			// This allows admins to reset user passwords as well, assuming they don't set the password to the same thing as theirs.
 			if (!string.IsNullOrEmpty(input.NewPassword) && input.Password != input.NewPassword) {
-				var identityResult = await UserManager.ChangePasswordAsync(account, input.Password, input.NewPassword);
+				var identityResult = await UserManager.ChangePasswordAsync(userRecord, input.Password, input.NewPassword);
 
 				if (!identityResult.Succeeded) {
 					foreach (var error in identityResult.Errors) {
@@ -242,7 +258,7 @@ namespace Forum3.Services.Controller {
 						serviceResponse.Error(nameof(InputModels.UpdateAccountInput.NewPassword), error.Description);
 					}
 				}
-				else if (account.Id == ContextUser.ApplicationUser.Id) {
+				else if (userRecord.Id == ContextUser.ApplicationUser.Id) {
 					Logger.LogInformation($"Password was modified by '{ContextUser.ApplicationUser.DisplayName}' for '{userRecord.DisplayName}'.");
 					await SignOut();
 					serviceResponse.RedirectPath = UrlHelper.Action(nameof(Login));
@@ -259,10 +275,10 @@ namespace Forum3.Services.Controller {
 		public async Task<ServiceModels.ServiceResponse> UpdateAvatar(InputModels.UpdateAvatarInput input) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
-			var userRecord = await DbContext.Users.FindAsync(input.Id);
+			var userRecord = await UserManager.FindByIdAsync(input.Id);
 
 			if (userRecord == null) {
-				var message = $"No user record found for '{input.DisplayName}'.";
+				var message = $"No user record found for '{input.Id}'.";
 				serviceResponse.Error(string.Empty, message);
 				Logger.LogCritical(message);
 			}
@@ -327,9 +343,6 @@ namespace Forum3.Services.Controller {
 			await DbContext.SaveChangesAsync();
 
 			Logger.LogInformation($"Avatar was modified by '{ContextUser.ApplicationUser.DisplayName}' for account '{userRecord.DisplayName}'.");
-
-			if (serviceResponse.Success)
-				serviceResponse.RedirectPath = UrlHelper.Action(nameof(Account.Details), nameof(Account), new { id = input.DisplayName });
 
 			return serviceResponse;
 		}

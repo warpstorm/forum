@@ -454,7 +454,8 @@ namespace Forum3.Services.Controller {
 										   ShortPreview = lastReply.ShortPreview,
 										   LastReplyByName = lastReplyBy.DisplayName,
 										   LastReplyId = lastReply.LastReplyId,
-										   LastReplyPosted = lastReply.LastReplyPosted.ToPassedTimeString()
+										   LastReplyPosted = lastReply.LastReplyPosted.ToPassedTimeString(),
+										   LastReplyPreview = lastReply.ShortPreview
 									   };
 
 				indexBoard.LastMessage = await lastMessageQuery.SingleOrDefaultAsync();

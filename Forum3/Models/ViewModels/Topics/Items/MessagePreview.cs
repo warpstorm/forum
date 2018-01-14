@@ -14,6 +14,7 @@ namespace Forum3.Models.ViewModels.Topics.Items {
 		public string LastReplyById { get; set; }
 		public string LastReplyByName { get; set; }
 		public string LastReplyPosted { get; set; }
+		public string LastReplyPreview { get; set; }
 		public DateTime LastReplyPostedDT { get; set; }
 	}
 }

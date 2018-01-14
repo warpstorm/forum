@@ -1,7 +1,7 @@
 ﻿@model MessagePreview
 
-<div class="content-box gap pad hover-highlight">
-	<div class="pin float-right">
+<div class="content-box gap hover-highlight">
+	<div class="pin float-right pad gap">
 		@if (Model.Pinned) {
 			<a asp-action="@nameof(Topics.Pin)" asp-controller="@nameof(Topics)" asp-route-id="@Model.Id"><img src="~/images/pinned.png" /></a>
 		}
@@ -9,15 +9,24 @@
 			<a asp-action="@nameof(Topics.Pin)" asp-controller="@nameof(Topics)" asp-route-id="@Model.Id"><img src="~/images/unpinned.png" /></a>
 		}
 	</div>
-	<div class="details pointer" clickable-link-parent>
+	<div class="details pointer pad" clickable-link-parent>
 		<p>
 			<a asp-action="@nameof(Topics.Display)" asp-route-id="@Model.Id">
 				@Html.Raw(Model.ShortPreview)
 			</a>
 		</p>
 		<div class="note pad-left">
-			<p>Last reply posted @Model.LastReplyPosted by @Model.LastReplyByName</p>
 			<p>
+				@Model.Replies
+				@if (Model.Replies > 1) {
+					<text>replies</text>
+				}
+				else {
+					<text>reply</text>
+				}
+
+				&nbsp;
+
 				@Model.Views
 				@if (Model.Views > 1) {
 					<text>views</text>
@@ -26,6 +35,8 @@
 					<text>view</text>
 				}
 			</p>
+			<p class="small-pad-top">Last post was @Model.LastReplyPosted by @Model.LastReplyByName</p>
+			<p class="small-pad-left">@Model.LastReplyPreview</p>
 		</div>
 	</div>
 </div>

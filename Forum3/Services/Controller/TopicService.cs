@@ -233,6 +233,8 @@ namespace Forum3.Services.Controller {
 		async Task<List<ItemModels.MessagePreview>> GetTopicPreviews(List<int> messageIds) {
 			var messageRecordQuery = from message in DbContext.Messages
 									 where message.ParentId == 0 && messageIds.Contains(message.Id)
+									 join reply in DbContext.Messages on message.LastReplyId equals reply.Id into replies
+									 from reply in replies.DefaultIfEmpty()
 									 join replyPostedBy in DbContext.Users on message.LastReplyById equals replyPostedBy.Id
 									 join pin in DbContext.Pins on message.Id equals pin.MessageId into pins
 									 from pin in pins.DefaultIfEmpty()
@@ -245,6 +247,7 @@ namespace Forum3.Services.Controller {
 										 LastReplyById = message.LastReplyById,
 										 LastReplyByName = replyPostedBy.DisplayName,
 										 LastReplyPostedDT = message.LastReplyPosted,
+										 LastReplyPreview = reply.ShortPreview,
 										 Views = message.ViewCount,
 										 Replies = message.ReplyCount,
 										 Pinned = pinned

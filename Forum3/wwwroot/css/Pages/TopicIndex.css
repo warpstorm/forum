@@ -6,3 +6,8 @@
 .pin {
 	width: 20px;
 }
+
+div.hover-highlight:hover {
+	border-top-color: #4d6690;
+	box-shadow: #4d6690 0 -2px 0 inset;
+}
