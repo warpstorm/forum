@@ -43,7 +43,6 @@ div[role="main"] {
 	width: 90%;
 	max-width: 1600px;
 	min-width: 250px;
-	padding: 20px 0;
 }
 
 #profile {
@@ -68,7 +67,7 @@ div[role="main"] {
 */
 
 main > header {
-	padding: 20px 20px 0 20px;
+	padding: 0 20px 0 20px;
 	font-size: 1.4em;
 	font-weight: bold;
 	line-height: 1.8em;

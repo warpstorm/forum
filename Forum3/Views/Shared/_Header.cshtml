@@ -17,8 +17,8 @@
 					<span class="small-button pointer">@contextUser.ApplicationUser.DisplayName</span>
 					<div class="drop-down-menu-wrapper hidden">
 						<ul class="drop-down-menu content-box">
-							<li clickable-link-parent><a asp-controller="@nameof(Profile)" asp-action="@nameof(Profile.Details)">Profile</a></li>
-							<li><a href="javascript:document.getElementById('logoutForm').submit()" onclick="return confirm('Are you sure you want to logout?');">Log off</a></li>
+							<li class="hover-highlight" clickable-link-parent><a asp-controller="@nameof(Profile)" asp-action="@nameof(Profile.Details)">Profile</a></li>
+							<li class="hover-highlight"><a href="javascript:document.getElementById('logoutForm').submit()" onclick="return confirm('Are you sure you want to logout?');">Log off</a></li>
 						</ul>
 					</div>
 				</li>
@@ -31,11 +31,11 @@
 						<span class="small-button pointer">Admin</span>
 						<div class="drop-down-menu-wrapper hidden">
 							<ul class="drop-down-menu content-box">
-								<li clickable-link-parent><a asp-controller="@nameof(Boards)" asp-action="@nameof(Boards.Manage)">Boards</a></li>
-								<li clickable-link-parent><a asp-controller="@nameof(Roles)" asp-action="@nameof(Roles.Index)">Roles</a></li>
-								<li clickable-link-parent><a asp-controller="@nameof(Smileys)" asp-action="@nameof(Smileys.Index)">Smileys</a></li>
-								<li clickable-link-parent><a asp-controller="@nameof(SiteSettings)" asp-action="@nameof(SiteSettings.Index)">Settings</a></li>
-								<li>Users</li>
+								<li class="hover-highlight" clickable-link-parent><a asp-controller="@nameof(Boards)" asp-action="@nameof(Boards.Manage)">Boards</a></li>
+								<li class="hover-highlight" clickable-link-parent><a asp-controller="@nameof(Roles)" asp-action="@nameof(Roles.Index)">Roles</a></li>
+								<li class="hover-highlight" clickable-link-parent><a asp-controller="@nameof(Smileys)" asp-action="@nameof(Smileys.Index)">Smileys</a></li>
+								<li class="hover-highlight" clickable-link-parent><a asp-controller="@nameof(SiteSettings)" asp-action="@nameof(SiteSettings.Index)">Settings</a></li>
+								<li class="hover-highlight">Users</li>
 							</ul>
 						</div>
 					</li>

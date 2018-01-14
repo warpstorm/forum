@@ -33,11 +33,7 @@
 		cursor: pointer;
 		white-space: nowrap;
 	}
-
-		.drop-down-menu li:hover {
-			background-color: #253248;
-		}
-
+	
 #smiley-selector {
 	min-width: 200px;
 	position: absolute;
