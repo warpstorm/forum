@@ -36,12 +36,12 @@
 				<li><a class="small-button" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Pin)" asp-route-id="@Model.Id">Pin Topic</a></li>
 				@if (Model.CanManage) {
 					<li class="open-menu">
-						<span class="small-button">Manage Topic Boards</span>
+						<span class="small-button">Topic Boards</span>
 						<div class="drop-down-menu-wrapper hidden">
 							<ul class="drop-down-menu content-box">
 								@foreach (var category in Model.Categories) {
 									<li class="small-pad-bottom">
-										<p>@category.Name</p>
+										<p class="note small-pad-bottom">@category.Name</p>
 										<ul>
 											@foreach (var board in category.Boards) {
 												<li class="hover-highlight" toggle-board board-id="@board.Id">

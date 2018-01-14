@@ -399,7 +399,7 @@ namespace Forum3.Services.Controller {
 				new BBTag("u", "<span style=\"text-decoration: underline;\">", "</span>"),
 				new BBTag("code", "<pre>", "</pre>"),
 				new BBTag("img", "<img src=\"${content}\" />", "", false, true),
-				new BBTag("quote", "<blockquote>", "</blockquote>"),
+				new BBTag("quote", @"<blockquote class=""quote"">", "</blockquote>"),
 				new BBTag("list", "<ul>", "</ul>"),
 				new BBTag("*", "<li>", "</li>", true, false),
 				new BBTag("url", "<a href=\"${href}\" target=\"_blank\">", "</a>", new BBAttribute("href", ""), new BBAttribute("href", "href")),

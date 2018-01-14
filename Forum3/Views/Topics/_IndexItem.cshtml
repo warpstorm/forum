@@ -36,7 +36,7 @@
 				}
 			</p>
 			<p class="small-pad-top">Last post was @Model.LastReplyPosted by @Model.LastReplyByName</p>
-			<p class="small-pad-left">@Model.LastReplyPreview</p>
+			<p class="small-pad-left">@Html.Raw(Model.LastReplyPreview)</p>
 		</div>
 	</div>
 </div>
