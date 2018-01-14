@@ -1,11 +1,13 @@
 ﻿using Forum3.Annotations;
 using Forum3.Services.Controller;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
 namespace Forum3.Controllers {
 	using InputModels = Models.InputModels;
 
+	[Authorize(Roles="Admin")]
 	public class SiteSettings : ForumController {
 		SiteSettingsService SiteSettingsService { get; }
 

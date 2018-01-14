@@ -3,10 +3,10 @@
 <div class="content-box gap pad hover-highlight">
 	<div class="pin float-right">
 		@if (Model.Pinned) {
-			<a asp-action="@nameof(Messages.Pin)" asp-controller="@nameof(Messages)" asp-route-id="@Model.Id"><img src="~/images/pinned.png" /></a>
+			<a asp-action="@nameof(Topics.Pin)" asp-controller="@nameof(Topics)" asp-route-id="@Model.Id"><img src="~/images/pinned.png" /></a>
 		}
 		else {
-			<a asp-action="@nameof(Messages.Pin)" asp-controller="@nameof(Messages)" asp-route-id="@Model.Id"><img src="~/images/unpinned.png" /></a>
+			<a asp-action="@nameof(Topics.Pin)" asp-controller="@nameof(Topics)" asp-route-id="@Model.Id"><img src="~/images/unpinned.png" /></a>
 		}
 	</div>
 	<div class="details pointer" clickable-link-parent>

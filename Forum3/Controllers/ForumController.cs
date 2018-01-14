@@ -66,20 +66,6 @@ namespace Forum3.Controllers {
 		}
 
 		void UniversalViewActions() {
-			//if (UserService.ContextUser.IsAuthenticated)
-			//	SetLastOnline();
-
-			//ViewBag.Notifications = Notifications.Create(Db, WebSecurity.CurrentUserId);
-			//ViewBag.SmileyPath = SiteSettings.Get(SiteSettingNames.SmileyPath, Db);
-			//ViewBag.ForumVersion = "Theme "
-			//						+ WebConfigurationManager.AppSettings.Get("Forum:Theme")
-			//						+ " | Code "
-			//						+ WebConfigurationManager.AppSettings.Get("Forum:VersionMajor")
-			//						+ "."
-			//						+ WebConfigurationManager.AppSettings.Get("Forum:VersionFeatureSet")
-			//						+ "."
-			//						+ WebConfigurationManager.AppSettings.Get("Forum:VersionFix");
-
 			ViewData["LogoPath"] = "/images/logos/" + GetLogoPath();
 			ViewData["Referrer"] = Referrer;
 		}
