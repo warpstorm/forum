@@ -19,7 +19,20 @@
 	});
 
 	$("blockquote.reply").on("click.show-full-reply", ShowFullReply);
+
+	$("[toggle-board]").on("click", ToggleBoard);
 });
+
+function ToggleBoard(event) {
+	event.stopPropagation();
+
+	if (window.assignedBoards == null)
+		return;
+
+	var boardId = $(this).attr("board-id");
+
+	console.log(boardId);
+}
 
 function ShowFullReply() {
 	$(this).off("click.show-full-reply");
