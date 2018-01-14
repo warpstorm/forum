@@ -5,16 +5,23 @@
 }
 
 .user-avatar {
-	width: 135px;
-	padding: 8px 0;
+	padding: 12px 0;
 }
+
+	.user-avatar img {
+		max-width: 100%;
+	}
+
+	.user-avatar canvas {
+		max-width: 70%;
+	}
 
 #topic-header {
 	margin-left: 140px;
 }
 
 .message-container, .message-thoughts, .message-cards {
-	margin-left: 135px;
+	margin-left: 115px;
 }
 
 .message-header {
