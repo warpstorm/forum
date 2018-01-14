@@ -18,8 +18,7 @@ namespace Forum3.Controllers {
 		[HttpGet]
 		public async Task<IActionResult> Create(int id = 0) {
 			var viewModel = await MessageService.CreatePage(id);
-
-			viewModel.CancelPath = Request.Headers["Referer"].ToString();
+			viewModel.CancelPath = Referrer;
 
 			return View(viewModel);
 		}
@@ -32,8 +31,8 @@ namespace Forum3.Controllers {
 				var serviceResponse = await MessageService.CreateTopic(input);
 				ProcessServiceResponse(serviceResponse);
 
-				if (!string.IsNullOrEmpty(serviceResponse.RedirectPath))
-					return Redirect(serviceResponse.RedirectPath);
+				if (serviceResponse.Success)
+					return RedirectFromService();
 			}
 
 			var viewModel = new CreateTopicPage() {
@@ -47,8 +46,7 @@ namespace Forum3.Controllers {
 		[HttpGet]
 		public async Task<IActionResult> Edit(int id) {
 			var viewModel = await MessageService.EditPage(id);
-
-			viewModel.CancelPath = Request.Headers["Referer"].ToString();
+			viewModel.CancelPath = Referrer;
 
 			return View(viewModel);
 		}
@@ -61,8 +59,8 @@ namespace Forum3.Controllers {
 				var serviceResponse = await MessageService.EditMessage(input);
 				ProcessServiceResponse(serviceResponse);
 
-				if (!string.IsNullOrEmpty(serviceResponse.RedirectPath))
-					return Redirect(serviceResponse.RedirectPath);
+				if (serviceResponse.Success)
+					return RedirectFromService();
 			}
 
 			var viewModel = new CreateTopicPage() {
@@ -77,33 +75,7 @@ namespace Forum3.Controllers {
 			var serviceResponse = await MessageService.DeleteMessage(id);
 			ProcessServiceResponse(serviceResponse);
 
-			if (serviceResponse.Success) {
-				if (!string.IsNullOrEmpty(serviceResponse.RedirectPath))
-					return Redirect(serviceResponse.RedirectPath);
-
-				return RedirectToAction(nameof(Topics.Index), nameof(Topics));
-			}
-
-			// TODO replace this return with error handling
-
-			return RedirectToAction(nameof(Topics.Index), nameof(Topics));
-		}
-
-		[HttpGet]
-		public async Task<IActionResult> Pin(int id) {
-			var serviceResponse = await MessageService.PinMessage(id);
-			ProcessServiceResponse(serviceResponse);
-
-			if (serviceResponse.Success) {
-				if (!string.IsNullOrEmpty(serviceResponse.RedirectPath))
-					return Redirect(serviceResponse.RedirectPath);
-
-				return RedirectToReferrer();
-			}
-
-			// TODO replace this return with error handling
-
-			return RedirectToReferrer();
+			return RedirectFromService();
 		}
 
 		[HttpPost]
@@ -113,16 +85,7 @@ namespace Forum3.Controllers {
 			var serviceResponse = await MessageService.AddThought(input);
 			ProcessServiceResponse(serviceResponse);
 
-			if (serviceResponse.Success) {
-				if (!string.IsNullOrEmpty(serviceResponse.RedirectPath))
-					return Redirect(serviceResponse.RedirectPath);
-
-				return RedirectToAction(nameof(Topics.Display), nameof(Topics), new { id = input.MessageId });
-			}
-
-			// TODO replace this return with error handling
-
-			return RedirectToAction(nameof(Topics.Display), nameof(Topics), new { id = input.MessageId });
+			return RedirectFromService();
 		}
 
 		[HttpGet]
@@ -134,17 +97,9 @@ namespace Forum3.Controllers {
 		[HttpGet]
 		public async Task<IActionResult> FinishMigration(int id) {
 			var serviceResponse = await MessageService.FinishMigration(id);
+			ProcessServiceResponse(serviceResponse);
 
-			if (serviceResponse.Success) {
-				if (!string.IsNullOrEmpty(serviceResponse.RedirectPath))
-					return Redirect(serviceResponse.RedirectPath);
-
-				return RedirectToAction(nameof(Topics.Display), nameof(Topics), new { id = id });
-			}
-
-			// TODO replace this return with error handling
-
-			return RedirectToAction(nameof(Topics.Display), nameof(Topics), new { id = id });
+			return RedirectFromService();
 		}
 	}
 }

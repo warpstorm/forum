@@ -43,6 +43,24 @@ namespace Forum3.Controllers {
 			return RedirectToAction(nameof(Display), new { id = id, page = 0 });
 		}
 
+		[HttpGet]
+		public async Task<IActionResult> Pin(int id) {
+			var serviceResponse = await TopicService.Pin(id);
+			ProcessServiceResponse(serviceResponse);
+
+			return RedirectFromService();
+		}
+
+		[HttpGet]
+		public async Task<IActionResult> ToggleBoard(ToggleBoardInput input) {
+			if (ModelState.IsValid) {
+				var serviceResponse = await TopicService.ToggleBoard(input);
+				ProcessServiceResponse(serviceResponse);
+			}
+
+			return new NoContentResult();
+		}
+
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		[PreventRapidRequests]
@@ -51,8 +69,8 @@ namespace Forum3.Controllers {
 				var serviceResponse = await MessageService.CreateReply(input);
 				ProcessServiceResponse(serviceResponse);
 
-				if (!string.IsNullOrEmpty(serviceResponse.RedirectPath))
-					return Redirect(serviceResponse.RedirectPath);
+				if (serviceResponse.Success)
+					return RedirectFromService();
 			}
 
 			var viewModel = await TopicService.DisplayPage(input.Id);

@@ -238,38 +238,6 @@ namespace Forum3.Services.Controller {
 			return serviceResponse;
 		}
 
-		public async Task<ServiceModels.ServiceResponse> PinMessage(int messageId) {
-			var serviceResponse = new ServiceModels.ServiceResponse();
-
-			var record = await DbContext.Messages.FindAsync(messageId);
-
-			if (record == null) {
-				serviceResponse.Error(string.Empty, $@"No record was found with the id '{messageId}'");
-				return serviceResponse;
-			}
-
-			if (record.ParentId > 0)
-				messageId = record.ParentId;
-
-			var existingRecord = await DbContext.Pins.FirstOrDefaultAsync(p => p.MessageId == messageId && p.UserId == ContextUser.ApplicationUser.Id);
-
-			if (existingRecord == null) {
-				var pinRecord = new DataModels.Pin {
-					MessageId = messageId,
-					Time = DateTime.Now,
-					UserId = ContextUser.ApplicationUser.Id
-				};
-
-				await DbContext.Pins.AddAsync(pinRecord);
-			}
-			else
-				DbContext.Pins.Remove(existingRecord);
-
-			await DbContext.SaveChangesAsync();
-
-			return serviceResponse;
-		}
-
 		public async Task<ServiceModels.ServiceResponse> AddThought(InputModels.ThoughtInput input) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
@@ -299,7 +267,7 @@ namespace Forum3.Services.Controller {
 					UserId = ContextUser.ApplicationUser.Id
 				};
 
-				await DbContext.MessageThoughts.AddAsync(messageThought);
+				DbContext.MessageThoughts.Add(messageThought);
 
 				if (messageRecord.PostedById != ContextUser.ApplicationUser.Id) {
 					var notification = new DataModels.Notification {
@@ -311,7 +279,7 @@ namespace Forum3.Services.Controller {
 						Unread = true,
 					};
 
-					await DbContext.Notifications.AddAsync(notification);
+					DbContext.Notifications.Add(notification);
 				}
 			}
 			else
@@ -727,7 +695,7 @@ namespace Forum3.Services.Controller {
 				ReplyId = replyId,
 			};
 
-			await DbContext.Messages.AddAsync(record);
+			DbContext.Messages.Add(record);
 
 			await DbContext.SaveChangesAsync();
 
@@ -748,7 +716,7 @@ namespace Forum3.Services.Controller {
 						Unread = true,
 					};
 
-					await DbContext.Notifications.AddAsync(notification);
+					DbContext.Notifications.Add(notification);
 				}
 			}
 
@@ -769,7 +737,7 @@ namespace Forum3.Services.Controller {
 						Unread = true,
 					};
 
-					await DbContext.Notifications.AddAsync(notification);
+					DbContext.Notifications.Add(notification);
 				}
 			}
 

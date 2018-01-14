@@ -28,6 +28,7 @@
 				@{
 					var assignedBoards = String.Join(", ", Model.AssignedBoards.Select(b => b.Id));
 				}
+				var togglePath = "@Url.Action(nameof(Topics.ToggleBoard), nameof(Topics), new { MessageId = Model.Id })";
 				var assignedBoards = [@assignedBoards];
 			</script>
 			<ul class="inline">
@@ -45,10 +46,10 @@
 											@foreach (var board in category.Boards) {
 												<li class="hover-highlight" toggle-board board-id="@board.Id">
 													@if (Model.AssignedBoards.Any(b => b.Id == board.Id)) {
-														<img src="~/images/checkbox_checked.png" />
+														<img src="~/images/checkbox_checked.png" board-flag="@board.Id" />
 													}
 													else {
-														<img src="~/images/checkbox_unchecked.png" />
+														<img src="~/images/checkbox_unchecked.png" board-flag="@board.Id" />
 													}
 													@board.Name
 												</li>

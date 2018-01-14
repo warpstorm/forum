@@ -1,6 +1,7 @@
 ﻿using Forum3.Controllers;
 using Forum3.Enums;
 using Forum3.Helpers;
+using Forum3.Models.InputModels;
 using Forum3.Models.ViewModels.Boards.Items;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -157,6 +158,78 @@ namespace Forum3.Services.Controller {
 			return topic;
 		}
 
+		public async Task<ServiceModels.ServiceResponse> Pin(int messageId) {
+			var serviceResponse = new ServiceModels.ServiceResponse();
+
+			var record = await DbContext.Messages.FindAsync(messageId);
+
+			if (record is null) {
+				serviceResponse.Error(string.Empty, $@"No record was found with the id '{messageId}'");
+				return serviceResponse;
+			}
+
+			if (record.ParentId > 0)
+				messageId = record.ParentId;
+
+			var existingRecord = await DbContext.Pins.FirstOrDefaultAsync(p => p.MessageId == messageId && p.UserId == ContextUser.ApplicationUser.Id);
+
+			if (existingRecord is null) {
+				var pinRecord = new DataModels.Pin {
+					MessageId = messageId,
+					Time = DateTime.Now,
+					UserId = ContextUser.ApplicationUser.Id
+				};
+
+				DbContext.Pins.Add(pinRecord);
+			}
+			else
+				DbContext.Pins.Remove(existingRecord);
+
+			await DbContext.SaveChangesAsync();
+
+			return serviceResponse;
+		}
+
+		public async Task<ServiceModels.ServiceResponse> ToggleBoard(ToggleBoardInput input) {
+			var serviceResponse = new ServiceModels.ServiceResponse();
+
+			var messageRecord = await DbContext.Messages.FindAsync(input.MessageId);
+
+			if (messageRecord is null)
+				serviceResponse.Error(string.Empty, $@"No message was found with the id '{input.MessageId}'");
+
+			var messageId = input.MessageId;
+
+			if (messageRecord.ParentId > 0)
+				messageId = messageRecord.ParentId;
+
+			if (!await DbContext.Boards.AnyAsync(r => r.Id == input.BoardId))
+				serviceResponse.Error(string.Empty, $@"No board was found with the id '{input.BoardId}'");
+
+			if (!serviceResponse.Success)
+				return serviceResponse;
+
+			var boardId = input.BoardId;
+
+			var existingRecord = await DbContext.MessageBoards.FirstOrDefaultAsync(p => p.MessageId == messageId && p.BoardId == boardId);
+
+			if (existingRecord is null) {
+				var messageBoardRecord = new DataModels.MessageBoard {
+					MessageId = messageId,
+					BoardId = boardId,
+					UserId = ContextUser.ApplicationUser.Id
+				};
+
+				DbContext.MessageBoards.Add(messageBoardRecord);
+			}
+			else
+				DbContext.MessageBoards.Remove(existingRecord);
+
+			await DbContext.SaveChangesAsync();
+
+			return serviceResponse;
+		}
+
 		async Task<List<ItemModels.MessagePreview>> GetTopicPreviews(List<int> messageIds) {
 			var messageRecordQuery = from message in DbContext.Messages
 									 where message.ParentId == 0 && messageIds.Contains(message.Id)
@@ -264,17 +337,23 @@ namespace Forum3.Services.Controller {
 			else
 				latestTime = latestMessageTime;
 
-			foreach (var viewLog in DbContext.ViewLogs.Where(r => r.UserId == ContextUser.ApplicationUser.Id && r.TargetId == topic.Id && r.TargetType == EViewLogTargetType.Message).ToList())
+			foreach (var viewLog in await DbContext.ViewLogs.Where(r => r.UserId == ContextUser.ApplicationUser.Id && r.TargetId == topic.Id && r.TargetType == EViewLogTargetType.Message).ToListAsync())
 				DbContext.ViewLogs.Remove(viewLog);
 
-			await DbContext.SaveChangesAsync();
+			try {
+				await DbContext.SaveChangesAsync();
+			}
+			// The user probably refreshed several times in a row.
+			catch (DbUpdateConcurrencyException) { }
 
-			await DbContext.ViewLogs.AddAsync(new DataModels.ViewLog {
+			DbContext.ViewLogs.Add(new DataModels.ViewLog {
 				LogTime = latestTime,
 				TargetId = topic.Id,
 				TargetType = EViewLogTargetType.Message,
 				UserId = ContextUser.ApplicationUser.Id
 			});
+
+			await DbContext.SaveChangesAsync();
 		}
 
 		async Task<PageModels.TopicDisplayPage> GetRedirectViewModel(int messageId, int parentMessageId, List<int> messageIds) {

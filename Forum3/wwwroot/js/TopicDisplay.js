@@ -26,12 +26,34 @@
 function ToggleBoard(event) {
 	event.stopPropagation();
 
-	if (window.assignedBoards == null)
+	let self = this;
+
+	if (self.toggling)
 		return;
 
-	var boardId = $(this).attr("board-id");
+	self.toggling = true;
 
-	console.log(boardId);
+	if (window.assignedBoards === undefined || window.togglePath === undefined)
+		return;
+
+	let boardId = parseInt($(this).attr("board-id"));
+
+	let imgSrc = $("[board-flag=" + boardId + "]").attr("src");
+
+	if (assignedBoards.includes(boardId)) {
+		assignedBoards.remove(boardId);
+		imgSrc = imgSrc.replace("checked", "unchecked");
+	}
+	else {
+		assignedBoards.push(boardId);
+		imgSrc = imgSrc.replace("unchecked", "checked");
+	}
+
+	$("[board-flag=" + boardId + "]").attr("src", imgSrc);
+
+	$.get(togglePath + "&BoardId=" + boardId, function () {
+		self.toggling = false;
+	});
 }
 
 function ShowFullReply() {
