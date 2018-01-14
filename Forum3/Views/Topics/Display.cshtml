@@ -13,32 +13,54 @@
 		}
 	</ul>
 
+	<h4>@Html.Raw(Model.TopicHeader.Subject) <span class="note">@Model.TopicHeader.Views view@(Model.TopicHeader.Views == 1 ? "" : "s")</span></h4>
 	<div class="pad-bottom">
-		@if (User.Identity.IsAuthenticated) {
-			if (Model.AssignedBoards.Any()) {
-				foreach (var board in Model.AssignedBoards) {
-					<a asp-action="@nameof(Topics.Index)" asp-controller="@nameof(Topics)" asp-route-id="@board.Id" class="small-button">@board.Name</a>
-				}
+		@if (Model.AssignedBoards.Any()) {
+			foreach (var board in Model.AssignedBoards) {
+				<a asp-action="@nameof(Topics.Index)" asp-controller="@nameof(Topics)" asp-route-id="@board.Id" class="small-button">@board.Name</a>
 			}
 		}
 	</div>
 
-	<h4>@Html.Raw(Model.TopicHeader.Subject) <span class="note">@Model.TopicHeader.Views view@(Model.TopicHeader.Views == 1 ? "" : "s")</span></h4>
-	
 	@if (User.Identity.IsAuthenticated) {
-		<nav>
+		<nav class="gap-top">
+			<script>
+				@{
+					var assignedBoards = String.Join(", ", Model.AssignedBoards.Select(b => b.Id));
+				}
+				var assignedBoards = [@assignedBoards];
+			</script>
 			<ul class="inline">
 				<li><a class="small-button" asp-action="Create" asp-controller="Messages">New Topic</a></li>
-				<li><a class="small-button" asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.Pin)" asp-route-id="@Model.Id">Pin Topic</a></li>
-				<li><a class="small-button" asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.Delete)" asp-route-id="@Model.Id" onclick="return confirm('Are you sure you want to remove this ENTIRE topic?');">Delete Topic</a></li>
-				<li class="open-menu">
-					<span class="small-button">Manage Topic Boards</span>
-					<div class="drop-down-menu-wrapper hidden">
-						<ul class="drop-down-menu content-box">
-
-						</ul>
-					</div>
-				</li>
+				<li><a class="small-button" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Pin)" asp-route-id="@Model.Id">Pin Topic</a></li>
+				@if (Model.CanManage) {
+					<li class="open-menu">
+						<span class="small-button">Manage Topic Boards</span>
+						<div class="drop-down-menu-wrapper hidden">
+							<ul class="drop-down-menu content-box">
+								@foreach (var category in Model.Categories) {
+									<li class="small-pad-bottom">
+										<p>@category.Name</p>
+										<ul>
+											@foreach (var board in category.Boards) {
+												<li class="hover-highlight" toggle-board board-id="@board.Id">
+													@if (Model.AssignedBoards.Any(b => b.Id == board.Id)) {
+														<img src="~/images/checkbox_checked.png" />
+													}
+													else {
+														<img src="~/images/checkbox_unchecked.png" />
+													}
+													@board.Name
+												</li>
+											}
+										</ul>
+									</li>
+								}
+							</ul>
+						</div>
+					</li>
+					<li><a class="small-button" asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.Delete)" asp-route-id="@Model.Id" onclick="return confirm('Are you sure you want to remove this ENTIRE topic?');">Delete Topic</a></li>
+				}
 			</ul>
 		</nav>
 	}
