@@ -114,13 +114,10 @@ namespace Forum3.Services.Controller {
 		}
 
 		public async Task<ViewModels.DetailsPage> DetailsPage(string id) {
-			var userRecord = await UserManager.FindByIdAsync(id);
+			var userRecord = id is null ? ContextUser.ApplicationUser : await UserManager.FindByIdAsync(id);
 
-			if (userRecord == null) {
-				var message = $"No record found with the id '{id}'";
-				Logger.LogWarning(message);
-				throw new ApplicationException("You hackin' bro?");
-			}
+			if (userRecord == null)
+				userRecord = ContextUser.ApplicationUser;
 
 			CanEdit(userRecord.Id);
 
