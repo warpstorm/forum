@@ -27,13 +27,13 @@ namespace Forum3.Services {
 			return setting;
 		}
 
-		public async Task<int> HistoryTimeLimit() {
+		public async Task<DateTime> HistoryTimeLimit() {
 			var setting = await GetInt(Constants.Settings.HistoryTimeLimit);
 
 			if (setting == 0)
 				setting = -14;
 
-			return setting;
+			return DateTime.Now.AddDays(setting);
 		}
 
 		public async Task<int> MessagesPerPage() {

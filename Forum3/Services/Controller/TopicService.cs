@@ -255,8 +255,42 @@ namespace Forum3.Services.Controller {
 
 			var messages = await messageRecordQuery.ToListAsync();
 
-			foreach (var message in messages)
+			var participation = new List<DataModels.Participant>();
+			var viewLogs = new List<DataModels.ViewLog>();
+
+			if (ContextUser.IsAuthenticated) {
+				participation = DbContext.Participants.Where(r => r.UserId == ContextUser.ApplicationUser.Id).ToList();
+
+				var historyTimeLimit = await Settings.HistoryTimeLimit();
+				viewLogs = DbContext.ViewLogs.Where(r => r.UserId == ContextUser.ApplicationUser.Id && r.LogTime >= historyTimeLimit).ToList();
+			}
+			
+			foreach (var message in messages) {
 				message.LastReplyPosted = message.LastReplyPostedDT.ToPassedTimeString();
+
+				var unread = 1;
+
+				if (ContextUser.IsAuthenticated) {
+					foreach (var viewLog in viewLogs) {
+						switch (viewLog.TargetType) {
+							case EViewLogTargetType.All:
+								if (viewLog.LogTime >= message.LastReplyPostedDT)
+									unread = 0;
+								break;
+
+							case EViewLogTargetType.Message:
+								if (viewLog.TargetId == message.Id && viewLog.LogTime >= message.LastReplyPostedDT)
+									unread = 0;
+								break;
+						}
+					}
+				}
+
+				if (unread == 1 && participation.Any(r => r.MessageId == message.Id))
+					unread = 2;
+
+				message.Unread = unread;
+			}
 
 			return messages;
 		}
@@ -320,8 +354,7 @@ namespace Forum3.Services.Controller {
 		}
 
 		async Task MarkTopicRead(PageModels.TopicDisplayPage topic) {
-			var historyTimeLimitSetting = await Settings.HistoryTimeLimit();
-			var historyTimeLimit = DateTime.Now.AddDays(historyTimeLimitSetting);
+			var historyTimeLimit = await Settings.HistoryTimeLimit();
 
 			var viewLogs = await DbContext.ViewLogs.Where(v =>
 				v.LogTime >= historyTimeLimit

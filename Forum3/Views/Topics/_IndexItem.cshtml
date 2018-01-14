@@ -13,6 +13,9 @@
 		<p>
 			<a asp-action="@nameof(Topics.Display)" asp-route-id="@Model.Id">
 				@Html.Raw(Model.ShortPreview)
+				@if (Model.Unread == 1 || Model.Unread == 2) {
+					<span class="small-button">new</span>
+				}
 			</a>
 		</p>
 		<div class="note pad-left">
