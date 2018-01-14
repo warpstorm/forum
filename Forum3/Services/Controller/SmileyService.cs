@@ -121,7 +121,7 @@ namespace Forum3.Services.Controller {
 				FileName = input.File.FileName
 			};
 
-			await DbContext.Smileys.AddAsync(smileyRecord);
+			DbContext.Smileys.Add(smileyRecord);
 
 			var container = CloudBlobClient.GetContainerReference("smileys");
 

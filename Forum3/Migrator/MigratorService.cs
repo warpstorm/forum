@@ -204,7 +204,8 @@ namespace Forum3.Migrator {
 				DisplayOrder = 100
 			};
 
-			await AppDb.AddAsync(category);
+			AppDb.Add(category);
+
 			await AppDb.SaveChangesAsync();
 
 			var query = from board in LegacyDb.Boards
@@ -218,7 +219,7 @@ namespace Forum3.Migrator {
 			var records = await query.ToListAsync();
 
 			foreach (var record in records)
-				await AppDb.AddAsync(record);
+				AppDb.Add(record);
 
 			await AppDb.SaveChangesAsync();
 		}
@@ -315,7 +316,7 @@ namespace Forum3.Migrator {
 			var records = await query.ToListAsync();
 
 			foreach (var record in records)
-				await AppDb.AddAsync(record);
+				AppDb.Add(record);
 
 			await AppDb.SaveChangesAsync();
 		}
@@ -347,7 +348,7 @@ namespace Forum3.Migrator {
 			var records = await query.ToListAsync();
 
 			foreach (var record in records)
-				await AppDb.AddAsync(record);
+				AppDb.Add(record);
 
 			await AppDb.SaveChangesAsync();
 		}
@@ -397,7 +398,7 @@ namespace Forum3.Migrator {
 
 				newSmiley.Path = blobReference.Uri.AbsoluteUri;
 
-				await AppDb.AddAsync(newSmiley);
+				AppDb.Add(newSmiley);
 			}
 
 			await AppDb.SaveChangesAsync();
@@ -436,7 +437,7 @@ namespace Forum3.Migrator {
 			var records = await query.ToListAsync();
 
 			foreach (var record in records)
-				await AppDb.AddAsync(record);
+				AppDb.Add(record);
 
 			await AppDb.SaveChangesAsync();
 		}

@@ -135,7 +135,7 @@ namespace Forum3.Services.Controller {
 						DisplayOrder = displayOrder + 1
 					};
 
-					await DbContext.Categories.AddAsync(categoryRecord);
+					DbContext.Categories.Add(categoryRecord);
 				}
 			}
 			else {
@@ -176,7 +176,8 @@ namespace Forum3.Services.Controller {
 				CategoryId = categoryRecord.Id
 			};
 
-			await DbContext.Boards.AddAsync(record);
+			DbContext.Boards.Add(record);
+
 			await DbContext.SaveChangesAsync();
 
 			serviceResponse.RedirectPath = UrlHelper.Action(nameof(Boards.Manage), nameof(Boards), new { id = record.Id });
@@ -208,7 +209,7 @@ namespace Forum3.Services.Controller {
 						DisplayOrder = displayOrder + 1
 					};
 
-					await DbContext.Categories.AddAsync(newCategoryRecord);
+					DbContext.Categories.Add(newCategoryRecord);
 				}
 			}
 			else {

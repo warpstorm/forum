@@ -52,7 +52,7 @@ namespace Forum3.Services.Controller {
 					Value = settingInput.Value
 				};
 
-				await DbContext.SiteSettings.AddAsync(record);
+				DbContext.SiteSettings.Add(record);
 			}
 
 			await DbContext.SaveChangesAsync();
