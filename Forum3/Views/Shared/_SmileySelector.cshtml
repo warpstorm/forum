@@ -1,7 +1,7 @@
 ﻿@model List<List<ViewModels.Smileys.IndexItem>>
 
 <div id="smiley-selector">
-	<div class="content-box overflow-auto">
+	<div class="content-box overflow-scroll-y">
 		@foreach (var smileyColumn in Model) {
 			<ul>
 				@foreach (var smiley in smileyColumn) {
