@@ -33,6 +33,21 @@
 	color: #92abba;
 }
 
+#page-footer:hover #danger-sign {
+	display: block;
+}
+
+#danger-sign {
+	display: none;
+	position: absolute;
+	z-index: 1000;
+	margin-top: -350px;
+	margin-left: auto;
+	margin-right: auto;
+	left: 0;
+	right: 0;
+}
+
 
 
 /*
