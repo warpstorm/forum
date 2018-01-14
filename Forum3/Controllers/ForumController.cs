@@ -12,7 +12,7 @@ namespace Forum3.Controllers {
 	public class ForumController : Controller {
 		public IActionResult Error() => View(new ViewModels.Error { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
 
-		string Referrer {
+		public string Referrer {
 			get {
 				var referrer = Request.Query["ReturnUrl"].ToString();
 
@@ -26,6 +26,8 @@ namespace Forum3.Controllers {
 			}
 		}
 
+		string ServiceRedirectPath { get; set; }
+
 		public override ViewResult View(object model) => View(null, model);
 		public override ViewResult View(string viewName, object model = null) {
 			UniversalViewActions();
@@ -33,6 +35,13 @@ namespace Forum3.Controllers {
 		}
 
 		protected IActionResult RedirectToReferrer() => Redirect(Referrer);
+
+		protected IActionResult RedirectFromService() {
+			if (string.IsNullOrEmpty(ServiceRedirectPath))
+				return RedirectToReferrer();
+
+			return Redirect(ServiceRedirectPath);
+		}
 
 		protected IActionResult RedirectToLocal(string returnUrl) {
 			if (Url.IsLocalUrl(returnUrl))
@@ -47,6 +56,8 @@ namespace Forum3.Controllers {
 
 			foreach (var kvp in serviceResponse.Errors)
 				ModelState.AddModelError(kvp.Key, kvp.Value);
+
+			ServiceRedirectPath = serviceResponse.RedirectPath;
 		}
 
 		protected void AddErrors(IdentityResult result) {
