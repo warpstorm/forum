@@ -32,12 +32,8 @@ namespace Forum3.Controllers {
 				var serviceResponse = await SmileyService.Create(input);
 				ProcessServiceResponse(serviceResponse);
 
-				if (ModelState.IsValid) {
-					if (!string.IsNullOrEmpty(serviceResponse.RedirectPath))
-						return Redirect(serviceResponse.RedirectPath);
-
-					return RedirectToReferrer();
-				}
+				if (serviceResponse.Success)
+					return RedirectFromService();
 			}
 
 			var viewModel = SmileyService.CreatePage(input);
@@ -53,14 +49,14 @@ namespace Forum3.Controllers {
 				ProcessServiceResponse(serviceResponse);
 			}
 
-			return RedirectToReferrer();
+			return RedirectFromService();
 		}
 
 		public async Task<IActionResult> Delete(int id) {
 			var serviceResponse = await SmileyService.Delete(id);
 			ProcessServiceResponse(serviceResponse);
 
-			return RedirectToReferrer();
+			return RedirectFromService();
 		}
 	}
 }

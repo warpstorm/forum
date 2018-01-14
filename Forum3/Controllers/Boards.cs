@@ -34,11 +34,11 @@ namespace Forum3.Controllers {
 		[HttpPost]
 		public async Task<IActionResult> Create(CreateBoardInput input) {
 			if (ModelState.IsValid) {
-				var response = await BoardService.Create(input);
-				ProcessServiceResponse(response);
+				var serviceResponse = await BoardService.Create(input);
+				ProcessServiceResponse(serviceResponse);
 
-				if (ModelState.IsValid)
-					return Redirect(response.RedirectPath);
+				if (serviceResponse.Success)
+					return RedirectFromService();
 			}
 
 			var viewModel = await BoardService.CreatePage(input);
@@ -54,11 +54,11 @@ namespace Forum3.Controllers {
 		[HttpPost]
 		public async Task<IActionResult> Edit(EditBoardInput input) {
 			if (ModelState.IsValid) {
-				var response = await BoardService.Edit(input);
-				ProcessServiceResponse(response);
+				var serviceResponse = await BoardService.Edit(input);
+				ProcessServiceResponse(serviceResponse);
 
-				if (ModelState.IsValid)
-					return Redirect(response.RedirectPath);
+				if (serviceResponse.Success)
+					return RedirectFromService();
 			}
 
 			var viewModel = await BoardService.EditPage(input.Id, input);
@@ -68,45 +68,37 @@ namespace Forum3.Controllers {
 		[HttpGet]
 		public async Task<IActionResult> MoveCategoryUp(int id) {
 			var serviceResponse = await BoardService.MoveCategoryUp(id);
-
 			ProcessServiceResponse(serviceResponse);
 
-			var viewModel = await BoardService.ManagePage();
-			return View(nameof(Manage), viewModel);
+			return RedirectFromService();
 		}
 
 		[HttpGet]
 		public async Task<IActionResult> MoveBoardUp(int id) {
 			var serviceResponse = await BoardService.MoveBoardUp(id);
-
 			ProcessServiceResponse(serviceResponse);
 
-			var viewModel = await BoardService.ManagePage();
-			return View(nameof(Manage), viewModel);
+			return RedirectFromService();
 		}
 
 		[HttpPost]
 		public async Task<IActionResult> MergeCategory(MergeInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await BoardService.MergeCategory(input);
-
 				ProcessServiceResponse(serviceResponse);
 			}
 
-			var viewModel = await BoardService.ManagePage();
-			return View(nameof(Manage), viewModel);
+			return RedirectFromService();
 		}
 
 		[HttpPost]
 		public async Task<IActionResult> MergeBoard(MergeInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await BoardService.MergeBoard(input);
-
 				ProcessServiceResponse(serviceResponse);
 			}
 
-			var viewModel = await BoardService.ManagePage();
-			return View(nameof(Manage), viewModel);
+			return RedirectFromService();
 		}
 	}
 }

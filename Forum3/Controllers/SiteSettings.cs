@@ -30,7 +30,7 @@ namespace Forum3.Controllers {
 				ProcessServiceResponse(serviceResponse);
 			}
 
-			return RedirectToReferrer();
+			return RedirectFromService();
 		}
 	}
 }

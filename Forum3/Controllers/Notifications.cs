@@ -26,16 +26,14 @@ namespace Forum3.Controllers {
 		[HttpGet]
 		public async Task<IActionResult> Open(int id) {
 			var serviceResponse = await NotificationService.Open(id);
+			ProcessServiceResponse(serviceResponse);
 
-			if (string.IsNullOrEmpty(serviceResponse.RedirectPath))
-				return RedirectToReferrer();
-			else
-				return Redirect(serviceResponse.RedirectPath);
+			return RedirectFromService();
 		}
 
 		[HttpGet]
 		public ActionResult MarkAllRead() {
-			return RedirectToAction(nameof(Notifications.Index), nameof(Notifications));
+			return RedirectToAction(nameof(Boards.Index), nameof(Boards));
 		}
 	}
 }

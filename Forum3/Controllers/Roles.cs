@@ -34,8 +34,8 @@ namespace Forum3.Controllers {
 				var serviceResponse = await RoleService.Create(input);
 				ProcessServiceResponse(serviceResponse);
 
-				if (!string.IsNullOrEmpty(serviceResponse.RedirectPath))
-					return Redirect(serviceResponse.RedirectPath);
+				if (serviceResponse.Success)
+					return RedirectFromService();
 			}
 
 			var viewModel = new PageViewModels.CreatePage() {
@@ -59,8 +59,8 @@ namespace Forum3.Controllers {
 				var serviceResponse = await RoleService.Edit(input);
 				ProcessServiceResponse(serviceResponse);
 
-				if (!string.IsNullOrEmpty(serviceResponse.RedirectPath))
-					return Redirect(serviceResponse.RedirectPath);
+				if (serviceResponse.Success)
+					return RedirectFromService();
 			}
 
 			var viewModel = await RoleService.EditPage(input.Id);
@@ -73,11 +73,10 @@ namespace Forum3.Controllers {
 
 		[HttpGet]
 		public async Task<IActionResult> Delete(string id) {
-			if (ModelState.IsValid) {
+			if (ModelState.IsValid)
 				await RoleService.Delete(id);
-			}
 
-			return RedirectToAction(nameof(Roles.Index), nameof(Roles));
+			return RedirectFromService();
 		}
 
 		[HttpGet]
@@ -91,8 +90,8 @@ namespace Forum3.Controllers {
 			var serviceResponse = await RoleService.AddUser(id, user);
 			ProcessServiceResponse(serviceResponse);
 
-			if (!string.IsNullOrEmpty(serviceResponse.RedirectPath))
-				return Redirect(serviceResponse.RedirectPath);
+			if (serviceResponse.Success)
+				return RedirectFromService();
 
 			var viewModel = await RoleService.EditPage(id);
 			return View(nameof(Edit), viewModel);
@@ -103,8 +102,8 @@ namespace Forum3.Controllers {
 			var serviceResponse = await RoleService.RemoveUser(id, user);
 			ProcessServiceResponse(serviceResponse);
 
-			if (!string.IsNullOrEmpty(serviceResponse.RedirectPath))
-				return Redirect(serviceResponse.RedirectPath);
+			if (serviceResponse.Success)
+				return RedirectFromService();
 
 			var viewModel = await RoleService.EditPage(id);
 			return View(nameof(Edit), viewModel);
