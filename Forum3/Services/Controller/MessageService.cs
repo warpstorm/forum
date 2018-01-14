@@ -813,7 +813,7 @@ namespace Forum3.Services.Controller {
 
 		void MigrateMessageRecord(DataModels.Message record) {
 			var processMessageTask = ProcessMessageInput(new ServiceModels.ServiceResponse(), record.OriginalBody);
-			var replyTask = DbContext.Messages.SingleOrDefaultAsync(m => m.LegacyId == record.LegacyReplyId);
+			var replyTask = DbContext.Messages.SingleOrDefaultAsync(m => record.LegacyReplyId != 0 && m.LegacyId == record.LegacyReplyId);
 			var postedByTask = DbContext.Users.SingleOrDefaultAsync(u => u.LegacyId == record.LegacyPostedById);
 			var editedByTask = DbContext.Users.SingleOrDefaultAsync(u => u.LegacyId == record.LegacyPostedById);
 
@@ -826,8 +826,6 @@ namespace Forum3.Services.Controller {
 			record.ShortPreview = message.ShortPreview;
 			record.LongPreview = message.LongPreview;
 			record.Cards = message.Cards;
-			record.TimeEdited = DateTime.Now;
-			record.EditedById = ContextUser.ApplicationUser.Id;
 			record.Processed = true;
 
 			record.ReplyId = replyTask.Result?.Id ?? 0;
