@@ -1,64 +1,56 @@
-﻿@model Forum3.Models.ViewModels.Notifications.Pages.IndexPage
+﻿@model ViewModels.Notifications.Pages.IndexPage
 
-<div class="roundedBox">
-	<div class="roundedBoxHead">
-		@ViewData["Title"]
-		@if (ViewData["BoardName"] != null) {
-			@:for @ViewData["BoardName"]
-        }
-	</div>
-
-	<div class="roundedBoxContent">
-		@if (Model.Notifications.Any()) {
-			if (Model.Notifications.Any(n => n.Type == ENotificationType.Mention)) {
-				<h3>Mentions</h3>
-				<ul>
-					@foreach (var notification in Model.Notifications.Where(n => n.Type == ENotificationType.Mention)) {
-						<li>
-							<a asp-action="@nameof(Notifications.Open)" asp-route-id="@notification.Id">@notification.Text</a>
-							<time>@notification.Time</time>
-						</li>
-					}
-				</ul>
-			}
-
-			if (Model.Notifications.Any(n => n.Type == ENotificationType.Thought)) {
-				<h3>Thoughts</h3>
-				<ul>
-					@foreach (var notification in Model.Notifications.Where(n => n.Type == ENotificationType.Thought)) {
-						<li>
-							<a asp-action="@nameof(Notifications.Open)" asp-route-id="@notification.Id">@notification.Text</a>
-							<time>@notification.Time</time>
-						</li>
-					}
-				</ul>
-			}
-
-			if (Model.Notifications.Any(n => n.Type == ENotificationType.Reply || n.Type == ENotificationType.Quote)) {
-				<h3>Quotes & Replies</h3>
-				<ul>
-					@foreach (var notification in Model.Notifications.Where(n => n.Type == ENotificationType.Quote)) {
-						<li>
-							<a asp-action="@nameof(Notifications.Open)" asp-route-id="@notification.Id">@notification.Text</a>
-							<time>@notification.Time</time>
-						</li>
-					}
-					@foreach (var notification in Model.Notifications.Where(n => n.Type == ENotificationType.Reply)) {
-						<li>
-							<a asp-action="@nameof(Notifications.Open)" asp-route-id="@notification.Id">@notification.Text</a>
-							<time>@notification.Time</time>
-						</li>
-					}
-				</ul>
-			}
+<div class="content-box pad">
+	@if (Model.Notifications.Any()) {
+		if (Model.Notifications.Any(n => n.Type == ENotificationType.Mention)) {
+			<h3>Mentions</h3>
+			<ul>
+				@foreach (var notification in Model.Notifications.Where(n => n.Type == ENotificationType.Mention)) {
+					<li>
+						<a asp-action="@nameof(Notifications.Open)" asp-route-id="@notification.Id">@notification.Text</a>
+						<time>@notification.Time</time>
+					</li>
+				}
+			</ul>
 		}
-		else {
-			<ul><li>None</li></ul>
+
+		if (Model.Notifications.Any(n => n.Type == ENotificationType.Thought)) {
+			<h3>Thoughts</h3>
+			<ul>
+				@foreach (var notification in Model.Notifications.Where(n => n.Type == ENotificationType.Thought)) {
+					<li>
+						<a asp-action="@nameof(Notifications.Open)" asp-route-id="@notification.Id">@notification.Text</a>
+						<time>@notification.Time</time>
+					</li>
+				}
+			</ul>
 		}
-	</div>
+
+		if (Model.Notifications.Any(n => n.Type == ENotificationType.Reply || n.Type == ENotificationType.Quote)) {
+			<h3>Quotes & Replies</h3>
+			<ul>
+				@foreach (var notification in Model.Notifications.Where(n => n.Type == ENotificationType.Quote)) {
+					<li>
+						<a asp-action="@nameof(Notifications.Open)" asp-route-id="@notification.Id">@notification.Text</a>
+						<time>@notification.Time</time>
+					</li>
+				}
+				@foreach (var notification in Model.Notifications.Where(n => n.Type == ENotificationType.Reply)) {
+					<li>
+						<a asp-action="@nameof(Notifications.Open)" asp-route-id="@notification.Id">@notification.Text</a>
+						<time>@notification.Time</time>
+					</li>
+				}
+			</ul>
+		}
+	}
+	else {
+		<ul><li>None</li></ul>
+	}
 </div>
 
 @{ViewData["Title"] = "Notifications";}
+@section Header {@ViewData["Title"]}
 
 @section PageActions {
 	<p>
