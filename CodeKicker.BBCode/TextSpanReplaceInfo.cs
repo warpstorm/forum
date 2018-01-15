@@ -3,9 +3,9 @@ using System;
 
 namespace CodeKicker.BBCode {
 	public class TextSpanReplaceInfo {
-		public int Index { get; private set; }
-		public int Length { get; private set; }
-		public SyntaxTreeNode Replacement { get; private set; }
+		public int Index { get; }
+		public int Length { get; }
+		public SyntaxTreeNode Replacement { get; }
 
 		public TextSpanReplaceInfo(int index, int length, SyntaxTreeNode replacement) {
 			if (index < 0) throw new ArgumentOutOfRangeException("index");

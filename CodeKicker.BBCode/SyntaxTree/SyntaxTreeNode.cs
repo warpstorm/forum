@@ -3,19 +3,13 @@ using System.Collections.Generic;
 
 namespace CodeKicker.BBCode.SyntaxTree {
 	public abstract class SyntaxTreeNode : IEquatable<SyntaxTreeNode> {
-		public ISyntaxTreeNodeCollection SubNodes { get; private set; } = new SyntaxTreeNodeCollection();
+		public ISyntaxTreeNodeCollection SubNodes { get; } = new SyntaxTreeNodeCollection();
 
-		protected SyntaxTreeNode() {}
-		protected SyntaxTreeNode(ISyntaxTreeNodeCollection subNodes) {
-			SubNodes = subNodes;
-		}
-		protected SyntaxTreeNode(IList<SyntaxTreeNode> subNodes) {
-			SubNodes = new SyntaxTreeNodeCollection(subNodes);
-		}
+		protected SyntaxTreeNode() { }
+		protected SyntaxTreeNode(ISyntaxTreeNodeCollection subNodes) => SubNodes = subNodes;
+		protected SyntaxTreeNode(IList<SyntaxTreeNode> subNodes) => SubNodes = new SyntaxTreeNodeCollection(subNodes);
 
-		public override string ToString() {
-			return ToBBCode();
-		}
+		public override string ToString() => ToBBCode();
 
 		public abstract string ToHtml();
 		public abstract string ToBBCode();
@@ -26,24 +20,18 @@ namespace CodeKicker.BBCode.SyntaxTree {
 		protected abstract bool EqualsCore(SyntaxTreeNode b);
 
 		//equality members
-		public bool Equals(SyntaxTreeNode other) {
-			return this == other;
-		}
-		public override bool Equals(object obj) {
-			return Equals(obj as SyntaxTreeNode);
-		}
-		public override int GetHashCode() {
-			return base.GetHashCode(); //TODO
-		}
+		public bool Equals(SyntaxTreeNode other) => this == other;
+		public override bool Equals(object obj) => Equals(obj as SyntaxTreeNode);
+		public override int GetHashCode() => base.GetHashCode(); //TODO
 
 		public static bool operator ==(SyntaxTreeNode a, SyntaxTreeNode b) {
 			if (ReferenceEquals(a, b))
 				return true;
 
-			if (ReferenceEquals(a, null))
+			if (a is null)
 				return false;
 
-			if (ReferenceEquals(b, null))
+			if (b is null)
 				return false;
 
 			if (a.GetType() != b.GetType())
@@ -53,15 +41,14 @@ namespace CodeKicker.BBCode.SyntaxTree {
 				return false;
 
 			if (!ReferenceEquals(a.SubNodes, b.SubNodes)) {
-				for (int i = 0; i < a.SubNodes.Count; i++)
+				for (var i = 0; i < a.SubNodes.Count; i++)
 					if (a.SubNodes[i] != b.SubNodes[i])
 						return false;
 			}
 
 			return a.EqualsCore(b);
 		}
-		public static bool operator !=(SyntaxTreeNode a, SyntaxTreeNode b) {
-			return !(a == b);
-		}
+
+		public static bool operator !=(SyntaxTreeNode a, SyntaxTreeNode b) => !(a == b);
 	}
 }

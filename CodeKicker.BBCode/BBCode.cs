@@ -1,4 +1,5 @@
-﻿using CodeKicker.BBCode.SyntaxTree;
+﻿using CodeKicker.BBCode.Helpers;
+using CodeKicker.BBCode.SyntaxTree;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -17,9 +18,7 @@ namespace CodeKicker.BBCode {
 		/// <param name="bbCode">A non-null string of valid BBCode.</param>
 		/// <returns></returns>
 		public static string ToHtml(string bbCode) {
-			if (bbCode == null)
-				throw new ArgumentNullException("bbCode");
-
+			bbCode.ThrowIfNull(nameof(bbCode));
 			return defaultParser.ToHtml(bbCode);
 		}
 
@@ -44,12 +43,11 @@ namespace CodeKicker.BBCode {
 		/// Encodes an arbitrary string to be valid BBCode. Example: "[b]" => "\[b\]". The resulting string is safe against BBCode-Injection attacks.
 		/// </summary>
 		public static string EscapeText(string text) {
-			if (text == null)
-				throw new ArgumentNullException("text");
+			text.ThrowIfNull(nameof(text));
 
 			var escapeCount = 0;
 
-			for (int i = 0; i < text.Length; i++) {
+			for (var i = 0; i < text.Length; i++) {
 				if (text[i] == '[' || text[i] == ']' || text[i] == '\\')
 					escapeCount++;
 			}
@@ -60,7 +58,7 @@ namespace CodeKicker.BBCode {
 			var output = new char[text.Length + escapeCount];
 			var outputWritePos = 0;
 
-			for (int i = 0; i < text.Length; i++) {
+			for (var i = 0; i < text.Length; i++) {
 				if (text[i] == '[' || text[i] == ']' || text[i] == '\\')
 					output[outputWritePos++] = '\\';
 
@@ -74,25 +72,20 @@ namespace CodeKicker.BBCode {
 		/// Decodes a string of BBCode that only contains text (no tags). Example: "\[b\]" => "[b]". This is the reverse oepration of EscapeText.
 		/// </summary>
 		public static string UnescapeText(string text) {
-			if (text == null)
-				throw new ArgumentNullException("text");
-
+			text.ThrowIfNull(nameof(text));
 			return text.Replace("\\[", "[").Replace("\\]", "]").Replace("\\\\", "\\");
 		}
 
 		public static SyntaxTreeNode ReplaceTextSpans(SyntaxTreeNode node, Func<string, IList<TextSpanReplaceInfo>> getTextSpansToReplace, Func<TagNode, bool> tagFilter) {
-			if (node == null)
-				throw new ArgumentNullException("node");
-
-			if (getTextSpansToReplace == null)
-				throw new ArgumentNullException("getTextSpansToReplace");
+			node.ThrowIfNull(nameof(node));
+			getTextSpansToReplace.ThrowIfNull(nameof(getTextSpansToReplace));
 
 			if (node is TextNode) {
 				var text = ((TextNode)node).Text;
 
 				var replacements = getTextSpansToReplace(text);
 
-				if (replacements == null || replacements.Count == 0)
+				if (replacements is null || replacements.Count == 0)
 					return node;
 
 				var replacementNodes = new List<SyntaxTreeNode>(replacements.Count * 2 + 1);
@@ -140,11 +133,8 @@ namespace CodeKicker.BBCode {
 		}
 
 		public static void VisitTextNodes(SyntaxTreeNode node, Action<string> visitText, Func<TagNode, bool> tagFilter) {
-			if (node == null)
-				throw new ArgumentNullException("node");
-
-			if (visitText == null)
-				throw new ArgumentNullException("visitText");
+			node.ThrowIfNull(nameof(node));
+			visitText.ThrowIfNull(nameof(visitText));
 
 			if (node is TextNode) {
 				visitText(((TextNode)node).Text);
@@ -161,14 +151,8 @@ namespace CodeKicker.BBCode {
 
 		class ReferenceEqualityComparer<T> : IEqualityComparer<T> where T : class {
 			public static readonly ReferenceEqualityComparer<T> Instance = new ReferenceEqualityComparer<T>();
-
-			public bool Equals(T x, T y) {
-				return ReferenceEquals(x, y);
-			}
-
-			public int GetHashCode(T obj) {
-				return obj == null ? 0 : obj.GetHashCode();
-			}
+			public bool Equals(T x, T y) => ReferenceEquals(x, y);
+			public int GetHashCode(T obj) => obj is null ? 0 : obj.GetHashCode();
 		}
 	}
 }

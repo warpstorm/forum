@@ -1,3 +1,4 @@
+using CodeKicker.BBCode.Helpers;
 using System;
 
 namespace CodeKicker.BBCode {
@@ -5,10 +6,12 @@ namespace CodeKicker.BBCode {
 		public const string ContentPlaceholderName = "content";
 
 		public BBTag(string name, string openTagTemplate, string closeTagTemplate, bool autoRenderContent, EBBTagClosingStyle tagClosingClosingStyle, Func<string, string> contentTransformer, bool enableIterationElementBehavior, params BBAttribute[] attributes) {
-			if (name == null) throw new ArgumentNullException("name");
-			if (openTagTemplate == null) throw new ArgumentNullException("openTagTemplate");
-			if (closeTagTemplate == null) throw new ArgumentNullException("closeTagTemplate");
-			if (!Enum.IsDefined(typeof(EBBTagClosingStyle), tagClosingClosingStyle)) throw new ArgumentException("tagClosingClosingStyle");
+			name.ThrowIfNull(nameof(name));
+			openTagTemplate.ThrowIfNull(nameof(openTagTemplate));
+			closeTagTemplate.ThrowIfNull(nameof(closeTagTemplate));
+
+			if (!Enum.IsDefined(typeof(EBBTagClosingStyle), tagClosingClosingStyle))
+				throw new ArgumentException("tagClosingClosingStyle");
 
 			Name = name;
 			OpenTagTemplate = openTagTemplate;
@@ -36,20 +39,16 @@ namespace CodeKicker.BBCode {
 			: this(name, openTagTemplate, closeTagTemplate, true, true, attributes) {
 		}
 
-		public string Name { get; private set; }
-		public string OpenTagTemplate { get; private set; }
-		public string CloseTagTemplate { get; private set; }
-		public bool AutoRenderContent { get; private set; }
-		public bool EnableIterationElementBehavior { get; private set; }
-		public bool RequiresClosingTag {
-			get { return TagClosingStyle == EBBTagClosingStyle.RequiresClosingTag; }
-		}
-		public EBBTagClosingStyle TagClosingStyle { get; private set; }
-		public Func<string, string> ContentTransformer { get; private set; } //allows for custom modification of the tag content before rendering takes place
-		public BBAttribute[] Attributes { get; private set; }
+		public string Name { get; }
+		public string OpenTagTemplate { get; }
+		public string CloseTagTemplate { get; }
+		public bool AutoRenderContent { get; }
+		public bool EnableIterationElementBehavior { get; }
+		public bool RequiresClosingTag => TagClosingStyle == EBBTagClosingStyle.RequiresClosingTag;
+		public EBBTagClosingStyle TagClosingStyle { get; }
+		public Func<string, string> ContentTransformer { get; } //allows for custom modification of the tag content before rendering takes place
+		public BBAttribute[] Attributes { get; }
 
-		public BBAttribute FindAttribute(string name) {
-			return Array.Find(Attributes, a => a.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
-		}
+		public BBAttribute FindAttribute(string name) => Array.Find(Attributes, a => a.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
 	}
 }

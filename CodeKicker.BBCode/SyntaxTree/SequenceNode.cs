@@ -1,4 +1,4 @@
-﻿using System;
+﻿using CodeKicker.BBCode.Helpers;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -8,34 +8,22 @@ namespace CodeKicker.BBCode.SyntaxTree {
 		public SequenceNode(SyntaxTreeNodeCollection subNodes) : base(subNodes) { }
 		public SequenceNode(IList<SyntaxTreeNode> subNodes) : base(subNodes) { }
 
-		public override string ToHtml() {
-			return string.Concat(SubNodes.Select(s => s.ToHtml()).ToArray());
-		}
+		public override string ToHtml() => string.Concat(SubNodes.Select(s => s.ToHtml()).ToArray());
 
-		public override string ToBBCode() {
-			return string.Concat(SubNodes.Select(s => s.ToBBCode()).ToArray());
-		}
+		public override string ToBBCode() => string.Concat(SubNodes.Select(s => s.ToBBCode()).ToArray());
 
-		public override string ToText() {
-			return string.Concat(SubNodes.Select(s => s.ToText()).ToArray());
-		}
+		public override string ToText() => string.Concat(SubNodes.Select(s => s.ToText()).ToArray());
 
 		public override SyntaxTreeNode SetSubNodes(IList<SyntaxTreeNode> subNodes) {
-			if (subNodes == null)
-				throw new ArgumentNullException("subNodes");
-
+			subNodes.ThrowIfNull(nameof(subNodes));
 			return new SequenceNode(subNodes);
 		}
 
 		internal override SyntaxTreeNode AcceptVisitor(SyntaxTreeVisitor visitor) {
-			if (visitor == null)
-				throw new ArgumentNullException("visitor");
-
+			visitor.ThrowIfNull(nameof(visitor));
 			return visitor.Visit(this);
 		}
 
-		protected override bool EqualsCore(SyntaxTreeNode b) {
-			return true;
-		}
+		protected override bool EqualsCore(SyntaxTreeNode b) => true;
 	}
 }
