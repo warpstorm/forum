@@ -139,18 +139,18 @@ namespace Forum3.Services.Controller {
 
 			var record = await CreateMessageRecord(processedMessage, replyRecord);
 
-			var boardRecord = await (from message in DbContext.Messages
+			var boardRecords = await (from message in DbContext.Messages
 									 join messageBoard in DbContext.MessageBoards on message.Id equals messageBoard.MessageId
 									 join board in DbContext.Boards on messageBoard.BoardId equals board.Id
 									 where message.Id == record.ParentId
-									 select board).FirstOrDefaultAsync();
+									 select board).ToListAsync();
 
-			if (boardRecord != null) {
+			foreach (var boardRecord in boardRecords) {
 				boardRecord.LastMessageId = record.Id;
-
 				DbContext.Update(boardRecord);
-				await DbContext.SaveChangesAsync();
 			}
+
+			await DbContext.SaveChangesAsync();
 
 			serviceResponse.RedirectPath = UrlHelper.DirectMessage(record.Id);
 			return serviceResponse;
@@ -313,11 +313,7 @@ namespace Forum3.Services.Controller {
 
 			MigrateMessageRecord(record);
 
-			DbContext.Participants.Add(new DataModels.Participant {
-				MessageId = record.Id,
-				Time = record.TimePosted,
-				UserId = record.PostedById
-			});
+			await UpdateTopicParticipation(record.Id, record.PostedById, record.TimePosted);
 
 			var replies = await DbContext.Messages.Where(m => m.LegacyParentId == record.LegacyId).OrderBy(m => m.TimePosted).ToListAsync();
 
@@ -325,11 +321,7 @@ namespace Forum3.Services.Controller {
 				reply.ParentId = record.Id;
 				MigrateMessageRecord(reply);
 
-				DbContext.Participants.Add(new DataModels.Participant {
-					MessageId = record.Id,
-					Time = reply.TimePosted,
-					UserId = reply.PostedById
-				});
+				await UpdateTopicParticipation(record.Id, reply.PostedById, reply.TimePosted);
 			}
 
 			if (replies.Any()) {
@@ -339,6 +331,7 @@ namespace Forum3.Services.Controller {
 			}
 
 			DbContext.Update(record);
+
 			await DbContext.SaveChangesAsync();
 
 			return serviceResponse;
@@ -606,7 +599,7 @@ namespace Forum3.Services.Controller {
 
 				var matchedTag = regexMatch.Groups[1].Value;
 
-				var user = await DbContext.Users.SingleOrDefaultAsync(u => u.UserName.ToLower() == matchedTag.ToLower());
+				var user = await DbContext.Users.SingleOrDefaultAsync(u => u.DisplayName.ToLower() == matchedTag.ToLower());
 
 				// try to guess what they meant
 				if (user == null)
@@ -748,24 +741,10 @@ namespace Forum3.Services.Controller {
 			}
 
 			await DbContext.SaveChangesAsync();
+			await NotifyMentionedUsers(processedMessage.MentionedUsers, record.Id);
 
 			var topicId = parentId == 0 ? record.Id : parentId;
-
-			var participation = await DbContext.Participants.SingleOrDefaultAsync(r => r.MessageId == topicId && r.UserId == ContextUser.ApplicationUser.Id);
-
-			if (participation == null) {
-				DbContext.Participants.Add(new DataModels.Participant {
-					MessageId = topicId,
-					UserId = ContextUser.ApplicationUser.Id,
-					Time = DateTime.Now
-				});
-			}
-			else {
-				participation.Time = DateTime.Now;
-				DbContext.Update(participation);
-			}
-
-			await DbContext.SaveChangesAsync();
+			await UpdateTopicParticipation(topicId, ContextUser.ApplicationUser.Id, DateTime.Now);
 
 			return record;
 		}
@@ -781,6 +760,41 @@ namespace Forum3.Services.Controller {
 			record.Processed = true;
 
 			DbContext.Update(record);
+
+			await DbContext.SaveChangesAsync();
+		}
+
+		async Task UpdateTopicParticipation(int topicId, string userId, DateTime time) {
+			var participation = await DbContext.Participants.FirstOrDefaultAsync(r => r.MessageId == topicId && r.UserId == userId);
+
+			if (participation == null) {
+				DbContext.Participants.Add(new DataModels.Participant {
+					MessageId = topicId,
+					UserId = userId,
+					Time = time
+				});
+			}
+			else {
+				participation.Time = time;
+				DbContext.Update(participation);
+			}
+
+			await DbContext.SaveChangesAsync();
+		}
+
+		async Task NotifyMentionedUsers(List<string> mentionedUsers, int messageId) {
+			foreach (var user in mentionedUsers) {
+				var notification = new DataModels.Notification {
+					MessageId = messageId,
+					TargetUserId = ContextUser.ApplicationUser.Id,
+					UserId = user,
+					Time = DateTime.Now,
+					Type = Enums.ENotificationType.Mention,
+					Unread = true
+				};
+
+				DbContext.Notifications.Add(notification);
+			}
 
 			await DbContext.SaveChangesAsync();
 		}
