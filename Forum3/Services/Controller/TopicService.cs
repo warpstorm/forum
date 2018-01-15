@@ -204,6 +204,9 @@ namespace Forum3.Services.Controller {
 			if (latestMessageId == 0)
 				latestMessageId = record.LastReplyId;
 
+			if (latestMessageId == 0)
+				latestMessageId = record.Id;
+
 			serviceResponse.RedirectPath = UrlHelper.Action(nameof(Topics.Display), nameof(Topics), new { id = latestMessageId });
 
 			return serviceResponse;

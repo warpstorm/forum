@@ -23,7 +23,7 @@ namespace Forum3 {
 
 		// This method gets called by the runtime. Use this method to add services to the container.
 		public void ConfigureServices(IServiceCollection services) {
-			// Loads from the user-secrets store
+			// Loads from the environment
 			var dbConnectionString = Configuration["DefaultConnection"];
 
 			// Or use the one defined in appsettings.json

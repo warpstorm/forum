@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.WindowsAzure.Storage;
+using System;
 
 namespace Forum3.Helpers {
 	public static class ForumServiceRegistrationExtension {
@@ -49,6 +50,9 @@ namespace Forum3.Helpers {
 
 				if (string.IsNullOrEmpty(storageConnectionString))
 					storageConnectionString = configuration.GetConnectionString(Constants.Keys.StorageConnection);
+
+				if (string.IsNullOrEmpty(storageConnectionString))
+					throw new ApplicationException("No storage connection string found.");
 
 				var storageAccount = CloudStorageAccount.Parse(storageConnectionString);
 
