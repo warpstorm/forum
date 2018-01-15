@@ -12,7 +12,7 @@ namespace CodeKicker.BBCode {
 		public BBAttribute(string id, string name, Func<IAttributeRenderingContext, string> contentTransformer) : this(id, name, contentTransformer, EHtmlEncodingMode.HtmlAttributeEncode) { }
 		public BBAttribute(string id, string name, Func<IAttributeRenderingContext, string> contentTransformer, EHtmlEncodingMode htmlEncodingMode) {
 			id.ThrowIfNull(nameof(id));
-			name.ThrowIfNull(nameof(name));
+			name.ThrowIfNull(nameof(name), true);
 
 			if (!Enum.IsDefined(typeof(EHtmlEncodingMode), htmlEncodingMode))
 				throw new ArgumentException("htmlEncodingMode");
