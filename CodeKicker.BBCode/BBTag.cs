@@ -8,14 +8,16 @@ namespace CodeKicker.BBCode {
 		public BBTag(string name, string openTagTemplate, string closeTagTemplate, bool autoRenderContent, EBBTagClosingStyle tagClosingClosingStyle, Func<string, string> contentTransformer, bool enableIterationElementBehavior, params BBAttribute[] attributes) {
 			name.ThrowIfNull(nameof(name));
 			openTagTemplate.ThrowIfNull(nameof(openTagTemplate));
-			closeTagTemplate.ThrowIfNull(nameof(closeTagTemplate));
-
+			
 			if (!Enum.IsDefined(typeof(EBBTagClosingStyle), tagClosingClosingStyle))
-				throw new ArgumentException("tagClosingClosingStyle");
+				throw new ArgumentException(nameof(tagClosingClosingStyle));
+
+			if (tagClosingClosingStyle == EBBTagClosingStyle.RequiresClosingTag)
+				closeTagTemplate.ThrowIfNull(nameof(closeTagTemplate));
 
 			Name = name;
 			OpenTagTemplate = openTagTemplate;
-			CloseTagTemplate = closeTagTemplate;
+			CloseTagTemplate = closeTagTemplate ?? string.Empty;
 			AutoRenderContent = autoRenderContent;
 			TagClosingStyle = tagClosingClosingStyle;
 			ContentTransformer = contentTransformer;
