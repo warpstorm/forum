@@ -471,8 +471,8 @@ namespace Forum3.Services.Controller {
 			const string gifvPartial = "<video autoplay loop><source src='{0}.webm' type='video/webm' /><source src='{0}.mp4' type='video/mp4' /></video>";
 
 			var regexYoutube = new Regex(youtubePattern);
-			var regexGifv = new Regex("(^| )((https?\\://){1}\\S+)\\.gifv", RegexOptions.Compiled | RegexOptions.Multiline);
-			var regexUrl = new Regex("(^| )((https?\\://){1}\\S+)", RegexOptions.Compiled | RegexOptions.Multiline);
+			var regexEmbeddedVideo = new Regex(@"(^| )((https?\://){1}\S+)(.gifv|.webm|.mp4)", RegexOptions.Compiled | RegexOptions.Multiline);
+			var regexUrl = new Regex(@"(^| )((https?\://){1}\S+)", RegexOptions.Compiled | RegexOptions.Multiline);
 
 			// check first if the link is a youtube vid
 			if (regexYoutube.Match(remoteUrl).Success) {
@@ -486,12 +486,12 @@ namespace Forum3.Services.Controller {
 				};
 			}
 			// or is it a gifv link
-			else if (regexGifv.Match(remoteUrl).Success) {
-				var gifvId = regexGifv.Match(remoteUrl).Groups[2].Value;
+			else if (regexEmbeddedVideo.Match(remoteUrl).Success) {
+				var gifvId = regexEmbeddedVideo.Match(remoteUrl).Groups[2].Value;
 				var gifvEmbedded = string.Format(gifvPartial, gifvId);
 
 				return new ServiceModels.RemoteUrlReplacement {
-					Regex = regexGifv,
+					Regex = regexEmbeddedVideo,
 					ReplacementText = " <a target='_blank' href='" + remoteUrl + "'>" + remotePageDetails.Title + "</a>",
 					Card = $@"<div class=""embedded-video"">{gifvEmbedded}</div>"
 				};
