@@ -48,7 +48,7 @@ namespace Forum3 {
 			services.ConfigureApplicationCookie(options => options.LoginPath = $"/{nameof(Account)}/{nameof(Account.Login)}");
 
 			services.Configure<MvcOptions>(options => {
-				options.Filters.Add(new RequireRemoteHttpsAttribute());
+				//options.Filters.Add(new RequireRemoteHttpsAttribute());
 			});
 
 			services.AddForum(Configuration);
