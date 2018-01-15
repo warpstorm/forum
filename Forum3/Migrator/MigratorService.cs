@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.WindowsAzure.Storage.Blob;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -90,6 +91,11 @@ namespace Forum3.Migrator {
 
 				case nameof(MigrateMessageThoughts):
 					await MigrateMessageThoughts(input);
+					nextStage = nameof(MigrateViewLogs);
+					break;
+
+				case nameof(MigrateViewLogs):
+					await MigrateViewLogs(input);
 					nextStage = nameof(RemoveInviteOnlyTopics);
 					break;
 
@@ -240,7 +246,7 @@ namespace Forum3.Migrator {
 				var legacyRecordCount = LegacyDb.Messages.Count();
 
 				input.TotalSteps = Convert.ToInt32(Math.Ceiling(1D * legacyRecordCount / take));
-				input.CurrentStep = input.TotalSteps - 2;
+				input.CurrentStep = 1;
 				return;
 			}
 
@@ -438,6 +444,74 @@ namespace Forum3.Migrator {
 
 			foreach (var record in records)
 				AppDb.Add(record);
+
+			await AppDb.SaveChangesAsync();
+		}
+
+		async Task MigrateViewLogs(InputModels.Continue input) {
+			if (!await AppDb.Users.AnyAsync())
+				return;
+
+			if (!await AppDb.Messages.AnyAsync())
+				return;
+
+			if (input.CurrentStep == 0 && await AppDb.ViewLogs.AnyAsync())
+				return;
+
+			input.TotalSteps = 1;
+			input.CurrentStep = 1;
+
+			var userRecords = await AppDb.Users.ToListAsync();
+			var legacyRecords = await LegacyDb.ViewLogs.ToListAsync();
+			var historyTimeLimit = DateTime.Now.AddDays(-14);
+
+			legacyRecords.RemoveAll(r => r.LogTime < historyTimeLimit);
+
+			var newRecords = new List<DataModels.ViewLog>();
+
+			foreach (var user in userRecords) {
+				newRecords.Add(new DataModels.ViewLog {
+					LogTime = historyTimeLimit,
+					TargetType = Enums.EViewLogTargetType.All,
+					UserId = user.Id
+				});
+			}
+
+			foreach (var legacyRecord in legacyRecords) {
+				var user = userRecords.FirstOrDefault(r => r.LegacyId == legacyRecord.UserId);
+
+				if (user is null)
+					continue;
+
+				switch (legacyRecord.TargetType) {
+					case MigratorModels.OldViewLogTargetType.User:
+						var allViewLog = newRecords.Where(r => r.UserId == user.Id).First(r => r.TargetType == Enums.EViewLogTargetType.All);
+
+						if (allViewLog.LogTime < legacyRecord.LogTime)
+							allViewLog.LogTime = legacyRecord.LogTime;
+
+						break;
+
+					case MigratorModels.OldViewLogTargetType.Message:
+						var messageViewLog = newRecords.Where(r => r.UserId == user.Id).FirstOrDefault(r => r.TargetType == Enums.EViewLogTargetType.Message && r.TargetId == legacyRecord.TargetId);
+						var messageRecord = AppDb.Messages.FirstOrDefault(r => r.LegacyId == messageViewLog.TargetId);
+
+						if (messageViewLog is null) {
+							newRecords.Add(new DataModels.ViewLog {
+								UserId = user.Id,
+								TargetType = Enums.EViewLogTargetType.Message,
+								LogTime = legacyRecord.LogTime,
+								TargetId = messageRecord.Id
+							});
+						}
+						else
+							messageViewLog.LogTime = legacyRecord.LogTime;
+
+						break;
+				}
+			}
+
+			AppDb.ViewLogs.AddRange(newRecords);
 
 			await AppDb.SaveChangesAsync();
 		}
