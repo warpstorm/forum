@@ -8,21 +8,32 @@
 });
 
 function ShowPages() {
-	$(".pages").find("li:first").on("click", function () {
+	$(".pages").find(".unhide-pages").on("click", function () {
 		$(this).parent().find(".page").removeClass("hidden");
+		$(this).parent().find(".more-pages-before").addClass("hidden");
+		$(this).parent().find(".more-pages-after").addClass("hidden");
 	});
 
 	$(".pages").each(function () {
 		var pages = $(this).find(".page");
 
-		for (var i = window.currentPage - 2; i < window.currentPage; i++) {
+		if (window.currentPage === undefined)
+			return;
+
+		if (currentPage - 2 > 1)
+			$(this).find(".more-pages-before").removeClass("hidden");
+
+		if (currentPage + 2 < totalPages)
+			$(this).find(".more-pages-after").removeClass("hidden");
+
+		for (var i = currentPage - 2; i < currentPage; i++) {
 			if (i < 0)
 				continue;
 
 			$(pages[i - 1]).removeClass("hidden");
 		}
 
-		for (var i = window.currentPage; i <= window.currentPage + 2; i++) {
+		for (var i = currentPage; i <= currentPage + 2; i++) {
 			if (i - 1 > pages.length)
 				continue;
 

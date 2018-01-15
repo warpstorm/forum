@@ -50,6 +50,16 @@ a.small-button {
 	box-shadow: none;
 }
 
+	button.highlight,
+	.button.highlight,
+	a.button.highlight,
+	.small-button.highlight,
+	a.small-button.highlight {
+		color: #000;
+		background: linear-gradient(0, #92abba, #d6e3eb);
+		text-shadow: none;
+	}
+
 	button:hover,
 	.button:hover,
 	a.button:hover,

@@ -1,42 +1,13 @@
 ﻿@model TopicDisplayPage
 
-<header id="topic-header">
-	<ul class="float-right inline pages">
-		<li class="note pointer">Pages: </li>
-		@for (var i = 1; i <= Model.TotalPages; i++) {
-			if (Model.CurrentPage == i) {
-				<li class="small-button highlight page hidden">@i</li>
-			}
-			else {
-				<li class="page hidden"><a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Display)" asp-route-id="@Model.Id" asp-route-pageId="@i" class="small-button">@i.ToString()</a></li>
-			}
-		}
-	</ul>
-
-	<h4>@Html.Raw(Model.TopicHeader.Subject) <span class="note">@Model.TopicHeader.Views view@(Model.TopicHeader.Views == 1 ? "" : "s")</span></h4>
-	<div class="pad-bottom">
-		@if (Model.AssignedBoards.Any()) {
-			foreach (var board in Model.AssignedBoards) {
-				<a asp-action="@nameof(Topics.Index)" asp-controller="@nameof(Topics)" asp-route-id="@board.Id" class="small-button">@board.Name</a>
-			}
-		}
-	</div>
-
+<header id="topic-header" class="content-box pad gap-bottom">
 	@if (User.Identity.IsAuthenticated) {
-		<nav class="gap-top">
-			<script>
-				@{
-					var assignedBoards = String.Join(", ", Model.AssignedBoards.Select(b => b.Id));
-				}
-				var togglePath = "@Url.Action(nameof(Topics.ToggleBoard), nameof(Topics), new { MessageId = Model.Id })";
-				var assignedBoards = [@assignedBoards];
-			</script>
+		<nav class="float-right">
 			<ul class="inline">
-				<li><a class="small-button" asp-action="Create" asp-controller="Messages">New Topic</a></li>
 				<li><a class="small-button" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Pin)" asp-route-id="@Model.Id">Pin Topic</a></li>
 				@if (Model.CanManage) {
 					<li class="open-menu">
-						<span class="small-button">Topic Boards</span>
+						<span class="small-button">Manage Boards</span>
 						<div class="drop-down-menu-wrapper hidden">
 							<ul class="drop-down-menu content-box">
 								@foreach (var category in Model.Categories) {
@@ -66,8 +37,32 @@
 		</nav>
 	}
 
-	<br class="clear" />
+	<section>
+		<p>
+			<span class="note">Boards:</span>
+			@if (Model.AssignedBoards.Any()) {
+				foreach (var board in Model.AssignedBoards) {
+					<a asp-action="@nameof(Topics.Index)" asp-controller="@nameof(Topics)" asp-route-id="@board.Id" class="small-button">@board.Name</a>
+				}
+			}
+		</p>
+		<ul class="inline pages">
+			<li class="note pointer unhide-pages">Pages: </li>
+			<li class="hidden pointer unhide-pages more-pages-before">&#8230;</li>
+			@for (var i = 1; i <= Model.TotalPages; i++) {
+				if (Model.CurrentPage == i) {
+					<li class="small-button highlight page hidden">@i</li>
+				}
+				else {
+					<li class="page hidden"><a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Display)" asp-route-id="@Model.Id" asp-route-pageId="@i" class="small-button">@i.ToString()</a></li>
+				}
+			}
+			<li class="hidden pointer unhide-pages more-pages-after">&#8230;</li>
+		</ul>
+	</section>
 </header>
+
+<br class="clear" />
 
 <div asp-validation-summary="All" class="error"></div>
 
@@ -79,7 +74,8 @@
 
 <footer>
 	<ul class="inline pages">
-		<li class="note pointer">Pages: </li>
+		<li class="note pointer unhide-pages">Pages: </li>
+		<li class="hidden pointer unhide-pages more-pages-before">&#8230;</li>
 		@for (var i = 1; i <= Model.TotalPages; i++) {
 			if (Model.CurrentPage == i) {
 				<li class="small-button highlight page hidden">@i</li>
@@ -88,6 +84,7 @@
 				<li class="page hidden"><a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Display)" asp-route-id="@Model.Id" asp-route-pageId="@i" class="small-button">@i.ToString()</a></li>
 			}
 		}
+		<li class="hidden pointer unhide-pages more-pages-after">&#8230;</li>
 	</ul>
 </footer>
 
@@ -97,8 +94,19 @@
 </div>
 
 @{ ViewData["Title"] = @Html.Raw(Model.TopicHeader.Subject); }
+@section Header {@ViewData["Title"]}
 
 @section scripts {
+	<script>
+		var currentPage = @Model.CurrentPage;
+		var totalPages = @Model.TotalPages;
+
+		var togglePath = "@Url.Action(nameof(Topics.ToggleBoard), nameof(Topics), new { MessageId = Model.Id })";
+
+		@{ var assignedBoards = String.Join(", ", Model.AssignedBoards.Select(b => b.Id)); }
+		var assignedBoards = [@assignedBoards];
+	</script>
+
 	<environment names="Development">
 		<script src="~/js/TopicDisplay.js" asp-append-version="true"></script>
 	</environment>
