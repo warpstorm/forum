@@ -13,6 +13,7 @@
 **/Scripts/build/**
 **/Scripts/def/**
 
+**/PublishProfiles/**
 Migrations/
 
 launchSettings.json
