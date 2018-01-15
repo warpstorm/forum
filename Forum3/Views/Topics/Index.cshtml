@@ -1,9 +1,5 @@
 @model TopicIndexPage
 
-<script>
-	var currentPage = @Model.CurrentPage;
-</script>
-
 <header id="topic-header">
 	<ul class="float-right inline pages">
 		<li class="note pointer">Pages: </li>
@@ -21,7 +17,7 @@
 </header>
 
 @foreach (var item in Model.Topics) {
-    @await Html.PartialAsync("_IndexItem", item)
+	@await Html.PartialAsync("_IndexItem", item)
 }
 
 <footer>
@@ -46,6 +42,13 @@
 			<a class="button" asp-action="Create" asp-controller="Messages" asp-route-id="@Model.BoardId">Create a new Topic</a>
 		</li>
 	}
+}
+
+@section scripts {
+	<script>
+		var currentPage = @Model.CurrentPage;
+		var totalPages = @Model.TotalPages;
+	</script>
 }
 
 @section styles {

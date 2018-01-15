@@ -158,6 +158,57 @@ namespace Forum3.Services.Controller {
 			return topic;
 		}
 
+		public async Task<ServiceModels.ServiceResponse> Latest(int messageId) {
+			var serviceResponse = new ServiceModels.ServiceResponse();
+
+			var record = await DbContext.Messages.FindAsync(messageId);
+
+			if (record is null) {
+				serviceResponse.Error(string.Empty, $@"No record was found with the id '{messageId}'");
+				return serviceResponse;
+			}
+
+			if (record.ParentId > 0)
+				record = await DbContext.Messages.FindAsync(record.ParentId);
+
+			if (!ContextUser.IsAuthenticated) {
+				serviceResponse.RedirectPath = UrlHelper.Action(nameof(Topics.Display), nameof(Topics), new { id = record.LastReplyId });
+				return serviceResponse;
+			}
+
+			var historyTimeLimit = await Settings.HistoryTimeLimit();
+			var viewLogs = await DbContext.ViewLogs.Where(r => r.UserId == ContextUser.ApplicationUser.Id && r.LogTime >= historyTimeLimit).ToListAsync();
+			var latestViewTime = historyTimeLimit;
+
+			foreach (var viewLog in viewLogs) {
+				switch (viewLog.TargetType) {
+					case EViewLogTargetType.All:
+						if (viewLog.LogTime >= latestViewTime)
+							latestViewTime = viewLog.LogTime;
+						break;
+
+					case EViewLogTargetType.Message:
+						if (viewLog.TargetId == record.Id && viewLog.LogTime >= latestViewTime)
+							latestViewTime = viewLog.LogTime;
+						break;
+				}
+			}
+
+			var messageIdQuery = from message in DbContext.Messages
+								 where message.Id == record.Id || message.ParentId == record.Id
+								 where message.TimePosted >= latestViewTime
+								 select message.Id;
+
+			var latestMessageId = await messageIdQuery.FirstOrDefaultAsync();
+
+			if (latestMessageId == 0)
+				latestMessageId = record.LastReplyId;
+
+			serviceResponse.RedirectPath = UrlHelper.Action(nameof(Topics.Display), nameof(Topics), new { id = latestMessageId });
+
+			return serviceResponse;
+		}
+
 		public async Task<ServiceModels.ServiceResponse> Pin(int messageId) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 

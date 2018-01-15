@@ -3,15 +3,15 @@
 <div class="content-box gap hover-highlight">
 	<div class="pin float-right pad gap">
 		@if (Model.Pinned) {
-			<a asp-action="@nameof(Topics.Pin)" asp-controller="@nameof(Topics)" asp-route-id="@Model.Id"><img src="~/images/pinned.png" /></a>
+			<a asp-action="@nameof(Topics.Pin)" asp-route-id="@Model.Id"><img src="~/images/pinned.png" /></a>
 		}
 		else {
-			<a asp-action="@nameof(Topics.Pin)" asp-controller="@nameof(Topics)" asp-route-id="@Model.Id"><img src="~/images/unpinned.png" /></a>
+			<a asp-action="@nameof(Topics.Pin)" asp-route-id="@Model.Id"><img src="~/images/unpinned.png" /></a>
 		}
 	</div>
 	<div class="details pointer pad" clickable-link-parent>
 		<p>
-			<a asp-action="@nameof(Topics.Display)" asp-route-id="@Model.Id">
+			<a asp-action="@nameof(Topics.Latest)" asp-route-id="@Model.Id">
 				@Html.Raw(Model.ShortPreview)
 				@if (Model.Unread == 1 || Model.Unread == 2) {
 					<span class="small-button">new</span>

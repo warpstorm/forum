@@ -39,8 +39,11 @@ namespace Forum3.Controllers {
 		}
 
 		[HttpGet]
-		public IActionResult Latest(int id) {
-			return RedirectToAction(nameof(Display), new { id = id, page = 0 });
+		public async Task<IActionResult> Latest(int id) {
+			var serviceResponse = await TopicService.Latest(id);
+			ProcessServiceResponse(serviceResponse);
+
+			return RedirectFromService();
 		}
 
 		[HttpGet]
