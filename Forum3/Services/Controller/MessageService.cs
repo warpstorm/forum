@@ -468,7 +468,7 @@ namespace Forum3.Services.Controller {
 
 			const string youtubePattern = @"(?:https?:\/\/)?(?:www\.)?(?:(?:(?:youtube.com\/watch\?[^?]*v=|youtu.be\/)([\w\-]+))(?:[^\s?]+)?)";
 			const string youtubeIframePartial = "<iframe type='text/html' title='YouTube video player' class='youtubePlayer' src='http://www.youtube.com/embed/{0}' frameborder='0' allowfullscreen='1'></iframe>";
-			const string gifvPartial = "<video autoplay loop><source src='{0}.webm' type='video/webm' /><source src='{0}.mp4' type='video/mp4' /></video>";
+			const string embeddedVideoPartial = "<video autoplay loop><source src='{0}.webm' type='video/webm' /><source src='{0}.mp4' type='video/mp4' /></video>";
 
 			var regexYoutube = new Regex(youtubePattern);
 			var regexEmbeddedVideo = new Regex(@"(^| )((https?\://){1}\S+)(.gifv|.webm|.mp4)", RegexOptions.Compiled | RegexOptions.Multiline);
@@ -485,15 +485,15 @@ namespace Forum3.Services.Controller {
 					Card = $@"<div class=""embedded-video"">{youtubeIframeClosed}</div>"
 				};
 			}
-			// or is it a gifv link
+			// or is it an embedded video link
 			else if (regexEmbeddedVideo.Match(remoteUrl).Success) {
-				var gifvId = regexEmbeddedVideo.Match(remoteUrl).Groups[2].Value;
-				var gifvEmbedded = string.Format(gifvPartial, gifvId);
+				var embeddedVideoId = regexEmbeddedVideo.Match(remoteUrl).Groups[2].Value;
+				var embeddedVideoTag = string.Format(embeddedVideoPartial, embeddedVideoId);
 
 				return new ServiceModels.RemoteUrlReplacement {
 					Regex = regexEmbeddedVideo,
 					ReplacementText = " <a target='_blank' href='" + remoteUrl + "'>" + remotePageDetails.Title + "</a>",
-					Card = $@"<div class=""embedded-video"">{gifvEmbedded}</div>"
+					Card = $@"<div class=""embedded-video"">{embeddedVideoTag}</div>"
 				};
 			}
 
