@@ -140,10 +140,10 @@ namespace Forum3.Services.Controller {
 			var record = await CreateMessageRecord(processedMessage, replyRecord);
 
 			var boardRecord = await (from message in DbContext.Messages
-								join messageBoard in DbContext.MessageBoards on message.Id equals messageBoard.MessageId
-								join board in DbContext.Boards on messageBoard.BoardId equals board.Id
-								where message.Id == record.ParentId
-								select board).FirstOrDefaultAsync();
+									 join messageBoard in DbContext.MessageBoards on message.Id equals messageBoard.MessageId
+									 join board in DbContext.Boards on messageBoard.BoardId equals board.Id
+									 where message.Id == record.ParentId
+									 select board).FirstOrDefaultAsync();
 
 			if (boardRecord != null) {
 				boardRecord.LastMessageId = record.Id;
@@ -255,7 +255,7 @@ namespace Forum3.Services.Controller {
 				return serviceResponse;
 
 			var existingRecord = await DbContext.MessageThoughts
-				.SingleOrDefaultAsync(mt => 
+				.SingleOrDefaultAsync(mt =>
 					mt.MessageId == messageRecord.Id
 					&& mt.SmileyId == smileyRecord.Id
 					&& mt.UserId == ContextUser.ApplicationUser.Id);
@@ -290,7 +290,7 @@ namespace Forum3.Services.Controller {
 			serviceResponse.RedirectPath = UrlHelper.DirectMessage(input.MessageId);
 			return serviceResponse;
 		}
-		
+
 		public async Task<ServiceModels.ServiceResponse> FinishMigration(int messageId) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
@@ -442,15 +442,21 @@ namespace Forum3.Services.Controller {
 		async Task PreProcessSmileys(InputModels.ProcessedMessageInput processedMessageInput) {
 			var smileys = await DbContext.Smileys.Where(s => s.Code != null).ToListAsync();
 
-			for (var i = 0; i < smileys.Count(); i++)
-				processedMessageInput.DisplayBody = new Regex("(^| )(" + Regex.Escape(smileys[i].Code) + ")( |$)", RegexOptions.Compiled | RegexOptions.Multiline).Replace(processedMessageInput.DisplayBody, $"$1SMILEY_{i}_INDEX$3");
+			for (var i = 0; i < smileys.Count(); i++) {
+				var pattern = @"(^|[\r\n\s])" + Regex.Escape(smileys[i].Code) + @"(?=$|[\r\n\s])";
+				var replacement = $"$1SMILEY_{i}_INDEX";
+				processedMessageInput.DisplayBody = Regex.Replace(processedMessageInput.DisplayBody, pattern, replacement, RegexOptions.Singleline);
+			}
 		}
 
 		async Task ProcessSmileys(InputModels.ProcessedMessageInput processedMessageInput) {
 			var smileys = await DbContext.Smileys.Where(s => s.Code != null).ToListAsync();
 
-			for (var i = 0; i < smileys.Count(); i++)
-				processedMessageInput.DisplayBody = new Regex($@"(^| )(SMILEY_{i}_INDEX)( |$)", RegexOptions.Compiled | RegexOptions.Multiline).Replace(processedMessageInput.DisplayBody, "$1<img src='" + smileys[i].Path + "' />$3");
+			for (var i = 0; i < smileys.Count(); i++) {
+				var pattern = $@"SMILEY_{i}_INDEX";
+				var replacement = "<img src='" + smileys[i].Path + "' />";
+				processedMessageInput.DisplayBody = Regex.Replace(processedMessageInput.DisplayBody, pattern, replacement);
+			}
 		}
 
 		/// <summary>
