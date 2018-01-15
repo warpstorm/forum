@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -10,6 +11,7 @@ namespace Forum3.Controllers {
 	using ViewModels = Models.ViewModels;
 
 	public class ForumController : Controller {
+		[AllowAnonymous]
 		public IActionResult Error() => View(new ViewModels.Error { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
 
 		public string Referrer {
