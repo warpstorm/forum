@@ -240,7 +240,7 @@ namespace Forum3.Migrator {
 			if (input.CurrentStep == 0 && AppDb.Messages.Any())
 				return;
 
-			var take = 1000;
+			var take = 500;
 
 			if (input.CurrentStep == 0) {
 				var legacyRecordCount = LegacyDb.Messages.Count();
@@ -458,24 +458,39 @@ namespace Forum3.Migrator {
 			if (input.CurrentStep == 0 && await AppDb.ViewLogs.AnyAsync())
 				return;
 
-			input.TotalSteps = 1;
-			input.CurrentStep = 1;
+			var take = 100;
 
-			var userRecords = await AppDb.Users.ToListAsync();
-			var legacyRecords = await LegacyDb.ViewLogs.ToListAsync();
 			var historyTimeLimit = DateTime.Now.AddDays(-14);
+			var userRecords = await AppDb.Users.Select(u => new { u.Id, u.LegacyId }).ToListAsync();
 
-			legacyRecords.RemoveAll(r => r.LogTime < historyTimeLimit);
+			if (input.CurrentStep == 0) {
+				var legacyRecordCount = LegacyDb.ViewLogs.Where(r => r.LogTime >= historyTimeLimit).Count();
 
-			var newRecords = new List<DataModels.ViewLog>();
+				var newRecords = new List<DataModels.ViewLog>();
 
-			foreach (var user in userRecords) {
-				newRecords.Add(new DataModels.ViewLog {
-					LogTime = historyTimeLimit,
-					TargetType = Enums.EViewLogTargetType.All,
-					UserId = user.Id
-				});
+				foreach (var user in userRecords) {
+					newRecords.Add(new DataModels.ViewLog {
+						LogTime = historyTimeLimit,
+						TargetType = Enums.EViewLogTargetType.All,
+						UserId = user.Id
+					});
+				}
+
+				AppDb.ViewLogs.AddRange(newRecords);
+				AppDb.SaveChanges();
+
+				input.TotalSteps = Convert.ToInt32(Math.Ceiling(1D * legacyRecordCount / take));
+				input.CurrentStep = 1;
+				return;
 			}
+
+			var query = from record in LegacyDb.ViewLogs
+						where record.LogTime >= historyTimeLimit
+						select record;
+
+			var skip = take * (input.CurrentStep - 1);
+
+			var legacyRecords = query.Skip(skip).Take(take).ToList();
 
 			foreach (var legacyRecord in legacyRecords) {
 				var user = userRecords.FirstOrDefault(r => r.LegacyId == legacyRecord.UserId);
@@ -485,38 +500,40 @@ namespace Forum3.Migrator {
 
 				switch (legacyRecord.TargetType) {
 					case MigratorModels.OldViewLogTargetType.User:
-						var allViewLog = newRecords.Where(r => r.UserId == user.Id)?.FirstOrDefault(r => r.TargetType == Enums.EViewLogTargetType.All);
+						var allViewLog = AppDb.ViewLogs.Where(r => r.UserId == user.Id)?.FirstOrDefault(r => r.TargetType == Enums.EViewLogTargetType.All);
 
-						if (allViewLog != null && allViewLog.LogTime < legacyRecord.LogTime)
+						if (allViewLog != null && allViewLog.LogTime < legacyRecord.LogTime) {
 							allViewLog.LogTime = legacyRecord.LogTime;
+							AppDb.Update(allViewLog);
+						}
 
 						break;
 
 					case MigratorModels.OldViewLogTargetType.Message:
-						var messageViewLog = newRecords.Where(r => r.UserId == user.Id)?.FirstOrDefault(r => r.TargetType == Enums.EViewLogTargetType.Message && r.TargetId == legacyRecord.TargetId);
+						var messageViewLog = AppDb.ViewLogs.Where(r => r.UserId == user.Id && r.TargetType == Enums.EViewLogTargetType.Message && r.TargetId == legacyRecord.TargetId).FirstOrDefault();
 
 						if (messageViewLog is null) {
-							var messageRecord = AppDb.Messages.FirstOrDefault(r => r.LegacyId == legacyRecord.TargetId);
+							var messageRecordId = AppDb.Messages.Where(r => r.LegacyId == legacyRecord.TargetId).Select(r => r.Id).FirstOrDefault();
 
-							if (messageRecord != null) {
-								newRecords.Add(new DataModels.ViewLog {
+							if (messageRecordId > 0) {
+								AppDb.ViewLogs.Add(new DataModels.ViewLog {
 									UserId = user.Id,
 									TargetType = Enums.EViewLogTargetType.Message,
 									LogTime = legacyRecord.LogTime,
-									TargetId = messageRecord.Id
+									TargetId = messageRecordId
 								});
 							}
 						}
-						else
+						else {
 							messageViewLog.LogTime = legacyRecord.LogTime;
+							AppDb.Update(messageViewLog);
+						}
 
 						break;
 				}
 			}
 
-			AppDb.ViewLogs.AddRange(newRecords);
-
-			await AppDb.SaveChangesAsync();
+			AppDb.SaveChanges();
 		}
 
 		async Task RemoveInviteOnlyTopics(InputModels.Continue input) {
