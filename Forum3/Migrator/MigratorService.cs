@@ -396,7 +396,7 @@ namespace Forum3.Migrator {
 				if (!await blobReference.ExistsAsync()) {
 					blobReference.Properties.ContentType = "image/gif";
 
-					using (var fileStream = new FileStream($"Migrator/Smileys/{record.Path}", FileMode.Open, FileAccess.Read, FileShare.Read)) {
+					using (var fileStream = new FileStream($"wwwroot/images/Smileys/{record.Path}", FileMode.Open, FileAccess.Read, FileShare.Read)) {
 						fileStream.Position = 0;
 						await blobReference.UploadFromStreamAsync(fileStream);
 					}
@@ -485,24 +485,27 @@ namespace Forum3.Migrator {
 
 				switch (legacyRecord.TargetType) {
 					case MigratorModels.OldViewLogTargetType.User:
-						var allViewLog = newRecords.Where(r => r.UserId == user.Id).First(r => r.TargetType == Enums.EViewLogTargetType.All);
+						var allViewLog = newRecords.Where(r => r.UserId == user.Id)?.FirstOrDefault(r => r.TargetType == Enums.EViewLogTargetType.All);
 
-						if (allViewLog.LogTime < legacyRecord.LogTime)
+						if (allViewLog != null && allViewLog.LogTime < legacyRecord.LogTime)
 							allViewLog.LogTime = legacyRecord.LogTime;
 
 						break;
 
 					case MigratorModels.OldViewLogTargetType.Message:
-						var messageViewLog = newRecords.Where(r => r.UserId == user.Id).FirstOrDefault(r => r.TargetType == Enums.EViewLogTargetType.Message && r.TargetId == legacyRecord.TargetId);
-						var messageRecord = AppDb.Messages.FirstOrDefault(r => r.LegacyId == messageViewLog.TargetId);
+						var messageViewLog = newRecords.Where(r => r.UserId == user.Id)?.FirstOrDefault(r => r.TargetType == Enums.EViewLogTargetType.Message && r.TargetId == legacyRecord.TargetId);
 
 						if (messageViewLog is null) {
-							newRecords.Add(new DataModels.ViewLog {
-								UserId = user.Id,
-								TargetType = Enums.EViewLogTargetType.Message,
-								LogTime = legacyRecord.LogTime,
-								TargetId = messageRecord.Id
-							});
+							var messageRecord = AppDb.Messages.FirstOrDefault(r => r.LegacyId == legacyRecord.TargetId);
+
+							if (messageRecord != null) {
+								newRecords.Add(new DataModels.ViewLog {
+									UserId = user.Id,
+									TargetType = Enums.EViewLogTargetType.Message,
+									LogTime = legacyRecord.LogTime,
+									TargetId = messageRecord.Id
+								});
+							}
 						}
 						else
 							messageViewLog.LogTime = legacyRecord.LogTime;
