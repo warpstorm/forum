@@ -378,12 +378,6 @@ namespace Forum3.Services.Controller {
 			foreach (var viewLog in await DbContext.ViewLogs.Where(r => r.UserId == ContextUser.ApplicationUser.Id && r.TargetId == topic.Id && r.TargetType == EViewLogTargetType.Message).ToListAsync())
 				DbContext.ViewLogs.Remove(viewLog);
 
-			try {
-				await DbContext.SaveChangesAsync();
-			}
-			// The user probably refreshed several times in a row.
-			catch (DbUpdateConcurrencyException) { }
-
 			DbContext.ViewLogs.Add(new DataModels.ViewLog {
 				LogTime = latestTime,
 				TargetId = topic.Id,
@@ -391,7 +385,11 @@ namespace Forum3.Services.Controller {
 				UserId = ContextUser.ApplicationUser.Id
 			});
 
-			await DbContext.SaveChangesAsync();
+			try {
+				await DbContext.SaveChangesAsync();
+			}
+			// The user probably refreshed several times in a row.
+			catch (DbUpdateConcurrencyException) { }
 		}
 
 		async Task<PageModels.TopicDisplayPage> GetRedirectViewModel(int messageId, int parentMessageId, List<int> messageIds) {
