@@ -18,8 +18,18 @@
 				}
 			</a>
 		</p>
-		<div class="note pad-left">
+		<div class="note pad-left small-pad-top">
 			<p>
+				@Model.Views
+				@if (Model.Views > 1) {
+					<text>views</text>
+				}
+				else {
+					<text>view</text>
+				}
+
+				&nbsp;
+
 				@Model.Replies
 				@if (Model.Replies > 1) {
 					<text>replies</text>
@@ -30,12 +40,11 @@
 
 				&nbsp;
 
-				@Model.Views
-				@if (Model.Views > 1) {
-					<text>views</text>
-				}
-				else {
-					<text>view</text>
+				@if (Model.Pages > 1) {
+					<text>Pages:</text>
+					for (var i = 1; i <= Model.Pages; i++) {
+						<a class="small-pad-left" asp-action="@nameof(Topics.Display)" asp-route-id="@Model.Id" asp-route-pageId="@i">@i</a>
+					}
 				}
 			</p>
 			<p class="small-pad-top">Last post was @Model.LastReplyPosted by @Model.LastReplyByName</p>

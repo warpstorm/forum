@@ -257,6 +257,7 @@ namespace Forum3.Services.Controller {
 
 			var participation = new List<DataModels.Participant>();
 			var viewLogs = new List<DataModels.ViewLog>();
+			var take = await Settings.MessagesPerPage();
 
 			if (ContextUser.IsAuthenticated) {
 				participation = DbContext.Participants.Where(r => r.UserId == ContextUser.ApplicationUser.Id).ToList();
@@ -266,6 +267,7 @@ namespace Forum3.Services.Controller {
 			}
 			
 			foreach (var message in messages) {
+				message.Pages = Convert.ToInt32(Math.Ceiling(1.0 * message.Replies / take));
 				message.LastReplyPosted = message.LastReplyPostedDT.ToPassedTimeString();
 
 				var unread = 1;

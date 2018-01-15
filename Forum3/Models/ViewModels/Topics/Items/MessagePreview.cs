@@ -6,6 +6,7 @@ namespace Forum3.Models.ViewModels.Topics.Items {
 		public string ShortPreview { get; set; }
 		public int Views { get; set; }
 		public int Replies { get; set; }
+		public int Pages { get; set; }
 		public int Unread { get; set; }
 		public bool Pinned { get; set; }
 		public bool Popular { get; set; }
