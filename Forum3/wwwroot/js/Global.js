@@ -146,7 +146,7 @@ if (!Array.prototype.includes) {
 	Object.defineProperty(Array.prototype, 'includes', {
 		value: function (searchElement, fromIndex) {
 
-			if (this == null) {
+			if (this === null) {
 				throw new TypeError('"this" is null or not defined');
 			}
 
