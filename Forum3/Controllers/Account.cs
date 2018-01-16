@@ -119,10 +119,10 @@ namespace Forum3.Controllers {
 				ProcessServiceResponse(serviceResponse);
 
 				if (serviceResponse.Success) {
-					if (!string.IsNullOrEmpty(serviceResponse.RedirectPath))
-						return Redirect(serviceResponse.RedirectPath);
+					if (string.IsNullOrEmpty(serviceResponse.RedirectPath))
+						return RedirectToAction(nameof(Boards.Index), nameof(Boards));
 					else
-						return RedirectToReferrer();
+						return RedirectFromService();
 				}
 			}
 
