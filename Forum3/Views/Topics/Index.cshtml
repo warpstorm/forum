@@ -52,10 +52,10 @@
 }
 
 @section styles {
-	<environment names="Development">
+	<environment include="Development">
 		<link rel="stylesheet" href="~/css/Pages/TopicIndex.css" asp-append-version="true" />
 	</environment>
-	<environment names="Staging,Production">
+	<environment exclude="Development">
 		<link rel="stylesheet" href="~/css/min/TopicIndex.min.css" asp-append-version="true" />
 	</environment>
 }

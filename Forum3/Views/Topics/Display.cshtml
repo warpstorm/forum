@@ -107,19 +107,19 @@
 		var assignedBoards = [@assignedBoards];
 	</script>
 
-	<environment names="Development">
+	<environment include="Development">
 		<script src="~/js/TopicDisplay.js" asp-append-version="true"></script>
 	</environment>
-	<environment names="Staging,Production">
+	<environment exclude="Development">
 		<script src="~/js/TopicDisplay.min.js" asp-append-version="true"></script>
 	</environment>
 }
 
 @section styles {
-	<environment names="Development">
+	<environment include="Development">
 		<link rel="stylesheet" href="~/css/Pages/TopicDisplay.css" asp-append-version="true" />
 	</environment>
-	<environment names="Staging,Production">
+	<environment exclude="Development">
 		<link rel="stylesheet" href="~/css/min/TopicDisplay.min.css" asp-append-version="true" />
 	</environment>
 }

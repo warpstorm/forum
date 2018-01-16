@@ -19,19 +19,19 @@
 }
 
 @section scripts {
-	<environment names="Development">
+	<environment include="Development">
 		<script src="~/js/ManageBoards.js" asp-append-version="true"></script>
 	</environment>
-	<environment names="Staging,Production">
+	<environment exclude="Development">
 		<script src="~/js/ManageBoards.min.js" asp-append-version="true"></script>
 	</environment>
 }
 
 @section styles {
-	<environment names="Development">
+	<environment include="Development">
 		<link rel="stylesheet" href="~/css/Pages/ManageBoards.css" asp-append-version="true" />
 	</environment>
-	<environment names="Staging,Production">
+	<environment exclude="Development">
 		<link rel="stylesheet" href="~/css/min/ManageBoards.min.css" asp-append-version="true" />
 	</environment>
 }
