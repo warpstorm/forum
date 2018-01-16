@@ -79,8 +79,13 @@ namespace Forum3.Services.Controller {
 				NextAction = UrlHelper.Action(nameof(Messages.Migrate), nameof(Messages), new { id = record.Id, page = page + 1 })
 			};
 
-			if (record.ParentId > 0) {
-				viewModel.NextAction = UrlHelper.Action(nameof(Messages.Migrate), nameof(Messages), new { id = record.ParentId });
+			if (record.LegacyParentId > 0) {
+				var parentRecord = DbContext.Messages.Where(r => r.LegacyId == record.LegacyParentId).FirstOrDefault();
+
+				if (parentRecord is null)
+					throw new ArgumentException($"No parent record found for legacy id '{record.LegacyParentId}'");
+
+				viewModel.NextAction = UrlHelper.Action(nameof(Messages.Migrate), nameof(Messages), new { id = parentRecord.Id });
 				return viewModel;
 			}
 
@@ -449,7 +454,7 @@ namespace Forum3.Services.Controller {
 			remotePageDetails.Title = remotePageDetails.Title.Replace("$", "&#36;");
 
 			const string youtubePattern = @"(?:https?:\/\/)?(?:www\.)?(?:(?:(?:youtube.com\/watch\?[^?]*v=|youtu.be\/)([\w\-]+))(?:[^\s?]+)?)";
-			const string youtubeIframePartial = "<iframe type='text/html' title='YouTube video player' class='youtubePlayer' src='http://www.youtube.com/embed/{0}' frameborder='0' allowfullscreen='1'></iframe>";
+			const string youtubeIframePartial = "<iframe type='text/html' title='YouTube video player' class='youtubePlayer' src='https://www.youtube.com/embed/{0}' frameborder='0' allowfullscreen='1'></iframe>";
 			const string embeddedVideoPartial = "<video autoplay loop><source src='{0}.webm' type='video/webm' /><source src='{0}.mp4' type='video/mp4' /></video>";
 
 			var regexYoutube = new Regex(youtubePattern);
