@@ -42,7 +42,7 @@ namespace Forum3.Services.Controller {
 		public async Task<ViewModels.CreateTopicPage> CreatePage(int boardId = 0) {
 			var board = await DbContext.Boards.SingleOrDefaultAsync(b => b.Id == boardId);
 
-			if (board == null)
+			if (board is null)
 				throw new Exception($"A record does not exist with ID '{boardId}'");
 
 			var viewModel = new ViewModels.CreateTopicPage {
@@ -55,7 +55,7 @@ namespace Forum3.Services.Controller {
 		public async Task<ViewModels.EditMessagePage> EditPage(int messageId) {
 			var record = await DbContext.Messages.SingleOrDefaultAsync(m => m.Id == messageId);
 
-			if (record == null)
+			if (record is null)
 				throw new Exception($"A record does not exist with ID '{messageId}'");
 
 			var viewModel = new ViewModels.EditMessagePage {
@@ -66,29 +66,50 @@ namespace Forum3.Services.Controller {
 			return viewModel;
 		}
 
-		public ViewModels.MigrateMessagePage MigratePage(int messageId) {
-			var viewModel = new ViewModels.MigrateMessagePage();
+		public Models.ViewModels.Delay MigratePage(int id, int page) {
+			var record = DbContext.Messages.Find(id);
 
-			var record = DbContext.Messages.Find(messageId);
+			if (record is null)
+				throw new Exception($@"No record was found with the id '{id}'");
 
-			if (record == null)
-				throw new Exception($@"No record was found with the id '{messageId}'");
+			var viewModel = new Models.ViewModels.Delay {
+				ActionName = "Migrating your Topic",
+				ActionNote = "Filing your request with the Imperial Archives.",
+				CurrentPage = page,
+				NextAction = UrlHelper.Action(nameof(Messages.Migrate), nameof(Messages), new { id = record.Id, page = page + 1 })
+			};
 
 			if (record.ParentId > 0) {
-				viewModel.RedirectPath = UrlHelper.Action(nameof(Messages.Migrate), nameof(Messages), new { id = record.ParentId });
+				viewModel.NextAction = UrlHelper.Action(nameof(Messages.Migrate), nameof(Messages), new { id = record.ParentId });
 				return viewModel;
 			}
 
-			var messageIdQuery = from message in DbContext.Messages
-								 where message.Id == record.Id || message.ParentId == record.Id
-								 select message.Id;
+			var messageQuery = from message in DbContext.Messages
+							   where message.Id == record.Id || message.ParentId == record.Id || message.LegacyParentId == record.LegacyId
+							   select message.Id;
 
-			var messageIds = messageIdQuery.Count();
+			var messageIds = messageQuery.ToList();
+			var messageCount = messageIds.Count();
+
+			var totalPages = Convert.ToInt32(Math.Ceiling(1.0D * messageCount / Settings.MessagesPerPage()));
+			viewModel.TotalPages = totalPages;
+
+			if (page < 1)
+				page = 1;
+
+			if (page > totalPages)
+				page = totalPages;
 
 			var take = Settings.MessagesPerPage();
-			var totalPages = Convert.ToInt32(Math.Ceiling(1.0 * messageIds / take));
+			var skip = take * (page - 1);
 
-			viewModel.RedirectPath = UrlHelper.Action(nameof(Messages.FinishMigration), nameof(Messages), new { id = record.Id, page = 1, totalPages = totalPages });
+			foreach (var messageId in messageIds.Skip(skip).Take(take))
+				MigrateMessageRecord(messageId, record);
+
+			DbContext.SaveChanges();
+
+			if (page == totalPages)
+				viewModel.NextAction = UrlHelper.Action(nameof(Topics.Display), nameof(Topics), new { id = record.Id });
 
 			return viewModel;
 		}
@@ -96,13 +117,13 @@ namespace Forum3.Services.Controller {
 		public async Task<ServiceModels.ServiceResponse> CreateTopic(InputModels.MessageInput input) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
-			if (input.BoardId == null)
+			if (input.BoardId is null)
 				serviceResponse.Error(nameof(input.BoardId), $"Board ID is required");
 
 			var boardId = Convert.ToInt32(input.BoardId);
 			var boardRecord = DbContext.Boards.SingleOrDefault(b => b.Id == boardId);
 
-			if (boardRecord == null)
+			if (boardRecord is null)
 				serviceResponse.Error(string.Empty, $"A record does not exist with ID '{boardId}'");
 
 			if (!serviceResponse.Success)
@@ -145,7 +166,7 @@ namespace Forum3.Services.Controller {
 			var replyRecord = await replyRecordTask;
 			var processedMessage = await processedMessageTask;
 
-			if (replyRecord == null)
+			if (replyRecord is null)
 				serviceResponse.Error(string.Empty, $"A record does not exist with ID '{input.Id}'");
 
 			if (!serviceResponse.Success)
@@ -197,7 +218,7 @@ namespace Forum3.Services.Controller {
 
 			var record = await DbContext.Messages.SingleAsync(m => m.Id == messageId);
 
-			if (record == null)
+			if (record is null)
 				serviceResponse.Error(string.Empty, $@"No record was found with the id '{messageId}'");
 
 			if (!serviceResponse.Success)
@@ -257,12 +278,12 @@ namespace Forum3.Services.Controller {
 
 			var messageRecord = DbContext.Messages.Find(input.MessageId);
 
-			if (messageRecord == null)
+			if (messageRecord is null)
 				serviceResponse.Error(string.Empty, $@"No message was found with the id '{input.MessageId}'");
 
 			var smileyRecord = await DbContext.Smileys.FindAsync(input.SmileyId);
 
-			if (messageRecord == null)
+			if (messageRecord is null)
 				serviceResponse.Error(string.Empty, $@"No smiley was found with the id '{input.SmileyId}'");
 
 			if (!serviceResponse.Success)
@@ -274,7 +295,7 @@ namespace Forum3.Services.Controller {
 					&& mt.SmileyId == smileyRecord.Id
 					&& mt.UserId == ContextUser.ApplicationUser.Id);
 
-			if (existingRecord == null) {
+			if (existingRecord is null) {
 				var messageThought = new DataModels.MessageThought {
 					MessageId = messageRecord.Id,
 					SmileyId = smileyRecord.Id,
@@ -302,52 +323,6 @@ namespace Forum3.Services.Controller {
 			DbContext.SaveChanges();
 
 			serviceResponse.RedirectPath = UrlHelper.DirectMessage(input.MessageId);
-			return serviceResponse;
-		}
-
-		public ServiceModels.ServiceResponse FinishMigration(int messageId) {
-			var serviceResponse = new ServiceModels.ServiceResponse();
-
-			var record = DbContext.Messages.Find(messageId);
-
-			if (record == null)
-				serviceResponse.Error(string.Empty, $@"No record was found with the id '{messageId}'");
-
-			if (record.ParentId > 0) {
-				serviceResponse.RedirectPath = UrlHelper.Action(nameof(Messages.Migrate), nameof(Messages), new { id = record.ParentId });
-				return serviceResponse;
-			}
-
-			if (record.Processed) {
-				serviceResponse.RedirectPath = UrlHelper.Action(nameof(Topics.Display), nameof(Topics), new { id = record.Id });
-				return serviceResponse;
-			}
-
-			serviceResponse.RedirectPath = UrlHelper.DirectMessage(record.Id);
-
-			MigrateMessageRecord(record);
-
-			UpdateTopicParticipation(record.Id, record.PostedById, record.TimePosted);
-
-			var replies = DbContext.Messages.Where(m => m.LegacyParentId == record.LegacyId).OrderBy(m => m.TimePosted).ToList();
-
-			foreach (var reply in replies) {
-				reply.ParentId = record.Id;
-				MigrateMessageRecord(reply);
-
-				UpdateTopicParticipation(record.Id, reply.PostedById, reply.TimePosted);
-			}
-
-			if (replies.Any()) {
-				record.LastReplyId = replies.Last().Id;
-				record.LastReplyById = replies.Last().PostedById;
-				record.LastReplyPosted = replies.Last().TimePosted;
-			}
-
-			DbContext.Update(record);
-
-			DbContext.SaveChanges();
-
 			return serviceResponse;
 		}
 
@@ -546,13 +521,16 @@ namespace Forum3.Services.Controller {
 					document = await client.LoadFromWebAsync(siteWithoutHash);
 				}
 				// HtmlAgilityPack throws a generic exception when it fails to load a page.
-				catch (Exception) { }
+				catch (Exception e) when (e.Message == "Error downloading html") { }
 			}).Wait(3000);
 
-			if (document == null) {
-				returnResult.Card = "Remote page request timed out.";
+			if (document is null)
 				return returnResult;
-			}
+
+			var titleTag = document.DocumentNode.SelectSingleNode(@"//title");
+
+			if (titleTag != null && !string.IsNullOrEmpty(titleTag.InnerText.Trim()))
+				returnResult.Title = titleTag.InnerText.Trim();
 
 			// try to find the opengraph title
 			var ogTitle = document.DocumentNode.SelectSingleNode(@"//meta[@property='og:title']");
@@ -585,14 +563,6 @@ namespace Forum3.Services.Controller {
 				}
 			}
 
-			// if not, then try to find the title tag
-			if (returnResult.Title == remoteUrl) {
-				ogTitle = document.DocumentNode.SelectSingleNode(@"//title");
-
-				if (ogTitle != null && !string.IsNullOrEmpty(ogTitle.InnerText.Trim()))
-					returnResult.Title = ogTitle.InnerText.Trim();
-			}
-
 			return returnResult;
 		}
 
@@ -616,7 +586,7 @@ namespace Forum3.Services.Controller {
 				var user = await DbContext.Users.SingleOrDefaultAsync(u => u.DisplayName.ToLower() == matchedTag.ToLower());
 
 				// try to guess what they meant
-				if (user == null)
+				if (user is null)
 					user = await DbContext.Users.FirstOrDefaultAsync(u => u.UserName.ToLower().Contains(matchedTag.ToLower()));
 
 				if (user != null) {
@@ -682,7 +652,7 @@ namespace Forum3.Services.Controller {
 
 					parentMessage = DbContext.Messages.Find(replyRecord.ParentId);
 
-					if (parentMessage == null)
+					if (parentMessage is null)
 						throw new Exception($"Orphan message found with ID {replyRecord.Id}. Unable to load parent with ID {replyRecord.ParentId}.");
 				}
 			}
@@ -782,7 +752,7 @@ namespace Forum3.Services.Controller {
 		void UpdateTopicParticipation(int topicId, string userId, DateTime time) {
 			var participation = DbContext.Participants.FirstOrDefault(r => r.MessageId == topicId && r.UserId == userId);
 
-			if (participation == null) {
+			if (participation is null) {
 				DbContext.Participants.Add(new DataModels.Participant {
 					MessageId = topicId,
 					UserId = userId,
@@ -814,11 +784,18 @@ namespace Forum3.Services.Controller {
 			DbContext.SaveChanges();
 		}
 
-		void MigrateMessageRecord(DataModels.Message record) {
+		void MigrateMessageRecord(int id, DataModels.Message parent) {
+			var record = DbContext.Messages.Find(id);
+
+			if (record.Processed)
+				return;
+
+			UpdateTopicParticipation(parent.Id, record.PostedById, record.TimePosted);
+
 			var processMessageTask = ProcessMessageInput(new ServiceModels.ServiceResponse(), record.OriginalBody);
-			var replyTask = DbContext.Messages.SingleOrDefaultAsync(m => record.LegacyReplyId != 0 && m.LegacyId == record.LegacyReplyId);
-			var postedByTask = DbContext.Users.SingleOrDefaultAsync(u => u.LegacyId == record.LegacyPostedById);
-			var editedByTask = DbContext.Users.SingleOrDefaultAsync(u => u.LegacyId == record.LegacyPostedById);
+			var replyTask = DbContext.Messages.FirstOrDefaultAsync(m => record.LegacyReplyId != 0 && m.LegacyId == record.LegacyReplyId);
+			var postedByTask = DbContext.Users.FirstOrDefaultAsync(u => u.LegacyId == record.LegacyPostedById);
+			var editedByTask = DbContext.Users.FirstOrDefaultAsync(u => u.LegacyId == record.LegacyPostedById);
 
 			Task.WaitAll(processMessageTask, replyTask, postedByTask, editedByTask);
 
@@ -835,7 +812,18 @@ namespace Forum3.Services.Controller {
 			record.PostedById = postedByTask.Result?.Id ?? string.Empty;
 			record.EditedById = postedByTask.Result?.Id ?? string.Empty;
 
+			if (record.Id != parent.Id)
+				record.ParentId = parent.Id;
+
 			DbContext.Update(record);
+
+			if (record.Id != parent.Id) {
+				parent.LastReplyId = record.Id;
+				parent.LastReplyById = record.PostedById;
+				parent.LastReplyPosted = record.TimePosted;
+
+				DbContext.Update(parent);
+			}
 		}
 	}
 }

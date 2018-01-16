@@ -97,7 +97,12 @@ namespace Forum3.Services.Controller {
 			if (parentId != messageId)
 				return GetRedirectViewModel(messageId, record.ParentId, messageIds);
 
-			if (!record.Processed)
+			var processedQuery = from message in DbContext.Messages
+								 where message.Id == parentId || message.ParentId == parentId || message.LegacyParentId == record.LegacyId
+								 where !message.Processed
+								 select message.Id;
+
+			if (processedQuery.Any())
 				return GetMigrationRedirectViewModel(messageId);
 
 			if (target > 0) {

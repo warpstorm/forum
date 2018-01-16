@@ -89,17 +89,9 @@ namespace Forum3.Controllers {
 		}
 
 		[HttpGet]
-		public IActionResult Migrate(int id) {
-			var viewModel = MessageService.MigratePage(id);
-			return View(viewModel);
-		}
-
-		[HttpGet]
-		public IActionResult FinishMigration(int id) {
-			var serviceResponse = MessageService.FinishMigration(id);
-			ProcessServiceResponse(serviceResponse);
-
-			return RedirectFromService();
+		public IActionResult Migrate(int id, int page) {
+			var viewModel = MessageService.MigratePage(id, page);
+			return View("Delay", viewModel);
 		}
 	}
 }
