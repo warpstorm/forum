@@ -202,7 +202,7 @@ namespace Forum3.Services.Controller {
 				newCategoryRecord = await DbContext.Categories.SingleOrDefaultAsync(c => c.Name == input.NewCategory);
 
 				if (newCategoryRecord == null) {
-					var displayOrder = await DbContext.Categories.MaxAsync(c => c.DisplayOrder);
+					var displayOrder = DbContext.Categories.Max(c => c.DisplayOrder);
 
 					newCategoryRecord = new DataModels.Category {
 						Name = input.NewCategory,
@@ -210,6 +210,7 @@ namespace Forum3.Services.Controller {
 					};
 
 					DbContext.Categories.Add(newCategoryRecord);
+					DbContext.SaveChanges();
 				}
 			}
 			else {

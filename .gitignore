@@ -6,6 +6,7 @@
 
 **/wwwroot/lib/**
 **/wwwroot/css/**/*.min*
+**/wwwroot/css/min/**
 **/wwwroot/js/*.min*
 
 **/Scripts/**/*.js
