@@ -9,7 +9,7 @@ namespace Forum3.Annotations {
 	/// </summary>
 	public class RequireRemoteHttpsAttribute : RequireHttpsAttribute {
 		public override void OnAuthorization(AuthorizationFilterContext filterContext) {
-			if (filterContext == null)
+			if (filterContext is null)
 				throw new ArgumentNullException(nameof(filterContext));
 
 			if (filterContext.HttpContext.Request.IsLocal())

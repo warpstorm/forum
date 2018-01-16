@@ -154,7 +154,7 @@ namespace Forum3.Services.Controller {
 			foreach (var smileyInput in input.Smileys) {
 				var smileyRecord = await DbContext.Smileys.FindAsync(smileyInput.Id);
 
-				if (smileyRecord == null) {
+				if (smileyRecord is null) {
 					serviceResponse.Error(string.Empty, $@"No smiley was found with the id '{smileyInput.Id}'");
 					break;
 				}
@@ -184,7 +184,7 @@ namespace Forum3.Services.Controller {
 
 			var smileyRecord = await DbContext.Smileys.FindAsync(id);
 
-			if (smileyRecord == null)
+			if (smileyRecord is null)
 				serviceResponse.Error(string.Empty, $@"No smiley was found with the id '{id}'");
 
 			if (!serviceResponse.Success)

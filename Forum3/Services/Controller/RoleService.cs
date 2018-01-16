@@ -117,7 +117,7 @@ namespace Forum3.Services.Controller {
 		public async Task<PageViewModels.EditPage> EditPage(string id) {
 			var role = await RoleManager.FindByIdAsync(id);
 
-			if (role == null)
+			if (role is null)
 				throw new Exception($"A record does not exist with ID '{id}'");
 
 			ApplicationUser createdBy = null;
@@ -148,7 +148,7 @@ namespace Forum3.Services.Controller {
 
 			var record = await RoleManager.FindByIdAsync(input.Id);
 
-			if (record == null)
+			if (record is null)
 				serviceResponse.Error(nameof(InputModels.EditRoleInput.Id), $"A record does not exist with ID '{input.Id}'");
 
 			if (input.Name != null)
@@ -207,7 +207,7 @@ namespace Forum3.Services.Controller {
 		public async Task<PageViewModels.UserListPage> UserList(string id) {
 			var role = await RoleManager.FindByIdAsync(id);
 
-			if (role == null)
+			if (role is null)
 				throw new Exception($"A record does not exist with ID '{id}'");
 
 			var usersInRole = await UserManager.GetUsersInRoleAsync(role.Name);
@@ -237,12 +237,12 @@ namespace Forum3.Services.Controller {
 
 			var roleRecord = await RoleManager.FindByIdAsync(roleId);
 
-			if (roleRecord == null)
+			if (roleRecord is null)
 				serviceResponse.Error(string.Empty, $"A record does not exist with ID '{roleId}'");
 
 			var userRecord = await UserManager.FindByIdAsync(userId);
 
-			if (userRecord == null)
+			if (userRecord is null)
 				serviceResponse.Error(string.Empty, $"A record does not exist with ID '{roleId}'");
 
 			if (!serviceResponse.Success)
@@ -265,12 +265,12 @@ namespace Forum3.Services.Controller {
 
 			var roleRecord = await RoleManager.FindByIdAsync(roleId);
 
-			if (roleRecord == null)
+			if (roleRecord is null)
 				serviceResponse.Error(string.Empty, $"A record does not exist with ID '{roleId}'");
 
 			var userRecord = await UserManager.FindByIdAsync(userId);
 
-			if (userRecord == null)
+			if (userRecord is null)
 				serviceResponse.Error(string.Empty, $"A record does not exist with ID '{roleId}'");
 
 			if (!serviceResponse.Success)

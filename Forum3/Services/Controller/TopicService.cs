@@ -80,7 +80,7 @@ namespace Forum3.Services.Controller {
 		public async Task<PageModels.TopicDisplayPage> DisplayPage(int messageId, int page = 0, int target = 0) {
 			var record = DbContext.Messages.Find(messageId);
 
-			if (record == null)
+			if (record is null)
 				throw new Exception($"A record does not exist with ID '{messageId}'");
 
 			var parentId = messageId;

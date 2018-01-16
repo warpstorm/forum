@@ -24,7 +24,7 @@ namespace Forum3.Services.Controller {
 
 			var userRecord = await DbContext.Users.FindAsync(id);
 
-			if (userRecord == null)
+			if (userRecord is null)
 				throw new Exception($"No record found with the id {id}");
 
 			// TODO check access rights i.e trim email

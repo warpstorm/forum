@@ -116,7 +116,7 @@ namespace Forum3.Services.Controller {
 		public async Task<ViewModels.DetailsPage> DetailsPage(string id) {
 			var userRecord = id is null ? ContextUser.ApplicationUser : await UserManager.FindByIdAsync(id);
 
-			if (userRecord == null)
+			if (userRecord is null)
 				userRecord = ContextUser.ApplicationUser;
 
 			CanEdit(userRecord.Id);
@@ -127,7 +127,7 @@ namespace Forum3.Services.Controller {
 		public async Task<ViewModels.DetailsPage> DetailsPage(InputModels.UpdateAccountInput input) {
 			var userRecord = await DbContext.Users.FindAsync(input.Id);
 
-			if (userRecord == null) {
+			if (userRecord is null) {
 				var message = $"No record found with the display name '{input.DisplayName}'";
 				Logger.LogWarning(message);
 				throw new ApplicationException("You hackin' bro?");
@@ -157,7 +157,7 @@ namespace Forum3.Services.Controller {
 
 			var userRecord = await UserManager.FindByIdAsync(input.Id);
 
-			if (userRecord == null) {
+			if (userRecord is null) {
 				var message = $"No user record found for '{input.DisplayName}'.";
 				serviceResponse.Error(string.Empty, message);
 				Logger.LogCritical(message);
@@ -165,7 +165,7 @@ namespace Forum3.Services.Controller {
 
 			CanEdit(userRecord.Id);
 
-			if (userRecord == null) {
+			if (userRecord is null) {
 				var message = $"No user account found for '{input.DisplayName}'.";
 				serviceResponse.Error(string.Empty, message);
 				Logger.LogCritical(message);
@@ -274,7 +274,7 @@ namespace Forum3.Services.Controller {
 
 			var userRecord = await UserManager.FindByIdAsync(input.Id);
 
-			if (userRecord == null) {
+			if (userRecord is null) {
 				var message = $"No user record found for '{input.Id}'.";
 				serviceResponse.Error(string.Empty, message);
 				Logger.LogCritical(message);
@@ -307,7 +307,7 @@ namespace Forum3.Services.Controller {
 
 				using (var src = Image.FromStream(inputStream)) {
 					var largestDimension = src.Width > src.Height ? src.Width : src.Height;
-					var avatarMax = await Settings.AvatarSize();
+					var avatarMax = Settings.AvatarSize();
 
 					if (largestDimension > avatarMax || extension != ".png") {
 						var ratio = (double)avatarMax / largestDimension;
@@ -469,7 +469,7 @@ namespace Forum3.Services.Controller {
 
 			var account = await UserManager.FindByIdAsync(input.UserId);
 
-			if (account == null)
+			if (account is null)
 				serviceResponse.Error(string.Empty, $"Unable to load account '{input.UserId}'.");
 
 			if (serviceResponse.Success) {

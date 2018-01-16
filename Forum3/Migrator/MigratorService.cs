@@ -45,7 +45,7 @@ namespace Forum3.Migrator {
 		public async Task<ViewModels.Delay> Execute(InputModels.Continue input) {
 			var viewModel = new ViewModels.Delay();
 
-			if (input == null || string.IsNullOrEmpty(input.Stage))
+			if (input is null || string.IsNullOrEmpty(input.Stage))
 				input = new InputModels.Continue {
 					Stage = nameof(MigrateUsers),
 					CurrentStep = 0

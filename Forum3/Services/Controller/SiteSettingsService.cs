@@ -22,24 +22,24 @@ namespace Forum3.Services.Controller {
 			Settings = settingsRepository;
 		}
 
-		public async Task<ViewModels.IndexPage> IndexPage() {
+		public ViewModels.IndexPage IndexPage() {
 			var viewModel = new ViewModels.IndexPage();
 
 			var settingNames = typeof(Constants.Settings).GetConstants();
 
 			foreach (var settingName in settingNames) {
-				var settingValue = await Settings.GetSetting(settingName);
+				var settingValue = Settings.GetSetting(settingName);
 				viewModel.Settings.Add(new KeyValuePair<string, string>(settingName, settingValue));
 			}
 
 			return viewModel;
 		}
 
-		public async Task<ServiceModels.ServiceResponse> Edit(InputModels.EditSettingsInput input) {
+		public ServiceModels.ServiceResponse Edit(InputModels.EditSettingsInput input) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			foreach (var settingInput in input.Settings) {
-				var existingRecords = await DbContext.SiteSettings.Where(s => s.Name == settingInput.Key && string.IsNullOrEmpty(s.UserId)).ToListAsync();
+				var existingRecords = DbContext.SiteSettings.Where(s => s.Name == settingInput.Key && string.IsNullOrEmpty(s.UserId)).ToList();
 
 				if (existingRecords.Any())
 					DbContext.RemoveRange(existingRecords);

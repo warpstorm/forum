@@ -18,17 +18,17 @@ namespace Forum3.Controllers {
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> Index() {
-			var viewModel = await SiteSettingsService.IndexPage();
+		public IActionResult Index() {
+			var viewModel = SiteSettingsService.IndexPage();
 			return View(viewModel);
 		}
 
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		[PreventRapidRequests]
-		public async Task<IActionResult> Edit(InputModels.EditSettingsInput input) {
+		public IActionResult Edit(InputModels.EditSettingsInput input) {
 			if (ModelState.IsValid) {
-				var serviceResponse = await SiteSettingsService.Edit(input);
+				var serviceResponse = SiteSettingsService.Edit(input);
 				ProcessServiceResponse(serviceResponse);
 			}
 

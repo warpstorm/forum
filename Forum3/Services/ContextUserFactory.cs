@@ -55,7 +55,7 @@ namespace Forum3.Services {
 				contextUser.ApplicationUser = DbContext.Users.SingleOrDefault(u => u.Id == userId);
 
 				// Can occur if a user was logged in when their account was deleted from the database.
-				if (contextUser.ApplicationUser == null) {
+				if (contextUser.ApplicationUser is null) {
 					SignInManager.SignOutAsync().ConfigureAwait(false);
 					contextUser.IsAuthenticated = false;
 					return contextUser;
@@ -72,7 +72,7 @@ namespace Forum3.Services {
 				var adminUsers = adminUsersQuery.ToList();
 
 				// Occurs when there is no admin role created yet.
-				if (adminRole == null)
+				if (adminRole is null)
 					contextUser.IsAdmin = true;
 				// Occurs when there is an admin role, but no admin users yet.
 				else if (adminUsers.Count() == 0)

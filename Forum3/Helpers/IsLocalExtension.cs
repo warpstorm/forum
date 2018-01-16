@@ -22,7 +22,7 @@ namespace Forum3.Helpers {
 			}
 
 			// for in memory TestServer or when dealing with default connection info
-			if (connection.RemoteIpAddress == null && connection.LocalIpAddress == null)
+			if (connection.RemoteIpAddress is null && connection.LocalIpAddress is null)
 				return true;
 
 			return false;

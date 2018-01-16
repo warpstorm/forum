@@ -81,7 +81,7 @@ namespace Forum3.Services {
 
 					lock (Settings) {
 						if (!Settings.ContainsKey(name))
-							Settings.Add(name, setting == null ? string.Empty : setting.Value);
+							Settings.Add(name, setting is null ? string.Empty : setting.Value);
 					}
 				}
 
@@ -99,7 +99,7 @@ namespace Forum3.Services {
 
 					lock (UserSettings[userId]) {
 						if (!UserSettings[userId].ContainsKey(name))
-							UserSettings[userId].Add(name, setting == null ? string.Empty : setting.Value);
+							UserSettings[userId].Add(name, setting is null ? string.Empty : setting.Value);
 					}
 				}
 

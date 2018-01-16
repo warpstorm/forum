@@ -87,7 +87,7 @@ namespace Forum3.Services.Controller {
 		public async Task<PageViewModels.EditPage> EditPage(int boardId, InputModels.EditBoardInput input = null) {
 			var record = await DbContext.Boards.SingleOrDefaultAsync(b => b.Id == boardId);
 
-			if (record == null)
+			if (record is null)
 				throw new Exception($"A record does not exist with ID '{boardId}'");
 
 			var viewModel = new PageViewModels.EditPage() {
@@ -127,7 +127,7 @@ namespace Forum3.Services.Controller {
 			if (!string.IsNullOrEmpty(input.NewCategory)) {
 				categoryRecord = await DbContext.Categories.SingleOrDefaultAsync(c => c.Name == input.NewCategory);
 
-				if (categoryRecord == null) {
+				if (categoryRecord is null) {
 					var displayOrder = await DbContext.Categories.DefaultIfEmpty().MaxAsync(c => c.DisplayOrder);
 
 					categoryRecord = new DataModels.Category {
@@ -143,7 +143,7 @@ namespace Forum3.Services.Controller {
 					var categoryId = Convert.ToInt32(input.Category);
 					categoryRecord = await DbContext.Categories.SingleOrDefaultAsync(c => c.Id == categoryId);
 
-					if (categoryRecord == null)
+					if (categoryRecord is null)
 						serviceResponse.Error(nameof(input.Category), "No category was found with this ID.");
 				}
 				catch (FormatException) {
@@ -190,7 +190,7 @@ namespace Forum3.Services.Controller {
 
 			var record = await DbContext.Boards.SingleOrDefaultAsync(b => b.Id == input.Id);
 
-			if (record == null)
+			if (record is null)
 				serviceResponse.Error(string.Empty, $"A record does not exist with ID '{input.Id}'");
 
 			DataModels.Category newCategoryRecord = null;
@@ -201,7 +201,7 @@ namespace Forum3.Services.Controller {
 			if (!string.IsNullOrEmpty(input.NewCategory)) {
 				newCategoryRecord = await DbContext.Categories.SingleOrDefaultAsync(c => c.Name == input.NewCategory);
 
-				if (newCategoryRecord == null) {
+				if (newCategoryRecord is null) {
 					var displayOrder = DbContext.Categories.Max(c => c.DisplayOrder);
 
 					newCategoryRecord = new DataModels.Category {
@@ -218,7 +218,7 @@ namespace Forum3.Services.Controller {
 					var newCategoryId = Convert.ToInt32(input.Category);
 					newCategoryRecord = await DbContext.Categories.SingleOrDefaultAsync(c => c.Id == newCategoryId);
 
-					if (newCategoryRecord == null)
+					if (newCategoryRecord is null)
 						serviceResponse.Error(nameof(input.Category), "No category was found with this ID.");
 				}
 				catch (FormatException) {
@@ -271,7 +271,7 @@ namespace Forum3.Services.Controller {
 
 			var targetCategory = DbContext.Categories.FirstOrDefault(b => b.Id == id);
 
-			if (targetCategory == null) {
+			if (targetCategory is null) {
 				serviceResponse.Error(string.Empty, "No category found with that ID.");
 				return serviceResponse;
 			}
@@ -296,7 +296,7 @@ namespace Forum3.Services.Controller {
 
 			var targetBoard = await DbContext.Boards.FirstOrDefaultAsync(b => b.Id == id);
 
-			if (targetBoard == null) {
+			if (targetBoard is null) {
 				serviceResponse.Error(string.Empty, "No board found with that ID.");
 				return serviceResponse;
 			}
@@ -339,10 +339,10 @@ namespace Forum3.Services.Controller {
 			var fromCategory = await DbContext.Categories.SingleOrDefaultAsync(b => b.Id == input.FromId);
 			var toCategory = await DbContext.Categories.SingleOrDefaultAsync(b => b.Id == input.ToId);
 
-			if (fromCategory == null)
+			if (fromCategory is null)
 				serviceResponse.Error(string.Empty, $"A record does not exist with ID '{input.FromId}'");
 
-			if (toCategory == null)
+			if (toCategory is null)
 				serviceResponse.Error(string.Empty, $"A record does not exist with ID '{input.ToId}'");
 
 			if (!serviceResponse.Success)
@@ -370,10 +370,10 @@ namespace Forum3.Services.Controller {
 			var fromBoard = await DbContext.Boards.SingleOrDefaultAsync(b => b.Id == input.FromId);
 			var toBoard = await DbContext.Boards.SingleOrDefaultAsync(b => b.Id == input.ToId);
 
-			if (fromBoard == null)
+			if (fromBoard is null)
 				serviceResponse.Error(string.Empty, $"A record does not exist with ID '{input.FromId}'");
 
-			if (toBoard == null)
+			if (toBoard is null)
 				serviceResponse.Error(string.Empty, $"A record does not exist with ID '{input.ToId}'");
 
 			if (!serviceResponse.Success)
@@ -471,7 +471,7 @@ namespace Forum3.Services.Controller {
 		}
 
 		async Task<List<SelectListItem>> GetCategoryPickList(List<SelectListItem> pickList = null) {
-			if (pickList == null)
+			if (pickList is null)
 				pickList = new List<SelectListItem>();
 
 			var categoryRecords = await DbContext.Categories.OrderBy(r => r.DisplayOrder).ToListAsync();
