@@ -168,7 +168,7 @@ namespace Forum3.Services.Controller {
 			if (!serviceResponse.Success)
 				return serviceResponse;
 
-			await DbContext.SaveChangesAsync();
+			DbContext.SaveChanges();
 
 			var record = new DataModels.Board {
 				Name = input.Name,
@@ -178,7 +178,7 @@ namespace Forum3.Services.Controller {
 
 			DbContext.Boards.Add(record);
 
-			await DbContext.SaveChangesAsync();
+			DbContext.SaveChanges();
 
 			serviceResponse.RedirectPath = UrlHelper.Action(nameof(Boards.Manage), nameof(Boards), new { id = record.Id });
 
@@ -252,12 +252,12 @@ namespace Forum3.Services.Controller {
 			}
 
 			DbContext.Update(record);
-			await DbContext.SaveChangesAsync();
+			DbContext.SaveChanges();
 
 			if (oldCategoryId >= 0) {
 				var oldCategoryRecord = DbContext.Categories.Find(oldCategoryId);
 				DbContext.Categories.Remove(oldCategoryRecord);
-				await DbContext.SaveChangesAsync();
+				DbContext.SaveChanges();
 			}
 
 			serviceResponse.RedirectPath = UrlHelper.Action(nameof(Boards.Manage), nameof(Boards), new { id = record.Id });
@@ -265,7 +265,7 @@ namespace Forum3.Services.Controller {
 			return serviceResponse;
 		}
 
-		public async Task<ServiceModels.ServiceResponse> MoveCategoryUp(int id) {
+		public ServiceModels.ServiceResponse MoveCategoryUp(int id) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			var targetCategory = DbContext.Categories.FirstOrDefault(b => b.Id == id);
@@ -284,7 +284,7 @@ namespace Forum3.Services.Controller {
 				targetCategory.DisplayOrder--;
 				DbContext.Update(targetCategory);
 
-				await DbContext.SaveChangesAsync();
+				DbContext.SaveChanges();
 			}
 
 			return serviceResponse;
@@ -309,7 +309,7 @@ namespace Forum3.Services.Controller {
 				DbContext.Update(board);
 			}
 
-			await DbContext.SaveChangesAsync();
+			DbContext.SaveChanges();
 
 			targetBoard = categoryBoards.First(b => b.Id == id);
 
@@ -324,7 +324,7 @@ namespace Forum3.Services.Controller {
 				targetBoard.DisplayOrder--;
 				DbContext.Update(targetBoard);
 
-				await DbContext.SaveChangesAsync();
+				DbContext.SaveChanges();
 			}
 			else
 				targetBoard.DisplayOrder = 2;
@@ -354,11 +354,11 @@ namespace Forum3.Services.Controller {
 				DbContext.Update(displacedBoard);
 			}
 
-			await DbContext.SaveChangesAsync();
+			DbContext.SaveChanges();
 
 			DbContext.Categories.Remove(fromCategory);
 
-			await DbContext.SaveChangesAsync();
+			DbContext.SaveChanges();
 
 			return serviceResponse;
 		}
@@ -386,14 +386,14 @@ namespace Forum3.Services.Controller {
 				DbContext.Update(messageBoard);
 			}
 
-			await DbContext.SaveChangesAsync();
+			DbContext.SaveChanges();
 
 			var categoryId = fromBoard.CategoryId;
 
 			// Delete the board
 			DbContext.Boards.Remove(fromBoard);
 
-			await DbContext.SaveChangesAsync();
+			DbContext.SaveChanges();
 
 			// Remove the category if empty
 			if (!await DbContext.Boards.AnyAsync(b => b.CategoryId == categoryId)) {
@@ -401,7 +401,7 @@ namespace Forum3.Services.Controller {
 
 				DbContext.Categories.Remove(categoryRecord);
 
-				await DbContext.SaveChangesAsync();
+				DbContext.SaveChanges();
 			}
 
 			return serviceResponse;

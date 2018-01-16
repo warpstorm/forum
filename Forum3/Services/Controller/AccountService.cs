@@ -190,7 +190,7 @@ namespace Forum3.Services.Controller {
 				Logger.LogInformation($"Birthday was modified by '{ContextUser.ApplicationUser.DisplayName}' for account '{userRecord.DisplayName}'.");
 			}
 
-			await DbContext.SaveChangesAsync();
+			DbContext.SaveChanges();
 
 			if (input.Email != userRecord.Email) {
 				serviceResponse.RedirectPath = UrlHelper.Action(nameof(Account.Details), nameof(Account), new { id = input.DisplayName });
@@ -337,7 +337,7 @@ namespace Forum3.Services.Controller {
 			userRecord.AvatarPath = blobReference.Uri.AbsoluteUri;
 
 			DbContext.Update(userRecord);
-			await DbContext.SaveChangesAsync();
+			DbContext.SaveChanges();
 
 			Logger.LogInformation($"Avatar was modified by '{ContextUser.ApplicationUser.DisplayName}' for account '{userRecord.DisplayName}'.");
 

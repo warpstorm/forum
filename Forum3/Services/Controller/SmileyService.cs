@@ -142,7 +142,7 @@ namespace Forum3.Services.Controller {
 
 			smileyRecord.Path = blobReference.Uri.AbsoluteUri;
 
-			await DbContext.SaveChangesAsync();
+			DbContext.SaveChanges();
 
 			serviceResponse.Message = $"Smiley '{smileyRecord.FileName}' was added with code '{smileyRecord.Code}'.";
 			return serviceResponse;
@@ -173,7 +173,7 @@ namespace Forum3.Services.Controller {
 			if (!serviceResponse.Success)
 				return serviceResponse;
 
-			await DbContext.SaveChangesAsync();
+			DbContext.SaveChanges();
 
 			serviceResponse.Message = $"The smiley was updated.";
 			return serviceResponse;
@@ -206,7 +206,7 @@ namespace Forum3.Services.Controller {
 				await blobReference.DeleteIfExistsAsync();
 			}
 
-			await DbContext.SaveChangesAsync();
+			DbContext.SaveChanges();
 			
 			serviceResponse.Message = $"The smiley was deleted.";
 			return serviceResponse;

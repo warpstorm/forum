@@ -66,8 +66,8 @@ namespace Forum3.Controllers {
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> MoveCategoryUp(int id) {
-			var serviceResponse = await BoardService.MoveCategoryUp(id);
+		public IActionResult MoveCategoryUp(int id) {
+			var serviceResponse = BoardService.MoveCategoryUp(id);
 			ProcessServiceResponse(serviceResponse);
 
 			return RedirectFromService();

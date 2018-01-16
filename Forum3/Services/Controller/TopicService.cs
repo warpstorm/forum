@@ -78,7 +78,7 @@ namespace Forum3.Services.Controller {
 		}
 
 		public async Task<PageModels.TopicDisplayPage> DisplayPage(int messageId, int page = 0, int target = 0) {
-			var record = await DbContext.Messages.FindAsync(messageId);
+			var record = DbContext.Messages.Find(messageId);
 
 			if (record == null)
 				throw new Exception($"A record does not exist with ID '{messageId}'");
@@ -161,7 +161,7 @@ namespace Forum3.Services.Controller {
 		public async Task<ServiceModels.ServiceResponse> Latest(int messageId) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
-			var record = await DbContext.Messages.FindAsync(messageId);
+			var record = DbContext.Messages.Find(messageId);
 
 			if (record is null) {
 				serviceResponse.Error(string.Empty, $@"No record was found with the id '{messageId}'");
@@ -169,7 +169,7 @@ namespace Forum3.Services.Controller {
 			}
 
 			if (record.ParentId > 0)
-				record = await DbContext.Messages.FindAsync(record.ParentId);
+				record = DbContext.Messages.Find(record.ParentId);
 
 			if (!ContextUser.IsAuthenticated) {
 				serviceResponse.RedirectPath = UrlHelper.Action(nameof(Topics.Display), nameof(Topics), new { id = record.LastReplyId });
@@ -215,7 +215,7 @@ namespace Forum3.Services.Controller {
 		public async Task<ServiceModels.ServiceResponse> Pin(int messageId) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
-			var record = await DbContext.Messages.FindAsync(messageId);
+			var record = DbContext.Messages.Find(messageId);
 
 			if (record is null) {
 				serviceResponse.Error(string.Empty, $@"No record was found with the id '{messageId}'");
@@ -239,7 +239,7 @@ namespace Forum3.Services.Controller {
 			else
 				DbContext.Pins.Remove(existingRecord);
 
-			await DbContext.SaveChangesAsync();
+			DbContext.SaveChanges();
 
 			return serviceResponse;
 		}
@@ -247,7 +247,7 @@ namespace Forum3.Services.Controller {
 		public async Task<ServiceModels.ServiceResponse> ToggleBoard(ToggleBoardInput input) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
-			var messageRecord = await DbContext.Messages.FindAsync(input.MessageId);
+			var messageRecord = DbContext.Messages.Find(input.MessageId);
 
 			if (messageRecord is null)
 				serviceResponse.Error(string.Empty, $@"No message was found with the id '{input.MessageId}'");
@@ -279,7 +279,7 @@ namespace Forum3.Services.Controller {
 			else
 				DbContext.MessageBoards.Remove(existingRecord);
 
-			await DbContext.SaveChangesAsync();
+			DbContext.SaveChanges();
 
 			return serviceResponse;
 		}
@@ -440,7 +440,7 @@ namespace Forum3.Services.Controller {
 			});
 
 			try {
-				await DbContext.SaveChangesAsync();
+				DbContext.SaveChanges();
 			}
 			// The user probably refreshed several times in a row.
 			catch (DbUpdateConcurrencyException) { }

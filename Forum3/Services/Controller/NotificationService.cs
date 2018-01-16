@@ -86,7 +86,7 @@ namespace Forum3.Services.Controller {
 			if (record.Unread) {
 				record.Unread = false;
 				DbContext.Update(record);
-				await DbContext.SaveChangesAsync();
+				DbContext.SaveChanges();
 			}
 
 			serviceResponse.RedirectPath = UrlHelper.Action(nameof(Topics.Display), nameof(Topics), new { id = record.MessageId });

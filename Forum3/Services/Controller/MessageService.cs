@@ -63,10 +63,10 @@ namespace Forum3.Services.Controller {
 			return viewModel;
 		}
 
-		public async Task<ViewModels.MigrateMessagePage> MigratePage(int messageId) {
+		public ViewModels.MigrateMessagePage MigratePage(int messageId) {
 			var viewModel = new ViewModels.MigrateMessagePage();
 
-			var record = await DbContext.Messages.FindAsync(messageId);
+			var record = DbContext.Messages.Find(messageId);
 
 			if (record == null)
 				throw new Exception($@"No record was found with the id '{messageId}'");
@@ -86,7 +86,7 @@ namespace Forum3.Services.Controller {
 				serviceResponse.Error(nameof(input.BoardId), $"Board ID is required");
 
 			var boardId = Convert.ToInt32(input.BoardId);
-			var boardRecord = await DbContext.Boards.SingleOrDefaultAsync(b => b.Id == boardId);
+			var boardRecord = DbContext.Boards.SingleOrDefault(b => b.Id == boardId);
 
 			if (boardRecord == null)
 				serviceResponse.Error(string.Empty, $"A record does not exist with ID '{boardId}'");
@@ -99,7 +99,7 @@ namespace Forum3.Services.Controller {
 			if (!serviceResponse.Success)
 				return serviceResponse;
 
-			var record = await CreateMessageRecord(processedMessage, null);
+			var record = CreateMessageRecord(processedMessage, null);
 
 			DbContext.MessageBoards.Add(new DataModels.MessageBoard {
 				MessageId = record.Id,
@@ -111,7 +111,7 @@ namespace Forum3.Services.Controller {
 			boardRecord.LastMessageId = record.Id;
 
 			DbContext.Update(boardRecord);
-			await DbContext.SaveChangesAsync();
+			DbContext.SaveChanges();
 
 			serviceResponse.RedirectPath = UrlHelper.DirectMessage(record.Id);
 			return serviceResponse;
@@ -137,7 +137,7 @@ namespace Forum3.Services.Controller {
 			if (!serviceResponse.Success)
 				return serviceResponse;
 
-			var record = await CreateMessageRecord(processedMessage, replyRecord);
+			var record = CreateMessageRecord(processedMessage, replyRecord);
 
 			var boardRecords = await (from message in DbContext.Messages
 									 join messageBoard in DbContext.MessageBoards on message.Id equals messageBoard.MessageId
@@ -150,7 +150,7 @@ namespace Forum3.Services.Controller {
 				DbContext.Update(boardRecord);
 			}
 
-			await DbContext.SaveChangesAsync();
+			DbContext.SaveChanges();
 
 			serviceResponse.RedirectPath = UrlHelper.DirectMessage(record.Id);
 			return serviceResponse;
@@ -172,7 +172,7 @@ namespace Forum3.Services.Controller {
 
 			if (serviceResponse.Success) {
 				serviceResponse.RedirectPath = UrlHelper.DirectMessage(record.Id);
-				await UpdateMessageRecord(processedMessage, record);
+				UpdateMessageRecord(processedMessage, record);
 			}
 
 			return serviceResponse;
@@ -205,7 +205,7 @@ namespace Forum3.Services.Controller {
 					DbContext.Update(reply);
 				}
 
-				await DbContext.SaveChangesAsync();
+				DbContext.SaveChanges();
 			}
 			else
 				serviceResponse.RedirectPath = UrlHelper.TopicIndex();
@@ -233,7 +233,7 @@ namespace Forum3.Services.Controller {
 
 			DbContext.Messages.Remove(record);
 
-			await DbContext.SaveChangesAsync();
+			DbContext.SaveChanges();
 
 			return serviceResponse;
 		}
@@ -241,7 +241,7 @@ namespace Forum3.Services.Controller {
 		public async Task<ServiceModels.ServiceResponse> AddThought(InputModels.ThoughtInput input) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
-			var messageRecord = await DbContext.Messages.FindAsync(input.MessageId);
+			var messageRecord = DbContext.Messages.Find(input.MessageId);
 
 			if (messageRecord == null)
 				serviceResponse.Error(string.Empty, $@"No message was found with the id '{input.MessageId}'");
@@ -285,16 +285,16 @@ namespace Forum3.Services.Controller {
 			else
 				DbContext.MessageThoughts.Remove(existingRecord);
 
-			await DbContext.SaveChangesAsync();
+			DbContext.SaveChanges();
 
 			serviceResponse.RedirectPath = UrlHelper.DirectMessage(input.MessageId);
 			return serviceResponse;
 		}
 
-		public async Task<ServiceModels.ServiceResponse> FinishMigration(int messageId) {
+		public ServiceModels.ServiceResponse FinishMigration(int messageId) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
-			var record = await DbContext.Messages.FindAsync(messageId);
+			var record = DbContext.Messages.Find(messageId);
 
 			if (record == null)
 				serviceResponse.Error(string.Empty, $@"No record was found with the id '{messageId}'");
@@ -313,15 +313,15 @@ namespace Forum3.Services.Controller {
 
 			MigrateMessageRecord(record);
 
-			await UpdateTopicParticipation(record.Id, record.PostedById, record.TimePosted);
+			UpdateTopicParticipation(record.Id, record.PostedById, record.TimePosted);
 
-			var replies = await DbContext.Messages.Where(m => m.LegacyParentId == record.LegacyId).OrderBy(m => m.TimePosted).ToListAsync();
+			var replies = DbContext.Messages.Where(m => m.LegacyParentId == record.LegacyId).OrderBy(m => m.TimePosted).ToList();
 
 			foreach (var reply in replies) {
 				reply.ParentId = record.Id;
 				MigrateMessageRecord(reply);
 
-				await UpdateTopicParticipation(record.Id, reply.PostedById, reply.TimePosted);
+				UpdateTopicParticipation(record.Id, reply.PostedById, reply.TimePosted);
 			}
 
 			if (replies.Any()) {
@@ -332,7 +332,7 @@ namespace Forum3.Services.Controller {
 
 			DbContext.Update(record);
 
-			await DbContext.SaveChangesAsync();
+			DbContext.SaveChanges();
 
 			return serviceResponse;
 		}
@@ -649,7 +649,7 @@ namespace Forum3.Services.Controller {
 			return preview;
 		}
 
-		async Task<DataModels.Message> CreateMessageRecord(InputModels.ProcessedMessageInput processedMessage, DataModels.Message replyRecord) {
+		DataModels.Message CreateMessageRecord(InputModels.ProcessedMessageInput processedMessage, DataModels.Message replyRecord) {
 			var parentId = 0;
 			var replyId = 0;
 
@@ -666,7 +666,7 @@ namespace Forum3.Services.Controller {
 					parentId = replyRecord.ParentId;
 					replyId = replyRecord.Id;
 
-					parentMessage = await DbContext.Messages.FindAsync(replyRecord.ParentId);
+					parentMessage = DbContext.Messages.Find(replyRecord.ParentId);
 
 					if (parentMessage == null)
 						throw new Exception($"Orphan message found with ID {replyRecord.Id}. Unable to load parent with ID {replyRecord.ParentId}.");
@@ -695,8 +695,7 @@ namespace Forum3.Services.Controller {
 			};
 
 			DbContext.Messages.Add(record);
-
-			await DbContext.SaveChangesAsync();
+			DbContext.SaveChanges();
 
 			if (replyRecord != null) {
 				replyRecord.LastReplyId = record.Id;
@@ -740,16 +739,16 @@ namespace Forum3.Services.Controller {
 				}
 			}
 
-			await DbContext.SaveChangesAsync();
-			await NotifyMentionedUsers(processedMessage.MentionedUsers, record.Id);
+			DbContext.SaveChanges();
+			NotifyMentionedUsers(processedMessage.MentionedUsers, record.Id);
 
 			var topicId = parentId == 0 ? record.Id : parentId;
-			await UpdateTopicParticipation(topicId, ContextUser.ApplicationUser.Id, DateTime.Now);
+			UpdateTopicParticipation(topicId, ContextUser.ApplicationUser.Id, DateTime.Now);
 
 			return record;
 		}
 
-		async Task UpdateMessageRecord(InputModels.ProcessedMessageInput message, DataModels.Message record) {
+		void UpdateMessageRecord(InputModels.ProcessedMessageInput message, DataModels.Message record) {
 			record.OriginalBody = message.OriginalBody;
 			record.DisplayBody = message.DisplayBody;
 			record.ShortPreview = message.ShortPreview;
@@ -761,11 +760,11 @@ namespace Forum3.Services.Controller {
 
 			DbContext.Update(record);
 
-			await DbContext.SaveChangesAsync();
+			DbContext.SaveChanges();
 		}
 
-		async Task UpdateTopicParticipation(int topicId, string userId, DateTime time) {
-			var participation = await DbContext.Participants.FirstOrDefaultAsync(r => r.MessageId == topicId && r.UserId == userId);
+		void UpdateTopicParticipation(int topicId, string userId, DateTime time) {
+			var participation = DbContext.Participants.FirstOrDefault(r => r.MessageId == topicId && r.UserId == userId);
 
 			if (participation == null) {
 				DbContext.Participants.Add(new DataModels.Participant {
@@ -779,10 +778,10 @@ namespace Forum3.Services.Controller {
 				DbContext.Update(participation);
 			}
 
-			await DbContext.SaveChangesAsync();
+			DbContext.SaveChanges();
 		}
 
-		async Task NotifyMentionedUsers(List<string> mentionedUsers, int messageId) {
+		void NotifyMentionedUsers(List<string> mentionedUsers, int messageId) {
 			foreach (var user in mentionedUsers) {
 				var notification = new DataModels.Notification {
 					MessageId = messageId,
@@ -796,7 +795,7 @@ namespace Forum3.Services.Controller {
 				DbContext.Notifications.Add(notification);
 			}
 
-			await DbContext.SaveChangesAsync();
+			DbContext.SaveChanges();
 		}
 
 		void MigrateMessageRecord(DataModels.Message record) {

@@ -89,14 +89,14 @@ namespace Forum3.Controllers {
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> Migrate(int id) {
-			var viewModel = await MessageService.MigratePage(id);
+		public IActionResult Migrate(int id) {
+			var viewModel = MessageService.MigratePage(id);
 			return View(viewModel);
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> FinishMigration(int id) {
-			var serviceResponse = await MessageService.FinishMigration(id);
+		public IActionResult FinishMigration(int id) {
+			var serviceResponse = MessageService.FinishMigration(id);
 			ProcessServiceResponse(serviceResponse);
 
 			return RedirectFromService();

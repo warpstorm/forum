@@ -55,7 +55,7 @@ namespace Forum3.Services.Controller {
 				DbContext.SiteSettings.Add(record);
 			}
 
-			await DbContext.SaveChangesAsync();
+			DbContext.SaveChanges();
 
 			serviceResponse.Message = $"The smiley was updated.";
 			return serviceResponse;
