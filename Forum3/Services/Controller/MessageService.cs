@@ -692,6 +692,8 @@ namespace Forum3.Services.Controller {
 
 				ParentId = parentId,
 				ReplyId = replyId,
+
+				Processed = true
 			};
 
 			DbContext.Messages.Add(record);
