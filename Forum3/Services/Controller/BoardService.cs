@@ -44,17 +44,11 @@ namespace Forum3.Services.Controller {
 			var onlineUsers = GetOnlineUsers();
 			var notifications = NotificationService.GetNotifications();
 
-			await Task.WhenAll(new Task[] {
-				birthdays,
-				onlineUsers,
-				notifications
-			});
-
 			var viewModel = new PageViewModels.IndexPage {
-				Birthdays = birthdays.Result.ToArray(),
+				Birthdays = birthdays.ToArray(),
 				Categories = await GetCategories(),
-				OnlineUsers = onlineUsers.Result,
-				Notifications = notifications.Result
+				OnlineUsers = onlineUsers,
+				Notifications = notifications
 			};
 
 			return viewModel;
@@ -486,7 +480,7 @@ namespace Forum3.Services.Controller {
 			return pickList;
 		}
 		
-		async Task<List<ItemViewModels.OnlineUser>> GetOnlineUsers() {
+		List<ItemViewModels.OnlineUser> GetOnlineUsers() {
 			var onlineTimeLimitSetting = Settings.OnlineTimeLimit();
 			onlineTimeLimitSetting *= -1;
 
@@ -503,7 +497,7 @@ namespace Forum3.Services.Controller {
 									   LastOnline = user.LastOnline
 								   };
 
-			var onlineUsers = await onlineUsersQuery.ToListAsync();
+			var onlineUsers = onlineUsersQuery.ToList();
 
 			foreach (var onlineUser in onlineUsers)
 				onlineUser.LastOnlineString = onlineUser.LastOnline.ToPassedTimeString();
@@ -511,13 +505,13 @@ namespace Forum3.Services.Controller {
 			return onlineUsers;
 		}
 
-		async Task<List<string>> GetBirthdays() {
+		List<string> GetBirthdays() {
 			var todayBirthdayNames = new List<string>();
 
-			var birthdays = await DbContext.Users.Select(u => new Birthday {
+			var birthdays = DbContext.Users.Select(u => new Birthday {
 				Date = u.Birthday,
 				DisplayName = u.DisplayName
-			}).ToListAsync();
+			}).ToList();
 
 			if (birthdays.Any()) {
 				var todayBirthdays = birthdays.Where(u => new DateTime(DateTime.Now.Year, u.Date.Month, u.Date.Day).Date == DateTime.Now.Date);

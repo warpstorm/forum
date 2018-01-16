@@ -13,13 +13,13 @@ namespace Forum3.Controllers {
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> Index() {
+		public IActionResult Index() {
 			var showRead = false;
 
 			if (Request.Query.ContainsKey("show-read"))
 				showRead = true;
 
-			var viewModel = await NotificationService.IndexPage(showRead);
+			var viewModel = NotificationService.IndexPage(showRead);
 			return View(viewModel);
 		}
 

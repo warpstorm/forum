@@ -31,8 +31,8 @@ namespace Forum3.Services.Controller {
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
-		public async Task<ViewModels.Pages.IndexPage> IndexPage(bool showRead = false) {
-			var notifications = await GetNotifications(showRead);
+		public ViewModels.Pages.IndexPage IndexPage(bool showRead = false) {
+			var notifications = GetNotifications(showRead);
 
 			var viewModel = new ViewModels.Pages.IndexPage {
 				Notifications = notifications
@@ -41,7 +41,7 @@ namespace Forum3.Services.Controller {
 			return viewModel;
 		}
 
-		public async Task<List<ViewModels.Items.IndexItem>> GetNotifications(bool showRead = false) {
+		public List<ViewModels.Items.IndexItem> GetNotifications(bool showRead = false) {
 			if (ContextUser.ApplicationUser is null)
 				return new List<ViewModels.Items.IndexItem>();
 
@@ -65,7 +65,7 @@ namespace Forum3.Services.Controller {
 										TargetUser = targetUser == null ? "User" : targetUser.DisplayName
 									};
 
-			var notifications = await notificationQuery.ToListAsync();
+			var notifications = notificationQuery.ToList();
 
 			foreach (var notification in notifications)
 				notification.Text = NotificationText(notification);
