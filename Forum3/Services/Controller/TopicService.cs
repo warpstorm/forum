@@ -99,7 +99,7 @@ namespace Forum3.Services.Controller {
 
 			var processedQuery = from message in DbContext.Messages
 								 where message.Id == parentId || message.ParentId == parentId || message.LegacyParentId == record.LegacyId
-								 where !message.Processed
+								 where message.LegacyParentId != 0 && message.LegacyId != 0 && !message.Processed
 								 select message.Id;
 
 			if (processedQuery.Any())
