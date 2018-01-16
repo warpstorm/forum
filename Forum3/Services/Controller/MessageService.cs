@@ -89,6 +89,12 @@ namespace Forum3.Services.Controller {
 				return viewModel;
 			}
 
+			if (record.ParentId > 0) {
+				var parentRecord = DbContext.Messages.Where(r => r.Id == record.ParentId).FirstOrDefault();
+				viewModel.NextAction = UrlHelper.Action(nameof(Messages.Migrate), nameof(Messages), new { id = parentRecord.Id });
+				return viewModel;
+			}
+
 			var messageQuery = from message in DbContext.Messages
 							   where message.Id == record.Id || message.ParentId == record.Id || message.LegacyParentId == record.LegacyId
 							   select message.Id;
@@ -794,6 +800,12 @@ namespace Forum3.Services.Controller {
 
 			if (record.Processed)
 				return;
+
+			if (record.LegacyId == 0) {
+				record.Processed = true;
+				DbContext.Update(record);
+				return;
+			}
 
 			UpdateTopicParticipation(parent.Id, record.PostedById, record.TimePosted);
 
