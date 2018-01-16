@@ -58,7 +58,7 @@ namespace Forum3.Services.Controller {
 			if (page < 1)
 				page = 1;
 
-			var take = await Settings.TopicsPerPage();
+			var take = Settings.TopicsPerPage();
 			var skip = (page * take) - take;
 			var totalPages = Convert.ToInt32(Math.Ceiling(1.0 * messageIds.Count / take));
 
@@ -92,25 +92,25 @@ namespace Forum3.Services.Controller {
 								 where message.Id == parentId || message.ParentId == parentId
 								 select message.Id;
 
-			var messageIds = await messageIdQuery.ToListAsync();
+			var messageIds = messageIdQuery.ToList();
 
 			if (parentId != messageId)
-				return await GetRedirectViewModel(messageId, record.ParentId, messageIds);
+				return GetRedirectViewModel(messageId, record.ParentId, messageIds);
 
 			if (!record.Processed)
 				return GetMigrationRedirectViewModel(messageId);
 
 			if (target > 0) {
-				var targetPage = await GetMessagePage(target, messageIds);
+				var targetPage = GetMessagePage(target, messageIds);
 
 				if (targetPage != page)
-					return await GetRedirectViewModel(target, messageId, messageIds);
+					return GetRedirectViewModel(target, messageId, messageIds);
 			}
 
 			if (page < 1)
 				page = 1;
 
-			var take = await Settings.MessagesPerPage();
+			var take = Settings.MessagesPerPage();
 			var skip = take * (page - 1);
 			var totalPages = Convert.ToInt32(Math.Ceiling(1.0 * messageIds.Count / take));
 
@@ -120,7 +120,7 @@ namespace Forum3.Services.Controller {
 			DbContext.Update(record);
 			DbContext.SaveChanges();
 
-			var messages = await GetTopicMessages(pageMessageIds);
+			var messages = GetTopicMessages(pageMessageIds);
 
 			var topic = new PageModels.TopicDisplayPage {
 				Id = record.Id,
@@ -141,12 +141,12 @@ namespace Forum3.Services.Controller {
 				}
 			};
 
-			var assignedBoards = await (
-				from messageBoard in DbContext.MessageBoards
-				join board in DbContext.Boards on messageBoard.BoardId equals board.Id
-				where messageBoard.MessageId == topic.Id
-				select board
-			).ToListAsync();
+			var assignedBoardsQuery = from messageBoard in DbContext.MessageBoards
+									  join board in DbContext.Boards on messageBoard.BoardId equals board.Id
+									  where messageBoard.MessageId == topic.Id
+									  select board;
+
+			var assignedBoards = assignedBoardsQuery.ToList();
 
 			foreach (var assignedBoard in assignedBoards) {
 				var indexBoard = await BoardService.GetIndexBoard(assignedBoard);
@@ -176,7 +176,7 @@ namespace Forum3.Services.Controller {
 				return serviceResponse;
 			}
 
-			var historyTimeLimit = await Settings.HistoryTimeLimit();
+			var historyTimeLimit = Settings.HistoryTimeLimit();
 			var viewLogs = await DbContext.ViewLogs.Where(r => r.UserId == ContextUser.ApplicationUser.Id && r.LogTime >= historyTimeLimit).ToListAsync();
 			var latestViewTime = historyTimeLimit;
 
@@ -311,12 +311,12 @@ namespace Forum3.Services.Controller {
 
 			var participation = new List<DataModels.Participant>();
 			var viewLogs = new List<DataModels.ViewLog>();
-			var take = await Settings.MessagesPerPage();
+			var take = Settings.MessagesPerPage();
 
 			if (ContextUser.IsAuthenticated) {
 				participation = DbContext.Participants.Where(r => r.UserId == ContextUser.ApplicationUser.Id).ToList();
 
-				var historyTimeLimit = await Settings.HistoryTimeLimit();
+				var historyTimeLimit = Settings.HistoryTimeLimit();
 				viewLogs = DbContext.ViewLogs.Where(r => r.UserId == ContextUser.ApplicationUser.Id && r.LogTime >= historyTimeLimit).ToList();
 			}
 			
@@ -351,7 +351,7 @@ namespace Forum3.Services.Controller {
 			return messages;
 		}
 
-		async Task<List<ItemModels.Message>> GetTopicMessages(List<int> messageIds) {
+		List<ItemModels.Message> GetTopicMessages(List<int> messageIds) {
 			var messageQuery = from message in DbContext.Messages
 							   join postedBy in DbContext.Users on message.PostedById equals postedBy.Id
 							   join reply in DbContext.Messages on message.ReplyId equals reply.Id into Replies
@@ -379,7 +379,7 @@ namespace Forum3.Services.Controller {
 								   Processed = message.Processed
 							   };
 
-			var messages = await messageQuery.ToListAsync();
+			var messages = messageQuery.ToList();
 
 			foreach (var message in messages) {
 				message.TimePosted = message.TimePostedDT.ToPassedTimeString();
@@ -403,14 +403,14 @@ namespace Forum3.Services.Controller {
 									   Thought = s.Thought.Replace("{user}", u.DisplayName)
 								   };
 
-				message.Thoughts = await thoughtQuery.ToListAsync();
+				message.Thoughts = thoughtQuery.ToList();
 			}
 
 			return messages;
 		}
 
 		async Task MarkTopicRead(PageModels.TopicDisplayPage topic) {
-			var historyTimeLimit = await Settings.HistoryTimeLimit();
+			var historyTimeLimit = Settings.HistoryTimeLimit();
 
 			var viewLogs = await DbContext.ViewLogs.Where(v =>
 				v.LogTime >= historyTimeLimit
@@ -446,7 +446,7 @@ namespace Forum3.Services.Controller {
 			catch (DbUpdateConcurrencyException) { }
 		}
 
-		async Task<PageModels.TopicDisplayPage> GetRedirectViewModel(int messageId, int parentMessageId, List<int> messageIds) {
+		PageModels.TopicDisplayPage GetRedirectViewModel(int messageId, int parentMessageId, List<int> messageIds) {
 			var viewModel = new PageModels.TopicDisplayPage();
 
 			if (parentMessageId == 0)
@@ -454,7 +454,7 @@ namespace Forum3.Services.Controller {
 
 			var routeValues = new {
 				id = parentMessageId,
-				pageId = await GetMessagePage(messageId, messageIds),
+				pageId = GetMessagePage(messageId, messageIds),
 				target = messageId
 			};
 
@@ -469,11 +469,11 @@ namespace Forum3.Services.Controller {
 			};
 		}
 
-		async Task<int> GetMessagePage(int messageId, List<int> messageIds) {
+		int GetMessagePage(int messageId, List<int> messageIds) {
 			var index = (double) messageIds.FindIndex(id => id == messageId);
 			index++;
 
-			var messagesPerPage = await Settings.MessagesPerPage();
+			var messagesPerPage = Settings.MessagesPerPage();
 			return Convert.ToInt32(Math.Ceiling(index / messagesPerPage));
 		}
 	}

@@ -409,8 +409,13 @@ namespace Forum3.Services.Controller {
 		}
 
 		public async Task<List<ItemViewModels.IndexCategory>> GetCategories() {
-			var categoryRecords = await DbContext.Categories.OrderBy(r => r.DisplayOrder).ToListAsync();
-			var boardRecords = await DbContext.Boards.OrderBy(r => r.DisplayOrder).ToListAsync();
+			var categoryRecordsTask = DbContext.Categories.OrderBy(r => r.DisplayOrder).ToListAsync();
+			var boardRecordsTask = DbContext.Boards.OrderBy(r => r.DisplayOrder).ToListAsync();
+
+			Task.WaitAll(categoryRecordsTask, boardRecordsTask);
+
+			var categoryRecords = categoryRecordsTask.Result;
+			var boardRecords = boardRecordsTask.Result;
 
 			var indexCategories = new List<ItemViewModels.IndexCategory>();
 
@@ -482,21 +487,23 @@ namespace Forum3.Services.Controller {
 		}
 		
 		async Task<List<ItemViewModels.OnlineUser>> GetOnlineUsers() {
-			var onlineTimeLimitSetting = await Settings.OnlineTimeLimit();
+			var onlineTimeLimitSetting = Settings.OnlineTimeLimit();
 			onlineTimeLimitSetting *= -1;
 
 			var onlineTimeLimit = DateTime.Now.AddMinutes(onlineTimeLimitSetting);
 			var onlineTodayTimeLimit = DateTime.Now.AddMinutes(-10080);
 
-			var onlineUsers = await (from user in DbContext.Users
-									 where user.LastOnline >= onlineTodayTimeLimit
-									 orderby user.LastOnline descending
-									 select new ItemViewModels.OnlineUser {
-										 Id = user.Id,
-										 Name = user.DisplayName,
-										 Online = user.LastOnline >= onlineTimeLimit,
-										 LastOnline = user.LastOnline
-									 }).ToListAsync();
+			var onlineUsersQuery = from user in DbContext.Users
+								   where user.LastOnline >= onlineTodayTimeLimit
+								   orderby user.LastOnline descending
+								   select new ItemViewModels.OnlineUser {
+									   Id = user.Id,
+									   Name = user.DisplayName,
+									   Online = user.LastOnline >= onlineTimeLimit,
+									   LastOnline = user.LastOnline
+								   };
+
+			var onlineUsers = await onlineUsersQuery.ToListAsync();
 
 			foreach (var onlineUser in onlineUsers)
 				onlineUser.LastOnlineString = onlineUser.LastOnline.ToPassedTimeString();

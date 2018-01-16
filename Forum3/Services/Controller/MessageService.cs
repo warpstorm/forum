@@ -22,16 +22,19 @@ namespace Forum3.Services.Controller {
 
 	public class MessageService {
 		DataModels.ApplicationDbContext DbContext { get; }
+		SettingsRepository Settings { get; }
 		ServiceModels.ContextUser ContextUser { get; }
 		IUrlHelper UrlHelper { get; }
 
 		public MessageService(
 			DataModels.ApplicationDbContext dbContext,
+			SettingsRepository settingsRepository,
 			ContextUserFactory contextUserFactory,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory
 		) {
 			DbContext = dbContext;
+			Settings = settingsRepository;
 			ContextUser = contextUserFactory.GetContextUser();
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
@@ -71,10 +74,21 @@ namespace Forum3.Services.Controller {
 			if (record == null)
 				throw new Exception($@"No record was found with the id '{messageId}'");
 
-			if (record.ParentId > 0)
+			if (record.ParentId > 0) {
 				viewModel.RedirectPath = UrlHelper.Action(nameof(Messages.Migrate), nameof(Messages), new { id = record.ParentId });
-			else
-				viewModel.RedirectPath = UrlHelper.Action(nameof(Messages.FinishMigration), nameof(Messages), new { id = record.Id });
+				return viewModel;
+			}
+
+			var messageIdQuery = from message in DbContext.Messages
+								 where message.Id == record.Id || message.ParentId == record.Id
+								 select message.Id;
+
+			var messageIds = messageIdQuery.Count();
+
+			var take = Settings.MessagesPerPage();
+			var totalPages = Convert.ToInt32(Math.Ceiling(1.0 * messageIds / take));
+
+			viewModel.RedirectPath = UrlHelper.Action(nameof(Messages.FinishMigration), nameof(Messages), new { id = record.Id, page = 1, totalPages = totalPages });
 
 			return viewModel;
 		}

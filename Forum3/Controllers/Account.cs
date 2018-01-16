@@ -16,7 +16,6 @@ namespace Forum3.Controllers {
 		}
 
 		[HttpGet]
-		[Authorize(Roles="Admin")]
 		public async Task<IActionResult> Index() {
 			var viewModel = await AccountService.IndexPage();
 			return View(viewModel);

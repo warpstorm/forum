@@ -1,7 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using System.Linq;
 
 namespace Forum3.Services {
 	using DataModels = Models.DataModels;
@@ -18,8 +17,8 @@ namespace Forum3.Services {
 			DbContext = dbContext;
 		}
 
-		public async Task<int> AvatarSize() {
-			var setting = await GetInt(Constants.Settings.AvatarSize);
+		public int AvatarSize() {
+			var setting = GetInt(Constants.Settings.AvatarSize);
 
 			if (setting == 0)
 				setting = 100;
@@ -27,8 +26,8 @@ namespace Forum3.Services {
 			return setting;
 		}
 
-		public async Task<DateTime> HistoryTimeLimit() {
-			var setting = await GetInt(Constants.Settings.HistoryTimeLimit);
+		public DateTime HistoryTimeLimit() {
+			var setting = GetInt(Constants.Settings.HistoryTimeLimit);
 
 			if (setting == 0)
 				setting = -14;
@@ -36,8 +35,8 @@ namespace Forum3.Services {
 			return DateTime.Now.AddDays(setting);
 		}
 
-		public async Task<int> MessagesPerPage() {
-			var setting = await GetInt(Constants.Settings.MessagesPerPage);
+		public int MessagesPerPage() {
+			var setting = GetInt(Constants.Settings.MessagesPerPage);
 
 			if (setting == 0)
 				setting = 15;
@@ -45,8 +44,8 @@ namespace Forum3.Services {
 			return setting;
 		}
 
-		public async Task<int> OnlineTimeLimit() {
-			var setting = await GetInt(Constants.Settings.OnlineTimeLimit);
+		public int OnlineTimeLimit() {
+			var setting = GetInt(Constants.Settings.OnlineTimeLimit);
 
 			if (setting == 0)
 				setting = 5;
@@ -54,8 +53,8 @@ namespace Forum3.Services {
 			return setting;
 		}
 
-		public async Task<int> PopularityLimit() {
-			var setting = await GetInt(Constants.Settings.PopularityLimit);
+		public int PopularityLimit() {
+			var setting = GetInt(Constants.Settings.PopularityLimit);
 
 			if (setting == 0)
 				setting = 25;
@@ -63,8 +62,8 @@ namespace Forum3.Services {
 			return setting;
 		}
 
-		public async Task<int> TopicsPerPage() {
-			var setting = await GetInt(Constants.Settings.TopicsPerPage);
+		public int TopicsPerPage() {
+			var setting = GetInt(Constants.Settings.TopicsPerPage);
 
 			if (setting == 0)
 				setting = 15;
@@ -72,13 +71,13 @@ namespace Forum3.Services {
 			return setting;
 		}
 
-		public async Task<string> GetSetting(string name, string userId = "") {
+		public string GetSetting(string name, string userId = "") {
 			DataModels.SiteSetting setting = null;
 			var settingValue = string.Empty;
 
 			if (string.IsNullOrEmpty(userId)) {
 				if (!Settings.ContainsKey(name)) {
-					setting = await DbContext.SiteSettings.SingleOrDefaultAsync(r => r.Name == name && string.IsNullOrEmpty(r.UserId));
+					setting = DbContext.SiteSettings.Where(r => r.Name == name && string.IsNullOrEmpty(r.UserId)).FirstOrDefault();
 
 					lock (Settings) {
 						if (!Settings.ContainsKey(name))
@@ -96,7 +95,7 @@ namespace Forum3.Services {
 				}
 
 				if (!UserSettings[userId].ContainsKey(name)) {
-					setting = await DbContext.SiteSettings.SingleOrDefaultAsync(r => r.Name == name && r.UserId == userId);
+					setting = DbContext.SiteSettings.Where(r => r.Name == name && r.UserId == userId).FirstOrDefault();
 
 					lock (UserSettings[userId]) {
 						if (!UserSettings[userId].ContainsKey(name))
@@ -110,8 +109,8 @@ namespace Forum3.Services {
 			return settingValue;
 		}
 
-		async Task<int> GetInt(string name, string userId = "") {
-			var setting = await GetSetting(name, userId);
+		int GetInt(string name, string userId = "") {
+			var setting = GetSetting(name, userId);
 
 			if (string.IsNullOrEmpty(setting))
 				return default(int);
@@ -119,8 +118,8 @@ namespace Forum3.Services {
 			return Convert.ToInt32(setting);
 		}
 
-		async Task<bool> GetBool(string name, string userId = "") {
-			var setting = await GetSetting(name, userId);
+		bool GetBool(string name, string userId = "") {
+			var setting = GetSetting(name, userId);
 
 			if (string.IsNullOrEmpty(setting))
 				return default(bool);
