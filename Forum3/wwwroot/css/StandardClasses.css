@@ -100,15 +100,17 @@ a.borderless * {
 	border: 0;
 	font-size: 8pt;
 	line-height: 1.2em;
-	color: #92abba;
 }
 
 .note-large {
 	padding: 0 10px;
-	color: #92abba;
 	font-size: 1em;
 	line-height: 2em;
 }
+
+	.note, a.note, .note a, .note-large {
+		color: #92abba;
+	}
 
 .font-small {
 	line-height: 12pt;
