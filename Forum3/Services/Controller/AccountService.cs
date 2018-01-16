@@ -24,6 +24,8 @@ namespace Forum3.Services.Controller {
 	using ViewModels = Models.ViewModels.Account;
 
 	public class AccountService {
+		public bool IsAuthenticated => ContextUser.IsAuthenticated;
+
 		DataModels.ApplicationDbContext DbContext { get; }
 		SettingsRepository Settings { get; }
 		CloudBlobClient CloudBlobClient { get; }

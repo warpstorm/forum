@@ -106,6 +106,9 @@ namespace Forum3.Controllers {
 		[HttpGet]
 		[AllowAnonymous]
 		public async Task<IActionResult> Login() {
+			if (AccountService.IsAuthenticated)
+				return RedirectToAction(nameof(Boards.Index), nameof(Boards));
+
 			var viewModel = await AccountService.LoginPage();
 			return View(viewModel);
 		}
