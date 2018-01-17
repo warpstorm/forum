@@ -1,10 +1,16 @@
 @model IndexCategory
 
-<div class="content-box pad gap overflow-hidden">
+<div class="content-box pad gap overflow-hidden mobile-hide">
 	<div>
 		<div class="board-last-post float-right">Last Post</div>
 		<div class="board-name"><h3>@Model.Name</h3></div>
 	</div>
+	@foreach (var board in Model.Boards) {
+		@await Html.PartialAsync("_IndexBoard", board)
+	}
+</div>
+
+<div class="content-box pad gap overflow-hidden mobile-show">
 	@foreach (var board in Model.Boards) {
 		@await Html.PartialAsync("_IndexBoard", board)
 	}

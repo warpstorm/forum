@@ -1,7 +1,7 @@
 ﻿@model Message
 
 <article class="gap-bottom">
-	<aside class="user-avatar align-center float-left">
+	<aside class="user-avatar align-center float-left mobile-hide">
 		@if (string.IsNullOrEmpty(Model.PostedByAvatarPath)) {
 			<canvas width="100" height="100" data-jdenticon-value="@Model.PostedById"></canvas>
 		}
@@ -48,6 +48,15 @@
 		</aside>
 
 		<header class="message-header note">
+			<aside class="user-avatar align-center float-left mobile-show">
+				@if (string.IsNullOrEmpty(Model.PostedByAvatarPath)) {
+					<canvas width="100" height="100" data-jdenticon-value="@Model.PostedById"></canvas>
+				}
+				else {
+					<img src="@Model.PostedByAvatarPath" />
+				}
+			</aside>
+
 			@Model.PostedByName 
 			<time>
 				posted @Model.TimePosted
@@ -56,6 +65,8 @@
 				}
 			</time>
 		</header>
+
+		<br class="clear mobile-show" />
 
 		@if (Model.ReplyId > 0) {
 			<p class="pad-left note"><a asp-action="@nameof(Topics.Display)" asp-route-id="@Model.ReplyId">In reply to this post by @Model.ReplyPostedBy:</a></p>

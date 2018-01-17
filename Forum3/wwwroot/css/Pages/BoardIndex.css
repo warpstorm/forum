@@ -2,8 +2,20 @@
 	margin-right: 230px;
 }
 
+@media only screen and (max-width: 900px) {
+	#categories {
+		margin-right: 0;
+	}
+}
+
 #side-bar {
 	width: 220px;
+}
+
+@media only screen and (max-width: 900px) {
+	#side-bar {
+		display: none;
+	}
 }
 
 	#side-bar li {
@@ -17,8 +29,21 @@
 	margin-right: 300px;
 }
 
+@media only screen and (max-width: 768px) {
+	.board-name {
+		margin-right: 0;
+	}
+}
+
 .board-last-post {
-	width: 300px;
+	width: 50%;
+	max-width: 300px;
 	white-space: nowrap;
 	overflow: hidden;
+}
+
+@media only screen and (max-width: 480px) {
+	.board-last-post {
+		width: 100%;
+	}
 }
