@@ -1,6 +1,10 @@
 ﻿$(function () {
 	$(".open-menu").on("click.open-menu", OpenMenu);
 
+	$("[clickable-link-parent] a").on("click", function () {
+		event.preventDefault();
+	});
+
 	// TODO: Add middle click and shift click events too.
 	$("[clickable-link-parent]").on("mousedown", OpenLink);
 
