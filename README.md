@@ -1,7 +1,7 @@
 # Warpstorm.com Forum
 
-This project will be slowly growing as I migrate old MVC 4 code from VSO into this new ASP.NET Core MVC solution. I don't suggest downloading it yet, but you're welcome to view it to get ideas or make suggestions.
+This message board solution is custom built specifically for Warpstorm.com. You will find many Warpstorm-specific references throughout the code and content. I am more than willing, however, to receive pull requests and help make adjustments that will make the code base more usable for other sites.
 
-You will find many Warpstorm.com-specific content throughout the code. I am not writing this to be a drop-in forum for any website, though I am more than willing to pull or help make adjustments that will make the code base more usable for other sites. This is primarily to allow for open source development for Warpstorm.com specifically.
+This software requires [CodeKicker.BBCode](http://codekicker.de/) and the source from that project is included in this one, albeit heavily reformatted by me and modernized to work with ASP.NET Core and the latest C# features.
 
-This software requires [CodeKicker.BBCode](http://codekicker.de/) and the source from that project is included in this one, albeit heavily reformatted by me and modernized to work with .NET Core.
+Aside from CodeKicker's code, anything else is open and free, so you're welcome to steal anything and everything I've written here. If you do, you would help me feel better about all my time spent here by simply emailing me at yarbro@outlook.com
