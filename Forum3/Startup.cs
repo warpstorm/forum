@@ -1,5 +1,4 @@
-﻿using Forum3.Annotations;
-using Forum3.Controllers;
+﻿using Forum3.Controllers;
 using Forum3.Helpers;
 using Forum3.Migrator;
 using Forum3.Models.DataModels;
@@ -23,6 +22,8 @@ namespace Forum3 {
 
 		// This method gets called by the runtime. Use this method to add services to the container.
 		public void ConfigureServices(IServiceCollection services) {
+			services.AddApplicationInsightsTelemetry(Configuration);
+
 			// Loads from the environment
 			var dbConnectionString = Configuration["DefaultConnection"];
 
