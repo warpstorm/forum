@@ -21,10 +21,25 @@ namespace Forum3.Models.DataModels {
 			base.OnModelCreating(modelBuilder);
 
 			modelBuilder.Entity<Message>()
-				.HasIndex(b => b.LastReplyPosted);
+				.HasIndex(r => r.Processed);
+
+			modelBuilder.Entity<Message>()
+				.HasIndex(r => r.LastReplyPosted);
+
+			modelBuilder.Entity<Message>()
+				.HasIndex(r => r.ParentId);
+
+			modelBuilder.Entity<Message>()
+				.HasIndex(r => r.LegacyId);
+
+			modelBuilder.Entity<Message>()
+				.HasIndex(r => r.LegacyParentId);
 
 			modelBuilder.Entity<Pin>()
-				.HasIndex(b => b.MessageId);
+				.HasIndex(r => r.MessageId);
+
+			modelBuilder.Entity<SiteSetting>()
+				.HasIndex(r => new { r.Name, r.UserId });
 		}
 	}
 }
