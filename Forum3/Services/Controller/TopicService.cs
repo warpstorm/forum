@@ -98,8 +98,9 @@ namespace Forum3.Services.Controller {
 				return GetRedirectViewModel(messageId, record.ParentId, messageIds);
 
 			var processedQuery = from message in DbContext.Messages
+								 where !message.Processed
 								 where message.Id == parentId || message.ParentId == parentId || message.LegacyParentId == record.LegacyId
-								 where message.LegacyParentId != 0 && message.LegacyId != 0 && !message.Processed
+								 where message.LegacyParentId != 0 && message.LegacyId != 0
 								 select message.Id;
 
 			if (processedQuery.Any())
@@ -163,7 +164,7 @@ namespace Forum3.Services.Controller {
 			return topic;
 		}
 
-		public async Task<ServiceModels.ServiceResponse> Latest(int messageId) {
+		public ServiceModels.ServiceResponse Latest(int messageId) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			var record = DbContext.Messages.Find(messageId);
@@ -182,7 +183,7 @@ namespace Forum3.Services.Controller {
 			}
 
 			var historyTimeLimit = Settings.HistoryTimeLimit();
-			var viewLogs = await DbContext.ViewLogs.Where(r => r.UserId == ContextUser.ApplicationUser.Id && r.LogTime >= historyTimeLimit).ToListAsync();
+			var viewLogs = DbContext.ViewLogs.Where(r => r.UserId == ContextUser.ApplicationUser.Id && r.LogTime >= historyTimeLimit).ToList();
 			var latestViewTime = historyTimeLimit;
 
 			foreach (var viewLog in viewLogs) {
@@ -204,7 +205,7 @@ namespace Forum3.Services.Controller {
 								 where message.TimePosted >= latestViewTime
 								 select message.Id;
 
-			var latestMessageId = await messageIdQuery.FirstOrDefaultAsync();
+			var latestMessageId = messageIdQuery.FirstOrDefault();
 
 			if (latestMessageId == 0)
 				latestMessageId = record.LastReplyId;
