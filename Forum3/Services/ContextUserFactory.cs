@@ -10,20 +10,17 @@ namespace Forum3.Services {
 	public class ContextUserFactory {
 		ApplicationDbContext DbContext { get; }
 		UserManager<ApplicationUser> UserManager { get; }
-		RoleManager<ApplicationRole> RoleManager { get; }
 		SignInManager<ApplicationUser> SignInManager { get; }
 		HttpContext HttpContext { get; }
 
 		public ContextUserFactory(
 			ApplicationDbContext dbContext,
 			UserManager<ApplicationUser> userManager,
-			RoleManager<ApplicationRole> roleManager,
 			SignInManager<ApplicationUser> signInManager,
 			IHttpContextAccessor httpContextAccessor
 		) {
 			DbContext = dbContext;
 			UserManager = userManager;
-			RoleManager = roleManager;
 			SignInManager = signInManager;
 
 			HttpContext = httpContextAccessor.HttpContext;
@@ -61,25 +58,34 @@ namespace Forum3.Services {
 					return contextUser;
 				}
 
+				var userRolesQuery = from userRole in DbContext.UserRoles
+									 join role in DbContext.Roles on userRole.RoleId equals role.Id
+									 where userRole.UserId.Equals(contextUser.ApplicationUser.Id)
+									 select role.Name;
+
+				contextUser.Roles = userRolesQuery.ToList();
+
 				var adminRole = DbContext.Roles.SingleOrDefault(r => r.Name == "Admin");
 
 				var adminUsersQuery = from user in DbContext.Users
-								 join userRole in DbContext.UserRoles on user.Id equals userRole.UserId
-								 join role in DbContext.Roles on userRole.RoleId equals role.Id
-								 where role.Name == "Admin"
-								 select user;
+									  join userRole in DbContext.UserRoles on user.Id equals userRole.UserId
+									  join role in DbContext.Roles on userRole.RoleId equals role.Id
+									  where role.Name == "Admin"
+									  select user.Id;
 
 				var adminUsers = adminUsersQuery.ToList();
 
 				// Occurs when there is no admin role created yet.
-				if (adminRole is null)
+				if (adminRole is null) {
 					contextUser.IsAdmin = true;
+				}
 				// Occurs when there is an admin role, but no admin users yet.
-				else if (adminUsers.Count() == 0)
+				else if (adminUsers.Count() == 0) {
 					contextUser.IsAdmin = true;
-				else if (currentPrincipal.IsInRole("Admin")) {
-					// Force logout if the user was removed from Admin, but their cookie still says they're in Admin.
-					if (!adminUsersQuery.Any(u => u.Id == contextUser.ApplicationUser.Id)) {
+				}
+				else if (contextUser.Roles.Contains("Admin")) {
+					// Force logout if the user was removed from Admin, but their session still says they're in Admin.
+					if (!adminUsersQuery.Any(uid => uid == contextUser.ApplicationUser.Id)) {
 						contextUser.IsAdmin = false;
 						SignInManager.SignOutAsync().ConfigureAwait(false);
 						return contextUser;
