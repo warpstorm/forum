@@ -40,8 +40,10 @@ namespace Forum3.Services.Controller {
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
-		public async Task<PageModels.TopicIndexPage> IndexPage(int boardId, int page) {
-			var boardRecord = await DbContext.Boards.FindAsync(boardId);
+		public PageModels.TopicIndexPage IndexPage(int boardId, int page) {
+			var boardRecord = DbContext.Boards.Find(boardId);
+
+			// check board roles here. make new board roles table.
 
 			var messageIdQuery = from message in DbContext.Messages
 								 orderby message.LastReplyPosted descending
@@ -53,7 +55,7 @@ namespace Forum3.Services.Controller {
 								 orderby (pinned ? pin.Id : 0) descending, message.LastReplyPosted descending
 								 select message.Id;
 
-			var messageIds = await messageIdQuery.ToListAsync();
+			var messageIds = messageIdQuery.ToList();
 
 			if (page < 1)
 				page = 1;
@@ -64,7 +66,7 @@ namespace Forum3.Services.Controller {
 
 			var pageMessageIds = messageIds.Skip(skip).Take(take).ToList();
 
-			var topicPreviews = await GetTopicPreviews(pageMessageIds);
+			var topicPreviews = GetTopicPreviews(pageMessageIds);
 
 			return new PageModels.TopicIndexPage {
 				BoardId = boardRecord?.Id ?? 0,
@@ -77,7 +79,7 @@ namespace Forum3.Services.Controller {
 			};
 		}
 
-		public async Task<PageModels.TopicDisplayPage> DisplayPage(int messageId, int page = 0, int target = 0) {
+		public PageModels.TopicDisplayPage DisplayPage(int messageId, int page = 0, int target = 0) {
 			var record = DbContext.Messages.Find(messageId);
 
 			if (record is null)
@@ -136,7 +138,7 @@ namespace Forum3.Services.Controller {
 					Views = record.ViewCount,
 				},
 				Messages = messages,
-				Categories = await BoardService.GetCategories(),
+				Categories = BoardService.GetCategories(),
 				AssignedBoards = new List<IndexBoard>(),
 				IsAuthenticated = ContextUser.IsAuthenticated,
 				CanManage = ContextUser.IsAdmin || record.PostedById == ContextUser.ApplicationUser.Id,
@@ -155,11 +157,11 @@ namespace Forum3.Services.Controller {
 			var assignedBoards = assignedBoardsQuery.ToList();
 
 			foreach (var assignedBoard in assignedBoards) {
-				var indexBoard = await BoardService.GetIndexBoard(assignedBoard);
+				var indexBoard = BoardService.GetIndexBoard(assignedBoard);
 				topic.AssignedBoards.Add(indexBoard);
 			}
 
-			await MarkTopicRead(topic);
+			MarkTopicRead(topic);
 
 			return topic;
 		}
@@ -218,7 +220,7 @@ namespace Forum3.Services.Controller {
 			return serviceResponse;
 		}
 
-		public async Task<ServiceModels.ServiceResponse> Pin(int messageId) {
+		public ServiceModels.ServiceResponse Pin(int messageId) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			var record = DbContext.Messages.Find(messageId);
@@ -231,7 +233,7 @@ namespace Forum3.Services.Controller {
 			if (record.ParentId > 0)
 				messageId = record.ParentId;
 
-			var existingRecord = await DbContext.Pins.FirstOrDefaultAsync(p => p.MessageId == messageId && p.UserId == ContextUser.ApplicationUser.Id);
+			var existingRecord = DbContext.Pins.FirstOrDefault(p => p.MessageId == messageId && p.UserId == ContextUser.ApplicationUser.Id);
 
 			if (existingRecord is null) {
 				var pinRecord = new DataModels.Pin {
@@ -250,7 +252,7 @@ namespace Forum3.Services.Controller {
 			return serviceResponse;
 		}
 
-		public async Task<ServiceModels.ServiceResponse> ToggleBoard(ToggleBoardInput input) {
+		public ServiceModels.ServiceResponse ToggleBoard(ToggleBoardInput input) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			var messageRecord = DbContext.Messages.Find(input.MessageId);
@@ -263,7 +265,7 @@ namespace Forum3.Services.Controller {
 			if (messageRecord.ParentId > 0)
 				messageId = messageRecord.ParentId;
 
-			if (!await DbContext.Boards.AnyAsync(r => r.Id == input.BoardId))
+			if (!DbContext.Boards.Any(r => r.Id == input.BoardId))
 				serviceResponse.Error(string.Empty, $@"No board was found with the id '{input.BoardId}'");
 
 			if (!serviceResponse.Success)
@@ -271,7 +273,7 @@ namespace Forum3.Services.Controller {
 
 			var boardId = input.BoardId;
 
-			var existingRecord = await DbContext.MessageBoards.FirstOrDefaultAsync(p => p.MessageId == messageId && p.BoardId == boardId);
+			var existingRecord = DbContext.MessageBoards.FirstOrDefault(p => p.MessageId == messageId && p.BoardId == boardId);
 
 			if (existingRecord is null) {
 				var messageBoardRecord = new DataModels.MessageBoard {
@@ -290,7 +292,7 @@ namespace Forum3.Services.Controller {
 			return serviceResponse;
 		}
 
-		async Task<List<ItemModels.MessagePreview>> GetTopicPreviews(List<int> messageIds) {
+		List<ItemModels.MessagePreview> GetTopicPreviews(List<int> messageIds) {
 			var messageRecordQuery = from message in DbContext.Messages
 									 where message.ParentId == 0 && messageIds.Contains(message.Id)
 									 join reply in DbContext.Messages on message.LastReplyId equals reply.Id into replies
@@ -313,48 +315,53 @@ namespace Forum3.Services.Controller {
 										 Pinned = pinned
 									 };
 
-			var messages = await messageRecordQuery.ToListAsync();
+			var messages = messageRecordQuery.ToList();
 
 			var participation = new List<DataModels.Participant>();
 			var viewLogs = new List<DataModels.ViewLog>();
 			var take = Settings.MessagesPerPage();
+			var historyTimeLimit = Settings.HistoryTimeLimit();
 
 			if (ContextUser.IsAuthenticated) {
 				participation = DbContext.Participants.Where(r => r.UserId == ContextUser.ApplicationUser.Id).ToList();
-
-				var historyTimeLimit = Settings.HistoryTimeLimit();
-				viewLogs = DbContext.ViewLogs.Where(r => r.UserId == ContextUser.ApplicationUser.Id && r.LogTime >= historyTimeLimit).ToList();
+				viewLogs = DbContext.ViewLogs.Where(r => r.LogTime >= historyTimeLimit && r.UserId == ContextUser.ApplicationUser.Id).ToList();
 			}
 			
 			foreach (var message in messages) {
 				message.Pages = Convert.ToInt32(Math.Ceiling(1.0 * message.Replies / take));
 				message.LastReplyPosted = message.LastReplyPostedDT.ToPassedTimeString();
 
-				var unread = 1;
-
-				if (ContextUser.IsAuthenticated) {
-					foreach (var viewLog in viewLogs) {
-						switch (viewLog.TargetType) {
-							case EViewLogTargetType.All:
-								if (viewLog.LogTime >= message.LastReplyPostedDT)
-									unread = 0;
-								break;
-
-							case EViewLogTargetType.Message:
-								if (viewLog.TargetId == message.Id && viewLog.LogTime >= message.LastReplyPostedDT)
-									unread = 0;
-								break;
-						}
-					}
+				if (message.LastReplyPostedDT > historyTimeLimit) {
+					TopicUnreadLevel(message, participation, viewLogs);
 				}
-
-				if (unread == 1 && participation.Any(r => r.MessageId == message.Id))
-					unread = 2;
-
-				message.Unread = unread;
 			}
 
 			return messages;
+		}
+
+		void TopicUnreadLevel(ItemModels.MessagePreview message, List<DataModels.Participant> participation, List<DataModels.ViewLog> viewLogs) {
+			var unread = 1;
+
+			if (ContextUser.IsAuthenticated) {
+				foreach (var viewLog in viewLogs) {
+					switch (viewLog.TargetType) {
+						case EViewLogTargetType.All:
+							if (viewLog.LogTime >= message.LastReplyPostedDT)
+								unread = 0;
+							break;
+
+						case EViewLogTargetType.Message:
+							if (viewLog.TargetId == message.Id && viewLog.LogTime >= message.LastReplyPostedDT)
+								unread = 0;
+							break;
+					}
+				}
+			}
+
+			if (unread == 1 && participation.Any(r => r.MessageId == message.Id))
+				unread = 2;
+
+			message.Unread = unread;
 		}
 
 		List<ItemModels.Message> GetTopicMessages(List<int> messageIds) {
@@ -415,14 +422,11 @@ namespace Forum3.Services.Controller {
 			return messages;
 		}
 
-		async Task MarkTopicRead(PageModels.TopicDisplayPage topic) {
-			var historyTimeLimit = Settings.HistoryTimeLimit();
-
-			var viewLogs = await DbContext.ViewLogs.Where(v =>
-				v.LogTime >= historyTimeLimit
-				&& v.UserId == ContextUser.ApplicationUser.Id
+		void MarkTopicRead(PageModels.TopicDisplayPage topic) {
+			var viewLogs = DbContext.ViewLogs.Where(v =>
+				v.UserId == ContextUser.ApplicationUser.Id
 				&& (v.TargetType == EViewLogTargetType.All || (v.TargetType == EViewLogTargetType.Message && v.TargetId == topic.Id))
-			).ToListAsync();
+			).ToList();
 
 			DateTime latestTime;
 
@@ -435,7 +439,11 @@ namespace Forum3.Services.Controller {
 			else
 				latestTime = latestMessageTime;
 
-			foreach (var viewLog in await DbContext.ViewLogs.Where(r => r.UserId == ContextUser.ApplicationUser.Id && r.TargetId == topic.Id && r.TargetType == EViewLogTargetType.Message).ToListAsync())
+			var historyTimeLimit = Settings.HistoryTimeLimit();
+
+			var existingLogs = viewLogs.Where(r => r.TargetType == EViewLogTargetType.Message);
+
+			foreach (var viewLog in existingLogs)
 				DbContext.ViewLogs.Remove(viewLog);
 
 			DbContext.ViewLogs.Add(new DataModels.ViewLog {
@@ -445,11 +453,11 @@ namespace Forum3.Services.Controller {
 				UserId = ContextUser.ApplicationUser.Id
 			});
 
-			try {
+			//try {
 				DbContext.SaveChanges();
-			}
+			// TODO - uncomment if this problem occurs again.
 			// The user probably refreshed several times in a row.
-			catch (DbUpdateConcurrencyException) { }
+			//catch (DbUpdateConcurrencyException) { }
 		}
 
 		PageModels.TopicDisplayPage GetRedirectViewModel(int messageId, int parentMessageId, List<int> messageIds) {
