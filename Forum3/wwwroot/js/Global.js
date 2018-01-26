@@ -85,7 +85,7 @@ function OpenMenu() {
 
 	$(this).off("click.open-menu");
 	$(this).on("click.close-menu", CloseMenu);
-	$(this).find(".drop-down-menu-wrapper").removeClass("hidden");
+	$(this).find(".menu-wrapper").removeClass("hidden");
 
 	setTimeout(function () {
 		$("body").on("click.close-menu", CloseMenu);
@@ -93,7 +93,7 @@ function OpenMenu() {
 }
 
 function CloseMenu() {
-	var dropDownMenus = $(".drop-down-menu-wrapper");
+	var dropDownMenus = $(".menu-wrapper");
 
 	for (var i = 0; i < dropDownMenus.length; i++) {
 		var dropDownMenu = $(dropDownMenus[i]);
