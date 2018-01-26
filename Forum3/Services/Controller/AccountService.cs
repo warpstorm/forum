@@ -1,6 +1,7 @@
 ﻿using Forum3.Controllers;
 using Forum3.Helpers;
 using Forum3.Interfaces.Users;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -24,39 +25,42 @@ namespace Forum3.Services.Controller {
 	using ViewModels = Models.ViewModels.Account;
 
 	public class AccountService {
-		public bool IsAuthenticated => ContextUser.IsAuthenticated;
+		public bool IsAuthenticated => UserContext.IsAuthenticated;
 
 		DataModels.ApplicationDbContext DbContext { get; }
 		SettingsRepository Settings { get; }
 		CloudBlobClient CloudBlobClient { get; }
-		ServiceModels.ContextUser ContextUser { get; }
+		ServiceModels.UserContext UserContext { get; }
 		UserManager<DataModels.ApplicationUser> UserManager { get; }
 		SignInManager<DataModels.ApplicationUser> SignInManager { get; }
 		IEmailSender EmailSender { get; }
 		IUrlHelper UrlHelper { get; }
 		ILogger Logger { get; }
+		IHttpContextAccessor HttpContextAccessor { get; }
 
 		public AccountService(
 			DataModels.ApplicationDbContext dbContext,
+			ServiceModels.UserContext userContext,
 			SettingsRepository settingsRepository,
 			CloudBlobClient cloudBlobClient,
-			ContextUserFactory contextUserFactory,
 			UserManager<DataModels.ApplicationUser> userManager,
 			SignInManager<DataModels.ApplicationUser> signInManager,
+			IHttpContextAccessor httpContextAccessor,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory,
 			IEmailSender emailSender,
 			ILogger<AccountService> logger
 		) {
 			DbContext = dbContext;
+			UserContext = userContext;
 			Settings = settingsRepository;
 			CloudBlobClient = cloudBlobClient;
-			ContextUser = contextUserFactory.GetContextUser();
 			UserManager = userManager;
 			SignInManager = signInManager;
 			EmailSender = emailSender;
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 			Logger = logger;
+			HttpContextAccessor = httpContextAccessor;
 		}
 
 		public async Task<ViewModels.LoginPage> LoginPage() {
@@ -106,7 +110,7 @@ namespace Forum3.Services.Controller {
 					LastOnline = user.LastOnline.ToPassedTimeString()
 				};
 
-				if (ContextUser.IsAdmin || user.Id == ContextUser.ApplicationUser.Id)
+				if (UserContext.IsAdmin || user.Id == UserContext.ApplicationUser.Id)
 					indexItem.CanManage = true;
 
 				viewModel.IndexItems.Add(indexItem);
@@ -116,10 +120,10 @@ namespace Forum3.Services.Controller {
 		}
 
 		public async Task<ViewModels.DetailsPage> DetailsPage(string id) {
-			var userRecord = id is null ? ContextUser.ApplicationUser : await UserManager.FindByIdAsync(id);
+			var userRecord = id is null ? UserContext.ApplicationUser : await UserManager.FindByIdAsync(id);
 
 			if (userRecord is null)
-				userRecord = ContextUser.ApplicationUser;
+				userRecord = UserContext.ApplicationUser;
 
 			CanEdit(userRecord.Id);
 
@@ -151,7 +155,7 @@ namespace Forum3.Services.Controller {
 		public async Task<ServiceModels.ServiceResponse> UpdateAccount(InputModels.UpdateAccountInput input) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
-			if (!await UserManager.CheckPasswordAsync(ContextUser.ApplicationUser, input.Password)) {
+			if (!await UserManager.CheckPasswordAsync(UserContext.ApplicationUser, input.Password)) {
 				var message = $"Invalid password for '{input.DisplayName}'.";
 				serviceResponse.Error(nameof(InputModels.UpdateAccountInput.Password), message);
 				Logger.LogWarning(message);
@@ -180,7 +184,7 @@ namespace Forum3.Services.Controller {
 				userRecord.DisplayName = input.DisplayName;
 				DbContext.Update(userRecord);
 
-				Logger.LogInformation($"Display name was modified by '{ContextUser.ApplicationUser.DisplayName}' for account '{userRecord.DisplayName}'.");
+				Logger.LogInformation($"Display name was modified by '{UserContext.ApplicationUser.DisplayName}' for account '{userRecord.DisplayName}'.");
 			}
 
 			var birthday = new DateTime(input.BirthdayYear, input.BirthdayMonth, input.BirthdayDay);
@@ -189,7 +193,7 @@ namespace Forum3.Services.Controller {
 				userRecord.Birthday = birthday;
 				DbContext.Update(userRecord);
 
-				Logger.LogInformation($"Birthday was modified by '{ContextUser.ApplicationUser.DisplayName}' for account '{userRecord.DisplayName}'.");
+				Logger.LogInformation($"Birthday was modified by '{UserContext.ApplicationUser.DisplayName}' for account '{userRecord.DisplayName}'.");
 			}
 
 			DbContext.SaveChanges();
@@ -201,7 +205,7 @@ namespace Forum3.Services.Controller {
 
 				if (!identityResult.Succeeded) {
 					foreach (var error in identityResult.Errors) {
-						Logger.LogError($"Error modifying email by '{ContextUser.ApplicationUser.DisplayName}' from '{userRecord.Email}' to '{input.Email}'. Message: {error.Description}");
+						Logger.LogError($"Error modifying email by '{UserContext.ApplicationUser.DisplayName}' from '{userRecord.Email}' to '{input.Email}'. Message: {error.Description}");
 						serviceResponse.Error(error.Description);
 					}
 
@@ -212,14 +216,14 @@ namespace Forum3.Services.Controller {
 
 				if (!identityResult.Succeeded) {
 					foreach (var error in identityResult.Errors) {
-						Logger.LogError($"Error modifying username by '{ContextUser.ApplicationUser.DisplayName}' from '{userRecord.Email}' to '{input.Email}'. Message: {error.Description}");
+						Logger.LogError($"Error modifying username by '{UserContext.ApplicationUser.DisplayName}' from '{userRecord.Email}' to '{input.Email}'. Message: {error.Description}");
 						serviceResponse.Error(error.Description);
 					}
 
 					return serviceResponse;
 				}
 
-				Logger.LogInformation($"Email address was modified by '{ContextUser.ApplicationUser.DisplayName}' from '{userRecord.Email}' to '{input.Email}'.");
+				Logger.LogInformation($"Email address was modified by '{UserContext.ApplicationUser.DisplayName}' from '{userRecord.Email}' to '{input.Email}'.");
 
 				var code = await UserManager.GenerateEmailConfirmationTokenAsync(userRecord);
 
@@ -228,7 +232,7 @@ namespace Forum3.Services.Controller {
 
 					await EmailSender.SendEmailConfirmationAsync(input.Email, callbackUrl);
 
-					if (userRecord.Id == ContextUser.ApplicationUser.Id)
+					if (userRecord.Id == UserContext.ApplicationUser.Id)
 						await SignOut();
 				}
 				else {
@@ -253,12 +257,12 @@ namespace Forum3.Services.Controller {
 
 				if (!identityResult.Succeeded) {
 					foreach (var error in identityResult.Errors) {
-						Logger.LogError($"Error modifying password by '{ContextUser.ApplicationUser.DisplayName}' for '{userRecord.DisplayName}'. Message: {error.Description}");
+						Logger.LogError($"Error modifying password by '{UserContext.ApplicationUser.DisplayName}' for '{userRecord.DisplayName}'. Message: {error.Description}");
 						serviceResponse.Error(nameof(InputModels.UpdateAccountInput.NewPassword), error.Description);
 					}
 				}
-				else if (userRecord.Id == ContextUser.ApplicationUser.Id) {
-					Logger.LogInformation($"Password was modified by '{ContextUser.ApplicationUser.DisplayName}' for '{userRecord.DisplayName}'.");
+				else if (userRecord.Id == UserContext.ApplicationUser.Id) {
+					Logger.LogInformation($"Password was modified by '{UserContext.ApplicationUser.DisplayName}' for '{userRecord.DisplayName}'.");
 					await SignOut();
 					serviceResponse.RedirectPath = UrlHelper.Action(nameof(Login));
 					return serviceResponse;
@@ -341,7 +345,7 @@ namespace Forum3.Services.Controller {
 			DbContext.Update(userRecord);
 			DbContext.SaveChanges();
 
-			Logger.LogInformation($"Avatar was modified by '{ContextUser.ApplicationUser.DisplayName}' for account '{userRecord.DisplayName}'.");
+			Logger.LogInformation($"Avatar was modified by '{UserContext.ApplicationUser.DisplayName}' for account '{userRecord.DisplayName}'.");
 
 			return serviceResponse;
 		}
@@ -446,14 +450,21 @@ namespace Forum3.Services.Controller {
 			return serviceResponse;
 		}
 
-		public async Task SignOut() => await SignInManager.SignOutAsync();
+		public async Task SignOut() {
+			HttpContextAccessor.HttpContext.Session.Remove(Constants.Keys.UserId);
+
+			await Task.WhenAll(new[] {
+				HttpContextAccessor.HttpContext.Session.CommitAsync(),
+				SignInManager.SignOutAsync()
+			});
+		}
 
 		public async Task<ServiceModels.ServiceResponse> SendVerificationEmail() {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
-			var code = await UserManager.GenerateEmailConfirmationTokenAsync(ContextUser.ApplicationUser);
-			var callbackUrl = EmailConfirmationLink(ContextUser.ApplicationUser.Id, code);
-			var email = ContextUser.ApplicationUser.Email;
+			var code = await UserManager.GenerateEmailConfirmationTokenAsync(UserContext.ApplicationUser);
+			var callbackUrl = EmailConfirmationLink(UserContext.ApplicationUser.Id, code);
+			var email = UserContext.ApplicationUser.Email;
 
 			if (!EmailSender.Ready) {
 				serviceResponse.RedirectPath = callbackUrl;
@@ -562,10 +573,10 @@ namespace Forum3.Services.Controller {
 		public string ResetPasswordCallbackLink(string userId, string code) => UrlHelper.AbsoluteAction(nameof(Account.ResetPassword), nameof(Account), new { userId, code });
 
 		void CanEdit(string userId) {
-			if (userId == ContextUser.ApplicationUser.Id || ContextUser.IsAdmin)
+			if (userId == UserContext.ApplicationUser.Id || UserContext.IsAdmin)
 				return;
 
-			Logger.LogWarning($"A user tried to edit another user's profile. {ContextUser.ApplicationUser.DisplayName}");
+			Logger.LogWarning($"A user tried to edit another user's profile. {UserContext.ApplicationUser.DisplayName}");
 
 			throw new ApplicationException("You hackin' bro?");
 		}

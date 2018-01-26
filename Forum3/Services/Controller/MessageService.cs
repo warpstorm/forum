@@ -23,19 +23,19 @@ namespace Forum3.Services.Controller {
 	public class MessageService {
 		DataModels.ApplicationDbContext DbContext { get; }
 		SettingsRepository Settings { get; }
-		ServiceModels.ContextUser ContextUser { get; }
+		ServiceModels.UserContext UserContext { get; }
 		IUrlHelper UrlHelper { get; }
 
 		public MessageService(
 			DataModels.ApplicationDbContext dbContext,
+			ServiceModels.UserContext userContext,
 			SettingsRepository settingsRepository,
-			ContextUserFactory contextUserFactory,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory
 		) {
 			DbContext = dbContext;
+			UserContext = userContext;
 			Settings = settingsRepository;
-			ContextUser = contextUserFactory.GetContextUser();
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
@@ -151,7 +151,7 @@ namespace Forum3.Services.Controller {
 				MessageId = record.Id,
 				BoardId = boardRecord.Id,
 				TimeAdded = DateTime.Now,
-				UserId = ContextUser.ApplicationUser.Id
+				UserId = UserContext.ApplicationUser.Id
 			});
 
 			boardRecord.LastMessageId = record.Id;
@@ -243,7 +243,7 @@ namespace Forum3.Services.Controller {
 				foreach (var reply in directReplies) {
 					reply.OriginalBody =
 						$"[quote]{record.OriginalBody}\n" +
-						$"Message deleted by {ContextUser.ApplicationUser.DisplayName} on {DateTime.Now.ToString("MMMM dd, yyyy")}[/quote]" +
+						$"Message deleted by {UserContext.ApplicationUser.DisplayName} on {DateTime.Now.ToString("MMMM dd, yyyy")}[/quote]" +
 						reply.OriginalBody;
 
 					reply.ReplyId = 0;
@@ -304,22 +304,22 @@ namespace Forum3.Services.Controller {
 				.SingleOrDefaultAsync(mt =>
 					mt.MessageId == messageRecord.Id
 					&& mt.SmileyId == smileyRecord.Id
-					&& mt.UserId == ContextUser.ApplicationUser.Id);
+					&& mt.UserId == UserContext.ApplicationUser.Id);
 
 			if (existingRecord is null) {
 				var messageThought = new DataModels.MessageThought {
 					MessageId = messageRecord.Id,
 					SmileyId = smileyRecord.Id,
-					UserId = ContextUser.ApplicationUser.Id
+					UserId = UserContext.ApplicationUser.Id
 				};
 
 				DbContext.MessageThoughts.Add(messageThought);
 
-				if (messageRecord.PostedById != ContextUser.ApplicationUser.Id) {
+				if (messageRecord.PostedById != UserContext.ApplicationUser.Id) {
 					var notification = new DataModels.Notification {
 						MessageId = messageRecord.Id,
 						UserId = messageRecord.PostedById,
-						TargetUserId = ContextUser.ApplicationUser.Id,
+						TargetUserId = UserContext.ApplicationUser.Id,
 						Time = DateTime.Now,
 						Type = Enums.ENotificationType.Thought,
 						Unread = true,
@@ -601,7 +601,7 @@ namespace Forum3.Services.Controller {
 					user = await DbContext.Users.FirstOrDefaultAsync(u => u.UserName.ToLower().Contains(matchedTag.ToLower()));
 
 				if (user != null) {
-					if (user.Id != ContextUser.ApplicationUser.Id)
+					if (user.Id != UserContext.ApplicationUser.Id)
 						processedMessageInput.MentionedUsers.Add(user.Id);
 
 					// Eventually link to user profiles
@@ -681,9 +681,9 @@ namespace Forum3.Services.Controller {
 				TimeEdited = currentTime,
 				LastReplyPosted = currentTime,
 
-				PostedById = ContextUser.ApplicationUser.Id,
-				EditedById = ContextUser.ApplicationUser.Id,
-				LastReplyById = ContextUser.ApplicationUser.Id,
+				PostedById = UserContext.ApplicationUser.Id,
+				EditedById = UserContext.ApplicationUser.Id,
+				LastReplyById = UserContext.ApplicationUser.Id,
 
 				ParentId = parentId,
 				ReplyId = replyId,
@@ -696,16 +696,16 @@ namespace Forum3.Services.Controller {
 
 			if (replyRecord != null) {
 				replyRecord.LastReplyId = record.Id;
-				replyRecord.LastReplyById = ContextUser.ApplicationUser.Id;
+				replyRecord.LastReplyById = UserContext.ApplicationUser.Id;
 				replyRecord.LastReplyPosted = currentTime;
 
 				DbContext.Update(replyRecord);
 
-				if (replyRecord.PostedById != ContextUser.ApplicationUser.Id) {
+				if (replyRecord.PostedById != UserContext.ApplicationUser.Id) {
 					var notification = new DataModels.Notification {
 						MessageId = record.Id,
 						UserId = replyRecord.PostedById,
-						TargetUserId = ContextUser.ApplicationUser.Id,
+						TargetUserId = UserContext.ApplicationUser.Id,
 						Time = DateTime.Now,
 						Type = Enums.ENotificationType.Quote,
 						Unread = true,
@@ -717,16 +717,16 @@ namespace Forum3.Services.Controller {
 
 			if (parentMessage != null && parentMessage.Id != replyRecord.Id) {
 				parentMessage.LastReplyId = record.Id;
-				parentMessage.LastReplyById = ContextUser.ApplicationUser.Id;
+				parentMessage.LastReplyById = UserContext.ApplicationUser.Id;
 				parentMessage.LastReplyPosted = currentTime;
 
 				DbContext.Update(parentMessage);
 
-				if (parentMessage.PostedById != ContextUser.ApplicationUser.Id) {
+				if (parentMessage.PostedById != UserContext.ApplicationUser.Id) {
 					var notification = new DataModels.Notification {
 						MessageId = record.Id,
 						UserId = parentMessage.PostedById,
-						TargetUserId = ContextUser.ApplicationUser.Id,
+						TargetUserId = UserContext.ApplicationUser.Id,
 						Time = DateTime.Now,
 						Type = Enums.ENotificationType.Reply,
 						Unread = true,
@@ -740,7 +740,7 @@ namespace Forum3.Services.Controller {
 			NotifyMentionedUsers(processedMessage.MentionedUsers, record.Id);
 
 			var topicId = parentId == 0 ? record.Id : parentId;
-			UpdateTopicParticipation(topicId, ContextUser.ApplicationUser.Id, DateTime.Now);
+			UpdateTopicParticipation(topicId, UserContext.ApplicationUser.Id, DateTime.Now);
 
 			return record;
 		}
@@ -752,7 +752,7 @@ namespace Forum3.Services.Controller {
 			record.LongPreview = message.LongPreview;
 			record.Cards = message.Cards;
 			record.TimeEdited = DateTime.Now;
-			record.EditedById = ContextUser.ApplicationUser.Id;
+			record.EditedById = UserContext.ApplicationUser.Id;
 			record.Processed = true;
 
 			DbContext.Update(record);
@@ -782,7 +782,7 @@ namespace Forum3.Services.Controller {
 			foreach (var user in mentionedUsers) {
 				var notification = new DataModels.Notification {
 					MessageId = messageId,
-					TargetUserId = ContextUser.ApplicationUser.Id,
+					TargetUserId = UserContext.ApplicationUser.Id,
 					UserId = user,
 					Time = DateTime.Now,
 					Type = Enums.ENotificationType.Mention,

@@ -8,19 +8,19 @@ namespace Forum3.Services.Controller {
 
 	public class ProfileService {
 		DataModels.ApplicationDbContext DbContext { get; }
-		ServiceModels.ContextUser ContextUser { get; }
+		ServiceModels.UserContext UserContext { get; }
 
 		public ProfileService(
 			DataModels.ApplicationDbContext dbContext,
-			ContextUserFactory contextUserFactory
+			ServiceModels.UserContext userContext
 		) {
 			DbContext = dbContext;
-			ContextUser = contextUserFactory.GetContextUser();
+			UserContext = userContext;
 		}
 
 		public async Task<ViewModels.DetailsPage> DetailsPage(string id) {
 			if (string.IsNullOrEmpty(id))
-				id = ContextUser.ApplicationUser.Id;
+				id = UserContext.ApplicationUser.Id;
 
 			var userRecord = await DbContext.Users.FindAsync(id);
 

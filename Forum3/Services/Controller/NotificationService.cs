@@ -17,17 +17,17 @@ namespace Forum3.Services.Controller {
 
 	public class NotificationService {
 		DataModels.ApplicationDbContext DbContext { get; }
-		ServiceModels.ContextUser ContextUser { get; }
+		ServiceModels.UserContext UserContext { get; }
 		IUrlHelper UrlHelper { get; }
 
 		public NotificationService(
 			DataModels.ApplicationDbContext dbContext,
-			ContextUserFactory contextUserFactory,
+			ServiceModels.UserContext userContext,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory
 		) {
 			DbContext = dbContext;
-			ContextUser = contextUserFactory.GetContextUser();
+			UserContext = userContext;
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
@@ -42,7 +42,7 @@ namespace Forum3.Services.Controller {
 		}
 
 		public List<ViewModels.Items.IndexItem> GetNotifications(bool showRead = false) {
-			if (ContextUser.ApplicationUser is null)
+			if (UserContext.ApplicationUser is null)
 				return new List<ViewModels.Items.IndexItem>();
 
 			var hiddenTimeLimit = DateTime.Now.AddDays(-7);
@@ -54,7 +54,7 @@ namespace Forum3.Services.Controller {
 									join targetUser in DbContext.Users on n.TargetUserId equals targetUser.Id into targetUsers
 									from targetUser in targetUsers.DefaultIfEmpty()
 									where n.Time > hiddenTimeLimit
-									where n.UserId == ContextUser.ApplicationUser.Id
+									where n.UserId == UserContext.ApplicationUser.Id
 									where showRead || n.Unread
 									orderby n.Time descending
 									select new ViewModels.Items.IndexItem {
@@ -77,7 +77,7 @@ namespace Forum3.Services.Controller {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			var recordQuery = from n in DbContext.Notifications
-							  where n.UserId == ContextUser.ApplicationUser.Id
+							  where n.UserId == UserContext.ApplicationUser.Id
 							  where n.Id == id
 							  select n;
 

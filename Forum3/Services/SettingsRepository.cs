@@ -9,7 +9,7 @@ namespace Forum3.Services {
 		DataModels.ApplicationDbContext DbContext { get; }
 
 		Dictionary<string, string> Settings { get; } = new Dictionary<string, string>();
-		Dictionary<string, Dictionary<string, string>> UserSettings { get; set; } = new Dictionary<string, Dictionary<string, string>>();
+		Dictionary<string, Dictionary<string, string>> UserSettings { get; } = new Dictionary<string, Dictionary<string, string>>();
 
 		public SettingsRepository(
 			DataModels.ApplicationDbContext dbContext

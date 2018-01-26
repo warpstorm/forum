@@ -1,5 +1,4 @@
-﻿using Forum3.Models.DataModels;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Forum3.Models.ViewModels.Account {
 	public class IndexPage {

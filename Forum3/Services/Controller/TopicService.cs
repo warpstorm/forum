@@ -6,11 +6,9 @@ using Forum3.Models.ViewModels.Boards.Items;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Forum3.Services.Controller {
 	using DataModels = Models.DataModels;
@@ -20,23 +18,23 @@ namespace Forum3.Services.Controller {
 
 	public class TopicService {
 		DataModels.ApplicationDbContext DbContext { get; }
+		ServiceModels.UserContext UserContext { get; }
 		BoardService BoardService { get; }
 		SettingsRepository Settings { get; }
-		ServiceModels.ContextUser ContextUser { get; }
 		IUrlHelper UrlHelper { get; }
 
 		public TopicService(
 			DataModels.ApplicationDbContext dbContext,
+			ServiceModels.UserContext userContext,
 			BoardService boardService,
 			SettingsRepository settingsRepository,
-			ContextUserFactory contextUserFactory,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory
 		) {
 			DbContext = dbContext;
+			UserContext = userContext;
 			BoardService = boardService;
 			Settings = settingsRepository;
-			ContextUser = contextUserFactory.GetContextUser();
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
@@ -51,7 +49,49 @@ namespace Forum3.Services.Controller {
 								 where boardRecord == null || messageBoard.BoardId == boardRecord.Id
 								 join pin in DbContext.Pins on message.Id equals pin.MessageId into pins
 								 from pin in pins.DefaultIfEmpty()
-								 let pinned = pin != null && pin.UserId == ContextUser.ApplicationUser.Id
+								 let pinned = pin != null && pin.UserId == UserContext.ApplicationUser.Id
+								 orderby (pinned ? pin.Id : 0) descending, message.LastReplyPosted descending
+								 select message.Id;
+
+			var messageIds = messageIdQuery.ToList();
+
+			if (page < 1)
+				page = 1;
+
+			var take = Settings.TopicsPerPage();
+			var skip = (page * take) - take;
+			var totalPages = Convert.ToInt32(Math.Ceiling(1.0 * messageIds.Count / take));
+
+			var pageMessageIds = messageIds.Skip(skip).Take(take).ToList();
+
+			var topicPreviews = GetTopicPreviews(pageMessageIds);
+
+			return new PageModels.TopicIndexPage {
+				BoardId = boardRecord?.Id ?? 0,
+				BoardName = boardRecord?.Name ?? "All Topics",
+				Skip = skip + take,
+				Take = take,
+				TotalPages = totalPages,
+				CurrentPage = page,
+				Topics = topicPreviews
+			};
+		}
+
+		public PageModels.TopicIndexPage UnreadPage(int boardId, int page) {
+			if (!UserContext.IsAuthenticated)
+				throw new ApplicationException("User must be logged in to view this page.");
+			
+			var boardRecord = DbContext.Boards.Find(boardId);
+
+			// check board roles here. make new board roles table.
+
+			var messageIdQuery = from message in DbContext.Messages
+								 orderby message.LastReplyPosted descending
+								 join messageBoard in DbContext.MessageBoards on message.Id equals messageBoard.MessageId
+								 where boardRecord == null || messageBoard.BoardId == boardRecord.Id
+								 join pin in DbContext.Pins on message.Id equals pin.MessageId into pins
+								 from pin in pins.DefaultIfEmpty()
+								 let pinned = pin != null && pin.UserId == UserContext.ApplicationUser.Id
 								 orderby (pinned ? pin.Id : 0) descending, message.LastReplyPosted descending
 								 select message.Id;
 
@@ -140,8 +180,8 @@ namespace Forum3.Services.Controller {
 				Messages = messages,
 				Categories = BoardService.GetCategories(),
 				AssignedBoards = new List<IndexBoard>(),
-				IsAuthenticated = ContextUser.IsAuthenticated,
-				CanManage = ContextUser.IsAdmin || record.PostedById == ContextUser.ApplicationUser.Id,
+				IsAuthenticated = UserContext.IsAuthenticated,
+				CanManage = UserContext.IsAdmin || record.PostedById == UserContext.ApplicationUser.Id,
 				TotalPages = totalPages,
 				CurrentPage = page,
 				ReplyForm = new ItemModels.ReplyForm {
@@ -179,13 +219,13 @@ namespace Forum3.Services.Controller {
 			if (record.ParentId > 0)
 				record = DbContext.Messages.Find(record.ParentId);
 
-			if (!ContextUser.IsAuthenticated) {
+			if (!UserContext.IsAuthenticated) {
 				serviceResponse.RedirectPath = UrlHelper.Action(nameof(Topics.Display), nameof(Topics), new { id = record.LastReplyId });
 				return serviceResponse;
 			}
 
 			var historyTimeLimit = Settings.HistoryTimeLimit();
-			var viewLogs = DbContext.ViewLogs.Where(r => r.UserId == ContextUser.ApplicationUser.Id && r.LogTime >= historyTimeLimit).ToList();
+			var viewLogs = DbContext.ViewLogs.Where(r => r.UserId == UserContext.ApplicationUser.Id && r.LogTime >= historyTimeLimit).ToList();
 			var latestViewTime = historyTimeLimit;
 
 			foreach (var viewLog in viewLogs) {
@@ -233,13 +273,13 @@ namespace Forum3.Services.Controller {
 			if (record.ParentId > 0)
 				messageId = record.ParentId;
 
-			var existingRecord = DbContext.Pins.FirstOrDefault(p => p.MessageId == messageId && p.UserId == ContextUser.ApplicationUser.Id);
+			var existingRecord = DbContext.Pins.FirstOrDefault(p => p.MessageId == messageId && p.UserId == UserContext.ApplicationUser.Id);
 
 			if (existingRecord is null) {
 				var pinRecord = new DataModels.Pin {
 					MessageId = messageId,
 					Time = DateTime.Now,
-					UserId = ContextUser.ApplicationUser.Id
+					UserId = UserContext.ApplicationUser.Id
 				};
 
 				DbContext.Pins.Add(pinRecord);
@@ -279,7 +319,7 @@ namespace Forum3.Services.Controller {
 				var messageBoardRecord = new DataModels.MessageBoard {
 					MessageId = messageId,
 					BoardId = boardId,
-					UserId = ContextUser.ApplicationUser.Id
+					UserId = UserContext.ApplicationUser.Id
 				};
 
 				DbContext.MessageBoards.Add(messageBoardRecord);
@@ -300,7 +340,7 @@ namespace Forum3.Services.Controller {
 									 join replyPostedBy in DbContext.Users on message.LastReplyById equals replyPostedBy.Id
 									 join pin in DbContext.Pins on message.Id equals pin.MessageId into pins
 									 from pin in pins.DefaultIfEmpty()
-									 let pinned = pin != null && pin.UserId == ContextUser.ApplicationUser.Id
+									 let pinned = pin != null && pin.UserId == UserContext.ApplicationUser.Id
 									 orderby (pinned ? pin.Id : 0) descending, message.LastReplyPosted descending
 									 select new ItemModels.MessagePreview {
 										 Id = message.Id,
@@ -322,18 +362,17 @@ namespace Forum3.Services.Controller {
 			var take = Settings.MessagesPerPage();
 			var historyTimeLimit = Settings.HistoryTimeLimit();
 
-			if (ContextUser.IsAuthenticated) {
-				participation = DbContext.Participants.Where(r => r.UserId == ContextUser.ApplicationUser.Id).ToList();
-				viewLogs = DbContext.ViewLogs.Where(r => r.LogTime >= historyTimeLimit && r.UserId == ContextUser.ApplicationUser.Id).ToList();
+			if (UserContext.IsAuthenticated) {
+				participation = DbContext.Participants.Where(r => r.UserId == UserContext.ApplicationUser.Id).ToList();
+				viewLogs = DbContext.ViewLogs.Where(r => r.LogTime >= historyTimeLimit && r.UserId == UserContext.ApplicationUser.Id).ToList();
 			}
 			
 			foreach (var message in messages) {
 				message.Pages = Convert.ToInt32(Math.Ceiling(1.0 * message.Replies / take));
 				message.LastReplyPosted = message.LastReplyPostedDT.ToPassedTimeString();
 
-				if (message.LastReplyPostedDT > historyTimeLimit) {
+				if (message.LastReplyPostedDT > historyTimeLimit)
 					TopicUnreadLevel(message, participation, viewLogs);
-				}
 			}
 
 			return messages;
@@ -342,7 +381,7 @@ namespace Forum3.Services.Controller {
 		void TopicUnreadLevel(ItemModels.MessagePreview message, List<DataModels.Participant> participation, List<DataModels.ViewLog> viewLogs) {
 			var unread = 1;
 
-			if (ContextUser.IsAuthenticated) {
+			if (UserContext.IsAuthenticated) {
 				foreach (var viewLog in viewLogs) {
 					switch (viewLog.TargetType) {
 						case EViewLogTargetType.All:
@@ -398,10 +437,10 @@ namespace Forum3.Services.Controller {
 				message.TimePosted = message.TimePostedDT.ToPassedTimeString();
 				message.TimeEdited = message.TimeEditedDT.ToPassedTimeString();
 
-				message.CanEdit = ContextUser.IsAdmin || (ContextUser.IsAuthenticated && ContextUser.ApplicationUser.Id == message.PostedById);
-				message.CanDelete = ContextUser.IsAdmin || (ContextUser.IsAuthenticated && ContextUser.ApplicationUser.Id == message.PostedById);
-				message.CanReply = ContextUser.IsAuthenticated;
-				message.CanThought = ContextUser.IsAuthenticated;
+				message.CanEdit = UserContext.IsAdmin || (UserContext.IsAuthenticated && UserContext.ApplicationUser.Id == message.PostedById);
+				message.CanDelete = UserContext.IsAdmin || (UserContext.IsAuthenticated && UserContext.ApplicationUser.Id == message.PostedById);
+				message.CanReply = UserContext.IsAuthenticated;
+				message.CanThought = UserContext.IsAuthenticated;
 
 				message.ReplyForm = new ItemModels.ReplyForm {
 					Id = message.Id,
@@ -424,7 +463,7 @@ namespace Forum3.Services.Controller {
 
 		void MarkTopicRead(PageModels.TopicDisplayPage topic) {
 			var viewLogs = DbContext.ViewLogs.Where(v =>
-				v.UserId == ContextUser.ApplicationUser.Id
+				v.UserId == UserContext.ApplicationUser.Id
 				&& (v.TargetType == EViewLogTargetType.All || (v.TargetType == EViewLogTargetType.Message && v.TargetId == topic.Id))
 			).ToList();
 
@@ -450,12 +489,13 @@ namespace Forum3.Services.Controller {
 				LogTime = latestTime,
 				TargetId = topic.Id,
 				TargetType = EViewLogTargetType.Message,
-				UserId = ContextUser.ApplicationUser.Id
+				UserId = UserContext.ApplicationUser.Id
 			});
 
 			//try {
 				DbContext.SaveChanges();
 			// TODO - uncomment if this problem occurs again.
+			// see - https://docs.microsoft.com/en-us/ef/core/saving/concurrency
 			// The user probably refreshed several times in a row.
 			//catch (DbUpdateConcurrencyException) { }
 		}
@@ -489,6 +529,30 @@ namespace Forum3.Services.Controller {
 
 			var messagesPerPage = Settings.MessagesPerPage();
 			return Convert.ToInt32(Math.Ceiling(index / messagesPerPage));
+		}
+
+		List<DataModels.ViewLog> GetUserViewLogs() {
+			if (!UserContext.IsAuthenticated)
+				return new List<DataModels.ViewLog>();
+
+			var historyTimeLimit = Settings.HistoryTimeLimit();
+			var viewLogs = DbContext.ViewLogs.Where(r => r.UserId == UserContext.ApplicationUser.Id).ToList();
+
+			var expiredViewLogs = viewLogs.Where(r =>
+				r.TargetType == EViewLogTargetType.All
+				&& r.LogTime <= historyTimeLimit
+			).ToList();
+
+			if (expiredViewLogs.Any()) {
+				foreach (var viewLog in expiredViewLogs) {
+					viewLogs.Remove(viewLog);
+					DbContext.ViewLogs.Remove(viewLog);
+				}
+
+				DbContext.SaveChanges();
+			}
+
+			return viewLogs;
 		}
 	}
 }

@@ -1,4 +1,5 @@
-﻿using Forum3.Controllers;
+﻿using Forum3.ActionFilters;
+using Forum3.Controllers;
 using Forum3.Helpers;
 using Forum3.Migrator;
 using Forum3.Models.DataModels;
@@ -49,7 +50,8 @@ namespace Forum3 {
 			services.ConfigureApplicationCookie(options => options.LoginPath = $"/{nameof(Account)}/{nameof(Account.Login)}");
 
 			services.Configure<MvcOptions>(options => {
-				//options.Filters.Add(new RequireRemoteHttpsAttribute());
+				//options.Filters.Add<RequireRemoteHttpsAttribute>();
+				options.Filters.Add<UserContextActionFilter>();
 			});
 
 			services.AddForum(Configuration);

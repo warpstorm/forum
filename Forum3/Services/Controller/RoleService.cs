@@ -1,7 +1,5 @@
 ﻿using Forum3.Controllers;
 using Forum3.Helpers;
-using Forum3.Models.DataModels;
-using Forum3.Models.ServiceModels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -14,33 +12,34 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace Forum3.Services.Controller {
+	using DataModels = Models.DataModels;
 	using InputModels = Models.InputModels;
 	using ItemViewModels = Models.ViewModels.Roles.Items;
 	using PageViewModels = Models.ViewModels.Roles.Pages;
+	using ServiceModels = Models.ServiceModels;
 
 	public class RoleService {
-		UserManager<ApplicationUser> UserManager { get; }
-		RoleManager<ApplicationRole> RoleManager { get; }
-		SignInManager<ApplicationUser> SignInManager { get; }
-		ContextUser ContextUser { get; }
+		ServiceModels.UserContext UserContext { get; }
 		HttpContext HttpContext { get; }
+		UserManager<DataModels.ApplicationUser> UserManager { get; }
+		RoleManager<DataModels.ApplicationRole> RoleManager { get; }
+		SignInManager<DataModels.ApplicationUser> SignInManager { get; }
 		IUrlHelper UrlHelper { get; }
 
 		public RoleService(
-			UserManager<ApplicationUser> userManager,
-			RoleManager<ApplicationRole> roleManager,
-			SignInManager<ApplicationUser> signInManager,
-			ContextUserFactory contextUserFactory,
+			ServiceModels.UserContext userContext,
+			UserManager<DataModels.ApplicationUser> userManager,
+			RoleManager<DataModels.ApplicationRole> roleManager,
+			SignInManager<DataModels.ApplicationUser> signInManager,
 			IHttpContextAccessor httpContextAccessor,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory
 		) {
+			HttpContext = httpContextAccessor.HttpContext;
+			UserContext = userContext;
 			UserManager = userManager;
 			RoleManager = roleManager;
 			SignInManager = signInManager;
-
-			ContextUser = contextUserFactory.GetContextUser();
-			HttpContext = httpContextAccessor.HttpContext;
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
@@ -50,8 +49,8 @@ namespace Forum3.Services.Controller {
 			var roles = await RoleManager.Roles.OrderBy(r => r.Name).ToListAsync();
 
 			foreach (var role in roles) {
-				ApplicationUser createdBy = null;
-				ApplicationUser modifiedBy = null;
+				DataModels.ApplicationUser createdBy = null;
+				DataModels.ApplicationUser modifiedBy = null;
 
 				if (role.CreatedById != null)
 					createdBy = await UserManager.FindByIdAsync(role.CreatedById);
@@ -59,7 +58,7 @@ namespace Forum3.Services.Controller {
 				if (role.ModifiedById != null)
 					modifiedBy = await UserManager.FindByIdAsync(role.ModifiedById);
 
-				IList<ApplicationUser> usersInRole = null;
+				IList<DataModels.ApplicationUser> usersInRole = null;
 
 				try {
 					usersInRole = await UserManager.GetUsersInRoleAsync(role.Name);
@@ -83,8 +82,8 @@ namespace Forum3.Services.Controller {
 			return viewModel;
 		}
 
-		public async Task<ServiceResponse> Create(InputModels.CreateRoleInput input) {
-			var serviceResponse = new ServiceResponse();
+		public async Task<ServiceModels.ServiceResponse> Create(InputModels.CreateRoleInput input) {
+			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			if (input.Name != null)
 				input.Name = input.Name.Trim();
@@ -120,8 +119,8 @@ namespace Forum3.Services.Controller {
 			if (role is null)
 				throw new Exception($"A record does not exist with ID '{id}'");
 
-			ApplicationUser createdBy = null;
-			ApplicationUser modifiedBy = null;
+			DataModels.ApplicationUser createdBy = null;
+			DataModels.ApplicationUser modifiedBy = null;
 
 			if (role.CreatedById != null)
 				createdBy = await UserManager.FindByIdAsync(role.CreatedById);
@@ -143,8 +142,8 @@ namespace Forum3.Services.Controller {
 			};
 		}
 
-		public async Task<ServiceResponse> Edit(InputModels.EditRoleInput input) {
-			var serviceResponse = new ServiceResponse();
+		public async Task<ServiceModels.ServiceResponse> Edit(InputModels.EditRoleInput input) {
+			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			var record = await RoleManager.FindByIdAsync(input.Id);
 
@@ -187,7 +186,7 @@ namespace Forum3.Services.Controller {
 			}
 
 			if (modified) {
-				record.ModifiedById = ContextUser.ApplicationUser.Id;
+				record.ModifiedById = UserContext.ApplicationUser.Id;
 				record.ModifiedDate = DateTime.Now;
 				await RoleManager.UpdateAsync(record);
 			}
@@ -232,8 +231,8 @@ namespace Forum3.Services.Controller {
 			};
 		}
 		
-		public async Task<ServiceResponse> AddUser(string roleId, string userId) {
-			var serviceResponse = new ServiceResponse();
+		public async Task<ServiceModels.ServiceResponse> AddUser(string roleId, string userId) {
+			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			var roleRecord = await RoleManager.FindByIdAsync(roleId);
 
@@ -251,7 +250,7 @@ namespace Forum3.Services.Controller {
 			var result = await UserManager.AddToRoleAsync(userRecord, roleRecord.Name);
 
 			if (result.Succeeded) {
-				if (userId == ContextUser.ApplicationUser.Id)
+				if (userId == UserContext.ApplicationUser.Id)
 					await SignInManager.SignOutAsync();
 
 				serviceResponse.RedirectPath = UrlHelper.Action(nameof(Roles.Edit), nameof(Roles), new { Id = roleId });
@@ -260,8 +259,8 @@ namespace Forum3.Services.Controller {
 			return serviceResponse;
 		}
 
-		public async Task<ServiceResponse> RemoveUser(string roleId, string userId) {
-			var serviceResponse = new ServiceResponse();
+		public async Task<ServiceModels.ServiceResponse> RemoveUser(string roleId, string userId) {
+			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			var roleRecord = await RoleManager.FindByIdAsync(roleId);
 
@@ -279,7 +278,7 @@ namespace Forum3.Services.Controller {
 			var result = await UserManager.RemoveFromRoleAsync(userRecord, roleRecord.Name);
 
 			if (result.Succeeded) {
-				if (userId == ContextUser.ApplicationUser.Id)
+				if (userId == UserContext.ApplicationUser.Id)
 					await SignInManager.SignOutAsync();
 
 				serviceResponse.RedirectPath = UrlHelper.Action(nameof(Roles.Edit), nameof(Roles), new { Id = roleId });
@@ -291,13 +290,13 @@ namespace Forum3.Services.Controller {
 		async Task CreateRecord(InputModels.CreateRoleInput input) {
 			var now = DateTime.Now;
 
-			var record = new ApplicationRole {
+			var record = new DataModels.ApplicationRole {
 				Name = input.Name,
 				Description = input.Description,
 				CreatedDate = now,
-				CreatedById = ContextUser.ApplicationUser.Id,
+				CreatedById = UserContext.ApplicationUser.Id,
 				ModifiedDate = now,
-				ModifiedById = ContextUser.ApplicationUser.Id
+				ModifiedById = UserContext.ApplicationUser.Id
 			};
 
 			await RoleManager.CreateAsync(record);

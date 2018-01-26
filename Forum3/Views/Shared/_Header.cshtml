@@ -1,8 +1,6 @@
-﻿@inject Forum3.Services.ContextUserFactory ContextUserFactory
+﻿@inject Forum3.Models.ServiceModels.UserContext UserContext
 
 @{ 
-	var contextUser = ContextUserFactory.GetContextUser();
-
 	if (string.IsNullOrEmpty(ViewData["LogoPath"] as string)) {
 		ViewData["LogoPath"] = "/images/logos/Logo.png";
 	}
@@ -12,9 +10,9 @@
 
 	<nav>
 		<ul class="float-right inline">
-			@if (contextUser.IsAuthenticated) {
+			@if (UserContext.IsAuthenticated) {
 				<li class="open-menu">
-					<span class="small-button pointer">@contextUser.ApplicationUser.DisplayName</span>
+					<span class="small-button pointer">@UserContext.ApplicationUser.DisplayName</span>
 					<div class="menu-wrapper hidden">
 						<ul class="drop-down-menu content-box">
 							<li class="hover-highlight" clickable-link-parent><a asp-controller="@nameof(Profile)" asp-action="@nameof(Profile.Details)">Profile</a></li>
@@ -43,7 +41,7 @@
 					</div>
 				</li>
 
-				@if (contextUser.IsAdmin) {
+				@if (UserContext.IsAdmin) {
 					<li class="open-menu">
 						<span class="small-button pointer">Admin</span>
 						<div class="menu-wrapper hidden">
