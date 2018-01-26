@@ -24,12 +24,12 @@ namespace Forum3.Services.Controller {
 			CloudBlobClient = cloudBlobClient;
 		}
 
-		public async Task<List<List<ViewModels.IndexItem>>> GetSelectorList() {
+		public List<List<ViewModels.IndexItem>> GetSelectorList() {
 			var smileysQuery = from smiley in DbContext.Smileys
 							   orderby smiley.SortOrder
 							   select smiley;
 
-			var smileys = await smileysQuery.ToListAsync();
+			var smileys = smileysQuery.ToList();
 
 			var results = new List<List<ViewModels.IndexItem>>();
 
@@ -60,12 +60,12 @@ namespace Forum3.Services.Controller {
 			return results;
 		}
 
-		public async Task<ViewModels.IndexPage> IndexPage() {
+		public ViewModels.IndexPage IndexPage() {
 			var smileysQuery = from smiley in DbContext.Smileys
 							   orderby smiley.SortOrder
 							   select smiley;
 
-			var smileys = await smileysQuery.ToListAsync();
+			var smileys = smileysQuery.ToList();
 
 			var viewModel = new ViewModels.IndexPage();
 
@@ -148,11 +148,11 @@ namespace Forum3.Services.Controller {
 			return serviceResponse;
 		}
 
-		public async Task<ServiceModels.ServiceResponse> Edit(InputModels.EditSmileysInput input) {
+		public ServiceModels.ServiceResponse Edit(InputModels.EditSmileysInput input) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			foreach (var smileyInput in input.Smileys) {
-				var smileyRecord = await DbContext.Smileys.FindAsync(smileyInput.Id);
+				var smileyRecord = DbContext.Smileys.Find(smileyInput.Id);
 
 				if (smileyRecord is null) {
 					serviceResponse.Error(string.Empty, $@"No smiley was found with the id '{smileyInput.Id}'");

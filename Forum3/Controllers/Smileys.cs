@@ -14,11 +14,13 @@ namespace Forum3.Controllers {
 			SmileyService = smileyService;
 		}
 
-		public async Task<IActionResult> Index() {
-			var viewModel = await SmileyService.IndexPage();
+		[HttpGet]
+		public IActionResult Index() {
+			var viewModel = SmileyService.IndexPage();
 			return View(viewModel);
 		}
 
+		[HttpGet]
 		public IActionResult Create() {
 			var viewModel = SmileyService.CreatePage();
 			return View(viewModel);
@@ -43,15 +45,16 @@ namespace Forum3.Controllers {
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		[PreventRapidRequests]
-		public async Task<IActionResult> Edit(EditSmileysInput input) {
+		public IActionResult Edit(EditSmileysInput input) {
 			if (ModelState.IsValid) {
-				var serviceResponse = await SmileyService.Edit(input);
+				var serviceResponse = SmileyService.Edit(input);
 				ProcessServiceResponse(serviceResponse);
 			}
 
 			return RedirectFromService();
 		}
 
+		[HttpGet]
 		public async Task<IActionResult> Delete(int id) {
 			var serviceResponse = await SmileyService.Delete(id);
 			ProcessServiceResponse(serviceResponse);

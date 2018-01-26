@@ -21,16 +21,16 @@ namespace Forum3.Controllers {
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> Index(int id = 0, int pageId = 1) {
-			var viewModel = await TopicService.IndexPage(id, pageId);
+		public IActionResult Index(int id = 0, int pageId = 1) {
+			var viewModel = TopicService.IndexPage(id, pageId);
 			return View(viewModel);
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> Display(int id, int pageId = 1, int target = 0) {
-			ViewData["Smileys"] = await SmileyService.GetSelectorList();
+		public IActionResult Display(int id, int pageId = 1, int target = 0) {
+			ViewData["Smileys"] = SmileyService.GetSelectorList();
 
-			var viewModel = await TopicService.DisplayPage(id, pageId, target);
+			var viewModel = TopicService.DisplayPage(id, pageId, target);
 
 			if (string.IsNullOrEmpty(viewModel.RedirectPath))
 				return View(viewModel);
@@ -47,17 +47,17 @@ namespace Forum3.Controllers {
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> Pin(int id) {
-			var serviceResponse = await TopicService.Pin(id);
+		public IActionResult Pin(int id) {
+			var serviceResponse = TopicService.Pin(id);
 			ProcessServiceResponse(serviceResponse);
 
 			return RedirectFromService();
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> ToggleBoard(ToggleBoardInput input) {
+		public IActionResult ToggleBoard(ToggleBoardInput input) {
 			if (ModelState.IsValid) {
-				var serviceResponse = await TopicService.ToggleBoard(input);
+				var serviceResponse = TopicService.ToggleBoard(input);
 				ProcessServiceResponse(serviceResponse);
 			}
 
@@ -76,7 +76,7 @@ namespace Forum3.Controllers {
 					return RedirectFromService();
 			}
 
-			var viewModel = await TopicService.DisplayPage(input.Id);
+			var viewModel = TopicService.DisplayPage(input.Id);
 			viewModel.ReplyForm.Body = input.Body;
 
 			return View(nameof(Display), viewModel);
