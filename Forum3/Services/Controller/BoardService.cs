@@ -39,14 +39,14 @@ namespace Forum3.Services.Controller {
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
-		public async Task<PageViewModels.IndexPage> IndexPage() {
+		public PageViewModels.IndexPage IndexPage() {
 			var birthdays = GetBirthdays();
 			var onlineUsers = GetOnlineUsers();
 			var notifications = NotificationService.GetNotifications();
 
 			var viewModel = new PageViewModels.IndexPage {
 				Birthdays = birthdays.ToArray(),
-				Categories = await GetCategories(),
+				Categories = GetCategories(),
 				OnlineUsers = onlineUsers,
 				Notifications = notifications
 			};
@@ -54,17 +54,17 @@ namespace Forum3.Services.Controller {
 			return viewModel;
 		}
 
-		public async Task<PageViewModels.IndexPage> ManagePage() {
+		public PageViewModels.IndexPage ManagePage() {
 			var viewModel = new PageViewModels.IndexPage {
-				Categories = await GetCategories()
+				Categories = GetCategories()
 			};
 
 			return viewModel;
 		}
 
-		public async Task<PageViewModels.CreatePage> CreatePage(InputModels.CreateBoardInput input = null) {
+		public PageViewModels.CreatePage CreatePage(InputModels.CreateBoardInput input = null) {
 			var viewModel = new PageViewModels.CreatePage() {
-				Categories = await GetCategoryPickList()
+				Categories = GetCategoryPickList()
 			};
 
 			if (input != null) {
@@ -78,15 +78,15 @@ namespace Forum3.Services.Controller {
 			return viewModel;
 		}
 
-		public async Task<PageViewModels.EditPage> EditPage(int boardId, InputModels.EditBoardInput input = null) {
-			var record = await DbContext.Boards.SingleOrDefaultAsync(b => b.Id == boardId);
+		public PageViewModels.EditPage EditPage(int boardId, InputModels.EditBoardInput input = null) {
+			var record = DbContext.Boards.FirstOrDefault(b => b.Id == boardId);
 
 			if (record is null)
 				throw new Exception($"A record does not exist with ID '{boardId}'");
 
 			var viewModel = new PageViewModels.EditPage() {
 				Id = record.Id,
-				Categories = await GetCategoryPickList()
+				Categories = GetCategoryPickList()
 			};
 
 			if (input != null) {
@@ -97,7 +97,7 @@ namespace Forum3.Services.Controller {
 					viewModel.Categories.First(item => item.Value == input.Category).Selected = true;
 			}
 			else {
-				var category = await DbContext.Categories.FindAsync(record.CategoryId);
+				var category = DbContext.Categories.Find(record.CategoryId);
 
 				viewModel.Name = record.Name;
 				viewModel.Description = record.Description;
@@ -107,10 +107,10 @@ namespace Forum3.Services.Controller {
 			return viewModel;
 		}
 
-		public async Task<ServiceModels.ServiceResponse> Create(InputModels.CreateBoardInput input) {
+		public ServiceModels.ServiceResponse Create(InputModels.CreateBoardInput input) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
-			if (await DbContext.Boards.AnyAsync(b => b.Name == input.Name))
+			if (DbContext.Boards.Any(b => b.Name == input.Name))
 				serviceResponse.Error(nameof(input.Name), "A board with that name already exists");
 
 			DataModels.Category categoryRecord = null;
@@ -119,10 +119,10 @@ namespace Forum3.Services.Controller {
 				input.NewCategory = input.NewCategory.Trim();
 
 			if (!string.IsNullOrEmpty(input.NewCategory)) {
-				categoryRecord = await DbContext.Categories.SingleOrDefaultAsync(c => c.Name == input.NewCategory);
+				categoryRecord = DbContext.Categories.FirstOrDefault(c => c.Name == input.NewCategory);
 
 				if (categoryRecord is null) {
-					var displayOrder = await DbContext.Categories.DefaultIfEmpty().MaxAsync(c => c.DisplayOrder);
+					var displayOrder = DbContext.Categories.DefaultIfEmpty().Max(c => c.DisplayOrder);
 
 					categoryRecord = new DataModels.Category {
 						Name = input.NewCategory,
@@ -135,7 +135,7 @@ namespace Forum3.Services.Controller {
 			else {
 				try {
 					var categoryId = Convert.ToInt32(input.Category);
-					categoryRecord = await DbContext.Categories.SingleOrDefaultAsync(c => c.Id == categoryId);
+					categoryRecord = DbContext.Categories.FirstOrDefault(c => c.Id == categoryId);
 
 					if (categoryRecord is null)
 						serviceResponse.Error(nameof(input.Category), "No category was found with this ID.");
@@ -154,7 +154,7 @@ namespace Forum3.Services.Controller {
 			if (!string.IsNullOrEmpty(input.Description))
 				input.Description = input.Description.Trim();
 
-			var existingRecord = await DbContext.Boards.SingleOrDefaultAsync(b => b.Name == input.Name);
+			var existingRecord = DbContext.Boards.FirstOrDefault(b => b.Name == input.Name);
 
 			if (existingRecord != null)
 				serviceResponse.Error(nameof(input.Name), "A board with that name already exists");
@@ -179,10 +179,10 @@ namespace Forum3.Services.Controller {
 			return serviceResponse;
 		}
 
-		public async Task<ServiceModels.ServiceResponse> Edit(InputModels.EditBoardInput input) {
+		public ServiceModels.ServiceResponse Edit(InputModels.EditBoardInput input) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
-			var record = await DbContext.Boards.SingleOrDefaultAsync(b => b.Id == input.Id);
+			var record = DbContext.Boards.FirstOrDefault(b => b.Id == input.Id);
 
 			if (record is null)
 				serviceResponse.Error(string.Empty, $"A record does not exist with ID '{input.Id}'");
@@ -193,7 +193,7 @@ namespace Forum3.Services.Controller {
 				input.NewCategory = input.NewCategory.Trim();
 
 			if (!string.IsNullOrEmpty(input.NewCategory)) {
-				newCategoryRecord = await DbContext.Categories.SingleOrDefaultAsync(c => c.Name == input.NewCategory);
+				newCategoryRecord = DbContext.Categories.FirstOrDefault(c => c.Name == input.NewCategory);
 
 				if (newCategoryRecord is null) {
 					var displayOrder = DbContext.Categories.Max(c => c.DisplayOrder);
@@ -210,7 +210,7 @@ namespace Forum3.Services.Controller {
 			else {
 				try {
 					var newCategoryId = Convert.ToInt32(input.Category);
-					newCategoryRecord = await DbContext.Categories.SingleOrDefaultAsync(c => c.Id == newCategoryId);
+					newCategoryRecord = DbContext.Categories.FirstOrDefault(c => c.Id == newCategoryId);
 
 					if (newCategoryRecord is null)
 						serviceResponse.Error(nameof(input.Category), "No category was found with this ID.");
@@ -238,7 +238,7 @@ namespace Forum3.Services.Controller {
 			var oldCategoryId = -1;
 
 			if (record.CategoryId != newCategoryRecord.Id) {
-				var categoryBoards = await DbContext.Boards.Where(r => r.CategoryId == record.CategoryId).ToListAsync();
+				var categoryBoards = DbContext.Boards.Where(r => r.CategoryId == record.CategoryId).ToList();
 
 				if (categoryBoards.Count() <= 1)
 					oldCategoryId = record.CategoryId;
@@ -285,17 +285,17 @@ namespace Forum3.Services.Controller {
 			return serviceResponse;
 		}
 
-		public async Task<ServiceModels.ServiceResponse> MoveBoardUp(int id) {
+		public ServiceModels.ServiceResponse MoveBoardUp(int id) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
-			var targetBoard = await DbContext.Boards.FirstOrDefaultAsync(b => b.Id == id);
+			var targetBoard = DbContext.Boards.FirstOrDefault(b => b.Id == id);
 
 			if (targetBoard is null) {
 				serviceResponse.Error(string.Empty, "No board found with that ID.");
 				return serviceResponse;
 			}
 
-			var categoryBoards = await DbContext.Boards.Where(b => b.CategoryId == targetBoard.CategoryId).OrderBy(b => b.DisplayOrder).ToListAsync();
+			var categoryBoards = DbContext.Boards.Where(b => b.CategoryId == targetBoard.CategoryId).OrderBy(b => b.DisplayOrder).ToList();
 
 			var currentIndex = 1;
 
@@ -327,11 +327,11 @@ namespace Forum3.Services.Controller {
 			return serviceResponse;
 		}
 
-		public async Task<ServiceModels.ServiceResponse> MergeCategory(InputModels.MergeInput input) {
+		public ServiceModels.ServiceResponse MergeCategory(InputModels.MergeInput input) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
-			var fromCategory = await DbContext.Categories.SingleOrDefaultAsync(b => b.Id == input.FromId);
-			var toCategory = await DbContext.Categories.SingleOrDefaultAsync(b => b.Id == input.ToId);
+			var fromCategory = DbContext.Categories.FirstOrDefault(b => b.Id == input.FromId);
+			var toCategory = DbContext.Categories.FirstOrDefault(b => b.Id == input.ToId);
 
 			if (fromCategory is null)
 				serviceResponse.Error(string.Empty, $"A record does not exist with ID '{input.FromId}'");
@@ -342,7 +342,7 @@ namespace Forum3.Services.Controller {
 			if (!serviceResponse.Success)
 				return serviceResponse;
 
-			var displacedBoards = await DbContext.Boards.Where(b => b.CategoryId == fromCategory.Id).ToListAsync();
+			var displacedBoards = DbContext.Boards.Where(b => b.CategoryId == fromCategory.Id).ToList();
 
 			foreach (var displacedBoard in displacedBoards) {
 				displacedBoard.CategoryId = toCategory.Id;
@@ -358,11 +358,11 @@ namespace Forum3.Services.Controller {
 			return serviceResponse;
 		}
 
-		public async Task<ServiceModels.ServiceResponse> MergeBoard(InputModels.MergeInput input) {
+		public ServiceModels.ServiceResponse MergeBoard(InputModels.MergeInput input) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
-			var fromBoard = await DbContext.Boards.SingleOrDefaultAsync(b => b.Id == input.FromId);
-			var toBoard = await DbContext.Boards.SingleOrDefaultAsync(b => b.Id == input.ToId);
+			var fromBoard = DbContext.Boards.FirstOrDefault(b => b.Id == input.FromId);
+			var toBoard = DbContext.Boards.FirstOrDefault(b => b.Id == input.ToId);
 
 			if (fromBoard is null)
 				serviceResponse.Error(string.Empty, $"A record does not exist with ID '{input.FromId}'");
@@ -373,7 +373,7 @@ namespace Forum3.Services.Controller {
 			if (!serviceResponse.Success)
 				return serviceResponse;
 
-			var messageBoards = await DbContext.MessageBoards.Where(m => m.BoardId == fromBoard.Id).ToListAsync();
+			var messageBoards = DbContext.MessageBoards.Where(m => m.BoardId == fromBoard.Id).ToList();
 
 			// Reassign messages to new board
 			foreach (var messageBoard in messageBoards) {
@@ -391,8 +391,8 @@ namespace Forum3.Services.Controller {
 			DbContext.SaveChanges();
 
 			// Remove the category if empty
-			if (!await DbContext.Boards.AnyAsync(b => b.CategoryId == categoryId)) {
-				var categoryRecord = await DbContext.Categories.SingleOrDefaultAsync(c => c.Id == categoryId);
+			if (! DbContext.Boards.Any(b => b.CategoryId == categoryId)) {
+				var categoryRecord = DbContext.Categories.FirstOrDefault(c => c.Id == categoryId);
 
 				DbContext.Categories.Remove(categoryRecord);
 
@@ -402,7 +402,7 @@ namespace Forum3.Services.Controller {
 			return serviceResponse;
 		}
 
-		public async Task<List<ItemViewModels.IndexCategory>> GetCategories() {
+		public List<ItemViewModels.IndexCategory> GetCategories() {
 			var categoryRecordsTask = DbContext.Categories.OrderBy(r => r.DisplayOrder).ToListAsync();
 			var boardRecordsTask = DbContext.Boards.OrderBy(r => r.DisplayOrder).ToListAsync();
 
@@ -421,7 +421,7 @@ namespace Forum3.Services.Controller {
 				};
 
 				foreach (var boardRecord in boardRecords.Where(r => r.CategoryId == categoryRecord.Id)) {
-					var indexBoard = await GetIndexBoard(boardRecord);
+					var indexBoard = GetIndexBoard(boardRecord);
 
 					// TODO check board roles here
 
@@ -436,7 +436,7 @@ namespace Forum3.Services.Controller {
 			return indexCategories;
 		}
 
-		public async Task<ItemViewModels.IndexBoard> GetIndexBoard(DataModels.Board boardRecord) {
+		public ItemViewModels.IndexBoard GetIndexBoard(DataModels.Board boardRecord) {
 			var indexBoard = new ItemViewModels.IndexBoard {
 				Id = boardRecord.Id,
 				Name = boardRecord.Name,
@@ -458,17 +458,17 @@ namespace Forum3.Services.Controller {
 										   LastReplyPreview = lastReply.ShortPreview
 									   };
 
-				indexBoard.LastMessage = await lastMessageQuery.SingleOrDefaultAsync();
+				indexBoard.LastMessage = lastMessageQuery.FirstOrDefault();
 			}
 
 			return indexBoard;
 		}
 
-		async Task<List<SelectListItem>> GetCategoryPickList(List<SelectListItem> pickList = null) {
+		List<SelectListItem> GetCategoryPickList(List<SelectListItem> pickList = null) {
 			if (pickList is null)
 				pickList = new List<SelectListItem>();
 
-			var categoryRecords = await DbContext.Categories.OrderBy(r => r.DisplayOrder).ToListAsync();
+			var categoryRecords = DbContext.Categories.OrderBy(r => r.DisplayOrder).ToList();
 
 			foreach (var categoryRecord in categoryRecords) {
 				pickList.Add(new SelectListItem() {

@@ -1,7 +1,6 @@
 ﻿using Forum3.Models.InputModels;
 using Forum3.Services.Controller;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
 
 namespace Forum3.Controllers {
 	public class Boards : ForumController {
@@ -14,54 +13,54 @@ namespace Forum3.Controllers {
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> Index() {
-			var viewModel = await BoardService.IndexPage();
+		public IActionResult Index() {
+			var viewModel = BoardService.IndexPage();
 			return View(viewModel);
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> Manage() {
-			var viewModel = await BoardService.ManagePage();
+		public IActionResult Manage() {
+			var viewModel = BoardService.ManagePage();
 			return View(viewModel);
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> Create() {
-			var viewModel = await BoardService.CreatePage();
+		public IActionResult Create() {
+			var viewModel = BoardService.CreatePage();
 			return View(viewModel);
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> Create(CreateBoardInput input) {
+		public IActionResult Create(CreateBoardInput input) {
 			if (ModelState.IsValid) {
-				var serviceResponse = await BoardService.Create(input);
+				var serviceResponse = BoardService.Create(input);
 				ProcessServiceResponse(serviceResponse);
 
 				if (serviceResponse.Success)
 					return RedirectFromService();
 			}
 
-			var viewModel = await BoardService.CreatePage(input);
+			var viewModel = BoardService.CreatePage(input);
 			return View(viewModel);
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> Edit(int id) {
-			var viewModel = await BoardService.EditPage(id);
+		public IActionResult Edit(int id) {
+			var viewModel = BoardService.EditPage(id);
 			return View(viewModel);
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> Edit(EditBoardInput input) {
+		public IActionResult Edit(EditBoardInput input) {
 			if (ModelState.IsValid) {
-				var serviceResponse = await BoardService.Edit(input);
+				var serviceResponse = BoardService.Edit(input);
 				ProcessServiceResponse(serviceResponse);
 
 				if (serviceResponse.Success)
 					return RedirectFromService();
 			}
 
-			var viewModel = await BoardService.EditPage(input.Id, input);
+			var viewModel = BoardService.EditPage(input.Id, input);
 			return View(viewModel);
 		}
 
@@ -74,17 +73,17 @@ namespace Forum3.Controllers {
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> MoveBoardUp(int id) {
-			var serviceResponse = await BoardService.MoveBoardUp(id);
+		public IActionResult MoveBoardUp(int id) {
+			var serviceResponse = BoardService.MoveBoardUp(id);
 			ProcessServiceResponse(serviceResponse);
 
 			return RedirectFromService();
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> MergeCategory(MergeInput input) {
+		public IActionResult MergeCategory(MergeInput input) {
 			if (ModelState.IsValid) {
-				var serviceResponse = await BoardService.MergeCategory(input);
+				var serviceResponse = BoardService.MergeCategory(input);
 				ProcessServiceResponse(serviceResponse);
 			}
 
@@ -92,9 +91,9 @@ namespace Forum3.Controllers {
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> MergeBoard(MergeInput input) {
+		public IActionResult MergeBoard(MergeInput input) {
 			if (ModelState.IsValid) {
-				var serviceResponse = await BoardService.MergeBoard(input);
+				var serviceResponse = BoardService.MergeBoard(input);
 				ProcessServiceResponse(serviceResponse);
 			}
 
