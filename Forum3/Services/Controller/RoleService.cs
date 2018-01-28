@@ -1,7 +1,6 @@
 ﻿using Forum3.Contexts;
 using Forum3.Controllers;
 using Forum3.Helpers;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -21,7 +20,6 @@ namespace Forum3.Services.Controller {
 
 	public class RoleService {
 		UserContext UserContext { get; }
-		HttpContext HttpContext { get; }
 		UserManager<DataModels.ApplicationUser> UserManager { get; }
 		RoleManager<DataModels.ApplicationRole> RoleManager { get; }
 		SignInManager<DataModels.ApplicationUser> SignInManager { get; }
@@ -32,11 +30,9 @@ namespace Forum3.Services.Controller {
 			UserManager<DataModels.ApplicationUser> userManager,
 			RoleManager<DataModels.ApplicationRole> roleManager,
 			SignInManager<DataModels.ApplicationUser> signInManager,
-			IHttpContextAccessor httpContextAccessor,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory
 		) {
-			HttpContext = httpContextAccessor.HttpContext;
 			UserContext = userContext;
 			UserManager = userManager;
 			RoleManager = roleManager;

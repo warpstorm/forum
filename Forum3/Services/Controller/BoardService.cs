@@ -20,21 +20,18 @@ namespace Forum3.Services.Controller {
 
 	public class BoardService {
 		ApplicationDbContext DbContext { get; }
-		UserContext UserContext { get; }
 		SettingsRepository Settings { get; }
 		NotificationService NotificationService { get; }
 		IUrlHelper UrlHelper { get; }
 
 		public BoardService(
 			ApplicationDbContext dbContext,
-			UserContext userContext,
 			SettingsRepository SettingsRepository,
 			NotificationService notificationService,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory
 		) {
 			DbContext = dbContext;
-			UserContext = userContext;
 			Settings = SettingsRepository;
 			NotificationService = notificationService;
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
