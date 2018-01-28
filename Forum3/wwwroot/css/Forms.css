@@ -9,6 +9,10 @@ form li, form dt {
 	line-height: .9em;
 }
 
+form dl {
+	padding-top: 10px;
+}
+
 form dd {
 	padding-left: 6px;
 }

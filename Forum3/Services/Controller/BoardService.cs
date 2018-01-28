@@ -1,6 +1,7 @@
 ﻿using Forum3.Contexts;
 using Forum3.Controllers;
 using Forum3.Helpers;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -20,20 +21,26 @@ namespace Forum3.Services.Controller {
 
 	public class BoardService {
 		ApplicationDbContext DbContext { get; }
+		UserContext UserContext { get; }
 		SettingsRepository Settings { get; }
 		NotificationService NotificationService { get; }
+		RoleManager<DataModels.ApplicationRole> RoleManager { get; }
 		IUrlHelper UrlHelper { get; }
 
 		public BoardService(
 			ApplicationDbContext dbContext,
+			UserContext userContext,
 			SettingsRepository SettingsRepository,
 			NotificationService notificationService,
+			RoleManager<DataModels.ApplicationRole> roleManager,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory
 		) {
 			DbContext = dbContext;
+			UserContext = userContext;
 			Settings = SettingsRepository;
 			NotificationService = notificationService;
+			RoleManager = roleManager;
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
@@ -77,14 +84,15 @@ namespace Forum3.Services.Controller {
 		}
 
 		public PageViewModels.EditPage EditPage(int boardId, InputModels.EditBoardInput input = null) {
-			var record = DbContext.Boards.FirstOrDefault(b => b.Id == boardId);
+			var boardRecord = DbContext.Boards.FirstOrDefault(b => b.Id == boardId);
 
-			if (record is null)
+			if (boardRecord is null)
 				throw new Exception($"A record does not exist with ID '{boardId}'");
 
 			var viewModel = new PageViewModels.EditPage() {
-				Id = record.Id,
-				Categories = GetCategoryPickList()
+				Id = boardRecord.Id,
+				Categories = GetCategoryPickList(),
+				Roles = GetRolePickList(boardRecord.Id)
 			};
 
 			if (input != null) {
@@ -95,10 +103,10 @@ namespace Forum3.Services.Controller {
 					viewModel.Categories.First(item => item.Value == input.Category).Selected = true;
 			}
 			else {
-				var category = DbContext.Categories.Find(record.CategoryId);
+				var category = DbContext.Categories.Find(boardRecord.CategoryId);
 
-				viewModel.Name = record.Name;
-				viewModel.Description = record.Description;
+				viewModel.Name = boardRecord.Name;
+				viewModel.Description = boardRecord.Description;
 				viewModel.Categories.First(item => item.Text == category.Name).Selected = true;
 			}
 
@@ -243,6 +251,26 @@ namespace Forum3.Services.Controller {
 
 				record.CategoryId = newCategoryRecord.Id;
 			}
+
+			var roles = DbContext.Roles.Select(r => r.Id).ToList();
+			var boardRoles = DbContext.BoardRoles.Where(r => r.BoardId == record.Id).ToList();
+
+			foreach (var boardRole in boardRoles.Where(r => !input.Roles.Contains(r.RoleId)))
+				DbContext.BoardRoles.Remove(boardRole);
+
+			foreach (var inputRole in input.Roles) {
+				if (roles.Contains(inputRole)) {
+					DbContext.BoardRoles.Add(new DataModels.BoardRole {
+						BoardId = record.Id,
+						RoleId = inputRole
+					});
+				}
+				else
+					serviceResponse.Error($"Role does not exist with id '{inputRole}'");
+			}
+
+			if (!serviceResponse.Success)
+				return serviceResponse;
 
 			DbContext.Update(record);
 			DbContext.SaveChanges();
@@ -403,25 +431,32 @@ namespace Forum3.Services.Controller {
 		public List<ItemViewModels.IndexCategory> GetCategories() {
 			var categoryRecordsTask = DbContext.Categories.OrderBy(r => r.DisplayOrder).ToListAsync();
 			var boardRecordsTask = DbContext.Boards.OrderBy(r => r.DisplayOrder).ToListAsync();
+			var boardRoleRecordsTask = DbContext.BoardRoles.ToListAsync();
 
-			Task.WaitAll(categoryRecordsTask, boardRecordsTask);
+			Task.WaitAll(categoryRecordsTask, boardRecordsTask, boardRoleRecordsTask);
 
-			var categoryRecords = categoryRecordsTask.Result;
-			var boardRecords = boardRecordsTask.Result;
+			var categories = categoryRecordsTask.Result;
+			var boards = boardRecordsTask.Result;
+			var boardRoles = boardRoleRecordsTask.Result;
 
 			var indexCategories = new List<ItemViewModels.IndexCategory>();
 
-			foreach (var categoryRecord in categoryRecords) {
+			foreach (var categoryRecord in categories) {
 				var indexCategory = new ItemViewModels.IndexCategory {
 					Id = categoryRecord.Id,
 					Name = categoryRecord.Name,
 					DisplayOrder = categoryRecord.DisplayOrder
 				};
 
-				foreach (var boardRecord in boardRecords.Where(r => r.CategoryId == categoryRecord.Id)) {
-					var indexBoard = GetIndexBoard(boardRecord);
+				foreach (var board in boards.Where(r => r.CategoryId == categoryRecord.Id)) {
+					var thisBoardRoles = boardRoles.Where(r => r.BoardId == board.Id);
 
-					// TODO check board roles here
+					var authorized = UserContext.IsAdmin || !thisBoardRoles.Any() || UserContext.Roles.Any(userRole => thisBoardRoles.Any(boardRole => boardRole.RoleId == userRole));
+
+					if (!authorized)
+						continue;
+
+					var indexBoard = GetIndexBoard(board);
 
 					indexCategory.Boards.Add(indexBoard);
 				}
@@ -462,14 +497,13 @@ namespace Forum3.Services.Controller {
 			return indexBoard;
 		}
 
-		List<SelectListItem> GetCategoryPickList(List<SelectListItem> pickList = null) {
-			if (pickList is null)
-				pickList = new List<SelectListItem>();
+		List<SelectListItem> GetCategoryPickList() {
+			var pickList = new List<SelectListItem>();
 
 			var categoryRecords = DbContext.Categories.OrderBy(r => r.DisplayOrder).ToList();
 
 			foreach (var categoryRecord in categoryRecords) {
-				pickList.Add(new SelectListItem() {
+				pickList.Add(new SelectListItem {
 					Text = categoryRecord.Name,
 					Value = categoryRecord.Id.ToString()
 				});
@@ -477,7 +511,29 @@ namespace Forum3.Services.Controller {
 
 			return pickList;
 		}
-		
+
+		List<SelectListItem> GetRolePickList(int boardId) {
+			var boardRolesQuery = from boardRole in DbContext.BoardRoles
+								  where boardRole.BoardId == boardId
+								  select boardRole.RoleId;
+
+			var selectedItems = boardRolesQuery.ToList();
+
+			var pickList = new List<SelectListItem>();
+
+			var roles = RoleManager.Roles.OrderBy(r => r.Name).ToList();
+
+			foreach (var role in roles) {
+				pickList.Add(new SelectListItem {
+					Text = role.Name,
+					Value = role.Id,
+					Selected = selectedItems.Contains(role.Id)
+				});
+			}
+
+			return pickList;
+		}
+
 		List<ItemViewModels.OnlineUser> GetOnlineUsers() {
 			var onlineTimeLimitSetting = Settings.OnlineTimeLimit();
 			onlineTimeLimitSetting *= -1;

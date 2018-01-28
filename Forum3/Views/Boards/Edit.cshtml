@@ -2,8 +2,8 @@
 
 <div class="content-box pad">
 	<form method="post"
-			asp-action="@nameof(Boards.Edit)"
-			asp-controller="@nameof(Boards)">
+		  asp-action="@nameof(Boards.Edit)"
+		  asp-controller="@nameof(Boards)">
 
 		<div asp-validation-summary="All" class="text-danger"></div>
 
@@ -29,6 +29,17 @@
 				</select>
 			</dd>
 			<dd>Or add a new one: <input asp-for="@Model.NewCategory" /></dd>
+		</dl>
+
+		<dl>
+			<dt>Roles</dt>
+			<dd>
+				<ol>
+					@foreach (var item in Model.Roles) {
+						<li><input type="checkbox" name="Roles" value="@item.Value" @if(item.Selected) {<text>checked="checked"</text>} /> @item.Text</li>
+					}
+				</ol>
+			</dd>
 		</dl>
 
 		<ul>

@@ -21,5 +21,6 @@ namespace Forum3.Models.ViewModels.Boards.Pages {
 		public string NewCategory { get; set; }
 
 		public List<SelectListItem> Categories { get; set; }
+		public List<SelectListItem> Roles { get; set; }
 	}
 }

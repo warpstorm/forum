@@ -56,7 +56,7 @@ namespace Forum3.ActionFilters {
 			var userRolesQuery = from userRole in DbContext.UserRoles
 								 join role in DbContext.Roles on userRole.RoleId equals role.Id
 								 where userRole.UserId.Equals(UserContext.ApplicationUser.Id)
-								 select role.Name;
+								 select role.Id;
 
 			var adminUsersQuery = from user in DbContext.Users
 								  join userRole in DbContext.UserRoles on user.Id equals userRole.UserId
@@ -86,7 +86,7 @@ namespace Forum3.ActionFilters {
 			if (!anyAdminUsers)
 				UserContext.IsAdmin = true;
 
-			if (UserContext.Roles.Contains("Admin")) {
+			if (UserContext.Roles.Contains(adminRole.Id)) {
 				// Force logout if the user was removed from Admin, but their session still says they're in Admin.
 				if (!adminUsersQuery.Any(uid => uid == UserContext.ApplicationUser.Id)) {
 					await SignInManager.SignOutAsync();

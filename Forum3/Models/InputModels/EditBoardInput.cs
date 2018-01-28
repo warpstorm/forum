@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace Forum3.Models.InputModels {
 	public class EditBoardInput {
@@ -17,5 +18,7 @@ namespace Forum3.Models.InputModels {
 
 		[StringLength(64)]
 		public string NewCategory { get; set; }
+
+		public List<string> Roles { get; set; }
 	}
 }

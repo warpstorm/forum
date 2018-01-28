@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Forum3.Contexts {
 	public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, string> {
 		public DbSet<Board> Boards { get; set; }
+		public DbSet<BoardRole> BoardRoles { get; set; }
 		public DbSet<Category> Categories { get; set; }
 		public DbSet<MessageBoard> MessageBoards { get; set; }
 		public DbSet<Message> Messages { get; set; }
@@ -20,6 +21,9 @@ namespace Forum3.Contexts {
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder) {
 			base.OnModelCreating(modelBuilder);
+
+			modelBuilder.Entity<BoardRole>()
+				.HasIndex(r => r.BoardId);
 
 			modelBuilder.Entity<Message>()
 				.HasIndex(r => r.Processed);
