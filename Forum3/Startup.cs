@@ -33,7 +33,8 @@ namespace Forum3 {
 			if (string.IsNullOrEmpty(dbConnectionString))
 				dbConnectionString = Configuration.GetConnectionString("DefaultConnection");
 
-			services.AddDbContext<ApplicationDbContext>(options =>
+			// TODO Look into AddDbContextPool limitations
+			services.AddDbContextPool<ApplicationDbContext>(options =>
 				options.UseSqlServer(dbConnectionString)
 			);
 
