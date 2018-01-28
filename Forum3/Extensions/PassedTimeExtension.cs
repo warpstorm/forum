@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Forum3.Helpers {
+namespace Forum3.Extensions {
 	public static class PassedTimeExtension {
 		public static string ToPassedTimeString(this DateTime date) {
 			var now = DateTime.Now;

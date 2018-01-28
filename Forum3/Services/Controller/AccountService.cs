@@ -1,6 +1,6 @@
 ﻿using Forum3.Contexts;
 using Forum3.Controllers;
-using Forum3.Helpers;
+using Forum3.Extensions;
 using Forum3.Interfaces.Users;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;

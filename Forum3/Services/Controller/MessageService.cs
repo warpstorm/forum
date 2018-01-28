@@ -1,7 +1,7 @@
 ﻿using CodeKicker.BBCode;
 using Forum3.Contexts;
 using Forum3.Controllers;
-using Forum3.Helpers;
+using Forum3.Extensions;
 using HtmlAgilityPack;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;

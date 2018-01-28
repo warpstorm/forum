@@ -1,7 +1,8 @@
 ﻿using Forum3.Contexts;
 using Forum3.Controllers;
 using Forum3.Enums;
-using Forum3.Helpers;
+using Forum3.Exceptions;
+using Forum3.Extensions;
 using Forum3.Models.InputModels;
 using Forum3.Models.ViewModels.Boards.Items;
 using Microsoft.AspNetCore.Mvc;
@@ -42,7 +43,10 @@ namespace Forum3.Services.Controller {
 		public PageModels.TopicIndexPage IndexPage(int boardId, int page) {
 			var boardRecord = DbContext.Boards.Find(boardId);
 
-			// check board roles here. make new board roles table.
+			var boardRoles = DbContext.BoardRoles.Where(r => r.BoardId == boardId).Select(r => r.RoleId).ToList();
+
+			if (!UserContext.IsAdmin && boardRoles.Any() && !boardRoles.Intersect(UserContext.Roles).Any())
+				throw new HttpForbiddenException("You are not authorized to view this board.");
 
 			var messageIdQuery = from message in DbContext.Messages
 								 orderby message.LastReplyPosted descending
@@ -124,7 +128,7 @@ namespace Forum3.Services.Controller {
 			var record = DbContext.Messages.Find(messageId);
 
 			if (record is null)
-				throw new Exception($"A record does not exist with ID '{messageId}'");
+				throw new HttpNotFoundException($"A record does not exist with ID '{messageId}'");
 
 			var parentId = messageId;
 
@@ -155,6 +159,18 @@ namespace Forum3.Services.Controller {
 				if (targetPage != page)
 					return GetRedirectViewModel(target, messageId, messageIds);
 			}
+
+			var assignedBoardsQuery = from messageBoard in DbContext.MessageBoards
+									  join board in DbContext.Boards on messageBoard.BoardId equals board.Id
+									  where messageBoard.MessageId == record.Id
+									  select board;
+
+			var assignedBoards = assignedBoardsQuery.ToList();
+
+			var boardRoles = DbContext.BoardRoles.Where(r => assignedBoards.Any(b => b.Id == r.BoardId)).Select(r => r.RoleId).ToList();
+
+			if (!UserContext.IsAdmin && boardRoles.Any() && !boardRoles.Intersect(UserContext.Roles).Any())
+				throw new HttpForbiddenException("You are not authorized to view this topic.");
 
 			if (page < 1)
 				page = 1;
@@ -190,13 +206,6 @@ namespace Forum3.Services.Controller {
 				}
 			};
 
-			var assignedBoardsQuery = from messageBoard in DbContext.MessageBoards
-									  join board in DbContext.Boards on messageBoard.BoardId equals board.Id
-									  where messageBoard.MessageId == topic.Id
-									  select board;
-
-			var assignedBoards = assignedBoardsQuery.ToList();
-
 			foreach (var assignedBoard in assignedBoards) {
 				var indexBoard = BoardService.GetIndexBoard(assignedBoard);
 				topic.AssignedBoards.Add(indexBoard);
@@ -212,10 +221,8 @@ namespace Forum3.Services.Controller {
 
 			var record = DbContext.Messages.Find(messageId);
 
-			if (record is null) {
-				serviceResponse.Error(string.Empty, $@"No record was found with the id '{messageId}'");
-				return serviceResponse;
-			}
+			if (record is null)
+				throw new HttpNotFoundException($@"No record was found with the id '{messageId}'");
 
 			if (record.ParentId > 0)
 				record = DbContext.Messages.Find(record.ParentId);
@@ -266,10 +273,8 @@ namespace Forum3.Services.Controller {
 
 			var record = DbContext.Messages.Find(messageId);
 
-			if (record is null) {
-				serviceResponse.Error(string.Empty, $@"No record was found with the id '{messageId}'");
-				return serviceResponse;
-			}
+			if (record is null)
+				throw new HttpNotFoundException($@"No record was found with the id '{messageId}'");
 
 			if (record.ParentId > 0)
 				messageId = record.ParentId;
@@ -299,7 +304,7 @@ namespace Forum3.Services.Controller {
 			var messageRecord = DbContext.Messages.Find(input.MessageId);
 
 			if (messageRecord is null)
-				serviceResponse.Error(string.Empty, $@"No message was found with the id '{input.MessageId}'");
+				throw new HttpNotFoundException($@"No message was found with the id '{input.MessageId}'");
 
 			var messageId = input.MessageId;
 

@@ -1,8 +1,10 @@
 ﻿using Forum3.Contexts;
 using Forum3.Interfaces.Users;
+using Forum3.Middleware;
 using Forum3.Models.ServiceModels;
 using Forum3.Services;
 using Forum3.Services.Controller;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.Configuration;
@@ -10,8 +12,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.WindowsAzure.Storage;
 using System;
 
-namespace Forum3.Helpers {
-	public static class ForumServiceRegistrationExtension {
+namespace Forum3.Extensions {
+	public static class ForumStartupExtensions {
+		public static IApplicationBuilder UseForum(this IApplicationBuilder builder) {
+			builder.UseMiddleware<HttpStatusCodeHandler>();
+
+			return builder;
+		}
+
 		public static IServiceCollection AddForum(this IServiceCollection services, IConfiguration configuration) {
 			AddTransientDependencies(services, configuration);
 			AddScopedDependencies(services, configuration);

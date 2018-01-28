@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace Forum3.Helpers {
+namespace Forum3.Extensions {
 	public static class GetConstantsExtension {
 		// Inspired by https://stackoverflow.com/a/10261848/2621693
 		public static IEnumerable<string> GetConstants(this Type type) {

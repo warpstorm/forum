@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace Forum3.Helpers {
+namespace Forum3.Extensions {
 	public static class DictionaryMergeExtension {
 		// Inspired by: https://stackoverflow.com/a/2679857/2621693
 		public static void Merge<T, K, V>(this T to, params IDictionary<K, V>[] sources) where T : IDictionary<K, V>, new() {

@@ -12,7 +12,13 @@ namespace Forum3.Controllers {
 
 	public class ForumController : Controller {
 		[AllowAnonymous]
-		public IActionResult Error() => View(new ViewModels.Error { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+		public IActionResult Error() {
+			var viewModel = new ViewModels.Error {
+				RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
+			};
+
+			return View(viewModel);
+		}
 
 		public string Referrer {
 			get {
