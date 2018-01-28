@@ -1,9 +1,10 @@
 {
-  "name": "asp.net",
-  "private": true,
-  "dependencies": {
-    "jquery": "2.2.0",
-    "jquery-validation": "1.14.0",
-    "jquery-validation-unobtrusive": "3.2.6"
-  }
+	"name": "asp.net",
+	"private": true,
+	"dependencies": {
+		"jquery": "~3.3",
+		"jquery-validation": "~1.17.0",
+		"jquery-validation-unobtrusive": "~3.2.6",
+		"jdenticon": "~1.8.0"
+	}
 }
