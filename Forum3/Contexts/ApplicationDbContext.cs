@@ -25,6 +25,9 @@ namespace Forum3.Contexts {
 			modelBuilder.Entity<BoardRole>()
 				.HasIndex(r => r.BoardId);
 
+			modelBuilder.Entity<MessageBoard>()
+				.HasIndex(r => r.BoardId);
+
 			modelBuilder.Entity<Message>()
 				.HasIndex(r => r.Processed);
 
@@ -42,6 +45,9 @@ namespace Forum3.Contexts {
 
 			modelBuilder.Entity<Pin>()
 				.HasIndex(r => r.MessageId);
+
+			modelBuilder.Entity<Pin>()
+				.HasIndex(r => r.UserId);
 
 			modelBuilder.Entity<SiteSetting>()
 				.HasIndex(r => new { r.Name, r.UserId });
