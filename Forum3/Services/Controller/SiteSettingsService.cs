@@ -1,4 +1,5 @@
-﻿using Forum3.Helpers;
+﻿using Forum3.Contexts;
+using Forum3.Helpers;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -9,11 +10,11 @@ namespace Forum3.Services.Controller {
 	using ViewModels = Models.ViewModels.SiteSettings;
 
 	public class SiteSettingsService {
-		DataModels.ApplicationDbContext DbContext { get; }
+		ApplicationDbContext DbContext { get; }
 		SettingsRepository Settings { get; }
 
 		public SiteSettingsService(
-			DataModels.ApplicationDbContext dbContext,
+			ApplicationDbContext dbContext,
 			SettingsRepository settingsRepository
 		) {
 			DbContext = dbContext;

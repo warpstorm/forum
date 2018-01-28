@@ -1,4 +1,5 @@
-﻿using Forum3.Controllers;
+﻿using Forum3.Contexts;
+using Forum3.Controllers;
 using Forum3.Enums;
 using Forum3.Helpers;
 using Microsoft.AspNetCore.Mvc;
@@ -11,18 +12,17 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace Forum3.Services.Controller {
-	using DataModels = Models.DataModels;
 	using ServiceModels = Models.ServiceModels;
 	using ViewModels = Models.ViewModels.Notifications;
 
 	public class NotificationService {
-		DataModels.ApplicationDbContext DbContext { get; }
-		ServiceModels.UserContext UserContext { get; }
+		ApplicationDbContext DbContext { get; }
+		UserContext UserContext { get; }
 		IUrlHelper UrlHelper { get; }
 
 		public NotificationService(
-			DataModels.ApplicationDbContext dbContext,
-			ServiceModels.UserContext userContext,
+			ApplicationDbContext dbContext,
+			UserContext userContext,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory
 		) {

@@ -1,4 +1,5 @@
-﻿using Forum3.Controllers;
+﻿using Forum3.Contexts;
+using Forum3.Controllers;
 using Forum3.Enums;
 using Forum3.Helpers;
 using Forum3.Models.InputModels;
@@ -17,15 +18,15 @@ namespace Forum3.Services.Controller {
 	using ServiceModels = Models.ServiceModels;
 
 	public class TopicService {
-		DataModels.ApplicationDbContext DbContext { get; }
-		ServiceModels.UserContext UserContext { get; }
+		ApplicationDbContext DbContext { get; }
+		UserContext UserContext { get; }
 		BoardService BoardService { get; }
 		SettingsRepository Settings { get; }
 		IUrlHelper UrlHelper { get; }
 
 		public TopicService(
-			DataModels.ApplicationDbContext dbContext,
-			ServiceModels.UserContext userContext,
+			ApplicationDbContext dbContext,
+			UserContext userContext,
 			BoardService boardService,
 			SettingsRepository settingsRepository,
 			IActionContextAccessor actionContextAccessor,

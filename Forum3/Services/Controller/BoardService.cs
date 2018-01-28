@@ -1,4 +1,5 @@
-﻿using Forum3.Controllers;
+﻿using Forum3.Contexts;
+using Forum3.Controllers;
 using Forum3.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -18,15 +19,15 @@ namespace Forum3.Services.Controller {
 	using ServiceModels = Models.ServiceModels;
 
 	public class BoardService {
-		DataModels.ApplicationDbContext DbContext { get; }
-		ServiceModels.UserContext UserContext { get; }
+		ApplicationDbContext DbContext { get; }
+		UserContext UserContext { get; }
 		SettingsRepository Settings { get; }
 		NotificationService NotificationService { get; }
 		IUrlHelper UrlHelper { get; }
 
 		public BoardService(
-			DataModels.ApplicationDbContext dbContext,
-			ServiceModels.UserContext userContext,
+			ApplicationDbContext dbContext,
+			UserContext userContext,
 			SettingsRepository SettingsRepository,
 			NotificationService notificationService,
 			IActionContextAccessor actionContextAccessor,

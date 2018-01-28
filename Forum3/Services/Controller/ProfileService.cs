@@ -1,18 +1,17 @@
-﻿using System;
+﻿using Forum3.Contexts;
+using System;
 using System.Threading.Tasks;
 
 namespace Forum3.Services.Controller {
-	using DataModels = Models.DataModels;
-	using ServiceModels = Models.ServiceModels;
 	using ViewModels = Models.ViewModels.Profile;
 
 	public class ProfileService {
-		DataModels.ApplicationDbContext DbContext { get; }
-		ServiceModels.UserContext UserContext { get; }
+		ApplicationDbContext DbContext { get; }
+		UserContext UserContext { get; }
 
 		public ProfileService(
-			DataModels.ApplicationDbContext dbContext,
-			ServiceModels.UserContext userContext
+			ApplicationDbContext dbContext,
+			UserContext userContext
 		) {
 			DbContext = dbContext;
 			UserContext = userContext;

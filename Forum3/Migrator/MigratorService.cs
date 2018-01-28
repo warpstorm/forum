@@ -1,4 +1,5 @@
-﻿using Forum3.Controllers;
+﻿using Forum3.Contexts;
+using Forum3.Controllers;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -18,7 +19,7 @@ namespace Forum3.Migrator {
 	using ViewModels = Forum3.Models.ViewModels;
 
 	public class MigratorService {
-		DataModels.ApplicationDbContext AppDb { get; }
+		ApplicationDbContext AppDb { get; }
 		MigratorModels.MigratorDbContext LegacyDb { get; }
 		RoleManager<DataModels.ApplicationRole> RoleManager { get; }
 		UserManager<DataModels.ApplicationUser> UserManager { get; }
@@ -26,7 +27,7 @@ namespace Forum3.Migrator {
 		CloudBlobClient CloudBlobClient { get; }
 
 		public MigratorService(
-			DataModels.ApplicationDbContext applicationDbContext,
+			ApplicationDbContext applicationDbContext,
 			MigratorModels.MigratorDbContext migratorDbContext,
 			RoleManager<DataModels.ApplicationRole> roleManager,
 			UserManager<DataModels.ApplicationUser> userManager,

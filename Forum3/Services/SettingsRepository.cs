@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Forum3.Contexts;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -6,13 +7,13 @@ namespace Forum3.Services {
 	using DataModels = Models.DataModels;
 
 	public class SettingsRepository {
-		DataModels.ApplicationDbContext DbContext { get; }
+		ApplicationDbContext DbContext { get; }
 
 		Dictionary<string, string> Settings { get; } = new Dictionary<string, string>();
 		Dictionary<string, Dictionary<string, string>> UserSettings { get; } = new Dictionary<string, Dictionary<string, string>>();
 
 		public SettingsRepository(
-			DataModels.ApplicationDbContext dbContext
+			ApplicationDbContext dbContext
 		) {
 			DbContext = dbContext;
 		}

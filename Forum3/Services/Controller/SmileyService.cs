@@ -1,4 +1,5 @@
-﻿using Microsoft.WindowsAzure.Storage.Blob;
+﻿using Forum3.Contexts;
+using Microsoft.WindowsAzure.Storage.Blob;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -12,11 +13,11 @@ namespace Forum3.Services.Controller {
 	using ViewModels = Models.ViewModels.Smileys;
 
 	public class SmileyService {
-		DataModels.ApplicationDbContext DbContext { get; }
+		ApplicationDbContext DbContext { get; }
 		CloudBlobClient CloudBlobClient { get; }
 
 		public SmileyService(
-			DataModels.ApplicationDbContext dbContext,
+			ApplicationDbContext dbContext,
 			CloudBlobClient cloudBlobClient
 		) {
 			DbContext = dbContext;

@@ -1,4 +1,5 @@
 ﻿using CodeKicker.BBCode;
+using Forum3.Contexts;
 using Forum3.Controllers;
 using Forum3.Helpers;
 using HtmlAgilityPack;
@@ -21,14 +22,14 @@ namespace Forum3.Services.Controller {
 	using ViewModels = Models.ViewModels.Messages;
 
 	public class MessageService {
-		DataModels.ApplicationDbContext DbContext { get; }
+		ApplicationDbContext DbContext { get; }
 		SettingsRepository Settings { get; }
-		ServiceModels.UserContext UserContext { get; }
+		UserContext UserContext { get; }
 		IUrlHelper UrlHelper { get; }
 
 		public MessageService(
-			DataModels.ApplicationDbContext dbContext,
-			ServiceModels.UserContext userContext,
+			ApplicationDbContext dbContext,
+			UserContext userContext,
 			SettingsRepository settingsRepository,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory

@@ -1,4 +1,5 @@
-﻿using Forum3.Enums;
+﻿using Forum3.Contexts;
+using Forum3.Enums;
 using Forum3.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -10,18 +11,17 @@ using System.Threading.Tasks;
 
 namespace Forum3.ActionFilters {
 	using DataModels = Models.DataModels;
-	using ServiceModels = Models.ServiceModels;
 
 	public class UserContextActionFilter : IAsyncActionFilter {
-		DataModels.ApplicationDbContext DbContext { get; }
-		ServiceModels.UserContext UserContext { get; }
+		ApplicationDbContext DbContext { get; }
+		UserContext UserContext { get; }
 		UserManager<DataModels.ApplicationUser> UserManager { get; }
 		SignInManager<DataModels.ApplicationUser> SignInManager { get; }
 		SettingsRepository Settings { get; }
 
 		public UserContextActionFilter(
-			DataModels.ApplicationDbContext dbContext,
-			ServiceModels.UserContext userContext,
+			ApplicationDbContext dbContext,
+			UserContext userContext,
 			UserManager<DataModels.ApplicationUser> userManager,
 			SignInManager<DataModels.ApplicationUser> signInManager,
 			SettingsRepository settingsRepository

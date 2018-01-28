@@ -1,4 +1,5 @@
-﻿using Forum3.Controllers;
+﻿using Forum3.Contexts;
+using Forum3.Controllers;
 using Forum3.Helpers;
 using Forum3.Interfaces.Users;
 using Microsoft.AspNetCore.Http;
@@ -27,10 +28,10 @@ namespace Forum3.Services.Controller {
 	public class AccountService {
 		public bool IsAuthenticated => UserContext.IsAuthenticated;
 
-		DataModels.ApplicationDbContext DbContext { get; }
+		ApplicationDbContext DbContext { get; }
 		SettingsRepository Settings { get; }
 		CloudBlobClient CloudBlobClient { get; }
-		ServiceModels.UserContext UserContext { get; }
+		UserContext UserContext { get; }
 		UserManager<DataModels.ApplicationUser> UserManager { get; }
 		SignInManager<DataModels.ApplicationUser> SignInManager { get; }
 		IEmailSender EmailSender { get; }
@@ -39,8 +40,8 @@ namespace Forum3.Services.Controller {
 		IHttpContextAccessor HttpContextAccessor { get; }
 
 		public AccountService(
-			DataModels.ApplicationDbContext dbContext,
-			ServiceModels.UserContext userContext,
+			ApplicationDbContext dbContext,
+			UserContext userContext,
 			SettingsRepository settingsRepository,
 			CloudBlobClient cloudBlobClient,
 			UserManager<DataModels.ApplicationUser> userManager,
