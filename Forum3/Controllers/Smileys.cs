@@ -1,10 +1,12 @@
 ﻿using Forum3.Annotations;
 using Forum3.Models.InputModels;
 using Forum3.Services.Controller;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
 namespace Forum3.Controllers {
+	[Authorize(Roles="Admin")]
 	public class Smileys : ForumController {
 		SmileyService SmileyService { get; }
 

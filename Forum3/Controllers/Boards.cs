@@ -1,5 +1,6 @@
 ﻿using Forum3.Models.InputModels;
 using Forum3.Services.Controller;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Forum3.Controllers {
@@ -18,18 +19,21 @@ namespace Forum3.Controllers {
 			return View(viewModel);
 		}
 
+		[Authorize(Roles="Admin")]
 		[HttpGet]
 		public IActionResult Manage() {
 			var viewModel = BoardService.ManagePage();
 			return View(viewModel);
 		}
 
+		[Authorize(Roles="Admin")]
 		[HttpGet]
 		public IActionResult Create() {
 			var viewModel = BoardService.CreatePage();
 			return View(viewModel);
 		}
 
+		[Authorize(Roles="Admin")]
 		[HttpPost]
 		public IActionResult Create(CreateBoardInput input) {
 			if (ModelState.IsValid) {
@@ -44,12 +48,14 @@ namespace Forum3.Controllers {
 			return View(viewModel);
 		}
 
+		[Authorize(Roles="Admin")]
 		[HttpGet]
 		public IActionResult Edit(int id) {
 			var viewModel = BoardService.EditPage(id);
 			return View(viewModel);
 		}
 
+		[Authorize(Roles="Admin")]
 		[HttpPost]
 		public IActionResult Edit(EditBoardInput input) {
 			if (ModelState.IsValid) {
@@ -64,6 +70,7 @@ namespace Forum3.Controllers {
 			return View(viewModel);
 		}
 
+		[Authorize(Roles="Admin")]
 		[HttpGet]
 		public IActionResult MoveCategoryUp(int id) {
 			var serviceResponse = BoardService.MoveCategoryUp(id);
@@ -72,6 +79,7 @@ namespace Forum3.Controllers {
 			return RedirectFromService();
 		}
 
+		[Authorize(Roles="Admin")]
 		[HttpGet]
 		public IActionResult MoveBoardUp(int id) {
 			var serviceResponse = BoardService.MoveBoardUp(id);
@@ -80,6 +88,7 @@ namespace Forum3.Controllers {
 			return RedirectFromService();
 		}
 
+		[Authorize(Roles="Admin")]
 		[HttpPost]
 		public IActionResult MergeCategory(MergeInput input) {
 			if (ModelState.IsValid) {
@@ -90,6 +99,7 @@ namespace Forum3.Controllers {
 			return RedirectFromService();
 		}
 
+		[Authorize(Roles="Admin")]
 		[HttpPost]
 		public IActionResult MergeBoard(MergeInput input) {
 			if (ModelState.IsValid) {

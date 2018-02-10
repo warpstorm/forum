@@ -1,4 +1,5 @@
 ﻿using Forum3.Services.Controller;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
@@ -6,6 +7,7 @@ namespace Forum3.Controllers {
 	using InputModels = Models.InputModels;
 	using PageViewModels = Models.ViewModels.Roles.Pages;
 
+	[Authorize(Roles="Admin")]
 	public class Roles : ForumController {
 		RoleService RoleService { get; }
 
