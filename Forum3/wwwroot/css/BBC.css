@@ -1,0 +1,46 @@
+﻿.bbc-bold {
+	font-weight: 900;
+	color: #FFFFFF;
+}
+
+.bbc-strike {
+	text-decoration: line-through;
+}
+
+.bbc-italic {
+	font-style: italic;
+}
+
+.bbc-underline {
+	text-decoration: underline;
+}
+
+.bbc-code {
+	font-family: monospace;
+	white-space: pre;
+}
+
+.bbc-image {
+
+}
+
+.bbc-quote {
+	width: 100%;
+	padding: 10px;
+	margin: 5px 0;
+	border: 2px solid #1d2737;
+	border-radius: 5px;
+	background-color: #0c0f14;
+}
+
+.bbc-list {
+
+}
+
+.bbc-list-item {
+
+}
+
+.bbc-anchor {
+
+}

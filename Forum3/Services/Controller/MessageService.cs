@@ -387,16 +387,16 @@ namespace Forum3.Services.Controller {
 			var displayBody = processedMessageInput.DisplayBody;
 
 			var parser = new BBCodeParser(new[] {
-				new BBTag("b", "<span style=\"font-weight: bold;\">", "</span>"),
-				new BBTag("s", "<span style=\"text-decoration: line-through;\">", "</span>"),
-				new BBTag("i", "<span style=\"font-style: italic;\">", "</span>"),
-				new BBTag("u", "<span style=\"text-decoration: underline;\">", "</span>"),
-				new BBTag("code", "<pre>", "</pre>"),
-				new BBTag("img", "<img src=\"${content}\" />", "", false, true),
-				new BBTag("quote", @"<blockquote class=""quote"">", "</blockquote>"),
-				new BBTag("list", "<ul>", "</ul>"),
-				new BBTag("*", "<li>", "</li>", true, false),
-				new BBTag("url", "<a href=\"${href}\" target=\"_blank\">", "</a>", new BBAttribute("href", ""), new BBAttribute("href", "href")),
+				new BBTag("b", @"<span class=""bbc-bold"">", "</span>"),
+				new BBTag("s", @"<span class=""bbc-strike"">", "</span>"),
+				new BBTag("i", @"<span class=""bbc-italic"">", "</span>"),
+				new BBTag("u", @"<span class=""bbc-underline"">", "</span>"),
+				new BBTag("code", @"<div class=""bbc-code"">", "</div>"),
+				new BBTag("img", @"<img class=""bbc-image"" src=""${content}"" />", "", false, true),
+				new BBTag("quote", @"<blockquote class=""bbc-quote"">", "</blockquote>"),
+				new BBTag("list", @"<ul class=""bbc-list"">", "</ul>"),
+				new BBTag("*", @"<li class=""bbc-list-item"">", "</li>", true, false),
+				new BBTag("url", @"<a class=""bbc-anchor"" href=""${href}"" target=""_blank"">", "</a>", new BBAttribute("href", ""), new BBAttribute("href", "href")),
 			});
 
 			processedMessageInput.DisplayBody = parser.ToHtml(displayBody);

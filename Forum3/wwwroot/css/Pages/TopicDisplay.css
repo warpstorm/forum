@@ -105,15 +105,6 @@ blockquote.card {
 	font-size: .8em;
 }
 
-blockquote.quote {
-	width: 100%;
-	padding: 10px;
-	margin: 5px 0;
-	border: 2px solid #1d2737;
-	border-radius: 5px;
-	background-color: #0c0f14;
-}
-
 .embedded-video {
 	text-align: center;
 	padding: 5px;
