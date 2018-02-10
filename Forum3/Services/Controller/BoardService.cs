@@ -252,21 +252,24 @@ namespace Forum3.Services.Controller {
 				record.CategoryId = newCategoryRecord.Id;
 			}
 
-			var roles = DbContext.Roles.Select(r => r.Id).ToList();
 			var boardRoles = DbContext.BoardRoles.Where(r => r.BoardId == record.Id).ToList();
 
-			foreach (var boardRole in boardRoles.Where(r => !input.Roles.Contains(r.RoleId)))
+			foreach (var boardRole in boardRoles)
 				DbContext.BoardRoles.Remove(boardRole);
 
-			foreach (var inputRole in input.Roles) {
-				if (roles.Contains(inputRole)) {
-					DbContext.BoardRoles.Add(new DataModels.BoardRole {
-						BoardId = record.Id,
-						RoleId = inputRole
-					});
+			if (input.Roles != null) {
+				var roleIds = DbContext.Roles.Select(r => r.Id).ToList();
+
+				foreach (var inputRole in input.Roles) {
+					if (roleIds.Contains(inputRole)) {
+						DbContext.BoardRoles.Add(new DataModels.BoardRole {
+							BoardId = record.Id,
+							RoleId = inputRole
+						});
+					}
+					else
+						serviceResponse.Error($"Role does not exist with id '{inputRole}'");
 				}
-				else
-					serviceResponse.Error($"Role does not exist with id '{inputRole}'");
 			}
 
 			if (!serviceResponse.Success)
