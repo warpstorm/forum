@@ -33,14 +33,40 @@
 	background-color: #0c0f14;
 }
 
-.bbc-list {
+.bbc-anchor {
 
+}
+
+.bbc-list {
+	white-space: normal;
+}
+
+ul.bbc-list {
+	list-style: circle;
+}
+
+ol.bbc-list {
+	counter-reset: item;
 }
 
 .bbc-list-item {
 
 }
 
-.bbc-anchor {
-
+ol.bbc-list > .bbc-list-item {
+	counter-increment: item;
 }
+
+	ol.bbc-list > .bbc-list-item:before {
+		margin-right: 10px;
+		content: counter(item);
+		background: #7090c6;
+		border-radius: 100%;
+		color: #121822;
+		text-align: center;
+		display: inline-block;
+		font-weight: bold;
+		font-size: .8em;
+		line-height: 1.3em;
+		width: 1.2em;
+	}

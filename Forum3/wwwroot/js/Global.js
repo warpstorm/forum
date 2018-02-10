@@ -1,4 +1,17 @@
-﻿$(function () {
+﻿var BBCode = {
+	"bold": "[b]  [/b]",
+	"italics": "[i]  [/i]",
+	"url": "[url=]  [/url]",
+	"quote": "[quote]  [/quote]",
+	"img": "[img] [/img]",
+	"underline": "[u]  [/u]",
+	"strike": "[s]  [/s]",
+	"color": "[color=#A335EE]  [/color]",
+	"list": "[ul]\n[li] [/li]\n[li] [/li]\n[li] [/li]\n[/ul]",
+	"numlist": "[ol]\n[li] [/li]\n[li] [/li]\n[li] [/li]\n[/ol]",
+};
+
+$(function () {
 	$(".open-menu").on("click.open-menu", OpenMenu);
 
 	$("[clickable-link-parent] a").on("click", function () {
@@ -17,7 +30,91 @@
 	$("#easter-egg").on("mouseleave", function () {
 		$("#danger-sign").addClass("hidden");
 	});
+
+	$(".add-smiley").on("click.show-smiley-selector", AddSmiley);
+
+	$(".add-bbcode").on("click.add-bbcode", AddBBCode);
 });
+
+function AddBBCode(event) {
+	event.preventDefault();
+
+	var targetTextArea = $(this).parents("form").find("textarea")[0];
+	var targetCode = $(this).attr("bbcode");
+
+	InsertAtCaret(targetTextArea, BBCode[targetCode]);
+}
+
+function AddSmiley(event) {
+	event.preventDefault();
+
+	var targetTextArea = $(this).parents("form").find("textarea")[0];
+
+	ShowSmileySelector(this, function (smileyImg) {
+		var smileyCode = $(smileyImg).attr("code");
+
+		if (targetTextArea.value !== "") {
+			smileyCode = " " + smileyCode;
+		}
+
+		InsertAtCaret(targetTextArea, smileyCode);
+
+		CloseSmileySelector();
+	});
+}
+
+function ShowSmileySelector(target, imgCallback) {
+	CloseSmileySelector();
+
+	var buttonOffset = $(target).offset();
+	var buttonHeight = $(target).outerHeight();
+
+	$("#smiley-selector").show();
+
+	var screenFalloff = buttonOffset.left + $("#smiley-selector").outerWidth() + 20 - window.innerWidth;
+
+	var selectorLeftOffset = buttonOffset.left;
+
+	if (screenFalloff > 0) {
+		selectorLeftOffset -= screenFalloff;
+	}
+
+	var selectorTopOffset = buttonOffset.top + buttonHeight;
+
+	$("#smiley-selector").offset({
+		top: selectorTopOffset,
+		left: selectorLeftOffset
+	});
+
+	$("#smiley-selector").on("click.smiley-selector-prevent-bubble", function (bubbleEvent) {
+		bubbleEvent.stopPropagation();
+	});
+
+	setTimeout(function () {
+		$("#smiley-selector img").on("click.smiley-image", function () {
+			imgCallback(this);
+		});
+
+		$("body").on("click.close-smiley-selector", function () {
+			CloseSmileySelector();
+		});
+	}, 50);
+}
+
+function CloseSmileySelector() {
+	$("#smiley-selector").offset({
+		top: 0,
+		left: 0
+	});
+
+	$("#smiley-selector").hide();
+
+	setTimeout(function () {
+		$("body").off("click.close-smiley-selector");
+		$("#smiley-selector img").off("click.smiley-image");
+		$("#smiley-selector").off("click.smiley-selector-prevent-bubble");
+	}, 50);
+}
 
 function ShowPages() {
 	$(".pages").find(".unhide-pages").on("click", function () {
@@ -135,6 +232,45 @@ function PostToPath(path, parameters) {
 
 	$(document.body).append(form);
 	form.submit();
+}
+
+// for inserting text into textareas at the cursor location
+function InsertAtCaret(areaElement, text) {
+	var scrollPos = areaElement.scrollTop;
+	var strPos = 0;
+	var br = ((areaElement.selectionStart || areaElement.selectionStart === '0') ? "ff" : (document.selection ? "ie" : false));
+	var range;
+
+	if (br === "ie") {
+		areaElement.focus();
+		range = document.selection.createRange();
+		range.moveStart('character', -areaElement.value.length);
+		strPos = range.text.length;
+	} else if (br === "ff") {
+		strPos = areaElement.selectionStart;
+	}
+
+	var front = (areaElement.value).substring(0, strPos);
+	var back = (areaElement.value).substring(strPos, areaElement.value.length);
+
+	areaElement.value = front + text + back;
+
+	strPos = strPos + text.length;
+
+	if (br === "ie") {
+		areaElement.focus();
+		range = document.selection.createRange();
+		range.moveStart('character', -areaElement.value.length);
+		range.moveStart('character', strPos);
+		range.moveEnd('character', 0);
+		range.select();
+	} else if (br === "ff") {
+		areaElement.selectionStart = strPos;
+		areaElement.selectionEnd = strPos;
+		areaElement.focus();
+	}
+
+	areaElement.scrollTop = scrollPos;
 }
 
 

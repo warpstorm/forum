@@ -394,9 +394,11 @@ namespace Forum3.Services.Controller {
 				new BBTag("code", @"<div class=""bbc-code"">", "</div>"),
 				new BBTag("img", @"<img class=""bbc-image"" src=""${content}"" />", "", false, true),
 				new BBTag("quote", @"<blockquote class=""bbc-quote"">", "</blockquote>"),
-				new BBTag("list", @"<ul class=""bbc-list"">", "</ul>"),
-				new BBTag("*", @"<li class=""bbc-list-item"">", "</li>", true, false),
+				new BBTag("ul", @"<ul class=""bbc-list"">", "</ul>"),
+				new BBTag("ol", @"<ol class=""bbc-list"">", "</ul>"),
+				new BBTag("li", @"<li class=""bbc-list-item"">", "</li>"),
 				new BBTag("url", @"<a class=""bbc-anchor"" href=""${href}"" target=""_blank"">", "</a>", new BBAttribute("href", ""), new BBAttribute("href", "href")),
+				new BBTag("color", @"<span style=""color: ${color};"">", "</span>", new BBAttribute("color", ""), new BBAttribute("color", "color")),
 			});
 
 			processedMessageInput.DisplayBody = parser.ToHtml(displayBody);

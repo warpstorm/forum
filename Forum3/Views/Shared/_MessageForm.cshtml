@@ -3,28 +3,46 @@
 <div>
 	<div asp-validation-summary="ModelOnly"></div>
 
-    <form method="post"
-          asp-action="@Model.FormAction" 
-          asp-controller="@Model.FormController"
-          asp-route-returnurl="@Model.CancelPath">
+	<form method="post"
+		  asp-action="@Model.FormAction"
+		  asp-controller="@Model.FormController"
+		  asp-route-returnurl="@Model.CancelPath">
 
-        <input type="hidden" name="Id" value="@Model.Id" />
+		<input type="hidden" name="Id" value="@Model.Id" />
 
 		@if (Model.BoardId != null) {
 			<input type="hidden" name="BoardId" value="@Model.BoardId" />
 		}
 
-        <div>
-            <p><textarea asp-for="Body"></textarea></p>
-            <p><span asp-validation-for="Body" /></p>
-        </div>
+		<div>
+			<p class="pad-top">
+				<button class="add-bbcode small-button" bbcode="quote">Quote</button>
+				<button class="add-bbcode small-button" bbcode="url">Link</button>
+				<button class="add-bbcode small-button" bbcode="img">Image</button>
+				<button class="add-bbcode small-button" bbcode="code">Code</button>
+				<button class="add-bbcode small-button" bbcode="list">List</button>
+				<button class="add-bbcode small-button" bbcode="numlist"># List</button>
+			</p>
+			<p class="pad-top">
+				<button class="add-bbcode small-button" bbcode="bold"><span class="bbc-bold">Bold</span></button>
+				<button class="add-bbcode small-button" bbcode="italics"><span class="bbc-italic">Italics</span></button>
+				<button class="add-bbcode small-button" bbcode="underline"><span class="bbc-underline">Underline</span></button>
+				<button class="add-bbcode small-button" bbcode="strike"><span class="bbc-strike">Strike</span></button>
+				<button class="add-bbcode small-button" bbcode="color"><span>Color</span></button>
 
-        <p>
-            <button>Save</button>
+				<img class="add-smiley pointer align-middle pad-left" src="~/images/smiley.png" alt="Smiley" title="Smiley" />
+			</p>
 
-            @if (!string.IsNullOrEmpty(Model.CancelPath)) {
-                <a class="button" href="@Model.CancelPath">Cancel</a>
-            }
-        </p>
-    </form>
+			<p class="pad-top"><textarea asp-for="Body"></textarea></p>
+			<p class="pad-top"><span asp-validation-for="Body" /></p>
+		</div>
+
+		<p>
+			<button>Save</button>
+
+			@if (!string.IsNullOrEmpty(Model.CancelPath)) {
+				<a class="button" href="@Model.CancelPath">Cancel</a>
+			}
+		</p>
+	</form>
 </div>
