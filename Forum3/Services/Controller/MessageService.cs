@@ -193,7 +193,7 @@ namespace Forum3.Services.Controller {
 									 select board).ToListAsync();
 
 			foreach (var boardRecord in boardRecords) {
-				boardRecord.LastMessageId = record.Id;
+				boardRecord.LastMessageId = record.ParentId;
 				DbContext.Update(boardRecord);
 			}
 
@@ -695,7 +695,7 @@ namespace Forum3.Services.Controller {
 			DbContext.Messages.Add(record);
 			DbContext.SaveChanges();
 
-			if (replyRecord != null) {
+			if (replyId > 0) {
 				replyRecord.LastReplyId = record.Id;
 				replyRecord.LastReplyById = UserContext.ApplicationUser.Id;
 				replyRecord.LastReplyPosted = currentTime;
@@ -716,7 +716,7 @@ namespace Forum3.Services.Controller {
 				}
 			}
 
-			if (parentMessage != null && parentMessage.Id != replyRecord.Id) {
+			if (parentMessage != null && parentId != replyId) {
 				parentMessage.LastReplyId = record.Id;
 				parentMessage.LastReplyById = UserContext.ApplicationUser.Id;
 				parentMessage.LastReplyPosted = currentTime;
