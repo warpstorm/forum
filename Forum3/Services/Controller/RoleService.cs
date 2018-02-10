@@ -208,7 +208,7 @@ namespace Forum3.Services.Controller {
 
 			var usersInRole = await UserManager.GetUsersInRoleAsync(role.Name);
 
-			var userRecords = await UserManager.Users.Select(u => new ItemViewModels.UserListItem {
+			var userRecords = await UserManager.Users.OrderBy(r => r.DisplayName).Select(u => new ItemViewModels.UserListItem {
 				Id = u.Id,
 				Name = u.DisplayName
 			}).ToListAsync();
