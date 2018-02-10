@@ -1,5 +1,5 @@
 ﻿$(function () {
-	if (window.after > 0) {
+	if (window.after > 0 && window.unreadFilter == 0) {
 		$("#load-more-topics").removeClass("hidden");
 		$("#load-more-topics").on("click", LoadMoreTopics);
 	}

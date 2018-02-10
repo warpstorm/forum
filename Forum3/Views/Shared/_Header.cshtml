@@ -34,9 +34,9 @@
 					<span class="small-button pointer">Topics</span>
 					<div class="menu-wrapper hidden">
 						<ul class="drop-down-menu content-box">
-							<li class="hover-highlight" clickable-link-parent><a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)">All Topics</a></li>
-							<li class="hover-highlight" clickable-link-parent><a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)">Unread Topics</a></li>
-							<li class="hover-highlight" clickable-link-parent><a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)">Replies to You</a></li>
+							<li class="hover-highlight" clickable-link-parent><a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)" asp-route-id="0">All Topics</a></li>
+							<li class="hover-highlight" clickable-link-parent><a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)" asp-route-id="0" asp-route-unread="1">Unread Topics</a></li>
+							<li class="hover-highlight" clickable-link-parent><a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)" asp-route-id="0" asp-route-unread="2">Replies to You</a></li>
 						</ul>
 					</div>
 				</li>

@@ -59,7 +59,8 @@ namespace Forum3.Services.Controller {
 				BoardId = boardId,
 				BoardName = boardRecord?.Name ?? "All Topics",
 				After = after,
-				Topics = topicPreviews
+				Topics = topicPreviews,
+				UnreadFilter = unread
 			};
 		}
 
@@ -384,6 +385,9 @@ namespace Forum3.Services.Controller {
 								unread = 0;
 							break;
 					}
+
+					if (unread == 0)
+						break;
 				}
 			}
 
@@ -401,7 +405,7 @@ namespace Forum3.Services.Controller {
 			return Convert.ToInt32(Math.Ceiling(index / messagesPerPage));
 		}
 
-		List<int> GetIndexIds(int boardId, long after, int unreadFilter, List<DataModels.Participant> participation, List<DataModels.ViewLog> viewLogs) {
+		List<int> GetIndexIds(int boardId, long after, int unreadFilter, DateTime historyTimeLimit, List<DataModels.Participant> participation, List<DataModels.ViewLog> viewLogs) {
 			var take = Settings.TopicsPerPage();
 
 			var messageQuery = from message in DbContext.Messages
@@ -426,7 +430,11 @@ namespace Forum3.Services.Controller {
 
 			var afterTarget = new DateTime(after);
 
-			if (afterTarget != default(DateTime))
+			if (unreadFilter > 0) {
+				var timeFilter = historyTimeLimit > afterTarget ? historyTimeLimit : afterTarget;
+				messageQuery = messageQuery.Where(m => m.LastReplyPosted > timeFilter);
+			}
+			else if (afterTarget != default(DateTime))
 				messageQuery = messageQuery.Where(m => m.LastReplyPosted < afterTarget);
 
 			var sortedMessageQuery = from message in messageQuery
@@ -466,6 +474,15 @@ namespace Forum3.Services.Controller {
 					continue;
 				}
 
+				var unreadLevel = unreadFilter == 0 ? 0 : TopicUnreadLevel(message.Id, message.LastReplyPosted, participation, viewLogs);
+
+				if (unreadLevel < unreadFilter) {
+					if (attempts++ > 100)
+						break;
+
+					continue;
+				}
+
 				messageIds.Add(message.Id);
 
 				if (messageIds.Count == take)
@@ -485,7 +502,7 @@ namespace Forum3.Services.Controller {
 				viewLogs = DbContext.ViewLogs.Where(r => r.LogTime >= historyTimeLimit && r.UserId == UserContext.ApplicationUser.Id).ToList();
 			}
 
-			var messageIds = GetIndexIds(boardId, after, unread, participation, viewLogs);
+			var messageIds = GetIndexIds(boardId, after, unread, historyTimeLimit, participation, viewLogs);
 
 			var messageRecordQuery = from message in DbContext.Messages
 									 where message.ParentId == 0 && messageIds.Contains(message.Id)
