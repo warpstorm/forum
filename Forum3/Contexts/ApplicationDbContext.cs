@@ -28,6 +28,9 @@ namespace Forum3.Contexts {
 			modelBuilder.Entity<MessageBoard>()
 				.HasIndex(r => r.BoardId);
 
+			modelBuilder.Entity<MessageBoard>()
+				.HasIndex(r => r.MessageId);
+
 			modelBuilder.Entity<Message>()
 				.HasIndex(r => r.Processed);
 
