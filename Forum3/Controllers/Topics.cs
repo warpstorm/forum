@@ -21,8 +21,14 @@ namespace Forum3.Controllers {
 		}
 
 		[HttpGet]
-		public IActionResult Index(int id = 0, int pageId = 1) {
-			var viewModel = TopicService.IndexPage(id, pageId);
+		public IActionResult Index(int id = 0) {
+			var viewModel = TopicService.IndexPage(id);
+			return View(viewModel);
+		}
+
+		[HttpGet]
+		public IActionResult IndexMore(int id = 0, long after = 0) {
+			var viewModel = TopicService.IndexMore(id, after);
 			return View(viewModel);
 		}
 

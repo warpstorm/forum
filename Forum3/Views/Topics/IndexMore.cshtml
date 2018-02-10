@@ -1,0 +1,14 @@
+@model TopicIndexMorePage
+
+@{
+	Layout = null;
+}
+
+@foreach (var item in Model.Topics) {
+	@await Html.PartialAsync("_IndexItem", item)
+}
+
+<script>
+	window.after = @Model.After;
+	window.moreTopics = @Model.More.ToString().ToLower();
+</script>

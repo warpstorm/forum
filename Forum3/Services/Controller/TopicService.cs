@@ -40,55 +40,58 @@ namespace Forum3.Services.Controller {
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
-		public PageModels.TopicIndexPage IndexPage(int boardId, int page) {
-			var boardRecord = DbContext.Boards.Find(boardId);
-
+		public PageModels.TopicIndexPage IndexPage(int boardId) {
 			var boardRoles = DbContext.BoardRoles.Where(r => r.BoardId == boardId).Select(r => r.RoleId).ToList();
 
 			if (!UserContext.IsAdmin && boardRoles.Any() && !boardRoles.Intersect(UserContext.Roles).Any())
 				throw new HttpForbiddenException("You are not authorized to view this board.");
 
-			var messageIdQuery = from message in DbContext.Messages
-								 orderby message.LastReplyPosted descending
-								 join messageBoard in DbContext.MessageBoards on message.Id equals messageBoard.MessageId
-								 where boardRecord == null || messageBoard.BoardId == boardRecord.Id
-								 join pin in DbContext.Pins on message.Id equals pin.MessageId into pins
-								 from pin in pins.DefaultIfEmpty()
-								 let pinned = pin != null && pin.UserId == UserContext.ApplicationUser.Id
-								 orderby (pinned ? pin.Id : 0) descending, message.LastReplyPosted descending
-								 select message.Id;
+			var messageIds = GetIndexIds(boardId, 0);
 
-			var messageIds = messageIdQuery.ToList();
+			var topicPreviews = GetTopicPreviews(messageIds);
 
-			if (page < 1)
-				page = 1;
+			var after = 0L;
 
-			var take = Settings.TopicsPerPage();
-			var skip = (page * take) - take;
-			var totalPages = Convert.ToInt32(Math.Ceiling(1.0 * messageIds.Count / take));
+			if (topicPreviews.Any())
+				after = topicPreviews.Min(t => t.LastReplyPostedDT).Ticks;
 
-			var pageMessageIds = messageIds.Skip(skip).Take(take).ToList();
-
-			var topicPreviews = GetTopicPreviews(pageMessageIds);
+			var boardRecord = DbContext.Boards.Find(boardId);
 
 			return new PageModels.TopicIndexPage {
-				BoardId = boardRecord?.Id ?? 0,
+				BoardId = boardId,
 				BoardName = boardRecord?.Name ?? "All Topics",
-				Skip = skip + take,
-				Take = take,
-				TotalPages = totalPages,
-				CurrentPage = page,
+				After = after,
 				Topics = topicPreviews
 			};
 		}
 
-		public PageModels.TopicIndexPage UnreadPage(int boardId, int page) {
+		public PageModels.TopicIndexMorePage IndexMore(int boardId, long after, int unreadFilter = 0) {
+			var boardRoles = DbContext.BoardRoles.Where(r => r.BoardId == boardId).Select(r => r.RoleId).ToList();
+
+			if (!UserContext.IsAdmin && boardRoles.Any() && !boardRoles.Intersect(UserContext.Roles).Any())
+				throw new HttpForbiddenException("You are not authorized to view this board.");
+
+			var messageIds = GetIndexIds(boardId, after);
+
+			var topicPreviews = GetTopicPreviews(messageIds);
+
+			if (topicPreviews.Any())
+				after = topicPreviews.Min(t => t.LastReplyPostedDT).Ticks;
+			else
+				after = long.MaxValue;
+
+			return new PageModels.TopicIndexMorePage {
+				More = after != long.MaxValue,
+				After = after,
+				Topics = topicPreviews
+			};
+		}
+
+		public PageModels.TopicIndexPage UnreadPage(int boardId) {
 			if (!UserContext.IsAuthenticated)
 				throw new ApplicationException("User must be logged in to view this page.");
-			
-			var boardRecord = DbContext.Boards.Find(boardId);
 
-			// check board roles here. make new board roles table.
+			var boardRecord = DbContext.Boards.Find(boardId);
 
 			var messageIdQuery = from message in DbContext.Messages
 								 orderby message.LastReplyPosted descending
@@ -100,26 +103,13 @@ namespace Forum3.Services.Controller {
 								 orderby (pinned ? pin.Id : 0) descending, message.LastReplyPosted descending
 								 select message.Id;
 
-			var messageIds = messageIdQuery.ToList();
-
-			if (page < 1)
-				page = 1;
-
-			var take = Settings.TopicsPerPage();
-			var skip = (page * take) - take;
-			var totalPages = Convert.ToInt32(Math.Ceiling(1.0 * messageIds.Count / take));
-
-			var pageMessageIds = messageIds.Skip(skip).Take(take).ToList();
+			var pageMessageIds = messageIdQuery.ToList();
 
 			var topicPreviews = GetTopicPreviews(pageMessageIds);
 
 			return new PageModels.TopicIndexPage {
 				BoardId = boardRecord?.Id ?? 0,
 				BoardName = boardRecord?.Name ?? "All Topics",
-				Skip = skip + take,
-				Take = take,
-				TotalPages = totalPages,
-				CurrentPage = page,
 				Topics = topicPreviews
 			};
 		}
@@ -338,6 +328,85 @@ namespace Forum3.Services.Controller {
 			return serviceResponse;
 		}
 
+		List<int> GetIndexIds(int boardId, long after) {
+			var take = Settings.TopicsPerPage();
+
+			var forbiddenBoardIdsQuery = from role in DbContext.Roles
+										 join board in DbContext.BoardRoles on role.Id equals board.RoleId
+										 where !UserContext.Roles.Contains(role.Id)
+										 select board.BoardId;
+
+			var forbiddenBoardIds = forbiddenBoardIdsQuery.ToList();
+
+			IQueryable<DataModels.Message> messageQuery = null;
+
+			if (boardId > 0) {
+				messageQuery = from message in DbContext.Messages
+							   join messageBoard in DbContext.MessageBoards on message.Id equals messageBoard.MessageId
+							   where messageBoard.BoardId == boardId
+							   select message;
+			}
+			else
+				messageQuery = DbContext.Messages;
+
+			var afterTarget = new DateTime(after);
+
+			IQueryable<int> messageIdQuery = null;
+
+			if (afterTarget == default(DateTime)) {
+				messageIdQuery = from message in messageQuery
+								 where message.ParentId == 0
+								 join pin in DbContext.Pins on message.Id equals pin.MessageId into pins
+								 from pin in pins.DefaultIfEmpty()
+								 let pinned = pin != null && pin.UserId == UserContext.ApplicationUser.Id
+								 orderby (pinned ? pin.Id : 0) descending
+								 orderby message.LastReplyPosted descending
+								 select message.Id;
+			}
+			else {
+				messageIdQuery = from message in messageQuery
+								 where message.ParentId == 0
+								 join pin in DbContext.Pins on message.Id equals pin.MessageId into pins
+								 from pin in pins.DefaultIfEmpty()
+								 let pinned = pin != null && pin.UserId == UserContext.ApplicationUser.Id
+								 where !pinned
+								 where message.LastReplyPosted < afterTarget
+								 orderby message.LastReplyPosted descending
+								 select message.Id;
+			}
+
+			var messageBoardsQuery = from messageId in messageIdQuery
+									 join messageBoard in DbContext.MessageBoards on messageId equals messageBoard.MessageId into boards
+									 from messageBoard in boards.DefaultIfEmpty()
+									 select new {
+										 MessageId = messageId,
+										 BoardId = messageBoard == null ? -1 : messageBoard.BoardId
+									 };
+
+			var messageIds = new List<int>();
+			var attempts = 0;
+
+			foreach (var messageId in messageIdQuery) {
+				if (!UserContext.IsAdmin) {
+					var forbidden = messageBoardsQuery.Where(mb => mb.MessageId == messageId).Select(mb => mb.BoardId).Intersect(forbiddenBoardIds).Any();
+
+					if (forbidden) {
+						if (attempts++ > 100)
+							break;
+
+						continue;
+					}
+				}
+
+				messageIds.Add(messageId);
+
+				if (messageIds.Count == take)
+					break;
+			}
+
+			return messageIds;
+		}
+
 		List<ItemModels.MessagePreview> GetTopicPreviews(List<int> messageIds) {
 			var messageRecordQuery = from message in DbContext.Messages
 									 where message.ParentId == 0 && messageIds.Contains(message.Id)
@@ -372,7 +441,7 @@ namespace Forum3.Services.Controller {
 				participation = DbContext.Participants.Where(r => r.UserId == UserContext.ApplicationUser.Id).ToList();
 				viewLogs = DbContext.ViewLogs.Where(r => r.LogTime >= historyTimeLimit && r.UserId == UserContext.ApplicationUser.Id).ToList();
 			}
-			
+
 			foreach (var message in messages) {
 				message.Pages = Convert.ToInt32(Math.Ceiling(1.0 * message.Replies / take));
 				message.LastReplyPosted = message.LastReplyPostedDT.ToPassedTimeString();
@@ -499,7 +568,7 @@ namespace Forum3.Services.Controller {
 			});
 
 			//try {
-				DbContext.SaveChanges();
+			DbContext.SaveChanges();
 			// TODO - uncomment if this problem occurs again.
 			// see - https://docs.microsoft.com/en-us/ef/core/saving/concurrency
 			// The user probably refreshed several times in a row.

@@ -1,37 +1,13 @@
 @model TopicIndexPage
 
-<header id="topic-header">
-	<ul class="float-right inline pages">
-		<li class="note pointer">Pages: </li>
-		@for (var i = 1; i <= Model.TotalPages; i++) {
-			if (Model.CurrentPage == i) {
-				<li class="small-button highlight page hidden">@i</li>
-			}
-			else {
-				<li class="page hidden"><a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)" asp-route-id="@Model.BoardId" asp-route-pageId="@i" class="small-button">@i.ToString()</a></li>
-			}
-		}
-	</ul>
-
-	<br class="clear" />
-</header>
-
-@foreach (var item in Model.Topics) {
-	@await Html.PartialAsync("_IndexItem", item)
-}
+<section id="topic-list">
+	@foreach (var item in Model.Topics) {
+		@await Html.PartialAsync("_IndexItem", item)
+	}
+</section>
 
 <footer>
-	<ul class="inline pages">
-		<li class="note pointer">Pages: </li>
-		@for (var i = 1; i <= Model.TotalPages; i++) {
-			if (Model.CurrentPage == i) {
-				<li class="small-button highlight page hidden">@i</li>
-			}
-			else {
-				<li class="page hidden"><a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)" asp-route-id="@Model.BoardId" asp-route-pageId="@i" class="small-button">@i.ToString()</a></li>
-			}
-		}
-	</ul>
+	<span id="load-more-topics" class="hidden small-button">More Topics</span>
 </footer>
 
 @{ViewData["Title"] = "Topics";}
@@ -46,9 +22,16 @@
 
 @section scripts {
 	<script>
-		var currentPage = @Model.CurrentPage;
-		var totalPages = @Model.TotalPages;
+		var boardId = @Model.BoardId;
+		var after = @Model.After;
 	</script>
+
+	<environment include="Development">
+		<script src="~/js/TopicIndex.js" asp-append-version="true"></script>
+	</environment>
+	<environment exclude="Development">
+		<script src="~/js/TopicIndex.min.js" asp-append-version="true"></script>
+	</environment>
 }
 
 @section styles {

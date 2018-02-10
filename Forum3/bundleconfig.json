@@ -45,5 +45,14 @@
 			"renameLocals": true
 		},
 		"sourceMap": false
+	},
+	{
+		"outputFileName": "wwwroot/js/TopicIndex.min.js",
+		"inputFiles": [ "wwwroot/js/TopicIndex.js" ],
+		"minify": {
+			"enabled": true,
+			"renameLocals": true
+		},
+		"sourceMap": false
 	}
 ]
