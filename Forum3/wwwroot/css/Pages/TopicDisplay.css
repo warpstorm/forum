@@ -58,6 +58,8 @@ main > header {
 .message-body {
 	white-space: pre-line;
 	padding-left: 5px;
+	font-size: 0.95em;
+	font-weight: normal;
 }
 
 .message-body img {
