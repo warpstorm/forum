@@ -21,7 +21,7 @@ namespace Forum3.Middleware {
 			}
 			catch (HttpStatusCodeException e) {
 				if (context.Response.HasStarted)
-					throw new Exception("HttpStatusCodeException caught after response has already started.", e);
+					throw new Exception($"{nameof(HttpStatusCodeException)} caught after response has already started.", e);
 
 				context.Response.Clear();
 
