@@ -97,7 +97,7 @@ namespace Forum3.Services.Controller {
 			}
 
 			var messageQuery = from message in DbContext.Messages
-							   where message.Id == record.Id || message.ParentId == record.Id || message.LegacyParentId == record.LegacyId
+							   where message.Id == record.Id || message.ParentId == record.Id || (record.LegacyId != 0 && message.LegacyParentId == record.LegacyId)
 							   select message.Id;
 
 			var messageIds = messageQuery.ToList();
@@ -116,7 +116,7 @@ namespace Forum3.Services.Controller {
 			var skip = take * (page - 1);
 
 			foreach (var messageId in messageIds.Skip(skip).Take(take))
-				MigrateMessageRecord(messageId, record);
+				MigrateMessageRecord(messageId);
 
 			DbContext.SaveChanges();
 
@@ -338,7 +338,7 @@ namespace Forum3.Services.Controller {
 			return serviceResponse;
 		}
 
-		async Task<InputModels.ProcessedMessageInput> ProcessMessageInput(ServiceModels.ServiceResponse serviceResponse, string messageBody) {
+		public async Task<InputModels.ProcessedMessageInput> ProcessMessageInput(ServiceModels.ServiceResponse serviceResponse, string messageBody) {
 			var processedMessage = PreProcessMessageInput(messageBody);
 			await PreProcessSmileys(processedMessage);
 			ParseBBC(processedMessage);
@@ -353,7 +353,7 @@ namespace Forum3.Services.Controller {
 		/// <summary>
 		/// Some minor housekeeping on the message before we get into the heavy lifting.
 		/// </summary>
-		InputModels.ProcessedMessageInput PreProcessMessageInput(string messageBody) {
+		public InputModels.ProcessedMessageInput PreProcessMessageInput(string messageBody) {
 			var processedMessageInput = new InputModels.ProcessedMessageInput {
 				OriginalBody = messageBody ?? string.Empty,
 				DisplayBody = messageBody ?? string.Empty,
@@ -383,7 +383,7 @@ namespace Forum3.Services.Controller {
 		/// <summary>
 		/// A drop in replacement for the default CodeKicker BBC parser that handles strike and heart smileys
 		/// </summary>
-		void ParseBBC(InputModels.ProcessedMessageInput processedMessageInput) {
+		public void ParseBBC(InputModels.ProcessedMessageInput processedMessageInput) {
 			var displayBody = processedMessageInput.DisplayBody;
 
 			var parser = new BBCodeParser(new[] {
@@ -407,7 +407,7 @@ namespace Forum3.Services.Controller {
 		/// <summary>
 		/// Attempt to replace URLs in the message body with something better
 		/// </summary>
-		void ProcessMessageBodyUrls(InputModels.ProcessedMessageInput processedMessageInput) {
+		public void ProcessMessageBodyUrls(InputModels.ProcessedMessageInput processedMessageInput) {
 			var displayBody = processedMessageInput.DisplayBody;
 
 			var regexUrl = new Regex("(^| )((https?\\://){1}\\S+)", RegexOptions.Compiled | RegexOptions.Multiline);
@@ -435,7 +435,7 @@ namespace Forum3.Services.Controller {
 			processedMessageInput.DisplayBody = displayBody;
 		}
 
-		async Task PreProcessSmileys(InputModels.ProcessedMessageInput processedMessageInput) {
+		public async Task PreProcessSmileys(InputModels.ProcessedMessageInput processedMessageInput) {
 			var smileys = await DbContext.Smileys.Where(s => s.Code != null).ToListAsync();
 
 			for (var i = 0; i < smileys.Count(); i++) {
@@ -445,7 +445,7 @@ namespace Forum3.Services.Controller {
 			}
 		}
 
-		async Task ProcessSmileys(InputModels.ProcessedMessageInput processedMessageInput) {
+		public async Task ProcessSmileys(InputModels.ProcessedMessageInput processedMessageInput) {
 			var smileys = await DbContext.Smileys.Where(s => s.Code != null).ToListAsync();
 
 			for (var i = 0; i < smileys.Count(); i++) {
@@ -458,7 +458,7 @@ namespace Forum3.Services.Controller {
 		/// <summary>
 		/// Attempt to replace the ugly URL with a human readable title.
 		/// </summary>
-		ServiceModels.RemoteUrlReplacement GetRemoteUrlReplacement(string remoteUrl) {
+		public ServiceModels.RemoteUrlReplacement GetRemoteUrlReplacement(string remoteUrl) {
 			var remotePageDetails = GetRemotePageDetails(remoteUrl);
 			remotePageDetails.Title = remotePageDetails.Title.Replace("$", "&#36;");
 
@@ -504,7 +504,7 @@ namespace Forum3.Services.Controller {
 		/// <summary>
 		/// I really should make this async. Load a remote page by URL and attempt to get details about it.
 		/// </summary>
-		ServiceModels.RemotePageDetails GetRemotePageDetails(string remoteUrl) {
+		public ServiceModels.RemotePageDetails GetRemotePageDetails(string remoteUrl) {
 			var returnResult = new ServiceModels.RemotePageDetails {
 				Title = remoteUrl
 			};
@@ -534,7 +534,8 @@ namespace Forum3.Services.Controller {
 				try {
 					document = await client.LoadFromWebAsync(siteWithoutHash);
 				}
-				// HtmlAgilityPack throws a generic exception when it fails to load a page.
+				// System.InvalidOperationException: 'The character set provided in ContentType is invalid. Cannot read content as string using an invalid character set.'
+				catch (InvalidOperationException) { }
 				catch (Exception e) when (e.Message == "Error downloading html") { }
 			}).Wait(3000);
 
@@ -583,7 +584,7 @@ namespace Forum3.Services.Controller {
 		/// <summary>
 		/// Searches a post for references to other users
 		/// </summary>
-		async Task FindMentionedUsers(InputModels.ProcessedMessageInput processedMessageInput) {
+		public async Task FindMentionedUsers(InputModels.ProcessedMessageInput processedMessageInput) {
 			var regexUsers = new Regex(@"@(\S+)");
 
 			var matches = 0;
@@ -616,7 +617,7 @@ namespace Forum3.Services.Controller {
 		/// <summary>
 		/// Minor post processing
 		/// </summary>
-		void PostProcessMessageInput(InputModels.ProcessedMessageInput processedMessageInput) {
+		public void PostProcessMessageInput(InputModels.ProcessedMessageInput processedMessageInput) {
 			processedMessageInput.DisplayBody = processedMessageInput.DisplayBody.Trim();
 			processedMessageInput.ShortPreview = GetMessagePreview(processedMessageInput.DisplayBody, 100);
 			processedMessageInput.LongPreview = GetMessagePreview(processedMessageInput.DisplayBody, 500, true);
@@ -625,7 +626,7 @@ namespace Forum3.Services.Controller {
 		/// <summary>
 		/// Gets a reduced version of the message without HTML
 		/// </summary>
-		string GetMessagePreview(string messageBody, int previewLength, bool multiline = false) {
+		public string GetMessagePreview(string messageBody, int previewLength, bool multiline = false) {
 			// strip out quotes
 			var preview = Regex.Replace(messageBody, @"(<blockquote.*?>.+?</blockquote>\n*?)", string.Empty, RegexOptions.Compiled);
 
@@ -647,7 +648,7 @@ namespace Forum3.Services.Controller {
 			return preview;
 		}
 
-		DataModels.Message CreateMessageRecord(InputModels.ProcessedMessageInput processedMessage, DataModels.Message replyRecord) {
+		public DataModels.Message CreateMessageRecord(InputModels.ProcessedMessageInput processedMessage, DataModels.Message replyRecord) {
 			var parentId = 0;
 			var replyId = 0;
 
@@ -739,16 +740,17 @@ namespace Forum3.Services.Controller {
 				}
 			}
 
-			DbContext.SaveChanges();
 			NotifyMentionedUsers(processedMessage.MentionedUsers, record.Id);
 
 			var topicId = parentId == 0 ? record.Id : parentId;
 			UpdateTopicParticipation(topicId, UserContext.ApplicationUser.Id, DateTime.Now);
 
+			DbContext.SaveChanges();
+
 			return record;
 		}
 
-		void UpdateMessageRecord(InputModels.ProcessedMessageInput message, DataModels.Message record) {
+		public void UpdateMessageRecord(InputModels.ProcessedMessageInput message, DataModels.Message record) {
 			record.OriginalBody = message.OriginalBody;
 			record.DisplayBody = message.DisplayBody;
 			record.ShortPreview = message.ShortPreview;
@@ -763,7 +765,7 @@ namespace Forum3.Services.Controller {
 			DbContext.SaveChanges();
 		}
 
-		void UpdateTopicParticipation(int topicId, string userId, DateTime time) {
+		public void UpdateTopicParticipation(int topicId, string userId, DateTime time) {
 			var participation = DbContext.Participants.FirstOrDefault(r => r.MessageId == topicId && r.UserId == userId);
 
 			if (participation is null) {
@@ -777,11 +779,9 @@ namespace Forum3.Services.Controller {
 				participation.Time = time;
 				DbContext.Update(participation);
 			}
-
-			DbContext.SaveChanges();
 		}
 
-		void NotifyMentionedUsers(List<string> mentionedUsers, int messageId) {
+		public void NotifyMentionedUsers(List<string> mentionedUsers, int messageId) {
 			foreach (var user in mentionedUsers) {
 				var notification = new DataModels.Notification {
 					MessageId = messageId,
@@ -794,14 +794,12 @@ namespace Forum3.Services.Controller {
 
 				DbContext.Notifications.Add(notification);
 			}
-
-			DbContext.SaveChanges();
 		}
 
-		void MigrateMessageRecord(int id, DataModels.Message parent) {
+		public void MigrateMessageRecord(int id, bool force = false) {
 			var record = DbContext.Messages.Find(id);
 
-			if (record.Processed)
+			if (record.Processed && !force)
 				return;
 
 			if (record.LegacyId == 0) {
@@ -810,14 +808,13 @@ namespace Forum3.Services.Controller {
 				return;
 			}
 
-			UpdateTopicParticipation(parent.Id, record.PostedById, record.TimePosted);
-
 			var processMessageTask = ProcessMessageInput(new ServiceModels.ServiceResponse(), record.OriginalBody);
+			var parentTask = DbContext.Messages.FirstOrDefaultAsync(m => record.LegacyParentId != 0 && m.LegacyId == record.LegacyParentId);
 			var replyTask = DbContext.Messages.FirstOrDefaultAsync(m => record.LegacyReplyId != 0 && m.LegacyId == record.LegacyReplyId);
 			var postedByTask = DbContext.Users.FirstOrDefaultAsync(u => u.LegacyId == record.LegacyPostedById);
-			var editedByTask = DbContext.Users.FirstOrDefaultAsync(u => u.LegacyId == record.LegacyPostedById);
+			var editedByTask = DbContext.Users.FirstOrDefaultAsync(u => u.LegacyId == record.LegacyEditedById);
 
-			Task.WaitAll(processMessageTask, replyTask, postedByTask, editedByTask);
+			Task.WaitAll(processMessageTask, parentTask, replyTask, postedByTask, editedByTask);
 
 			var message = processMessageTask.Result;
 
@@ -830,19 +827,28 @@ namespace Forum3.Services.Controller {
 
 			record.ReplyId = replyTask.Result?.Id ?? 0;
 			record.PostedById = postedByTask.Result?.Id ?? string.Empty;
-			record.EditedById = postedByTask.Result?.Id ?? string.Empty;
+			record.EditedById = editedByTask.Result?.Id ?? string.Empty;
 
-			if (record.Id != parent.Id)
-				record.ParentId = parent.Id;
+			var parent = parentTask.Result;
 
-			DbContext.Update(record);
+			if (parent is null) {
+				UpdateTopicParticipation(record.Id, record.PostedById, record.TimePosted);
+			}
+			else {
+				if (record.Id != parent.Id)
+					record.ParentId = parent.Id;
 
-			if (record.Id != parent.Id) {
-				parent.LastReplyId = record.Id;
-				parent.LastReplyById = record.PostedById;
-				parent.LastReplyPosted = record.TimePosted;
+				DbContext.Update(record);
 
-				DbContext.Update(parent);
+				if (record.Id != parent.Id) {
+					parent.LastReplyId = record.Id;
+					parent.LastReplyById = record.PostedById;
+					parent.LastReplyPosted = record.TimePosted;
+
+					DbContext.Update(parent);
+				}
+
+				UpdateTopicParticipation(parent.Id, record.PostedById, record.TimePosted);
 			}
 		}
 	}

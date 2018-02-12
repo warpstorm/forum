@@ -84,7 +84,7 @@ namespace Forum3.Services.Controller {
 			};
 		}
 
-		public PageModels.TopicDisplayPage DisplayPage(int messageId, int page = 0, int target = 0) {
+		public PageModels.TopicDisplayPage DisplayPage(int messageId, int page = 0, int target = 0, bool rebuild = false) {
 			var record = DbContext.Messages.Find(messageId);
 
 			if (record is null)
@@ -110,8 +110,8 @@ namespace Forum3.Services.Controller {
 								 where message.LegacyParentId != 0 && message.LegacyId != 0
 								 select message.Id;
 
-			if (processedQuery.Any())
-				return GetMigrationRedirectViewModel(messageId);
+			if (processedQuery.Any() || rebuild)
+				return GetMigrationRedirectViewModel(parentId);
 
 			if (target > 0) {
 				var targetPage = GetMessagePage(target, messageIds);

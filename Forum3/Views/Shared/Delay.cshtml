@@ -14,5 +14,18 @@
 	</div>
 </div>
 
-@{ViewData["Title"] = $"{Model.ActionName} ({@Model.CurrentPage} of {@Model.TotalPages})";}
+@{
+	var subtitle = " (Preparing)";
+
+	if (Model.CurrentPage == Model.TotalPages) {
+		subtitle = $" (Finishing)";
+	}
+
+	if (Model.CurrentPage >= 0) {
+		subtitle = $" ({@Model.CurrentPage} of {@Model.TotalPages})";
+	}
+
+	ViewData["Title"] = $"{Model.ActionName}{subtitle}";
+}
+
 @section Header {@ViewData["Title"]}
