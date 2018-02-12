@@ -1,10 +1,9 @@
 ﻿using Forum3.Annotations;
-using Forum3.Interfaces;
-using Forum3.Processes;
+using Forum3.Processes.Topics;
 using Forum3.Services.Controller;
+using Forum3.ViewModelProviders.Topics;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Threading.Tasks;
 
 namespace Forum3.Controllers {
@@ -12,40 +11,49 @@ namespace Forum3.Controllers {
 	using ViewModels = Models.ViewModels;
 
 	public class Topics : ForumController {
-		TopicService TopicService { get; }
 		MessageService MessageService { get; }
 		SmileyService SmileyService { get; }
-		Func<Type, IControllerProcess> ControllerProcessFactory { get; }
 
 		public Topics(
-			TopicService topicService,
 			MessageService messageService,
-			SmileyService smileyService,
-			Func<Type, IControllerProcess> controllerProcessFactory
+			SmileyService smileyService
 		) {
-			TopicService = topicService;
 			MessageService = messageService;
 			SmileyService = smileyService;
-			ControllerProcessFactory = controllerProcessFactory;
 		}
 
 		[HttpGet]
-		public IActionResult Index(int id = 0, int unread = 0) {
-			var viewModel = TopicService.IndexPage(id, unread);
+		public IActionResult Index(
+			[FromServices] IndexPage pageProvider,
+			int id = 0,
+			int unread = 0
+		) {
+			var viewModel = pageProvider.Generate(id, unread);
 			return View(viewModel);
 		}
 
 		[HttpGet]
-		public IActionResult IndexMore(int id = 0, long after = 0, int unread = 0) {
-			var viewModel = TopicService.IndexMore(id, after, unread);
+		public IActionResult IndexMore(
+			[FromServices] IndexMorePage pageProvider,
+			int id = 0,
+			long after = 0,
+			int unread = 0
+		) {
+			var viewModel = pageProvider.Generate(id, after, unread);
 			return View(viewModel);
 		}
 
 		[HttpGet]
-		public IActionResult Display(int id, int pageId = 1, int target = 0, bool rebuild = false) {
+		public IActionResult Display(
+			[FromServices] DisplayPage pageProvider,
+			int id,
+			int pageId = 1,
+			int target = 0,
+			bool rebuild = false
+		) {
 			ViewData["Smileys"] = SmileyService.GetSelectorList();
 
-			var viewModel = TopicService.DisplayPage(id, pageId, target, rebuild);
+			var viewModel = pageProvider.Generate(id, pageId, target, rebuild);
 
 			if (string.IsNullOrEmpty(viewModel.RedirectPath))
 				return View(viewModel);
@@ -54,8 +62,11 @@ namespace Forum3.Controllers {
 		}
 
 		[HttpGet]
-		public IActionResult Latest(int id) {
-			var serviceResponse = TopicService.Latest(id);
+		public IActionResult Latest(
+			[FromServices] LatestTopic process,
+			int id
+		) {
+			var serviceResponse = process.Get(id);
 			ProcessServiceResponse(serviceResponse);
 
 			return RedirectFromService();
@@ -67,9 +78,10 @@ namespace Forum3.Controllers {
 
 		[Authorize(Roles="Admin")]
 		[HttpGet]
-		public IActionResult RebuildThreadRelationships(InputModels.Continue input) {
-			var process = ControllerProcessFactory(typeof(RebuildThreadRelationshipsProcess));
-
+		public IActionResult RebuildThreadRelationships(
+			[FromServices] RebuildThreadRelationships process,
+			InputModels.Continue input
+		) {
 			ViewModels.Delay viewModel;
 
 			if (string.IsNullOrEmpty(input.Stage))
@@ -81,17 +93,23 @@ namespace Forum3.Controllers {
 		}
 
 		[HttpGet]
-		public IActionResult Pin(int id) {
-			var serviceResponse = TopicService.Pin(id);
+		public IActionResult Pin(
+			[FromServices] PinTopic process,
+			int id
+		) {
+			var serviceResponse = process.Execute(id);
 			ProcessServiceResponse(serviceResponse);
 
 			return RedirectFromService();
 		}
 
 		[HttpGet]
-		public IActionResult ToggleBoard(InputModels.ToggleBoardInput input) {
+		public IActionResult ToggleBoard(
+			[FromServices] ToggleBoard process,
+			InputModels.ToggleBoardInput input
+		) {
 			if (ModelState.IsValid) {
-				var serviceResponse = TopicService.ToggleBoard(input);
+				var serviceResponse = process.Execute(input);
 				ProcessServiceResponse(serviceResponse);
 			}
 
@@ -101,7 +119,10 @@ namespace Forum3.Controllers {
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		[PreventRapidRequests]
-		public async Task<IActionResult> TopicReply(InputModels.MessageInput input) {
+		public async Task<IActionResult> TopicReply(
+			[FromServices] DisplayPage pageProvider,
+			InputModels.MessageInput input
+		) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await MessageService.CreateReply(input);
 				ProcessServiceResponse(serviceResponse);
@@ -110,7 +131,7 @@ namespace Forum3.Controllers {
 					return RedirectFromService();
 			}
 
-			var viewModel = TopicService.DisplayPage(input.Id);
+			var viewModel = pageProvider.Generate(input.Id);
 			viewModel.ReplyForm.Body = input.Body;
 
 			return View(nameof(Display), viewModel);

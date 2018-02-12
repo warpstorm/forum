@@ -1,9 +1,8 @@
 ﻿using Forum3.Contexts;
-using Forum3.Interfaces;
 using Forum3.Interfaces.Users;
 using Forum3.Middleware;
 using Forum3.Models.ServiceModels;
-using Forum3.Processes;
+using Forum3.Processes.Topics;
 using Forum3.Services;
 using Forum3.Services.Controller;
 using Microsoft.AspNetCore.Builder;
@@ -14,6 +13,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.WindowsAzure.Storage;
 using System;
 
+// REMINDER -
+// Transient: created each time they are requested. This lifetime works best for lightweight, stateless services.
+// Scoped: created once per request.
+// Singleton: created the first time they are requested (or when ConfigureServices is run if you specify an instance there) and then every subsequent request will use the same instance.
+
 namespace Forum3.Extensions {
 	public static class ForumStartupExtensions {
 		public static IApplicationBuilder UseForum(this IApplicationBuilder builder) {
@@ -23,27 +27,36 @@ namespace Forum3.Extensions {
 		}
 
 		public static IServiceCollection AddForum(this IServiceCollection services, IConfiguration configuration) {
-			RegisterTransientDependencies(services, configuration);
-			RegisterScopedDependencies(services, configuration);
-			RegisterSingletonDependencies(services, configuration);
+			RegisterTopicServices(services, configuration);
 
-			RegisterControllerProcesses(services, configuration);
+			RegisterAzureStorage(services, configuration);
+			RegisterControllerServices(services, configuration);
+
+			services.Configure<EmailSenderOptions>(configuration);
+			services.AddTransient<IEmailSender, EmailSender>();
+
+			services.AddScoped<UserContext>();
+
+			services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
+			services.AddSingleton<IUrlHelperFactory, UrlHelperFactory>();
 
 			return services;
 		}
 
-		static void RegisterControllerProcesses(IServiceCollection services, IConfiguration configuration) {
-			services.AddTransient<RebuildThreadRelationshipsProcess>();
+		static void RegisterTopicServices(IServiceCollection services, IConfiguration configuration) {
+			services.AddTransient<ViewModelProviders.Topics.IndexPage>();
+			services.AddTransient<ViewModelProviders.Topics.IndexMorePage>();
+			services.AddTransient<ViewModelProviders.Topics.DisplayPage>();
 
-			services.AddTransient<Func<Type, IControllerProcess>>((serviceProvider) => {
-				return (processType) => serviceProvider.GetService(processType) as IControllerProcess;
-			});
+			services.AddTransient<LatestTopic>();
+			services.AddTransient<PinTopic>();
+			services.AddTransient<RebuildThreadRelationships>();
+			services.AddTransient<ToggleBoard>();
+			services.AddTransient<TopicPreviewLoader>();
+			services.AddTransient<TopicUnreadLevelCalculator>();
 		}
 
-		/// <summary>
-		/// Transient lifetime services are created each time they are requested. This lifetime works best for lightweight, stateless services.
-		/// </summary>
-		static void RegisterTransientDependencies(IServiceCollection services, IConfiguration configuration) {
+		static void RegisterControllerServices(IServiceCollection services, IConfiguration configuration) {
 			services.AddTransient<AccountService>();
 			services.AddTransient<BoardService>();
 			services.AddTransient<MessageService>();
@@ -52,19 +65,10 @@ namespace Forum3.Extensions {
 			services.AddTransient<RoleService>();
 			services.AddTransient<SiteSettingsService>();
 			services.AddTransient<SmileyService>();
-			services.AddTransient<TopicService>();
 			services.AddTransient<SettingsRepository>();
-
-			services.Configure<EmailSenderOptions>(configuration);
-			services.AddTransient<IEmailSender, EmailSender>();
 		}
 
-		/// <summary>
-		/// Scoped lifetime services are created once per request.
-		/// </summary>
-		static void RegisterScopedDependencies(IServiceCollection services, IConfiguration configuration) {
-			services.AddScoped<UserContext>();
-
+		static void RegisterAzureStorage(IServiceCollection services, IConfiguration configuration) {
 			// Azure Storage
 			services.AddScoped((serviceProvider) => {
 				var storageConnectionString = configuration[Constants.Keys.StorageConnection];
@@ -79,14 +83,6 @@ namespace Forum3.Extensions {
 
 				return storageAccount.CreateCloudBlobClient();
 			});
-		}
-
-		/// <summary>
-		/// Singleton lifetime services are created the first time they are requested (or when ConfigureServices is run if you specify an instance there) and then every subsequent request will use the same instance.
-		/// </summary>
-		static void RegisterSingletonDependencies(IServiceCollection services, IConfiguration configuration) {
-			services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
-			services.AddSingleton<IUrlHelperFactory, UrlHelperFactory>();
 		}
 	}
 }

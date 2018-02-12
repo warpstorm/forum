@@ -33,8 +33,8 @@
 				<img class="add-smiley pointer align-middle pad-left" src="~/images/smiley.png" alt="Smiley" title="Smiley" />
 			</p>
 
-			<p class="pad-top"><textarea asp-for="Body"></textarea></p>
-			<p class="pad-top"><span asp-validation-for="Body" /></p>
+			<p class="pad-top"><textarea asp-for="@Model.Body"></textarea></p>
+			<p class="pad-top"><span asp-validation-for="@Model.Body" /></p>
 		</div>
 
 		<p>

@@ -2,7 +2,7 @@
 
 <li class="small-pad">
 	<p>
-		<a asp-controller="@nameof(Roles)" asp-action="Edit" asp-route-id="@Model.Id">@Model.Name</a>
+		<a asp-controller="@nameof(Roles)" asp-action="@nameof(Roles.Edit)" asp-route-id="@Model.Id">@Model.Name</a>
 	</p>
 	<div class="small-pad-left">
 		<p class="note">@Model.Description</p>

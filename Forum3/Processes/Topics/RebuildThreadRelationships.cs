@@ -1,7 +1,6 @@
 ﻿using Forum3.Contexts;
 using Forum3.Controllers;
 using Forum3.Extensions;
-using Forum3.Interfaces;
 using Forum3.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -9,17 +8,17 @@ using Microsoft.AspNetCore.Mvc.Routing;
 using System;
 using System.Linq;
 
-namespace Forum3.Processes {
+namespace Forum3.Processes.Topics {
 	using DataModels = Models.DataModels;
 	using InputModels = Models.InputModels;
 	using ViewModels = Models.ViewModels;
 
-	public class RebuildThreadRelationshipsProcess : IControllerProcess {
+	public class RebuildThreadRelationships {
 		ApplicationDbContext DbContext { get; }
 		SettingsRepository Settings { get; }
 		IUrlHelper UrlHelper { get; }
 
-		public RebuildThreadRelationshipsProcess(
+		public RebuildThreadRelationships(
 			ApplicationDbContext dbContext,
 			SettingsRepository settingsRepository,
 			IActionContextAccessor actionContextAccessor,
@@ -108,12 +107,12 @@ namespace Forum3.Processes {
 				ActionNote = "Connecting replies to their parents.",
 				CurrentPage = input.CurrentStep,
 				TotalPages = input.TotalSteps,
-				NextAction = UrlHelper.Action(nameof(Topics.Admin), nameof(Topics))
+				NextAction = UrlHelper.Action(nameof(Controllers.Topics.Admin), nameof(Controllers.Topics))
 			};
 
 			if (input.CurrentStep < input.TotalSteps) {
 				input.CurrentStep++;
-				viewModel.NextAction = UrlHelper.Action(nameof(Topics.RebuildThreadRelationships), nameof(Topics), input);
+				viewModel.NextAction = UrlHelper.Action(nameof(Controllers.Topics.RebuildThreadRelationships), nameof(Controllers.Topics), input);
 			}
 
 			return viewModel;
