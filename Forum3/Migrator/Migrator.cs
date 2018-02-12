@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 namespace Forum3.Migrator {
 	using InputModels = Forum3.Models.InputModels;
 
+	[Authorize(Roles="Admin")]
 	public class Migrator : Controller {
 		MigratorService MigratorService { get; }
 
