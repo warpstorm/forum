@@ -23,7 +23,7 @@ namespace Forum3.ViewModelProviders.Topics {
 		ApplicationDbContext DbContext { get; }
 		UserContext UserContext { get; }
 		SettingsRepository Settings { get; }
-		TopicPreviewLoader TopicPreviewLoader { get; }
+		LoadTopicPreview TopicPreviewLoader { get; }
 		BoardService BoardService { get; }
 		IUrlHelper UrlHelper { get; }
 
@@ -31,7 +31,7 @@ namespace Forum3.ViewModelProviders.Topics {
 			ApplicationDbContext dbContext,
 			UserContext userContext,
 			SettingsRepository settingsRepository,
-			TopicPreviewLoader topicPreviewLoader,
+			LoadTopicPreview topicPreviewLoader,
 			BoardService boardService,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory

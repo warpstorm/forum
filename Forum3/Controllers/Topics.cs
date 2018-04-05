@@ -66,7 +66,7 @@ namespace Forum3.Controllers {
 			[FromServices] LatestTopic process,
 			int id
 		) {
-			var serviceResponse = process.Get(id);
+			var serviceResponse = process.Execute(id);
 			ProcessServiceResponse(serviceResponse);
 
 			return RedirectFromService();

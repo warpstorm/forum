@@ -9,13 +9,13 @@ namespace Forum3.Processes.Topics {
 	using DataModels = Models.DataModels;
 	using ItemModels = Models.ViewModels.Topics.Items;
 
-	public class TopicPreviewLoader {
+	public class LoadTopicPreview {
 		ApplicationDbContext DbContext { get; }
 		UserContext UserContext { get; }
 		SettingsRepository Settings { get; }
 		TopicUnreadLevelCalculator TopicUnreadLevelCalculator { get; }
 
-		public TopicPreviewLoader(
+		public LoadTopicPreview(
 			ApplicationDbContext dbContext,
 			UserContext userContext,
 			SettingsRepository settingsRepository,
@@ -27,7 +27,7 @@ namespace Forum3.Processes.Topics {
 			TopicUnreadLevelCalculator = topicUnreadLevelCalculator;
 		}
 
-		public List<ItemModels.MessagePreview> Load(int boardId, long after, int unread) {
+		public List<ItemModels.MessagePreview> Execute(int boardId, long after, int unread) {
 			var participation = new List<DataModels.Participant>();
 			var viewLogs = new List<DataModels.ViewLog>();
 			var historyTimeLimit = Settings.HistoryTimeLimit();
@@ -70,7 +70,7 @@ namespace Forum3.Processes.Topics {
 				message.LastReplyPosted = message.LastReplyPostedDT.ToPassedTimeString();
 
 				if (message.LastReplyPostedDT > historyTimeLimit)
-					message.Unread = TopicUnreadLevelCalculator.Calculate(message.Id, message.LastReplyPostedDT, participation, viewLogs);
+					message.Unread = TopicUnreadLevelCalculator.Execute(message.Id, message.LastReplyPostedDT, participation, viewLogs);
 			}
 
 			return messages;
@@ -145,7 +145,7 @@ namespace Forum3.Processes.Topics {
 					continue;
 				}
 
-				var unreadLevel = unreadFilter == 0 ? 0 : TopicUnreadLevelCalculator.Calculate(message.Id, message.LastReplyPosted, participation, viewLogs);
+				var unreadLevel = unreadFilter == 0 ? 0 : TopicUnreadLevelCalculator.Execute(message.Id, message.LastReplyPosted, participation, viewLogs);
 
 				if (unreadLevel < unreadFilter) {
 					if (attempts++ > 100)

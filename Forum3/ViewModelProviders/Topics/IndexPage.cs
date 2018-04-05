@@ -9,12 +9,12 @@ namespace Forum3.ViewModelProviders.Topics {
 	public class IndexPage {
 		ApplicationDbContext DbContext { get; }
 		UserContext UserContext { get; }
-		TopicPreviewLoader TopicPreviewLoader { get; }
+		LoadTopicPreview TopicPreviewLoader { get; }
 
 		public IndexPage(
 			ApplicationDbContext dbContext,
 			UserContext userContext,
-			TopicPreviewLoader topicPreviewLoader
+			LoadTopicPreview topicPreviewLoader
 		) {
 			DbContext = dbContext;
 			UserContext = userContext;
@@ -27,7 +27,7 @@ namespace Forum3.ViewModelProviders.Topics {
 			if (!UserContext.IsAdmin && boardRoles.Any() && !boardRoles.Intersect(UserContext.Roles).Any())
 				throw new HttpForbiddenException("You are not authorized to view this board.");
 
-			var topicPreviews = TopicPreviewLoader.Load(boardId, 0, unread);
+			var topicPreviews = TopicPreviewLoader.Execute(boardId, 0, unread);
 
 			var after = 0L;
 

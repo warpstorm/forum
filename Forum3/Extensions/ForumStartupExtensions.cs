@@ -52,7 +52,7 @@ namespace Forum3.Extensions {
 			services.AddTransient<PinTopic>();
 			services.AddTransient<RebuildThreadRelationships>();
 			services.AddTransient<ToggleBoard>();
-			services.AddTransient<TopicPreviewLoader>();
+			services.AddTransient<LoadTopicPreview>();
 			services.AddTransient<TopicUnreadLevelCalculator>();
 		}
 

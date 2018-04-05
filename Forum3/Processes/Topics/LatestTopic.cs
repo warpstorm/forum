@@ -1,5 +1,4 @@
 ﻿using Forum3.Contexts;
-using Forum3.Controllers;
 using Forum3.Enums;
 using Forum3.Exceptions;
 using Forum3.Services;
@@ -30,7 +29,7 @@ namespace Forum3.Processes.Topics {
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
-		public ServiceModels.ServiceResponse Get(int messageId) {
+		public ServiceModels.ServiceResponse Execute(int messageId) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			var record = DbContext.Messages.Find(messageId);

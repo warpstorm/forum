@@ -16,7 +16,7 @@ namespace Forum3.Processes.Topics {
 			UserContext = userContext;
 		}
 
-		public int Calculate(int messageId, DateTime lastReplyTime, List<DataModels.Participant> participation, List<DataModels.ViewLog> viewLogs) {
+		public int Execute(int messageId, DateTime lastReplyTime, List<DataModels.Participant> participation, List<DataModels.ViewLog> viewLogs) {
 			var unread = 1;
 
 			if (UserContext.IsAuthenticated) {
