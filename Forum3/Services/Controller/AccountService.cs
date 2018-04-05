@@ -2,6 +2,7 @@
 using Forum3.Controllers;
 using Forum3.Extensions;
 using Forum3.Interfaces.Users;
+using Forum3.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;

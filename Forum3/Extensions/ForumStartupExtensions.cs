@@ -26,9 +26,7 @@ namespace Forum3.Extensions {
 		}
 
 		public static IServiceCollection AddForum(this IServiceCollection services, IConfiguration configuration) {
-			RegisterBoardServices(services, configuration);
-			RegisterTopicServices(services, configuration);
-			RegisterUserServices(services, configuration);
+			RegisterRepositories(services, configuration);
 
 			RegisterAzureStorage(services, configuration);
 			RegisterControllerServices(services, configuration);
@@ -44,40 +42,14 @@ namespace Forum3.Extensions {
 			return services;
 		}
 
-		static void RegisterBoardServices(IServiceCollection services, IConfiguration configuration) {
-			services.AddTransient<ViewModelProviders.Boards.CreatePage>();
-			services.AddTransient<ViewModelProviders.Boards.EditPage>();
-			services.AddTransient<ViewModelProviders.Boards.IndexPage>();
-			services.AddTransient<ViewModelProviders.Boards.ManagePage>();
-
-			services.AddTransient<Processes.Topics.LatestTopic>();
-			services.AddTransient<Processes.Topics.PinTopic>();
-			services.AddTransient<Processes.Topics.RebuildThreadRelationships>();
-			services.AddTransient<Processes.Topics.ToggleBoard>();
-			services.AddTransient<Processes.Topics.LoadTopicPreview>();
-			services.AddTransient<Processes.Topics.TopicUnreadLevelCalculator>();
-		}
-
-		static void RegisterTopicServices(IServiceCollection services, IConfiguration configuration) {
-			services.AddTransient<ViewModelProviders.Topics.IndexPage>();
-			services.AddTransient<ViewModelProviders.Topics.IndexMorePage>();
-			services.AddTransient<ViewModelProviders.Topics.DisplayPage>();
-
-			services.AddTransient<Processes.Boards.CreateBoard>();
-			services.AddTransient<Processes.Boards.EditBoard>();
-			services.AddTransient<Processes.Boards.ListCategories>();
-			services.AddTransient<Processes.Boards.LoadCategoryPickList>();
-			services.AddTransient<Processes.Boards.LoadIndexBoard>();
-			services.AddTransient<Processes.Boards.LoadRolePickList>();
-			services.AddTransient<Processes.Boards.MergeBoard>();
-			services.AddTransient<Processes.Boards.MergeCategory>();
-			services.AddTransient<Processes.Boards.MoveBoardUp>();
-			services.AddTransient<Processes.Boards.MoveCategoryUp>();
-		}
-
-		static void RegisterUserServices(IServiceCollection services, IConfiguration configuration) {
-			services.AddTransient<Processes.Users.ListBirthdays>();
-			services.AddTransient<Processes.Users.ListOnlineUsers>();
+		static void RegisterRepositories(IServiceCollection services, IConfiguration configuration) {
+			services.AddTransient<Repositories.BoardRepository>();
+			services.AddTransient<Repositories.CategoryRepository>();
+			services.AddTransient<Repositories.MessageRepository>();
+			services.AddTransient<Repositories.RoleRepository>();
+			services.AddTransient<Repositories.SettingsRepository>();
+			services.AddTransient<Repositories.TopicRepository>();
+			services.AddTransient<Repositories.UserRepository>();
 		}
 
 		static void RegisterControllerServices(IServiceCollection services, IConfiguration configuration) {
@@ -88,7 +60,6 @@ namespace Forum3.Extensions {
 			services.AddTransient<RoleService>();
 			services.AddTransient<SiteSettingsService>();
 			services.AddTransient<SmileyService>();
-			services.AddTransient<SettingsRepository>();
 		}
 
 		static void RegisterAzureStorage(IServiceCollection services, IConfiguration configuration) {

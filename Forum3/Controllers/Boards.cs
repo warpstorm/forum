@@ -1,92 +1,159 @@
-﻿using Forum3.Models.InputModels;
-using Forum3.Processes.Boards;
-using Forum3.ViewModelProviders.Boards;
+﻿using Forum3.Contexts;
+using Forum3.Repositories;
+using Forum3.Services.Controller;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Linq;
 
 namespace Forum3.Controllers {
+	using InputModels = Models.InputModels;
+	using PageViewModels = Models.ViewModels.Boards.Pages;
+
 	public class Boards : ForumController {
-		[HttpGet]
-		public IActionResult Index(
-			[FromServices] IndexPage pageProvider
+		ApplicationDbContext DbContext { get; }
+		BoardRepository BoardRepository { get; }
+		CategoryRepository CategoryRepository { get; }
+		RoleRepository RoleRepository { get; }
+		UserRepository UserRepository { get; }
+		NotificationService NotificationService { get; }
+
+		public Boards(
+			ApplicationDbContext dbContext,
+			BoardRepository boardRepository,
+			CategoryRepository categoryRepository,
+			RoleRepository roleRepository,
+			UserRepository userRepository,
+			NotificationService notificationService
 		) {
-			var viewModel = pageProvider.Generate();
+			DbContext = dbContext;
+			BoardRepository = boardRepository;
+			CategoryRepository = categoryRepository;
+			RoleRepository = roleRepository;
+			UserRepository = userRepository;
+			NotificationService = notificationService;
+		}
+
+		[HttpGet]
+		public IActionResult Index() {
+			var birthdays = UserRepository.GetBirthdaysList();
+			var onlineUsers = UserRepository.GetOnlineList();
+			var notifications = NotificationService.GetNotifications();
+
+			var viewModel = new PageViewModels.IndexPage {
+				Birthdays = birthdays.ToArray(),
+				Categories = CategoryRepository.Index(),
+				OnlineUsers = onlineUsers,
+				Notifications = notifications
+			};
+
 			return View(viewModel);
 		}
 
 		[Authorize(Roles="Admin")]
 		[HttpGet]
-		public IActionResult Manage(
-			[FromServices] ManagePage pageProvider
-		) {
-			var viewModel = pageProvider.Generate();
+		public IActionResult Manage() {
+			var viewModel = new PageViewModels.IndexPage {
+				Categories = CategoryRepository.Index()
+			};
+
 			return View(viewModel);
 		}
 
 		[Authorize(Roles="Admin")]
 		[HttpGet]
-		public IActionResult Create(
-			[FromServices] CreatePage pageProvider
-		) {
-			var viewModel = pageProvider.Generate();
+		public IActionResult Create() {
+			var viewModel = new PageViewModels.CreatePage() {
+				Categories = CategoryRepository.PickList()
+			};
+
 			return View(viewModel);
 		}
 
 		[Authorize(Roles="Admin")]
 		[HttpPost]
-		public IActionResult Create(
-			[FromServices] CreatePage pageProvider,
-			[FromServices] CreateBoard process,
-			CreateBoardInput input
-		) {
+		public IActionResult Create(InputModels.CreateBoardInput input) {
 			if (ModelState.IsValid) {
-				var serviceResponse = process.Execute(input);
+				var serviceResponse = BoardRepository.Add(input);
 				ProcessServiceResponse(serviceResponse);
 
 				if (serviceResponse.Success)
 					return RedirectFromService();
 			}
 
-			var viewModel = pageProvider.Generate(input);
+			var viewModel = new PageViewModels.CreatePage() {
+				Categories = CategoryRepository.PickList()
+			};
+
+			viewModel.Name = input.Name;
+			viewModel.Description = input.Description;
+
+			if (!string.IsNullOrEmpty(input.Category))
+				viewModel.Categories.First(item => item.Value == input.Category).Selected = true;
+
 			return View(viewModel);
 		}
 
 		[Authorize(Roles="Admin")]
 		[HttpGet]
-		public IActionResult Edit(
-			[FromServices] EditPage pageProvider,
-			int id
-		) {
-			var viewModel = pageProvider.Generate(id);
+		public IActionResult Edit(int id) {
+			var boardRecord = DbContext.Boards.FirstOrDefault(b => b.Id == id);
+
+			if (boardRecord is null)
+				throw new Exception($"A record does not exist with ID '{id}'");
+
+			var viewModel = new PageViewModels.EditPage {
+				Id = boardRecord.Id,
+				Categories = CategoryRepository.PickList(),
+				Roles = RoleRepository.PickList(boardRecord.Id)
+			};
+
+			var category = DbContext.Categories.Find(boardRecord.CategoryId);
+
+			viewModel.Name = boardRecord.Name;
+			viewModel.Description = boardRecord.Description;
+			viewModel.Categories.First(item => item.Text == category.Name).Selected = true;
+
 			return View(viewModel);
 		}
 
 		[Authorize(Roles="Admin")]
 		[HttpPost]
-		public IActionResult Edit(
-			[FromServices] EditPage pageProvider,
-			[FromServices] EditBoard process,
-			EditBoardInput input
-		) {
+		public IActionResult Edit(InputModels.EditBoardInput input) {
 			if (ModelState.IsValid) {
-				var serviceResponse = process.Execute(input);
+				var serviceResponse = BoardRepository.Update(input);
 				ProcessServiceResponse(serviceResponse);
 
 				if (serviceResponse.Success)
 					return RedirectFromService();
 			}
 
-			var viewModel = pageProvider.Generate(input.Id, input);
+			var boardRecord = DbContext.Boards.FirstOrDefault(b => b.Id == input.Id);
+
+			if (boardRecord is null)
+				throw new Exception($"A record does not exist with ID '{input.Id}'");
+
+			var viewModel = new PageViewModels.EditPage {
+				Id = boardRecord.Id,
+				Categories = CategoryRepository.PickList(),
+				Roles = RoleRepository.PickList(boardRecord.Id)
+			};
+
+			viewModel.Name = input.Name;
+			viewModel.Description = input.Description;
+
+			if (!string.IsNullOrEmpty(input.Category))
+				viewModel.Categories.First(item => item.Value == input.Category).Selected = true;
+
 			return View(viewModel);
 		}
 
 		[Authorize(Roles="Admin")]
 		[HttpGet]
 		public IActionResult MoveCategoryUp(
-			[FromServices] MoveCategoryUp process,
 			int id
 		) {
-			var serviceResponse = process.Execute(id);
+			var serviceResponse = CategoryRepository.MoveUp(id);
 			ProcessServiceResponse(serviceResponse);
 
 			return RedirectFromService();
@@ -95,10 +162,9 @@ namespace Forum3.Controllers {
 		[Authorize(Roles="Admin")]
 		[HttpGet]
 		public IActionResult MoveBoardUp(
-			[FromServices] MoveBoardUp process,
 			int id
 		) {
-			var serviceResponse = process.Execute(id);
+			var serviceResponse = BoardRepository.MoveUp(id);
 			ProcessServiceResponse(serviceResponse);
 
 			return RedirectFromService();
@@ -107,11 +173,10 @@ namespace Forum3.Controllers {
 		[Authorize(Roles="Admin")]
 		[HttpPost]
 		public IActionResult MergeCategory(
-			[FromServices] MergeCategory process,
-			MergeInput input
+			InputModels.MergeInput input
 		) {
 			if (ModelState.IsValid) {
-				var serviceResponse = process.Execute(input);
+				var serviceResponse = CategoryRepository.Merge(input);
 				ProcessServiceResponse(serviceResponse);
 			}
 
@@ -121,11 +186,10 @@ namespace Forum3.Controllers {
 		[Authorize(Roles="Admin")]
 		[HttpPost]
 		public IActionResult MergeBoard(
-			[FromServices] MergeBoard process,
-			MergeInput input
+			InputModels.MergeInput input
 		) {
 			if (ModelState.IsValid) {
-				var serviceResponse = process.Execute(input);
+				var serviceResponse = BoardRepository.Merge(input);
 				ProcessServiceResponse(serviceResponse);
 			}
 

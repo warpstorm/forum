@@ -4,14 +4,14 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Forum3.Processes.Boards {
+namespace Forum3.Repositories {
 	using DataModels = Models.DataModels;
 
-	public class LoadRolePickList {
+	public class RoleRepository {
 		ApplicationDbContext DbContext { get; }
 		RoleManager<DataModels.ApplicationRole> RoleManager { get; }
 
-		public LoadRolePickList(
+		public RoleRepository(
 			ApplicationDbContext dbContext,
 			RoleManager<DataModels.ApplicationRole> roleManager
 		) {
@@ -19,7 +19,7 @@ namespace Forum3.Processes.Boards {
 			RoleManager = roleManager;
 		}
 
-		public List<SelectListItem> Execute(int boardId) {
+		public List<SelectListItem> PickList(int boardId) {
 			var boardRolesQuery = from boardRole in DbContext.BoardRoles
 								  where boardRole.BoardId == boardId
 								  select boardRole.RoleId;
@@ -40,6 +40,5 @@ namespace Forum3.Processes.Boards {
 
 			return pickList;
 		}
-
 	}
 }

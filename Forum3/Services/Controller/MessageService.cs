@@ -2,6 +2,7 @@
 using Forum3.Contexts;
 using Forum3.Controllers;
 using Forum3.Extensions;
+using Forum3.Repositories;
 using HtmlAgilityPack;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -11,7 +12,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Security.Authentication;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 

@@ -1,5 +1,6 @@
 ﻿using Forum3.Contexts;
 using Forum3.Enums;
+using Forum3.Repositories;
 using Forum3.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Filters;

@@ -1,5 +1,6 @@
 ﻿using Forum3.Contexts;
 using Forum3.Extensions;
+using Forum3.Repositories;
 using System.Collections.Generic;
 using System.Linq;
 

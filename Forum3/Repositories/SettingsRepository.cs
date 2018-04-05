@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Forum3.Services {
+namespace Forum3.Repositories {
 	using DataModels = Models.DataModels;
 
 	public class SettingsRepository {
