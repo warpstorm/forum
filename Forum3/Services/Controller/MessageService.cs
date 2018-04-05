@@ -517,16 +517,16 @@ namespace Forum3.Services.Controller {
 				UserAgent = "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36"
 			};
 
-			client.PreRequest += (handler, request) => {
-				request.Headers.ExpectContinue = false;
+			ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
 
-				handler.CookieContainer = new CookieContainer();
-				handler.AllowAutoRedirect = true;
-				handler.SslProtocols = SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12;
-				handler.MaxAutomaticRedirections = 3;
-				handler.AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip;
+			client.PreRequest += request => {
+				request.ServicePoint.Expect100Continue = false;
+				request.AllowAutoRedirect = true;
+				request.MaximumAutomaticRedirections = 3;
+				request.AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip;
+				request.Timeout = 5000;
+				request.CookieContainer = new CookieContainer();
 
-				//request.Timeout = 5000;
 				return true;
 			};
 
