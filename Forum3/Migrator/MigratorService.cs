@@ -71,7 +71,7 @@ namespace Forum3.Migrator {
 					break;
 
 				case nameof(MigrateMessages):
-					MigrateMessages(input);
+					await MigrateMessages(input);
 					nextStage = nameof(MigratePins);
 					break;
 
@@ -225,13 +225,11 @@ namespace Forum3.Migrator {
 
 			var records = await query.ToListAsync();
 
-			foreach (var record in records)
-				AppDb.Add(record);
-
+			AppDb.AddRange(records);
 			await AppDb.SaveChangesAsync();
 		}
 
-		void MigrateMessages(InputModels.Continue input) {
+		async Task MigrateMessages(InputModels.Continue input) {
 			if (!AppDb.Users.Any())
 				return;
 
@@ -261,6 +259,8 @@ namespace Forum3.Migrator {
 
 			var users = AppDb.Users.ToList();
 
+			var newMessages = new List<DataModels.Message>();
+
 			foreach (var record in records) {
 				var newMessage = new DataModels.Message {
 					Processed = false,
@@ -285,9 +285,11 @@ namespace Forum3.Migrator {
 				newMessage.EditedById = users.SingleOrDefault(u => u.LegacyId == newMessage.LegacyEditedById)?.Id ?? string.Empty;
 				newMessage.LastReplyById = users.SingleOrDefault(u => u.LegacyId == newMessage.LegacyLastReplyById)?.Id ?? string.Empty;
 
-				AppDb.Add(newMessage);
-				AppDb.SaveChanges();
+				newMessages.Add(newMessage);
 			}
+
+			AppDb.AddRange(newMessages);
+			await AppDb.SaveChangesAsync();
 		}
 
 		async Task MigrateMessageBoards(InputModels.Continue input) {
@@ -322,9 +324,7 @@ namespace Forum3.Migrator {
 
 			var records = await query.ToListAsync();
 
-			foreach (var record in records)
-				AppDb.Add(record);
-
+			AppDb.AddRange(records);
 			await AppDb.SaveChangesAsync();
 		}
 
@@ -354,9 +354,7 @@ namespace Forum3.Migrator {
 
 			var records = await query.ToListAsync();
 
-			foreach (var record in records)
-				AppDb.Add(record);
-
+			AppDb.AddRange(records);
 			await AppDb.SaveChangesAsync();
 		}
 
@@ -374,6 +372,8 @@ namespace Forum3.Migrator {
 			input.CurrentStep = 1;
 
 			var legacySmileys = await LegacyDb.Smileys.ToListAsync();
+
+			var newSmileys = new List<DataModels.Smiley>();
 
 			foreach (var record in legacySmileys) {
 				var column = Math.Floor(record.DisplayOrder);
@@ -405,9 +405,10 @@ namespace Forum3.Migrator {
 
 				newSmiley.Path = blobReference.Uri.AbsoluteUri;
 
-				AppDb.Add(newSmiley);
+				newSmileys.Add(newSmiley);
 			}
 
+			AppDb.AddRange(newSmileys);
 			await AppDb.SaveChangesAsync();
 		}
 
@@ -443,9 +444,7 @@ namespace Forum3.Migrator {
 
 			var records = await query.ToListAsync();
 
-			foreach (var record in records)
-				AppDb.Add(record);
-
+			AppDb.AddRange(records);
 			await AppDb.SaveChangesAsync();
 		}
 
