@@ -3,9 +3,9 @@ using Forum3.Controllers;
 using Forum3.Enums;
 using Forum3.Exceptions;
 using Forum3.Extensions;
+using Forum3.Processes.Boards;
 using Forum3.Processes.Topics;
 using Forum3.Services;
-using Forum3.Services.Controller;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
@@ -23,24 +23,27 @@ namespace Forum3.ViewModelProviders.Topics {
 		ApplicationDbContext DbContext { get; }
 		UserContext UserContext { get; }
 		SettingsRepository Settings { get; }
-		LoadTopicPreview TopicPreviewLoader { get; }
-		BoardService BoardService { get; }
+		LoadTopicPreview LoadTopicPreview { get; }
+		LoadIndexBoard LoadIndexBoard { get; }
+		ListCategories ListCategories { get; }
 		IUrlHelper UrlHelper { get; }
 
 		public DisplayPage(
 			ApplicationDbContext dbContext,
 			UserContext userContext,
 			SettingsRepository settingsRepository,
-			LoadTopicPreview topicPreviewLoader,
-			BoardService boardService,
+			LoadTopicPreview loadTopicPreview,
+			LoadIndexBoard loadIndexBoard,
+			ListCategories listCategories,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory
 		) {
 			DbContext = dbContext;
 			UserContext = userContext;
 			Settings = settingsRepository;
-			TopicPreviewLoader = topicPreviewLoader;
-			BoardService = boardService;
+			LoadTopicPreview = loadTopicPreview;
+			LoadIndexBoard = loadIndexBoard;
+			ListCategories = listCategories;
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
@@ -123,7 +126,7 @@ namespace Forum3.ViewModelProviders.Topics {
 					Views = record.ViewCount,
 				},
 				Messages = messages,
-				Categories = BoardService.GetCategories(),
+				Categories = ListCategories.Execute(),
 				AssignedBoards = new List<ViewModels.Boards.Items.IndexBoard>(),
 				IsAuthenticated = UserContext.IsAuthenticated,
 				CanManage = UserContext.IsAdmin || record.PostedById == UserContext.ApplicationUser.Id,
@@ -135,7 +138,7 @@ namespace Forum3.ViewModelProviders.Topics {
 			};
 
 			foreach (var assignedBoard in assignedBoards) {
-				var indexBoard = BoardService.GetIndexBoard(assignedBoard);
+				var indexBoard = LoadIndexBoard.Execute(assignedBoard);
 				viewModel.AssignedBoards.Add(indexBoard);
 			}
 

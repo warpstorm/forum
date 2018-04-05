@@ -1,79 +1,92 @@
 ﻿using Forum3.Models.InputModels;
-using Forum3.Services.Controller;
+using Forum3.Processes.Boards;
+using Forum3.ViewModelProviders.Boards;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Forum3.Controllers {
 	public class Boards : ForumController {
-		BoardService BoardService { get; }
-
-		public Boards(
-			BoardService boardService
+		[HttpGet]
+		public IActionResult Index(
+			[FromServices] IndexPage pageProvider
 		) {
-			BoardService = boardService;
-		}
-
-		[HttpGet]
-		public IActionResult Index() {
-			var viewModel = BoardService.IndexPage();
+			var viewModel = pageProvider.Generate();
 			return View(viewModel);
 		}
 
 		[Authorize(Roles="Admin")]
 		[HttpGet]
-		public IActionResult Manage() {
-			var viewModel = BoardService.ManagePage();
+		public IActionResult Manage(
+			[FromServices] ManagePage pageProvider
+		) {
+			var viewModel = pageProvider.Generate();
 			return View(viewModel);
 		}
 
 		[Authorize(Roles="Admin")]
 		[HttpGet]
-		public IActionResult Create() {
-			var viewModel = BoardService.CreatePage();
+		public IActionResult Create(
+			[FromServices] CreatePage pageProvider
+		) {
+			var viewModel = pageProvider.Generate();
 			return View(viewModel);
 		}
 
 		[Authorize(Roles="Admin")]
 		[HttpPost]
-		public IActionResult Create(CreateBoardInput input) {
+		public IActionResult Create(
+			[FromServices] CreatePage pageProvider,
+			[FromServices] CreateBoard process,
+			CreateBoardInput input
+		) {
 			if (ModelState.IsValid) {
-				var serviceResponse = BoardService.Create(input);
+				var serviceResponse = process.Execute(input);
 				ProcessServiceResponse(serviceResponse);
 
 				if (serviceResponse.Success)
 					return RedirectFromService();
 			}
 
-			var viewModel = BoardService.CreatePage(input);
+			var viewModel = pageProvider.Generate(input);
 			return View(viewModel);
 		}
 
 		[Authorize(Roles="Admin")]
 		[HttpGet]
-		public IActionResult Edit(int id) {
-			var viewModel = BoardService.EditPage(id);
+		public IActionResult Edit(
+			[FromServices] EditPage pageProvider,
+			int id
+		) {
+			var viewModel = pageProvider.Generate(id);
 			return View(viewModel);
 		}
 
 		[Authorize(Roles="Admin")]
 		[HttpPost]
-		public IActionResult Edit(EditBoardInput input) {
+		public IActionResult Edit(
+			[FromServices] EditPage pageProvider,
+			[FromServices] EditBoard process,
+			EditBoardInput input
+		) {
 			if (ModelState.IsValid) {
-				var serviceResponse = BoardService.Edit(input);
+				var serviceResponse = process.Execute(input);
 				ProcessServiceResponse(serviceResponse);
 
 				if (serviceResponse.Success)
 					return RedirectFromService();
 			}
 
-			var viewModel = BoardService.EditPage(input.Id, input);
+			var viewModel = pageProvider.Generate(input.Id, input);
 			return View(viewModel);
 		}
 
 		[Authorize(Roles="Admin")]
 		[HttpGet]
-		public IActionResult MoveCategoryUp(int id) {
-			var serviceResponse = BoardService.MoveCategoryUp(id);
+		public IActionResult MoveCategoryUp(
+			[FromServices] MoveCategoryUp process,
+			int id
+		) {
+			var serviceResponse = process.Execute(id);
 			ProcessServiceResponse(serviceResponse);
 
 			return RedirectFromService();
@@ -81,8 +94,11 @@ namespace Forum3.Controllers {
 
 		[Authorize(Roles="Admin")]
 		[HttpGet]
-		public IActionResult MoveBoardUp(int id) {
-			var serviceResponse = BoardService.MoveBoardUp(id);
+		public IActionResult MoveBoardUp(
+			[FromServices] MoveBoardUp process,
+			int id
+		) {
+			var serviceResponse = process.Execute(id);
 			ProcessServiceResponse(serviceResponse);
 
 			return RedirectFromService();
@@ -90,9 +106,12 @@ namespace Forum3.Controllers {
 
 		[Authorize(Roles="Admin")]
 		[HttpPost]
-		public IActionResult MergeCategory(MergeInput input) {
+		public IActionResult MergeCategory(
+			[FromServices] MergeCategory process,
+			MergeInput input
+		) {
 			if (ModelState.IsValid) {
-				var serviceResponse = BoardService.MergeCategory(input);
+				var serviceResponse = process.Execute(input);
 				ProcessServiceResponse(serviceResponse);
 			}
 
@@ -101,9 +120,12 @@ namespace Forum3.Controllers {
 
 		[Authorize(Roles="Admin")]
 		[HttpPost]
-		public IActionResult MergeBoard(MergeInput input) {
+		public IActionResult MergeBoard(
+			[FromServices] MergeBoard process,
+			MergeInput input
+		) {
 			if (ModelState.IsValid) {
-				var serviceResponse = BoardService.MergeBoard(input);
+				var serviceResponse = process.Execute(input);
 				ProcessServiceResponse(serviceResponse);
 			}
 
