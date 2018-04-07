@@ -71,7 +71,7 @@ namespace Forum3.Migrator {
 					break;
 
 				case nameof(MigrateMessages):
-					await MigrateMessages(input);
+					MigrateMessages(input);
 					nextStage = nameof(MigratePins);
 					break;
 
@@ -130,7 +130,7 @@ namespace Forum3.Migrator {
 		}
 
 		async Task MigrateUsers(InputModels.Continue input) {
-			if (await AppDb.Messages.AnyAsync())
+			if (AppDb.Messages.Any())
 				return;
 
 			var take = 1;
@@ -229,7 +229,7 @@ namespace Forum3.Migrator {
 			await AppDb.SaveChangesAsync();
 		}
 
-		async Task MigrateMessages(InputModels.Continue input) {
+		void MigrateMessages(InputModels.Continue input) {
 			if (!AppDb.Users.Any())
 				return;
 
@@ -250,7 +250,7 @@ namespace Forum3.Migrator {
 			}
 
 			var query = from message in LegacyDb.Messages
-						orderby message.TimePosted
+						orderby message.Id
 						select message;
 
 			var skip = take * (input.CurrentStep - 1);
@@ -259,10 +259,12 @@ namespace Forum3.Migrator {
 
 			var users = AppDb.Users.ToList();
 
+			var id = skip + 1;
 			var newMessages = new List<DataModels.Message>();
 
 			foreach (var record in records) {
 				var newMessage = new DataModels.Message {
+					Id = id++,
 					Processed = false,
 					OriginalBody = record.OriginalBody,
 					ShortPreview = record.Subject,
@@ -288,8 +290,16 @@ namespace Forum3.Migrator {
 				newMessages.Add(newMessage);
 			}
 
-			AppDb.AddRange(newMessages);
-			await AppDb.SaveChangesAsync();
+			using (var transaction = AppDb.Database.BeginTransaction()) {
+				AppDb.Database.ExecuteSqlCommand("SET IDENTITY_INSERT dbo.Messages ON");
+
+				AppDb.AddRange(newMessages);
+				AppDb.SaveChanges();
+
+				AppDb.Database.ExecuteSqlCommand("SET IDENTITY_INSERT dbo.Messages OFF");
+
+				transaction.Commit();
+			}
 		}
 
 		async Task MigrateMessageBoards(InputModels.Continue input) {
