@@ -1,24 +1,35 @@
 ﻿using Forum3.Annotations;
-using Forum3.Services.Controller;
+using Forum3.Extensions;
+using Forum3.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 
 namespace Forum3.Controllers {
 	using InputModels = Models.InputModels;
+	using ViewModels = Models.ViewModels.SiteSettings;
 
 	[Authorize(Roles="Admin")]
 	public class SiteSettings : ForumController {
-		SiteSettingsService SiteSettingsService { get; }
+		SettingsRepository SettingsRepository { get; }
 
 		public SiteSettings(
-			SiteSettingsService siteSettingsService
+			SettingsRepository settingsRepository
 		) {
-			SiteSettingsService = siteSettingsService;
+			SettingsRepository = settingsRepository;
 		}
 
 		[HttpGet]
 		public IActionResult Index() {
-			var viewModel = SiteSettingsService.IndexPage();
+			var viewModel = new ViewModels.IndexPage();
+
+			var settingNames = typeof(Constants.Settings).GetConstants();
+
+			foreach (var settingName in settingNames) {
+				var settingValue = SettingsRepository.GetSetting(settingName);
+				viewModel.Settings.Add(new KeyValuePair<string, string>(settingName, settingValue));
+			}
+
 			return View(viewModel);
 		}
 
@@ -27,7 +38,7 @@ namespace Forum3.Controllers {
 		[PreventRapidRequests]
 		public IActionResult Edit(InputModels.EditSettingsInput input) {
 			if (ModelState.IsValid) {
-				var serviceResponse = SiteSettingsService.Edit(input);
+				var serviceResponse = SettingsRepository.Update(input);
 				ProcessServiceResponse(serviceResponse);
 			}
 

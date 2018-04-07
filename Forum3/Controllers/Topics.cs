@@ -2,7 +2,6 @@
 using Forum3.Contexts;
 using Forum3.Exceptions;
 using Forum3.Repositories;
-using Forum3.Services.Controller;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -22,40 +21,36 @@ namespace Forum3.Controllers {
 		ApplicationDbContext DbContext { get; }
 		UserContext UserContext { get; }
 
-		TopicRepository TopicRepository { get; }
+		BoardRepository BoardRepository { get; }
+		CategoryRepository CategoryRepository { get; }
 		MessageRepository MessageRepository { get; }
 		SettingsRepository SettingsRepository { get; }
-		CategoryRepository CategoryRepository { get; }
-		BoardRepository BoardRepository { get; }
-
-		MessageService MessageService { get; }
-		SmileyService SmileyService { get; }
+		SmileyRepository SmileyRepository { get; }
+		TopicRepository TopicRepository { get; }
 
 		IUrlHelper UrlHelper { get; }
 
 		public Topics(
 			ApplicationDbContext applicationDbContext,
 			UserContext userContext,
-			TopicRepository topicRepository,
+			BoardRepository boardRepository,
+			CategoryRepository categoryRepository,
 			MessageRepository messageRepository,
 			SettingsRepository settingsRepository,
-			CategoryRepository categoryRepository,
-			BoardRepository boardRepository,
-			MessageService messageService,
-			SmileyService smileyService,
+			SmileyRepository smileyRepository,
+			TopicRepository topicRepository,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory
 		) {
 			DbContext = applicationDbContext;
 			UserContext = userContext;
-			TopicRepository = topicRepository;
+
+			BoardRepository = boardRepository;
+			CategoryRepository = categoryRepository;
 			MessageRepository = messageRepository;
 			SettingsRepository = settingsRepository;
-			CategoryRepository = categoryRepository;
-			BoardRepository = boardRepository;
-
-			MessageService = messageService;
-			SmileyService = smileyService;
+			SmileyRepository = smileyRepository;
+			TopicRepository = topicRepository;
 
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
@@ -112,7 +107,7 @@ namespace Forum3.Controllers {
 
 		[HttpGet]
 		public IActionResult Display(int id, int pageId = 1, int target = 0, bool rebuild = false) {
-			ViewData["Smileys"] = SmileyService.GetSelectorList();
+			ViewData["Smileys"] = SmileyRepository.GetSelectorList();
 
 			var viewModel = GetDisplayPageModel(id, pageId, target, rebuild);
 
@@ -134,7 +129,7 @@ namespace Forum3.Controllers {
 		[HttpGet]
 		public IActionResult Admin(InputModels.Continue input = null) => View();
 
-		[Authorize(Roles="Admin")]
+		[Authorize(Roles = "Admin")]
 		[HttpGet]
 		public IActionResult RebuildThreadRelationships(InputModels.Continue input) {
 			ViewModels.Delay viewModel;
@@ -170,7 +165,7 @@ namespace Forum3.Controllers {
 		[PreventRapidRequests]
 		public async Task<IActionResult> TopicReply(InputModels.MessageInput input) {
 			if (ModelState.IsValid) {
-				var serviceResponse = await MessageService.CreateReply(input);
+				var serviceResponse = await MessageRepository.CreateReply(input);
 				ProcessServiceResponse(serviceResponse);
 
 				if (serviceResponse.Success)

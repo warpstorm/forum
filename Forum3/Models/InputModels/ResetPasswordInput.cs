@@ -12,10 +12,11 @@ namespace Forum3.Models.InputModels {
 		public string Password { get; set; }
 
 		[Required]
-		[Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
+		[Compare(nameof(Password), ErrorMessage = "The password and confirmation password do not match.")]
 		[DataType(DataType.Password)]
 		public string ConfirmPassword { get; set; }
 
+		[Required]
 		public string Code { get; set; }
 	}
 }

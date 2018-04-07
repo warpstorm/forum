@@ -3,7 +3,6 @@ using Forum3.Interfaces.Users;
 using Forum3.Middleware;
 using Forum3.Models.ServiceModels;
 using Forum3.Services;
-using Forum3.Services.Controller;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
@@ -29,7 +28,6 @@ namespace Forum3.Extensions {
 			RegisterRepositories(services, configuration);
 
 			RegisterAzureStorage(services, configuration);
-			RegisterControllerServices(services, configuration);
 
 			services.Configure<EmailSenderOptions>(configuration);
 			services.AddTransient<IEmailSender, EmailSender>();
@@ -43,23 +41,16 @@ namespace Forum3.Extensions {
 		}
 
 		static void RegisterRepositories(IServiceCollection services, IConfiguration configuration) {
+			services.AddTransient<Repositories.AccountRepository>();
 			services.AddTransient<Repositories.BoardRepository>();
 			services.AddTransient<Repositories.CategoryRepository>();
 			services.AddTransient<Repositories.MessageRepository>();
+			services.AddTransient<Repositories.NotificationRepository>();
 			services.AddTransient<Repositories.RoleRepository>();
 			services.AddTransient<Repositories.SettingsRepository>();
+			services.AddTransient<Repositories.SmileyRepository>();
 			services.AddTransient<Repositories.TopicRepository>();
 			services.AddTransient<Repositories.UserRepository>();
-		}
-
-		static void RegisterControllerServices(IServiceCollection services, IConfiguration configuration) {
-			services.AddTransient<AccountService>();
-			services.AddTransient<MessageService>();
-			services.AddTransient<NotificationService>();
-			services.AddTransient<ProfileService>();
-			services.AddTransient<RoleService>();
-			services.AddTransient<SiteSettingsService>();
-			services.AddTransient<SmileyService>();
 		}
 
 		static void RegisterAzureStorage(IServiceCollection services, IConfiguration configuration) {

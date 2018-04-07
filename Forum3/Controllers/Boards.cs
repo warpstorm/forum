@@ -1,6 +1,5 @@
 ﻿using Forum3.Contexts;
 using Forum3.Repositories;
-using Forum3.Services.Controller;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -16,7 +15,7 @@ namespace Forum3.Controllers {
 		CategoryRepository CategoryRepository { get; }
 		RoleRepository RoleRepository { get; }
 		UserRepository UserRepository { get; }
-		NotificationService NotificationService { get; }
+		NotificationRepository NotificationRepository { get; }
 
 		public Boards(
 			ApplicationDbContext dbContext,
@@ -24,21 +23,21 @@ namespace Forum3.Controllers {
 			CategoryRepository categoryRepository,
 			RoleRepository roleRepository,
 			UserRepository userRepository,
-			NotificationService notificationService
+			NotificationRepository notificationRepository
 		) {
 			DbContext = dbContext;
 			BoardRepository = boardRepository;
 			CategoryRepository = categoryRepository;
 			RoleRepository = roleRepository;
 			UserRepository = userRepository;
-			NotificationService = notificationService;
+			NotificationRepository = notificationRepository;
 		}
 
 		[HttpGet]
 		public IActionResult Index() {
 			var birthdays = UserRepository.GetBirthdaysList();
 			var onlineUsers = UserRepository.GetOnlineList();
-			var notifications = NotificationService.GetNotifications();
+			var notifications = NotificationRepository.Index();
 
 			var viewModel = new PageViewModels.IndexPage {
 				Birthdays = birthdays.ToArray(),

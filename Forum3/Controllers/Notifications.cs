@@ -1,15 +1,17 @@
-﻿using Forum3.Services.Controller;
+﻿using Forum3.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
 namespace Forum3.Controllers {
+	using ViewModels = Models.ViewModels.Notifications;
+
 	public class Notifications : ForumController {
-		NotificationService NotificationService { get; }
+		NotificationRepository NotificationRepository { get; }
 
 		public Notifications(
-			NotificationService notificationService
+			NotificationRepository notificationRepository
 		) {
-			NotificationService = notificationService;
+			NotificationRepository = notificationRepository;
 		}
 
 		[HttpGet]
@@ -19,13 +21,18 @@ namespace Forum3.Controllers {
 			if (Request.Query.ContainsKey("show-read"))
 				showRead = true;
 
-			var viewModel = NotificationService.IndexPage(showRead);
+			var notifications = NotificationRepository.Index(showRead);
+
+			var viewModel = new ViewModels.Pages.IndexPage {
+				Notifications = notifications
+			};
+
 			return View(viewModel);
 		}
 
 		[HttpGet]
 		public async Task<IActionResult> Open(int id) {
-			var serviceResponse = await NotificationService.Open(id);
+			var serviceResponse = await NotificationRepository.Open(id);
 			ProcessServiceResponse(serviceResponse);
 
 			return RedirectFromService();

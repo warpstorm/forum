@@ -6,17 +6,17 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace Forum3.Services.Controller {
+namespace Forum3.Repositories {
 	using DataModels = Models.DataModels;
 	using InputModels = Models.InputModels;
 	using ServiceModels = Models.ServiceModels;
 	using ViewModels = Models.ViewModels.Smileys;
 
-	public class SmileyService {
+	public class SmileyRepository {
 		ApplicationDbContext DbContext { get; }
 		CloudBlobClient CloudBlobClient { get; }
 
-		public SmileyService(
+		public SmileyRepository(
 			ApplicationDbContext dbContext,
 			CloudBlobClient cloudBlobClient
 		) {
@@ -58,43 +58,6 @@ namespace Forum3.Services.Controller {
 			}
 
 			return results;
-		}
-
-		public ViewModels.IndexPage IndexPage() {
-			var smileysQuery = from smiley in DbContext.Smileys
-							   orderby smiley.SortOrder
-							   select smiley;
-
-			var smileys = smileysQuery.ToList();
-
-			var viewModel = new ViewModels.IndexPage();
-
-			foreach (var smiley in smileys) {
-				var sortColumn = smiley.SortOrder / 1000;
-				var sortRow = smiley.SortOrder % 1000;
-
-				viewModel.Items.Add(new ViewModels.IndexItem {
-					Id = smiley.Id,
-					Code = smiley.Code,
-					Path = smiley.Path,
-					Thought = smiley.Thought,
-					Column = sortColumn,
-					Row = sortRow
-				});
-			}
-
-			return viewModel;
-		}
-
-		public ViewModels.CreatePage CreatePage(InputModels.CreateSmileyInput input = null) {
-			var viewModel = new ViewModels.CreatePage();
-
-			if (input != null) {
-				viewModel.Code = input.Code;
-				viewModel.Thought = input.Thought;
-			}
-
-			return viewModel;
 		}
 
 		public async Task<ServiceModels.ServiceResponse> Create(InputModels.CreateSmileyInput input) {
@@ -148,7 +111,7 @@ namespace Forum3.Services.Controller {
 			return serviceResponse;
 		}
 
-		public ServiceModels.ServiceResponse Edit(InputModels.EditSmileysInput input) {
+		public ServiceModels.ServiceResponse Update(InputModels.EditSmileysInput input) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			foreach (var smileyInput in input.Smileys) {
@@ -207,7 +170,7 @@ namespace Forum3.Services.Controller {
 			}
 
 			DbContext.SaveChanges();
-			
+
 			serviceResponse.Message = $"The smiley was deleted.";
 			return serviceResponse;
 		}

@@ -1,24 +1,45 @@
-﻿using Forum3.Services.Controller;
+﻿using Forum3.Contexts;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 
 namespace Forum3.Controllers {
+	using ViewModels = Models.ViewModels.Profile;
+
 	public class Profile : ForumController {
-		ProfileService ProfileService { get; }
+		ApplicationDbContext DbContext { get; }
+		UserContext UserContext { get; }
 		UrlEncoder UrlEncoder { get; }
 
 		public Profile(
-			ProfileService profileService,
+			ApplicationDbContext dbContext,
+			UserContext userContext,
 			UrlEncoder urlEncoder
 		) {
-			ProfileService = profileService;
+			DbContext = dbContext;
+			UserContext = userContext;
 			UrlEncoder = urlEncoder;
 		}
 		
 		[HttpGet]
 		public async Task<IActionResult> Details(string id) {
-			var viewModel = await ProfileService.DetailsPage(id);
+			if (string.IsNullOrEmpty(id))
+				id = UserContext.ApplicationUser.Id;
+
+			var userRecord = await DbContext.Users.FindAsync(id);
+
+			if (userRecord is null)
+				throw new Exception($"No record found with the id {id}");
+
+			// TODO check access rights i.e trim email
+
+			var viewModel = new ViewModels.DetailsPage {
+				Id = userRecord.Email,
+				DisplayName = userRecord.DisplayName,
+				Email = userRecord.Email,
+			};
+
 			return View(viewModel);
 		}
 	}

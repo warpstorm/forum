@@ -2,17 +2,16 @@
 using Forum3.Controllers;
 using Forum3.Extensions;
 using Forum3.Interfaces.Users;
-using Forum3.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.WindowsAzure.Storage.Blob;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
@@ -20,17 +19,16 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Forum3.Services.Controller {
+namespace Forum3.Repositories {
 	using DataModels = Models.DataModels;
 	using InputModels = Models.InputModels;
 	using ServiceModels = Models.ServiceModels;
-	using ViewModels = Models.ViewModels.Account;
 
-	public class AccountService {
+	public class AccountRepository {
 		public bool IsAuthenticated => UserContext.IsAuthenticated;
 
 		ApplicationDbContext DbContext { get; }
-		SettingsRepository Settings { get; }
+		SettingsRepository SettingsRepository { get; }
 		CloudBlobClient CloudBlobClient { get; }
 		UserContext UserContext { get; }
 		UserManager<DataModels.ApplicationUser> UserManager { get; }
@@ -40,7 +38,7 @@ namespace Forum3.Services.Controller {
 		ILogger Logger { get; }
 		IHttpContextAccessor HttpContextAccessor { get; }
 
-		public AccountService(
+		public AccountRepository(
 			ApplicationDbContext dbContext,
 			UserContext userContext,
 			SettingsRepository settingsRepository,
@@ -51,11 +49,11 @@ namespace Forum3.Services.Controller {
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory,
 			IEmailSender emailSender,
-			ILogger<AccountService> logger
+			ILogger<AccountRepository> logger
 		) {
 			DbContext = dbContext;
 			UserContext = userContext;
-			Settings = settingsRepository;
+			SettingsRepository = settingsRepository;
 			CloudBlobClient = cloudBlobClient;
 			UserManager = userManager;
 			SignInManager = signInManager;
@@ -63,22 +61,6 @@ namespace Forum3.Services.Controller {
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 			Logger = logger;
 			HttpContextAccessor = httpContextAccessor;
-		}
-
-		public async Task<ViewModels.LoginPage> LoginPage() {
-			await SignOut();
-
-			var viewModel = new ViewModels.LoginPage();
-			return viewModel;
-		}
-
-		public async Task<ViewModels.LoginPage> LoginPage(InputModels.LoginInput input) {
-			var viewModel = await LoginPage();
-
-			viewModel.Email = input.Email;
-			viewModel.RememberMe = input.RememberMe;
-
-			return viewModel;
 		}
 
 		public async Task<ServiceModels.ServiceResponse> Login(InputModels.LoginInput input) {
@@ -98,60 +80,6 @@ namespace Forum3.Services.Controller {
 				Logger.LogInformation($"User logged in '{input.Email}'.");
 
 			return serviceResponse;
-		}
-
-		public async Task<ViewModels.IndexPage> IndexPage() {
-			var viewModel = new ViewModels.IndexPage();
-
-			var users = await DbContext.Users.OrderBy(u => u.DisplayName).ToListAsync();
-
-			foreach (var user in users) {
-				var indexItem = new ViewModels.IndexItem {
-					User = user,
-					Registered = user.Registered.ToPassedTimeString(),
-					LastOnline = user.LastOnline.ToPassedTimeString()
-				};
-
-				if (UserContext.IsAdmin || user.Id == UserContext.ApplicationUser.Id)
-					indexItem.CanManage = true;
-
-				viewModel.IndexItems.Add(indexItem);
-			}
-
-			return viewModel;
-		}
-
-		public async Task<ViewModels.DetailsPage> DetailsPage(string id) {
-			var userRecord = id is null ? UserContext.ApplicationUser : await UserManager.FindByIdAsync(id);
-
-			if (userRecord is null)
-				userRecord = UserContext.ApplicationUser;
-
-			CanEdit(userRecord.Id);
-
-			return DetailsPageViewModel(userRecord);
-		}
-
-		public async Task<ViewModels.DetailsPage> DetailsPage(InputModels.UpdateAccountInput input) {
-			var userRecord = await DbContext.Users.FindAsync(input.Id);
-
-			if (userRecord is null) {
-				var message = $"No record found with the display name '{input.DisplayName}'";
-				Logger.LogWarning(message);
-				throw new ApplicationException("You hackin' bro?");
-			}
-
-			CanEdit(userRecord.Id);
-
-			var viewModel = DetailsPageViewModel(userRecord);
-
-			viewModel.DisplayName = input.DisplayName;
-			viewModel.Email = input.Email;
-			viewModel.BirthdayDay = input.BirthdayDay.ToString();
-			viewModel.BirthdayMonth = input.BirthdayMonth.ToString();
-			viewModel.BirthdayYear = input.BirthdayYear.ToString();
-
-			return viewModel;
 		}
 
 		public async Task<ServiceModels.ServiceResponse> UpdateAccount(InputModels.UpdateAccountInput input) {
@@ -294,7 +222,8 @@ namespace Forum3.Services.Controller {
 				return serviceResponse;
 
 			var allowedExtensions = new[] { ".gif", ".jpg", ".png" };
-			var extension = Path.GetExtension(input.NewAvatar.FileName);
+
+			var extension = Path.GetExtension(input.NewAvatar.FileName).ToLower();
 
 			if (!allowedExtensions.Contains(extension))
 				serviceResponse.Error(nameof(input.NewAvatar), "Your avatar must end with .gif, .jpg, or .png");
@@ -315,7 +244,7 @@ namespace Forum3.Services.Controller {
 
 				using (var src = Image.FromStream(inputStream)) {
 					var largestDimension = src.Width > src.Height ? src.Width : src.Height;
-					var avatarMax = Settings.AvatarSize();
+					var avatarMax = SettingsRepository.AvatarSize();
 
 					if (largestDimension > avatarMax || extension != ".png") {
 						var ratio = (double)avatarMax / largestDimension;
@@ -350,67 +279,6 @@ namespace Forum3.Services.Controller {
 			Logger.LogInformation($"Avatar was modified by '{UserContext.ApplicationUser.DisplayName}' for account '{userRecord.DisplayName}'.");
 
 			return serviceResponse;
-		}
-
-		public async Task<ViewModels.RegisterPage> RegisterPage() {
-			await SignOut();
-
-			var months = from number in Enumerable.Range(1, 12)
-						 select new SelectListItem {
-							 Value = number.ToString(),
-							 Text = System.Globalization.CultureInfo.InvariantCulture.DateTimeFormat.GetMonthName(number),
-						 };
-
-			months.Prepend(new SelectListItem {
-				Disabled = true,
-				Text = "Month"
-			});
-
-			var days = from number in Enumerable.Range(1, 31)
-					   select new SelectListItem {
-						   Value = number.ToString(),
-						   Text = number.ToString(),
-					   };
-
-			days.Prepend(new SelectListItem {
-				Disabled = true,
-				Text = "Day"
-			});
-
-			var years = from number in Enumerable.Range(1900, DateTime.Now.Year - 1900)
-						orderby number descending
-						select new SelectListItem {
-							Value = number.ToString(),
-							Text = number.ToString(),
-						};
-
-			years.Prepend(new SelectListItem {
-				Disabled = true,
-				Text = "Year"
-			});
-
-			var viewModel = new ViewModels.RegisterPage {
-				BirthdayDays = days,
-				BirthdayMonths = months,
-				BirthdayYears = years
-			};
-
-			return viewModel;
-		}
-
-		public async Task<ViewModels.RegisterPage> RegisterPage(InputModels.RegisterInput input) {
-			var viewModel = await RegisterPage();
-
-			viewModel.DisplayName = input.DisplayName;
-			viewModel.Email = input.Email;
-			viewModel.ConfirmEmail = input.ConfirmEmail;
-			viewModel.Password = input.Password;
-			viewModel.ConfirmPassword = input.ConfirmPassword;
-			viewModel.BirthdayDay = input.BirthdayDay.ToString();
-			viewModel.BirthdayMonth = input.BirthdayMonth.ToString();
-			viewModel.BirthdayYear = input.BirthdayYear.ToString();
-
-			return viewModel;
 		}
 
 		public async Task<ServiceModels.ServiceResponse> Register(InputModels.RegisterInput input) {
@@ -450,15 +318,6 @@ namespace Forum3.Services.Controller {
 			}
 
 			return serviceResponse;
-		}
-
-		public async Task SignOut() {
-			HttpContextAccessor.HttpContext.Session.Remove(Constants.Keys.UserId);
-
-			await Task.WhenAll(new[] {
-				HttpContextAccessor.HttpContext.Session.CommitAsync(),
-				SignInManager.SignOutAsync()
-			});
 		}
 
 		public async Task<ServiceModels.ServiceResponse> SendVerificationEmail() {
@@ -505,19 +364,6 @@ namespace Forum3.Services.Controller {
 			return serviceResponse;
 		}
 
-		public async Task<ViewModels.ForgotPasswordPage> ForgotPasswordPage() {
-			await SignOut();
-
-			var viewModel = new ViewModels.ForgotPasswordPage();
-			return viewModel;
-		}
-
-		public async Task<ViewModels.ForgotPasswordPage> ForgotPasswordPage(InputModels.ForgotPasswordInput input) {
-			var viewModel = await ForgotPasswordPage();
-			viewModel.Email = input.Email;
-			return viewModel;
-		}
-
 		public async Task<ServiceModels.ServiceResponse> ForgotPassword(InputModels.ForgotPasswordInput input) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
@@ -537,18 +383,6 @@ namespace Forum3.Services.Controller {
 
 			serviceResponse.RedirectPath = UrlHelper.Action(nameof(Account.ForgotPasswordConfirmation));
 			return serviceResponse;
-		}
-
-		public async Task<ViewModels.ResetPasswordPage> ResetPasswordPage(string code) {
-			code.ThrowIfNull(nameof(code));
-
-			await SignOut();
-
-			var viewModel = new ViewModels.ResetPasswordPage {
-				Code = code
-			};
-
-			return viewModel;
 		}
 
 		public async Task<ServiceModels.ServiceResponse> ResetPassword(InputModels.ResetPasswordInput input) {
@@ -571,10 +405,7 @@ namespace Forum3.Services.Controller {
 			return serviceResponse;
 		}
 
-		public string EmailConfirmationLink(string userId, string code) => UrlHelper.AbsoluteAction(nameof(Account.ConfirmEmail), nameof(Account), new { userId, code });
-		public string ResetPasswordCallbackLink(string userId, string code) => UrlHelper.AbsoluteAction(nameof(Account.ResetPassword), nameof(Account), new { userId, code });
-
-		void CanEdit(string userId) {
+		public void CanEdit(string userId) {
 			if (userId == UserContext.ApplicationUser.Id || UserContext.IsAdmin)
 				return;
 
@@ -583,56 +414,65 @@ namespace Forum3.Services.Controller {
 			throw new ApplicationException("You hackin' bro?");
 		}
 
-		ViewModels.DetailsPage DetailsPageViewModel(DataModels.ApplicationUser userRecord) {
-			var months = from number in Enumerable.Range(1, 12)
-						select new SelectListItem {
-							Value = number.ToString(),
-							Text = System.Globalization.CultureInfo.InvariantCulture.DateTimeFormat.GetMonthName(number),
-							Selected = number == userRecord.Birthday.Month
-						};
+		public async Task SignOut() {
+			HttpContextAccessor.HttpContext.Session.Remove(Constants.Keys.UserId);
 
-			months.Prepend(new SelectListItem {
-				Disabled = true,
-				Text = "Month"
+			await Task.WhenAll(new[] {
+				HttpContextAccessor.HttpContext.Session.CommitAsync(),
+				SignInManager.SignOutAsync()
 			});
+		}
 
-			var days = from number in Enumerable.Range(1, 31)
-					   select new SelectListItem {
-						   Value = number.ToString(),
-						   Text = number.ToString(),
-						   Selected = number == userRecord.Birthday.Day
-					   };
-
-			days.Prepend(new SelectListItem {
-				Disabled = true,
-				Text = "Day"
-			});
-			
+		public IEnumerable<SelectListItem> YearPickList(int selected = -1) {
 			var years = from number in Enumerable.Range(1900, DateTime.Now.Year - 1900)
 						orderby number descending
 						select new SelectListItem {
-						    Value = number.ToString(),
-						    Text = number.ToString(),
-						    Selected = number == userRecord.Birthday.Year
-					    };
+							Value = number.ToString(),
+							Text = number.ToString(),
+							Selected = selected > -1 && number == selected
+						};
 
 			years.Prepend(new SelectListItem {
 				Disabled = true,
 				Text = "Year"
 			});
 
-			var viewModel = new ViewModels.DetailsPage {
-				AvatarPath = userRecord.AvatarPath,
-				Id = userRecord.Id,
-				DisplayName = userRecord.DisplayName,
-				Email = userRecord.Email,
-				EmailConfirmed = userRecord.EmailConfirmed,
-				BirthdayDays = days,
-				BirthdayMonths = months,
-				BirthdayYears = years
-			};
-
-			return viewModel;
+			return years;
 		}
+
+		public IEnumerable<SelectListItem> DayPickList(int selected = -1) {
+			var days = from number in Enumerable.Range(1, 31)
+					   select new SelectListItem {
+						   Value = number.ToString(),
+						   Text = number.ToString(),
+						   Selected = selected > -1 && number == selected
+					   };
+
+			days.Prepend(new SelectListItem {
+				Disabled = true,
+				Text = "Day"
+			});
+
+			return days;
+		}
+
+		public IEnumerable<SelectListItem> MonthPickList(int selected = -1) {
+			var months = from number in Enumerable.Range(1, 12)
+						 select new SelectListItem {
+							 Value = number.ToString(),
+							 Text = System.Globalization.CultureInfo.InvariantCulture.DateTimeFormat.GetMonthName(number),
+							 Selected = selected > -1 && number == selected
+						 };
+
+			months.Prepend(new SelectListItem {
+				Disabled = true,
+				Text = "Month"
+			});
+
+			return months;
+		}
+
+		public string EmailConfirmationLink(string userId, string code) => UrlHelper.AbsoluteAction(nameof(Account.ConfirmEmail), nameof(Account), new { userId, code });
+		public string ResetPasswordCallbackLink(string userId, string code) => UrlHelper.AbsoluteAction(nameof(Account.ResetPassword), nameof(Account), new { userId, code });
 	}
 }

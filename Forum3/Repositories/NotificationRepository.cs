@@ -11,16 +11,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Forum3.Services.Controller {
+namespace Forum3.Repositories {
 	using ServiceModels = Models.ServiceModels;
 	using ViewModels = Models.ViewModels.Notifications;
 
-	public class NotificationService {
+	public class NotificationRepository {
 		ApplicationDbContext DbContext { get; }
 		UserContext UserContext { get; }
 		IUrlHelper UrlHelper { get; }
 
-		public NotificationService(
+		public NotificationRepository (
 			ApplicationDbContext dbContext,
 			UserContext userContext,
 			IActionContextAccessor actionContextAccessor,
@@ -31,17 +31,7 @@ namespace Forum3.Services.Controller {
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
-		public ViewModels.Pages.IndexPage IndexPage(bool showRead = false) {
-			var notifications = GetNotifications(showRead);
-
-			var viewModel = new ViewModels.Pages.IndexPage {
-				Notifications = notifications
-			};
-
-			return viewModel;
-		}
-
-		public List<ViewModels.Items.IndexItem> GetNotifications(bool showRead = false) {
+		public List<ViewModels.Items.IndexItem> Index(bool showRead = false) {
 			if (UserContext.ApplicationUser is null)
 				return new List<ViewModels.Items.IndexItem>();
 
@@ -60,7 +50,7 @@ namespace Forum3.Services.Controller {
 									select new ViewModels.Items.IndexItem {
 										Id = n.Id,
 										Type = n.Type,
-										Recent = n.Time > recentTimeLimit, 
+										Recent = n.Time > recentTimeLimit,
 										Time = n.Time.ToPassedTimeString(),
 										TargetUser = targetUser == null ? "User" : targetUser.DisplayName
 									};
@@ -93,7 +83,7 @@ namespace Forum3.Services.Controller {
 			return serviceResponse;
 		}
 
-		string NotificationText(ViewModels.Items.IndexItem notification) {
+		public string NotificationText(ViewModels.Items.IndexItem notification) {
 			switch (notification.Type) {
 				case ENotificationType.Quote:
 					return $"{notification.TargetUser} quoted you.";

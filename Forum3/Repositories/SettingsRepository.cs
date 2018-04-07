@@ -5,6 +5,8 @@ using System.Linq;
 
 namespace Forum3.Repositories {
 	using DataModels = Models.DataModels;
+	using InputModels = Models.InputModels;
+	using ServiceModels = Models.ServiceModels;
 
 	public class SettingsRepository {
 		ApplicationDbContext DbContext { get; }
@@ -110,7 +112,7 @@ namespace Forum3.Repositories {
 			return settingValue;
 		}
 
-		int GetInt(string name, string userId = "") {
+		public int GetInt(string name, string userId = "") {
 			var setting = GetSetting(name, userId);
 
 			if (string.IsNullOrEmpty(setting))
@@ -119,13 +121,39 @@ namespace Forum3.Repositories {
 			return Convert.ToInt32(setting);
 		}
 
-		bool GetBool(string name, string userId = "") {
+		public bool GetBool(string name, string userId = "") {
 			var setting = GetSetting(name, userId);
 
 			if (string.IsNullOrEmpty(setting))
 				return default(bool);
 
 			return Convert.ToBoolean(setting);
+		}
+
+		public ServiceModels.ServiceResponse Update(InputModels.EditSettingsInput input) {
+			var serviceResponse = new ServiceModels.ServiceResponse();
+
+			foreach (var settingInput in input.Settings) {
+				var existingRecords = DbContext.SiteSettings.Where(s => s.Name == settingInput.Key && string.IsNullOrEmpty(s.UserId)).ToList();
+
+				if (existingRecords.Any())
+					DbContext.RemoveRange(existingRecords);
+
+				if (string.IsNullOrEmpty(settingInput.Value))
+					continue;
+
+				var record = new DataModels.SiteSetting {
+					Name = settingInput.Key,
+					Value = settingInput.Value
+				};
+
+				DbContext.SiteSettings.Add(record);
+			}
+
+			DbContext.SaveChanges();
+
+			serviceResponse.Message = $"The smiley was updated.";
+			return serviceResponse;
 		}
 	}
 }
