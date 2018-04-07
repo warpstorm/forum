@@ -608,17 +608,15 @@ namespace Forum3.Repositories {
 			// strip out tags
 			preview = Regex.Replace(preview, @"(<.+?>|\[.+?\])", string.Empty, RegexOptions.Compiled);
 
-			var matches = Regex.Match(preview, @"^(.{1," + previewLength + "})", RegexOptions.Compiled);
-
 			if (!multiline)
-				preview = Regex.Match(matches.Groups[1].Value == "" ? preview : matches.Groups[1].Value, @"^(.+)?\n*", RegexOptions.Compiled).Groups[1].Value;
+				preview = Regex.Match(preview, @"^(.+)?\n*", RegexOptions.Compiled).Groups[1].Value;
 
 			if (preview.Length > previewLength) {
-				matches = Regex.Match(preview, @"^(.{" + (previewLength - 3) + "})", RegexOptions.Compiled);
-				return matches.Groups[1].Value + "...";
+				var matches = Regex.Match(preview, @"^(.{" + (previewLength - 1) + "})", RegexOptions.Compiled);
+				preview = matches.Groups[1].Value + "…";
 			}
 			else if (preview.Length <= 0)
-				return "No text";
+				preview = "No text";
 
 			return preview;
 		}

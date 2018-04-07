@@ -50,7 +50,7 @@ namespace Forum3.Repositories {
 								   ParentId = message.ParentId,
 								   ReplyId = message.ReplyId,
 								   ReplyBody = reply == null ? string.Empty : reply.DisplayBody,
-								   ReplyPreview = reply == null ? string.Empty : reply.LongPreview,
+								   ReplyPreview = reply == null ? string.Empty : reply.ShortPreview,
 								   ReplyPostedBy = replyPostedBy == null ? string.Empty : replyPostedBy.DisplayName,
 								   Body = message.DisplayBody,
 								   Cards = message.Cards,
