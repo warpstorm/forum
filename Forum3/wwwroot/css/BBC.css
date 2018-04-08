@@ -41,16 +41,12 @@
 	white-space: normal;
 }
 
-ul.bbc-list {
+ul.bbc-list, ul.bbc-list > .bbc-list-item {
 	list-style: circle;
 }
 
 ol.bbc-list {
 	counter-reset: item;
-}
-
-.bbc-list-item {
-
 }
 
 ol.bbc-list > .bbc-list-item {
