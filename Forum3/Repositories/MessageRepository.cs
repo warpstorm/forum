@@ -799,14 +799,18 @@ namespace Forum3.Repositories {
 
 				var messages = messagesQuery.ToList();
 
-				foreach (var message in messages)
-					RebuildMessageRelationships(parent, message, messages);
+				var pages = (int) Math.Ceiling(1D * messages.Count() / take);
+
+				for (var i = 0; i < pages; i++) {
+					foreach (var message in messages.Skip(i * take).Take(take))
+						RebuildMessageRelationships(parent, message, messages);
+
+					DbContext.SaveChanges();
+				}
 
 				RecountReplies(parent, messages);
 				RebuildParticipants(parent, messages);
 			}
-
-			DbContext.SaveChanges();
 
 			return RebuildThreadsViewModel(input);
 		}
@@ -860,7 +864,7 @@ namespace Forum3.Repositories {
 			var replies = messages.Count();
 
 			if (parentMessage.ReplyCount != replies) {
-				parentMessage.ReplyCount = messages.Count();
+				parentMessage.ReplyCount = replies;
 				updated = true;
 			}
 
@@ -873,8 +877,10 @@ namespace Forum3.Repositories {
 				updated = true;
 			}
 
-			if (updated)
+			if (updated) {
 				DbContext.Update(parentMessage);
+				DbContext.SaveChanges();
+			}
 		}
 
 		public void RebuildParticipants(DataModels.Message parentMessage, List<DataModels.Message> messages) {
@@ -896,11 +902,14 @@ namespace Forum3.Repositories {
 				}
 			}
 
-			var oldParticipants = DbContext.Participants.Where(r => r.MessageId == parentMessage.Id);
+			var oldParticipants = DbContext.Participants.Where(r => r.MessageId == parentMessage.Id).ToList();
 
 			if (oldParticipants.Count() != newParticipants.Count()) {
 				DbContext.RemoveRange(oldParticipants);
+				DbContext.SaveChanges();
+
 				DbContext.Participants.AddRange(newParticipants);
+				DbContext.SaveChanges();
 			}
 		}
 
