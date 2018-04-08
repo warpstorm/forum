@@ -495,13 +495,13 @@ namespace Forum3.Repositories {
 
 			try {
 				var documentTask = client.LoadFromWebAsync(siteWithoutHash);
-
-				Task.WaitAll(new Task[] { documentTask });
-
+				documentTask.Wait();
 				document = documentTask.Result;
 			}
 			// System.InvalidOperationException: 'The character set provided in ContentType is invalid. Cannot read content as string using an invalid character set.'
-			catch (InvalidOperationException) { }
+			catch (InvalidOperationException e) when (e.Message == "The character set provided in ContentType is invalid. Cannot read content as string using an invalid character set.") { }
+			// System.AggregateException: 'One or more errors occurred. (Error downloading html)'
+			catch (AggregateException e) when (e.Message == "One or more errors occurred. (Error downloading html)") { }
 			catch (Exception e) when (e.Message == "Error downloading html") { }
 
 			if (document is null)
