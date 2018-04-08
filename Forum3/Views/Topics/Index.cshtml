@@ -22,9 +22,9 @@
 
 @section scripts {
 	<script>
-		var boardId = @Model.BoardId;
-		var after = @Model.After;
-		var unreadFilter = @Model.UnreadFilter;
+		window.boardId = @Model.BoardId;
+		window.page = @Model.Page;
+		window.unreadFilter = @Model.UnreadFilter;
 	</script>
 
 	<environment include="Development">

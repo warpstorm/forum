@@ -62,19 +62,15 @@ namespace Forum3.Controllers {
 			if (!UserContext.IsAdmin && boardRoles.Any() && !boardRoles.Intersect(UserContext.Roles).Any())
 				throw new HttpForbiddenException("You are not authorized to view this board.");
 
-			var topicPreviews = TopicRepository.GetPreviews(id, 0, unread);
-
-			var after = 0L;
-
-			if (topicPreviews.Any())
-				after = topicPreviews.Min(t => t.LastReplyPostedDT).Ticks;
+			var page = 1;
+			var topicPreviews = TopicRepository.GetPreviews(id, page, unread);
 
 			var boardRecord = DbContext.Boards.Find(id);
 
 			var viewModel = new PageModels.TopicIndexPage {
 				BoardId = id,
 				BoardName = boardRecord?.Name ?? "All Topics",
-				After = after,
+				Page = page,
 				Topics = topicPreviews,
 				UnreadFilter = unread
 			};
@@ -83,22 +79,17 @@ namespace Forum3.Controllers {
 		}
 
 		[HttpGet]
-		public IActionResult IndexMore(int id = 0, long after = 0, int unread = 0) {
+		public IActionResult IndexMore(int id = 0, int page = 0, int unread = 0) {
 			var boardRoles = DbContext.BoardRoles.Where(r => r.BoardId == id).Select(r => r.RoleId).ToList();
 
 			if (!UserContext.IsAdmin && boardRoles.Any() && !boardRoles.Intersect(UserContext.Roles).Any())
 				throw new HttpForbiddenException("You are not authorized to view this board.");
 
-			var topicPreviews = TopicRepository.GetPreviews(id, after, unread);
-
-			if (topicPreviews.Any())
-				after = topicPreviews.Min(t => t.LastReplyPostedDT).Ticks;
-			else
-				after = long.MaxValue;
+			var topicPreviews = TopicRepository.GetPreviews(id, page, unread);
 
 			var viewModel = new PageModels.TopicIndexMorePage {
-				More = after != long.MaxValue,
-				After = after,
+				More = topicPreviews.Any(),
+				Page = page,
 				Topics = topicPreviews
 			};
 

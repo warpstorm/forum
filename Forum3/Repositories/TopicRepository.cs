@@ -156,7 +156,7 @@ namespace Forum3.Repositories {
 			return serviceResponse;
 		}
 
-		public List<ItemModels.MessagePreview> GetPreviews(int boardId, long after, int unread) {
+		public List<ItemModels.MessagePreview> GetPreviews(int boardId, int page, int unread) {
 			var participation = new List<DataModels.Participant>();
 			var viewLogs = new List<DataModels.ViewLog>();
 			var historyTimeLimit = SettingsRepository.HistoryTimeLimit();
@@ -166,7 +166,7 @@ namespace Forum3.Repositories {
 				viewLogs = DbContext.ViewLogs.Where(r => r.LogTime >= historyTimeLimit && r.UserId == UserContext.ApplicationUser.Id).ToList();
 			}
 
-			var messageIds = GetIndexIds(boardId, after, unread, historyTimeLimit, participation, viewLogs);
+			var messageIds = GetIndexIds(boardId, page, unread, historyTimeLimit, participation, viewLogs);
 
 			var messageRecordQuery = from message in DbContext.Messages
 									 where message.ParentId == 0 && messageIds.Contains(message.Id)
@@ -205,8 +205,9 @@ namespace Forum3.Repositories {
 			return messages;
 		}
 
-		public List<int> GetIndexIds(int boardId, long after, int unreadFilter, DateTime historyTimeLimit, List<DataModels.Participant> participation, List<DataModels.ViewLog> viewLogs) {
+		public List<int> GetIndexIds(int boardId, int page, int unreadFilter, DateTime historyTimeLimit, List<DataModels.Participant> participation, List<DataModels.ViewLog> viewLogs) {
 			var take = SettingsRepository.TopicsPerPage();
+			var skip = (page - 1) * take;
 
 			var messageQuery = from message in DbContext.Messages
 							   where message.ParentId == 0
@@ -228,14 +229,8 @@ namespace Forum3.Repositories {
 							   };
 			}
 
-			var afterTarget = new DateTime(after);
-
-			if (unreadFilter > 0) {
-				var timeFilter = historyTimeLimit > afterTarget ? historyTimeLimit : afterTarget;
-				messageQuery = messageQuery.Where(m => m.LastReplyPosted > timeFilter);
-			}
-			else if (afterTarget != default(DateTime))
-				messageQuery = messageQuery.Where(m => m.LastReplyPosted < afterTarget);
+			if (unreadFilter > 0)
+				messageQuery = messageQuery.Where(m => m.LastReplyPosted > historyTimeLimit);
 
 			var sortedMessageQuery = from message in messageQuery
 									 join pin in DbContext.Pins on message.Id equals pin.MessageId into pins
@@ -265,6 +260,7 @@ namespace Forum3.Repositories {
 
 			var messageIds = new List<int>();
 			var attempts = 0;
+			var skipped = 0;
 
 			foreach (var message in sortedMessageQuery) {
 				if (IsAccessDenied(message.Id, forbiddenBoardIds)) {
@@ -282,6 +278,9 @@ namespace Forum3.Repositories {
 
 					continue;
 				}
+
+				if (skipped++ < skip)
+					continue;
 
 				messageIds.Add(message.Id);
 
