@@ -50,9 +50,9 @@ namespace Forum3.Controllers {
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		[PreventRapidRequests]
-		public async Task<IActionResult> Create(MessageInput input) {
+		public IActionResult Create(MessageInput input) {
 			if (ModelState.IsValid) {
-				var serviceResponse = await MessageRepository.CreateTopic(input);
+				var serviceResponse = MessageRepository.CreateTopic(input);
 				ProcessServiceResponse(serviceResponse);
 
 				if (serviceResponse.Success)
@@ -86,9 +86,9 @@ namespace Forum3.Controllers {
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		[PreventRapidRequests]
-		public async Task<IActionResult> Edit(MessageInput input) {
+		public IActionResult Edit(MessageInput input) {
 			if (ModelState.IsValid) {
-				var serviceResponse = await MessageRepository.EditMessage(input);
+				var serviceResponse = MessageRepository.EditMessage(input);
 				ProcessServiceResponse(serviceResponse);
 
 				if (serviceResponse.Success)
@@ -174,8 +174,10 @@ namespace Forum3.Controllers {
 			var take = SettingsRepository.MessagesPerPage();
 			var skip = take * (page - 1);
 
-			foreach (var messageId in messageIds.Skip(skip).Take(take))
-				MessageRepository.MigrateMessageRecord(messageId);
+			foreach (var messageId in messageIds.Skip(skip).Take(take)) {
+				var messageRecord = DbContext.Messages.Find(messageId);
+				MessageRepository.MigrateMessageRecord(messageRecord);
+			}
 
 			DbContext.SaveChanges();
 

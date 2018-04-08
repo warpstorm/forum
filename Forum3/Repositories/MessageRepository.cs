@@ -20,20 +20,26 @@ namespace Forum3.Repositories {
 
 	public class MessageRepository {
 		ApplicationDbContext DbContext { get; }
-		SettingsRepository SettingsRepository { get; }
 		UserContext UserContext { get; }
+		SettingsRepository SettingsRepository { get; }
+		SmileyRepository SmileyRepository { get; }
+		UserRepository UserRepository { get; }
 		IUrlHelper UrlHelper { get; }
 
 		public MessageRepository(
 			ApplicationDbContext dbContext,
 			UserContext userContext,
 			SettingsRepository settingsRepository,
+			SmileyRepository smileyRepository,
+			UserRepository userRepository,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory
 		) {
 			DbContext = dbContext;
 			UserContext = userContext;
 			SettingsRepository = settingsRepository;
+			SmileyRepository = smileyRepository;
+			UserRepository = userRepository;
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
@@ -45,9 +51,7 @@ namespace Forum3.Repositories {
 			return Convert.ToInt32(Math.Ceiling(index / messagesPerPage));
 		}
 
-		public void MigrateMessageRecord(int id, bool force = false) {
-			var record = DbContext.Messages.Find(id);
-
+		public void MigrateMessageRecord(DataModels.Message record, bool force = false) {
 			if (record.Processed && !force)
 				return;
 
@@ -57,15 +61,12 @@ namespace Forum3.Repositories {
 				return;
 			}
 
-			var processMessageTask = ProcessMessageInput(new ServiceModels.ServiceResponse(), record.OriginalBody);
 			var parentTask = DbContext.Messages.FirstOrDefaultAsync(m => record.LegacyParentId != 0 && m.LegacyId == record.LegacyParentId);
 			var replyTask = DbContext.Messages.FirstOrDefaultAsync(m => record.LegacyReplyId != 0 && m.LegacyId == record.LegacyReplyId);
-			var postedByTask = DbContext.Users.FirstOrDefaultAsync(u => u.LegacyId == record.LegacyPostedById);
-			var editedByTask = DbContext.Users.FirstOrDefaultAsync(u => u.LegacyId == record.LegacyEditedById);
 
-			Task.WaitAll(processMessageTask, parentTask, replyTask, postedByTask, editedByTask);
+			Task.WaitAll(parentTask, replyTask);
 
-			var message = processMessageTask.Result;
+			var message = ProcessMessageInput(new ServiceModels.ServiceResponse(), record.OriginalBody);
 
 			record.OriginalBody = message.OriginalBody;
 			record.DisplayBody = message.DisplayBody;
@@ -75,8 +76,8 @@ namespace Forum3.Repositories {
 			record.Processed = true;
 
 			record.ReplyId = replyTask.Result?.Id ?? 0;
-			record.PostedById = postedByTask.Result?.Id ?? string.Empty;
-			record.EditedById = editedByTask.Result?.Id ?? string.Empty;
+			record.PostedById = UserRepository.All.FirstOrDefault(u => u.LegacyId == record.LegacyPostedById)?.Id ?? string.Empty;
+			record.EditedById = UserRepository.All.FirstOrDefault(u => u.LegacyId == record.LegacyEditedById)?.Id ?? string.Empty;
 
 			var parent = parentTask.Result;
 
@@ -101,7 +102,7 @@ namespace Forum3.Repositories {
 			}
 		}
 
-		public async Task<ServiceModels.ServiceResponse> CreateTopic(InputModels.MessageInput input) {
+		public ServiceModels.ServiceResponse CreateTopic(InputModels.MessageInput input) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			if (input.BoardId is null)
@@ -116,7 +117,7 @@ namespace Forum3.Repositories {
 			if (!serviceResponse.Success)
 				return serviceResponse;
 
-			var processedMessage = await ProcessMessageInput(serviceResponse, input.Body);
+			var processedMessage = ProcessMessageInput(serviceResponse, input.Body);
 
 			if (!serviceResponse.Success)
 				return serviceResponse;
@@ -145,13 +146,8 @@ namespace Forum3.Repositories {
 			if (input.Id == 0)
 				throw new Exception($"No record ID specified.");
 
-			var processedMessageTask = ProcessMessageInput(serviceResponse, input.Body);
-			var replyRecordTask = DbContext.Messages.FirstOrDefaultAsync(m => m.Id == input.Id);
-
-			await Task.WhenAll(replyRecordTask, processedMessageTask);
-
-			var replyRecord = await replyRecordTask;
-			var processedMessage = await processedMessageTask;
+			var replyRecord = DbContext.Messages.FirstOrDefault(m => m.Id == input.Id);
+			var processedMessage = ProcessMessageInput(serviceResponse, input.Body);
 
 			if (replyRecord is null)
 				serviceResponse.Error(string.Empty, $"A record does not exist with ID '{input.Id}'");
@@ -178,19 +174,14 @@ namespace Forum3.Repositories {
 			return serviceResponse;
 		}
 
-		public async Task<ServiceModels.ServiceResponse> EditMessage(InputModels.MessageInput input) {
+		public ServiceModels.ServiceResponse EditMessage(InputModels.MessageInput input) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			if (input.Id == 0)
 				throw new Exception($"No record ID specified.");
 
-			var processedMessageTask = ProcessMessageInput(serviceResponse, input.Body);
-			var recordTask = DbContext.Messages.FirstOrDefaultAsync(m => m.Id == input.Id);
-
-			await Task.WhenAll(recordTask, processedMessageTask);
-
-			var record = await recordTask;
-			var processedMessage = await processedMessageTask;
+			var record = DbContext.Messages.FirstOrDefault(m => m.Id == input.Id);
+			var processedMessage = ProcessMessageInput(serviceResponse, input.Body);
 
 			if (serviceResponse.Success) {
 				serviceResponse.RedirectPath = UrlHelper.DirectMessage(record.Id);
@@ -313,13 +304,13 @@ namespace Forum3.Repositories {
 			return serviceResponse;
 		}
 
-		public async Task<InputModels.ProcessedMessageInput> ProcessMessageInput(ServiceModels.ServiceResponse serviceResponse, string messageBody) {
+		public InputModels.ProcessedMessageInput ProcessMessageInput(ServiceModels.ServiceResponse serviceResponse, string messageBody) {
 			var processedMessage = PreProcessMessageInput(messageBody);
-			await PreProcessSmileys(processedMessage);
+			PreProcessSmileys(processedMessage);
 			ParseBBC(processedMessage);
-			await ProcessSmileys(processedMessage);
+			ProcessSmileys(processedMessage);
 			ProcessMessageBodyUrls(processedMessage);
-			await FindMentionedUsers(processedMessage);
+			FindMentionedUsers(processedMessage);
 			PostProcessMessageInput(processedMessage);
 
 			return processedMessage;
@@ -410,22 +401,18 @@ namespace Forum3.Repositories {
 			processedMessageInput.DisplayBody = displayBody;
 		}
 
-		public async Task PreProcessSmileys(InputModels.ProcessedMessageInput processedMessageInput) {
-			var smileys = await DbContext.Smileys.Where(s => s.Code != null).ToListAsync();
-
-			for (var i = 0; i < smileys.Count(); i++) {
-				var pattern = @"(^|[\r\n\s])" + Regex.Escape(smileys[i].Code) + @"(?=$|[\r\n\s])";
+		public void PreProcessSmileys(InputModels.ProcessedMessageInput processedMessageInput) {
+			for (var i = 0; i < SmileyRepository.All.Count(); i++) {
+				var pattern = @"(^|[\r\n\s])" + Regex.Escape(SmileyRepository.All[i].Code) + @"(?=$|[\r\n\s])";
 				var replacement = $"$1SMILEY_{i}_INDEX";
 				processedMessageInput.DisplayBody = Regex.Replace(processedMessageInput.DisplayBody, pattern, replacement, RegexOptions.Singleline);
 			}
 		}
 
-		public async Task ProcessSmileys(InputModels.ProcessedMessageInput processedMessageInput) {
-			var smileys = await DbContext.Smileys.Where(s => s.Code != null).ToListAsync();
-
-			for (var i = 0; i < smileys.Count(); i++) {
+		public void ProcessSmileys(InputModels.ProcessedMessageInput processedMessageInput) {
+			for (var i = 0; i < SmileyRepository.All.Count(); i++) {
 				var pattern = $@"SMILEY_{i}_INDEX";
-				var replacement = "<img src='" + smileys[i].Path + "' />";
+				var replacement = "<img src='" + SmileyRepository.All[i].Path + "' />";
 				processedMessageInput.DisplayBody = Regex.Replace(processedMessageInput.DisplayBody, pattern, replacement);
 			}
 		}
@@ -559,7 +546,7 @@ namespace Forum3.Repositories {
 		/// <summary>
 		/// Searches a post for references to other users
 		/// </summary>
-		public async Task FindMentionedUsers(InputModels.ProcessedMessageInput processedMessageInput) {
+		public void FindMentionedUsers(InputModels.ProcessedMessageInput processedMessageInput) {
 			var regexUsers = new Regex(@"@(\S+)");
 
 			var matches = 0;
@@ -573,11 +560,11 @@ namespace Forum3.Repositories {
 
 				var matchedTag = regexMatch.Groups[1].Value;
 
-				var user = await DbContext.Users.SingleOrDefaultAsync(u => u.DisplayName.ToLower() == matchedTag.ToLower());
+				var user = UserRepository.All.SingleOrDefault(u => u.DisplayName.ToLower() == matchedTag.ToLower());
 
 				// try to guess what they meant
 				if (user is null)
-					user = await DbContext.Users.FirstOrDefaultAsync(u => u.UserName.ToLower().Contains(matchedTag.ToLower()));
+					user = UserRepository.All.FirstOrDefault(u => u.UserName.ToLower().Contains(matchedTag.ToLower()));
 
 				if (user != null) {
 					if (user.Id != UserContext.ApplicationUser.Id)

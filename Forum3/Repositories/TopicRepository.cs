@@ -2,13 +2,14 @@
 using Forum3.Enums;
 using Forum3.Exceptions;
 using Forum3.Extensions;
-using Forum3.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Forum3.Repositories {
 	using DataModels = Models.DataModels;
@@ -20,28 +21,37 @@ namespace Forum3.Repositories {
 	public class TopicRepository {
 		ApplicationDbContext DbContext { get; }
 		UserContext UserContext { get; }
-		SettingsRepository Settings { get; }
+		MessageRepository MessageRepository { get; }
+		SettingsRepository SettingsRepository { get; }
+		SmileyRepository SmileyRepository { get; }
+		UserRepository UserRepository { get; }
 		IUrlHelper UrlHelper { get; }
 
 		public TopicRepository(
 			ApplicationDbContext dbContext,
 			UserContext userContext,
+			MessageRepository messageRepository,
 			SettingsRepository settingsRepository,
+			SmileyRepository smileyRepository,
+			UserRepository userRepository,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory
 		) {
 			DbContext = dbContext;
 			UserContext = userContext;
-			Settings = settingsRepository;
+			MessageRepository = messageRepository;
+			SettingsRepository = settingsRepository;
+			SmileyRepository = smileyRepository;
+			UserRepository = userRepository;
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
 		public List<ItemModels.Message> GetMessages(List<int> messageIds) {
 			var messageQuery = from message in DbContext.Messages
-							   join postedBy in DbContext.Users on message.PostedById equals postedBy.Id
+							   join postedBy in UserRepository.All on message.PostedById equals postedBy.Id
 							   join reply in DbContext.Messages on message.ReplyId equals reply.Id into Replies
 							   from reply in Replies.DefaultIfEmpty()
-							   join replyPostedBy in DbContext.Users on reply.PostedById equals replyPostedBy.Id into RepliesBy
+							   join replyPostedBy in UserRepository.All on reply.PostedById equals replyPostedBy.Id into RepliesBy
 							   from replyPostedBy in RepliesBy.DefaultIfEmpty()
 							   where messageIds.Contains(message.Id)
 							   orderby message.Id
@@ -80,8 +90,8 @@ namespace Forum3.Repositories {
 				};
 
 				var thoughtQuery = from mt in DbContext.MessageThoughts
-								   join s in DbContext.Smileys on mt.SmileyId equals s.Id
-								   join u in DbContext.Users on mt.UserId equals u.Id
+								   join s in SmileyRepository.All on mt.SmileyId equals s.Id
+								   join u in UserRepository.All on mt.UserId equals u.Id
 								   where mt.MessageId == message.Id
 								   select new ItemModels.MessageThought {
 									   Path = s.Path,
@@ -110,7 +120,7 @@ namespace Forum3.Repositories {
 				return serviceResponse;
 			}
 
-			var historyTimeLimit = Settings.HistoryTimeLimit();
+			var historyTimeLimit = SettingsRepository.HistoryTimeLimit();
 			var viewLogs = DbContext.ViewLogs.Where(r => r.UserId == UserContext.ApplicationUser.Id && r.LogTime >= historyTimeLimit).ToList();
 			var latestViewTime = historyTimeLimit;
 
@@ -149,7 +159,7 @@ namespace Forum3.Repositories {
 		public List<ItemModels.MessagePreview> GetPreview(int boardId, long after, int unread) {
 			var participation = new List<DataModels.Participant>();
 			var viewLogs = new List<DataModels.ViewLog>();
-			var historyTimeLimit = Settings.HistoryTimeLimit();
+			var historyTimeLimit = SettingsRepository.HistoryTimeLimit();
 
 			if (UserContext.IsAuthenticated) {
 				participation = DbContext.Participants.Where(r => r.UserId == UserContext.ApplicationUser.Id).ToList();
@@ -162,7 +172,7 @@ namespace Forum3.Repositories {
 									 where message.ParentId == 0 && messageIds.Contains(message.Id)
 									 join reply in DbContext.Messages on message.LastReplyId equals reply.Id into replies
 									 from reply in replies.DefaultIfEmpty()
-									 join replyPostedBy in DbContext.Users on message.LastReplyById equals replyPostedBy.Id
+									 join replyPostedBy in UserRepository.All on message.LastReplyById equals replyPostedBy.Id
 									 join pin in DbContext.Pins on message.Id equals pin.MessageId into pins
 									 from pin in pins.DefaultIfEmpty()
 									 let pinned = pin != null && pin.UserId == UserContext.ApplicationUser.Id
@@ -182,7 +192,7 @@ namespace Forum3.Repositories {
 
 			var messages = messageRecordQuery.ToList();
 
-			var take = Settings.MessagesPerPage();
+			var take = SettingsRepository.MessagesPerPage();
 
 			foreach (var message in messages) {
 				message.Pages = Convert.ToInt32(Math.Ceiling(1.0 * message.Replies / take));
@@ -196,7 +206,7 @@ namespace Forum3.Repositories {
 		}
 
 		public List<int> GetIndexIds(int boardId, long after, int unreadFilter, DateTime historyTimeLimit, List<DataModels.Participant> participation, List<DataModels.ViewLog> viewLogs) {
-			var take = Settings.TopicsPerPage();
+			var take = SettingsRepository.TopicsPerPage();
 
 			var messageQuery = from message in DbContext.Messages
 							   where message.ParentId == 0
@@ -394,7 +404,7 @@ namespace Forum3.Repositories {
 			).ToList();
 
 			DateTime latestTime;
-			
+
 			if (viewLogs.Any()) {
 				var latestViewLogTime = viewLogs.Max(r => r.LogTime);
 				latestTime = latestViewLogTime > latestMessageTime ? latestViewLogTime : latestMessageTime;
@@ -402,7 +412,7 @@ namespace Forum3.Repositories {
 			else
 				latestTime = latestMessageTime;
 
-			var historyTimeLimit = Settings.HistoryTimeLimit();
+			var historyTimeLimit = SettingsRepository.HistoryTimeLimit();
 
 			var existingLogs = viewLogs.Where(r => r.TargetType == EViewLogTargetType.Message);
 
@@ -424,30 +434,25 @@ namespace Forum3.Repositories {
 			//catch (DbUpdateConcurrencyException) { }
 		}
 
-		public ViewModels.Delay RebuildThreadsStart() {
-			var parentMessageQuery = from message in DbContext.Messages
-									 where message.LegacyParentId == 0
-									 where message.ParentId == 0
-									 orderby message.Id descending
-									 select message;
+		public ViewModels.Delay PostMigrationStart() {
+			var query = from message in DbContext.Messages
+						where message.LegacyParentId == 0
+						where message.ParentId == 0
+						select message.Id;
 
-			var recordCount = parentMessageQuery.Count();
+			var recordCount = query.Count();
 
-			var take = Settings.MessagesPerPage();
+			var take = SettingsRepository.MessagesPerPage();
 
-			return RebuildThreadsViewModel(new InputModels.Continue {
-				Stage = nameof(RebuildThreadsContinue),
+			return PostMigrationViewModel(new InputModels.Continue {
+				Stage = nameof(PostMigrationContinue),
 				CurrentStep = -1,
-				TotalSteps = Convert.ToInt32(Math.Ceiling(1D * recordCount / take))
+				TotalSteps = recordCount
 			});
 		}
 
-		public ViewModels.Delay RebuildThreadsContinue(InputModels.Continue input) {
+		public ViewModels.Delay PostMigrationContinue(InputModels.Continue input) {
 			input.ThrowIfNull(nameof(input));
-
-			var historyTimeLimit = Settings.HistoryTimeLimit();
-			var take = Settings.MessagesPerPage();
-			var skip = take * input.CurrentStep;
 
 			var parentMessageQuery = from message in DbContext.Messages
 									 where message.LegacyParentId == 0
@@ -455,51 +460,30 @@ namespace Forum3.Repositories {
 									 orderby message.Id descending
 									 select message;
 
-			foreach (var parentMessage in parentMessageQuery.Skip(skip).Take(take)) {
-				var childMessagesQuery = from message in DbContext.Messages
-										 where message.ParentId == parentMessage.Id || (parentMessage.LegacyId != 0 && message.LegacyParentId == parentMessage.LegacyId)
-										 select message;
+			var parent = parentMessageQuery.Skip(input.CurrentStep).Take(1).FirstOrDefault();
 
-				var lastReply = new DataModels.Message {
-					Id = -1
-				};
+			var repliesQuery = from message in DbContext.Messages
+							   where message.ParentId == parent.Id || (parent.LegacyId != 0 && message.LegacyParentId == parent.LegacyId)
+							   select message;
 
-				var replyCount = 0;
+			var messages = repliesQuery.ToList();
+			messages.Add(parent);
 
-				foreach (var childMessage in childMessagesQuery) {
-					var replyMessage = DbContext.Messages.FirstOrDefault(r => r.LegacyId == childMessage.LegacyReplyId);
+			if (parent != null) {
+				RebuildMessages(parent.Id, messages, UserRepository.All);
+				RebuildParticipants(parent.Id, messages);
+				RecountReplies(parent);
 
-					childMessage.ParentId = parentMessage.Id;
-					childMessage.ReplyId = replyMessage?.Id ?? 0;
-
-					DbContext.Update(childMessage);
-
-					if (childMessage.Id > lastReply.Id)
-						lastReply = childMessage;
-
-					replyCount++;
-				}
-
-				if (lastReply.Id > 0) {
-					parentMessage.LastReplyId = lastReply.Id;
-					parentMessage.LastReplyPosted = lastReply.TimePosted;
-					parentMessage.LastReplyById = lastReply.PostedById;
-				}
-
-				parentMessage.ReplyCount = replyCount;
-
-				DbContext.Update(parentMessage);
+				DbContext.SaveChanges();
 			}
 
-			DbContext.SaveChanges();
-
-			return RebuildThreadsViewModel(input);
+			return PostMigrationViewModel(input);
 		}
 
-		public ViewModels.Delay RebuildThreadsViewModel(InputModels.Continue input) {
+		public ViewModels.Delay PostMigrationViewModel(InputModels.Continue input) {
 			var viewModel = new ViewModels.Delay {
-				ActionName = "Rebuilding thread relationships",
-				ActionNote = "Connecting replies to their parents.",
+				ActionName = "Running topic post-migration",
+				ActionNote = "Build threads, counting replies, and processing message text.",
 				CurrentPage = input.CurrentStep,
 				TotalPages = input.TotalSteps,
 				NextAction = UrlHelper.Action(nameof(Controllers.Topics.Admin), nameof(Controllers.Topics))
@@ -507,10 +491,89 @@ namespace Forum3.Repositories {
 
 			if (input.CurrentStep < input.TotalSteps) {
 				input.CurrentStep++;
-				viewModel.NextAction = UrlHelper.Action(nameof(Controllers.Topics.RebuildThreadRelationships), nameof(Controllers.Topics), input);
+				viewModel.NextAction = UrlHelper.Action(nameof(Controllers.Topics.PostMigrationProcessing), nameof(Controllers.Topics), input);
 			}
 
 			return viewModel;
+		}
+
+		public void RecountReplies(DataModels.Message parentMessage) {
+			var childMessagesQuery = from message in DbContext.Messages
+									 where message.ParentId == parentMessage.Id
+										|| (parentMessage.LegacyId != 0 && message.LegacyParentId == parentMessage.LegacyId)
+									 select new {
+										 message.Id,
+										 message.TimePosted,
+										 message.PostedById
+									 };
+
+			parentMessage.ReplyCount = childMessagesQuery.Count();
+
+			var lastReply = childMessagesQuery.LastOrDefault();
+
+			if (lastReply != null) {
+				parentMessage.LastReplyId = lastReply.Id;
+				parentMessage.LastReplyPosted = lastReply.TimePosted;
+				parentMessage.LastReplyById = lastReply.PostedById;
+			}
+
+			DbContext.Update(parentMessage);
+		}
+
+		public void RebuildParticipants(int topicId, List<DataModels.Message> messages) {
+			var participants = DbContext.Participants.Where(r => r.MessageId == topicId);
+
+			DbContext.RemoveRange(participants);
+			DbContext.SaveChanges();
+
+			foreach (var message in messages) {
+				DbContext.Participants.Add(new DataModels.Participant {
+					MessageId = topicId,
+					UserId = message.PostedById,
+					Time = message.TimePosted
+				});
+			}
+
+			DbContext.SaveChanges();
+		}
+
+		public void RebuildMessages(int topicId, List<DataModels.Message> messages, List<DataModels.ApplicationUser> users) {
+			// This is discarded.
+			var serviceResponse = new ServiceModels.ServiceResponse();
+
+			foreach (var message in messages) {
+				if (message.ParentId == 0 && message.LegacyParentId != 0)
+					message.ParentId = topicId;
+
+				if (message.ReplyId == 0 && message.LegacyReplyId != 0) {
+					var reply = messages.FirstOrDefault(item => item.LegacyId == message.LegacyReplyId);
+					message.ReplyId = reply.Id;
+				}
+
+				if (string.IsNullOrEmpty(message.PostedById)) {
+					var user = users.FirstOrDefault(item => item.LegacyId == message.LegacyPostedById);
+					message.PostedById = user?.Id ?? string.Empty;
+				}
+
+				if (string.IsNullOrEmpty(message.EditedById)) {
+					var user = users.FirstOrDefault(item => item.LegacyId == message.LegacyEditedById);
+					message.EditedById = user?.Id ?? string.Empty;
+				}
+
+				var processedMessage = MessageRepository.ProcessMessageInput(serviceResponse, message.OriginalBody);
+
+				message.OriginalBody = processedMessage.OriginalBody;
+				message.DisplayBody = processedMessage.DisplayBody;
+				message.ShortPreview = processedMessage.ShortPreview;
+				message.LongPreview = processedMessage.LongPreview;
+				message.Cards = processedMessage.Cards;
+
+				message.Processed = true;
+
+				DbContext.Update(message);
+			}
+
+			DbContext.SaveChanges();
 		}
 	}
 }

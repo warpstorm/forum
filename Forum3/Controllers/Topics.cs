@@ -131,13 +131,13 @@ namespace Forum3.Controllers {
 
 		[Authorize(Roles = "Admin")]
 		[HttpGet]
-		public IActionResult RebuildThreadRelationships(InputModels.Continue input) {
+		public IActionResult PostMigrationProcessing(InputModels.Continue input) {
 			ViewModels.Delay viewModel;
 
 			if (string.IsNullOrEmpty(input.Stage))
-				viewModel = TopicRepository.RebuildThreadsStart();
+				viewModel = TopicRepository.PostMigrationStart();
 			else
-				viewModel = TopicRepository.RebuildThreadsContinue(input);
+				viewModel = TopicRepository.PostMigrationContinue(input);
 
 			return View("Delay", viewModel);
 		}

@@ -18,16 +18,19 @@ namespace Forum3.Repositories {
 	public class NotificationRepository {
 		ApplicationDbContext DbContext { get; }
 		UserContext UserContext { get; }
+		UserRepository UserRepository { get; }
 		IUrlHelper UrlHelper { get; }
 
 		public NotificationRepository (
 			ApplicationDbContext dbContext,
 			UserContext userContext,
+			UserRepository userRepository,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory
 		) {
 			DbContext = dbContext;
 			UserContext = userContext;
+			UserRepository = userRepository;
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
@@ -41,7 +44,7 @@ namespace Forum3.Repositories {
 			// TODO - validate the indexes on these columns.
 
 			var notificationQuery = from n in DbContext.Notifications
-									join targetUser in DbContext.Users on n.TargetUserId equals targetUser.Id into targetUsers
+									join targetUser in UserRepository.All on n.TargetUserId equals targetUser.Id into targetUsers
 									from targetUser in targetUsers.DefaultIfEmpty()
 									where n.Time > hiddenTimeLimit
 									where n.UserId == UserContext.ApplicationUser.Id

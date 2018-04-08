@@ -18,20 +18,23 @@ namespace Forum3.ActionFilters {
 		UserContext UserContext { get; }
 		UserManager<DataModels.ApplicationUser> UserManager { get; }
 		SignInManager<DataModels.ApplicationUser> SignInManager { get; }
-		SettingsRepository Settings { get; }
+		SettingsRepository SettingsRepository { get; }
+		UserRepository UserRepository { get; }
 
 		public UserContextActionFilter(
 			ApplicationDbContext dbContext,
 			UserContext userContext,
 			UserManager<DataModels.ApplicationUser> userManager,
 			SignInManager<DataModels.ApplicationUser> signInManager,
-			SettingsRepository settingsRepository
+			SettingsRepository settingsRepository,
+			UserRepository userRepository
 		) {
 			DbContext = dbContext;
 			UserContext = userContext;
 			UserManager = userManager;
 			SignInManager = signInManager;
-			Settings = settingsRepository;
+			SettingsRepository = settingsRepository;
+			UserRepository = userRepository;
 		}
 
 		public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next) {
@@ -59,7 +62,7 @@ namespace Forum3.ActionFilters {
 								 where userRole.UserId.Equals(UserContext.ApplicationUser.Id)
 								 select role.Id;
 
-			var adminUsersQuery = from user in DbContext.Users
+			var adminUsersQuery = from user in UserRepository.All
 								  join userRole in DbContext.UserRoles on user.Id equals userRole.UserId
 								  join role in DbContext.Roles on userRole.RoleId equals role.Id
 								  where role.Name == "Admin"
@@ -67,17 +70,15 @@ namespace Forum3.ActionFilters {
 
 			var userRolesQueryTask = userRolesQuery.ToListAsync();
 			var adminRoleTask = DbContext.Roles.SingleOrDefaultAsync(r => r.Name == "Admin");
-			var anyAdminUsersTask = adminUsersQuery.AnyAsync();
 
 			await Task.WhenAll(new Task[] {
 				userRolesQueryTask,
-				adminRoleTask,
-				anyAdminUsersTask
+				adminRoleTask
 			});
 
 			UserContext.Roles = userRolesQueryTask.Result;
 			var adminRole = adminRoleTask.Result;
-			var anyAdminUsers = anyAdminUsersTask.Result;
+			var anyAdminUsers = adminUsersQuery.Any();
 
 			// Occurs when there is no admin role created yet.
 			if (adminRole is null)
@@ -107,7 +108,7 @@ namespace Forum3.ActionFilters {
 		}
 
 		public async Task LoadViewLogs() {
-			var historyTimeLimit = Settings.HistoryTimeLimit().AddDays(-1);
+			var historyTimeLimit = SettingsRepository.HistoryTimeLimit().AddDays(-1);
 
 			var viewLogsQuery = from record in DbContext.ViewLogs
 								where record.UserId == UserContext.ApplicationUser.Id

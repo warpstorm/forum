@@ -1,29 +1,33 @@
 ﻿using Forum3.Contexts;
 using Forum3.Extensions;
-using Forum3.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Forum3.Repositories {
+	using DataModels = Models.DataModels;
 	using ItemViewModels = Models.ViewModels.Boards.Items;
 
 	public class UserRepository {
+		public List<DataModels.ApplicationUser> All { get; }
+
 		ApplicationDbContext DbContext { get; }
-		SettingsRepository Settings { get; }
+		SettingsRepository SettingsRepository { get; }
 
 		public UserRepository(
 			ApplicationDbContext dbContext,
-			SettingsRepository SettingsRepository
+			SettingsRepository settingsRepository
 		) {
 			DbContext = dbContext;
-			Settings = SettingsRepository;
+			SettingsRepository = settingsRepository;
+
+			All = DbContext.Users.ToList();
 		}
 
 		public List<string> GetBirthdaysList() {
 			var todayBirthdayNames = new List<string>();
 
-			var birthdays = DbContext.Users.Select(u => new {
+			var birthdays = All.Select(u => new {
 				u.Birthday,
 				u.DisplayName
 			}).ToList();
@@ -46,13 +50,13 @@ namespace Forum3.Repositories {
 		}
 
 		public List<ItemViewModels.OnlineUser> GetOnlineList() {
-			var onlineTimeLimitSetting = Settings.OnlineTimeLimit();
+			var onlineTimeLimitSetting = SettingsRepository.OnlineTimeLimit();
 			onlineTimeLimitSetting *= -1;
 
 			var onlineTimeLimit = DateTime.Now.AddMinutes(onlineTimeLimitSetting);
 			var onlineTodayTimeLimit = DateTime.Now.AddMinutes(-10080);
 
-			var onlineUsersQuery = from user in DbContext.Users
+			var onlineUsersQuery = from user in All
 								   where user.LastOnline >= onlineTodayTimeLimit
 								   orderby user.LastOnline descending
 								   select new ItemViewModels.OnlineUser {

@@ -14,14 +14,17 @@ namespace Forum3.Repositories {
 
 	public class BoardRepository {
 		ApplicationDbContext DbContext { get; }
+		UserRepository UserRepository { get; }
 		IUrlHelper UrlHelper { get; }
 
 		public BoardRepository(
 			ApplicationDbContext dbContext,
+			UserRepository userRepository,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory
 		) {
 			DbContext = dbContext;
+			UserRepository = userRepository;
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
@@ -37,7 +40,7 @@ namespace Forum3.Repositories {
 			if (boardRecord.LastMessageId != null) {
 				var lastMessageQuery = from lastReply in DbContext.Messages
 									   where lastReply.Id == boardRecord.LastMessageId
-									   join lastReplyBy in DbContext.Users on lastReply.LastReplyById equals lastReplyBy.Id
+									   join lastReplyBy in UserRepository.All on lastReply.LastReplyById equals lastReplyBy.Id
 									   select new Models.ViewModels.Topics.Items.MessagePreview {
 										   Id = lastReply.Id,
 										   ShortPreview = lastReply.ShortPreview,

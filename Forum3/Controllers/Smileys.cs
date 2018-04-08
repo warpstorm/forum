@@ -4,7 +4,6 @@ using Forum3.Models.InputModels;
 using Forum3.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Forum3.Controllers {
@@ -25,15 +24,9 @@ namespace Forum3.Controllers {
 
 		[HttpGet]
 		public IActionResult Index() {
-			var smileysQuery = from smiley in DbContext.Smileys
-							   orderby smiley.SortOrder
-							   select smiley;
-
-			var smileys = smileysQuery.ToList();
-
 			var viewModel = new ViewModels.IndexPage();
 
-			foreach (var smiley in smileys) {
+			foreach (var smiley in SmileyRepository.All) {
 				var sortColumn = smiley.SortOrder / 1000;
 				var sortRow = smiley.SortOrder % 1000;
 
