@@ -683,6 +683,7 @@ namespace Forum3.Repositories {
 			}
 
 			if (parentMessage != null && parentId != replyId) {
+				parentMessage.ReplyCount++;
 				parentMessage.LastReplyId = record.Id;
 				parentMessage.LastReplyById = UserContext.ApplicationUser.Id;
 				parentMessage.LastReplyPosted = currentTime;

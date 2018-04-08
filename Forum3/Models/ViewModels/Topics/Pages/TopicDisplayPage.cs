@@ -12,6 +12,8 @@ namespace Forum3.Models.ViewModels.Topics.Pages {
 		public List<IndexBoard> AssignedBoards { get; set; }
 		public bool CanManage { get; internal set; }
 		public int TotalPages { get; internal set; }
+		public int ViewCount { get; set; }
+		public int ReplyCount { get; set; }
 		public int CurrentPage { get; internal set; }
 		public bool IsAuthenticated { get; internal set; }
 		public IMessageViewModel ReplyForm { get; set; }

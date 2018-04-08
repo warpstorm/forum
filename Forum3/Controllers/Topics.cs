@@ -253,6 +253,8 @@ namespace Forum3.Controllers {
 				IsAuthenticated = UserContext.IsAuthenticated,
 				CanManage = UserContext.IsAdmin || record.PostedById == UserContext.ApplicationUser.Id,
 				TotalPages = totalPages,
+				ReplyCount = record.ReplyCount,
+				ViewCount = record.ViewCount,
 				CurrentPage = pageId,
 				ReplyForm = new ItemModels.ReplyForm {
 					Id = record.Id

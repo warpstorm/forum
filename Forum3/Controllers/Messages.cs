@@ -133,7 +133,7 @@ namespace Forum3.Controllers {
 			if (record is null)
 				throw new Exception($@"No record was found with the id '{id}'");
 
-			var viewModel = new Models.ViewModels.Delay {
+			var viewModel = new ViewModels.Delay {
 				ActionName = "Migrating your Topic",
 				ActionNote = "Filing your request with the Imperial Archives.",
 				CurrentPage = page,
