@@ -10,7 +10,7 @@
 			}
 		</ul>
 	}
-			
+
 	<h4><a asp-controller="@nameof(Notifications)" asp-action="@nameof(Notifications.Index)">Notifications</a></h4>
 	<ul class="gap-bottom note">
 		@if (Model.Notifications.Any()) {
@@ -31,10 +31,11 @@
 		}
 	</ul>
 
-	<h4>Who's online this week</h4>
-	<ul class="note">
+	<h4>Who's online <span class="note">(@Model.OnlineUsers.Count)</span></h4>
+	<ul id="whos-online">
+		<li class="note"><a asp-controller="@nameof(Account)" asp-action="@nameof(Account.Index)">View All Users</a></li>
 		@foreach (var onlineUser in Model.OnlineUsers) {
-			<li>
+			<li class="note">
 				<p>
 					@if (onlineUser.Online) {
 						<span class="chiclet chiclet-green"></span>
@@ -45,8 +46,6 @@
 			</li>
 		}
 	</ul>
-
-	<p class="gap-top note"><a asp-controller="@nameof(Account)" asp-action="@nameof(Account.Index)">View All Users</a></p>
 </div>
 
 <div id="categories">
