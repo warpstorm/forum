@@ -1,7 +1,7 @@
 ﻿using Forum3.Annotations;
 using Forum3.Contexts;
-using Forum3.Models.InputModels;
 using Forum3.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
@@ -11,7 +11,8 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace Forum3.Controllers {
-	using ViewModels = Models.ViewModels.Messages;
+	using InputModels = Models.InputModels;
+	using ViewModels = Models.ViewModels;
 
 	public class Messages : ForumController {
 		ApplicationDbContext DbContext { get; }
@@ -39,7 +40,7 @@ namespace Forum3.Controllers {
 			if (board is null)
 				throw new Exception($"A record does not exist with ID '{id}'");
 
-			var viewModel = new ViewModels.CreateTopicPage {
+			var viewModel = new ViewModels.Messages.CreateTopicPage {
 				BoardId = id,
 				CancelPath = Referrer
 			};
@@ -50,7 +51,7 @@ namespace Forum3.Controllers {
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		[PreventRapidRequests]
-		public IActionResult Create(MessageInput input) {
+		public IActionResult Create(InputModels.MessageInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = MessageRepository.CreateTopic(input);
 				ProcessServiceResponse(serviceResponse);
@@ -59,7 +60,7 @@ namespace Forum3.Controllers {
 					return RedirectFromService();
 			}
 
-			var viewModel = new ViewModels.CreateTopicPage() {
+			var viewModel = new ViewModels.Messages.CreateTopicPage() {
 				BoardId = input.BoardId,
 				Body = input.Body
 			};
@@ -74,7 +75,7 @@ namespace Forum3.Controllers {
 			if (record is null)
 				throw new Exception($"A record does not exist with ID '{id}'");
 
-			var viewModel = new ViewModels.EditMessagePage {
+			var viewModel = new ViewModels.Messages.EditMessagePage {
 				Id = id,
 				Body = record.OriginalBody,
 				CancelPath = Referrer
@@ -86,7 +87,7 @@ namespace Forum3.Controllers {
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		[PreventRapidRequests]
-		public IActionResult Edit(MessageInput input) {
+		public IActionResult Edit(InputModels.MessageInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = MessageRepository.EditMessage(input);
 				ProcessServiceResponse(serviceResponse);
@@ -95,7 +96,7 @@ namespace Forum3.Controllers {
 					return RedirectFromService();
 			}
 
-			var viewModel = new ViewModels.CreateTopicPage() {
+			var viewModel = new ViewModels.Messages.CreateTopicPage() {
 				Body = input.Body
 			};
 
@@ -113,7 +114,7 @@ namespace Forum3.Controllers {
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		[PreventRapidRequests]
-		public async Task<IActionResult> AddThought(ThoughtInput input) {
+		public async Task<IActionResult> AddThought(InputModels.ThoughtInput input) {
 			var serviceResponse = await MessageRepository.AddThought(input);
 			ProcessServiceResponse(serviceResponse);
 
@@ -126,7 +127,7 @@ namespace Forum3.Controllers {
 			return View("Delay", viewModel);
 		}
 
-		public Models.ViewModels.Delay GetMigratePageModel(int id, int page) {
+		public ViewModels.Delay GetMigratePageModel(int id, int page) {
 			var record = DbContext.Messages.Find(id);
 
 			if (record is null)
@@ -185,6 +186,36 @@ namespace Forum3.Controllers {
 				viewModel.NextAction = UrlHelper.Action(nameof(Topics.Display), nameof(Topics), new { id = record.Id });
 
 			return viewModel;
+		}
+
+		[Authorize(Roles = "Admin")]
+		[HttpGet]
+		public IActionResult Admin(InputModels.Continue input = null) => View();
+
+		[Authorize(Roles="Admin")]
+		[HttpGet]
+		public IActionResult ReprocessMessages(InputModels.Continue input) {
+			ViewModels.Delay viewModel;
+
+			if (string.IsNullOrEmpty(input.Stage))
+				viewModel = MessageRepository.ReprocessMessagesStart();
+			else
+				viewModel = MessageRepository.ReprocessMessagesContinue(input);
+
+			return View("Delay", viewModel);
+		}
+
+		[Authorize(Roles="Admin")]
+		[HttpGet]
+		public IActionResult RebuildThreads(InputModels.Continue input) {
+			ViewModels.Delay viewModel;
+
+			if (string.IsNullOrEmpty(input.Stage))
+				viewModel = MessageRepository.RebuildThreadsStart();
+			else
+				viewModel = MessageRepository.RebuildThreadsContinue(input);
+
+			return View("Delay", viewModel);
 		}
 	}
 }

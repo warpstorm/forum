@@ -17,6 +17,7 @@ namespace Forum3.Repositories {
 	using DataModels = Models.DataModels;
 	using InputModels = Models.InputModels;
 	using ServiceModels = Models.ServiceModels;
+	using ViewModels = Models.ViewModels;
 
 	public class MessageRepository {
 		ApplicationDbContext DbContext { get; }
@@ -492,14 +493,16 @@ namespace Forum3.Repositories {
 				return true;
 			};
 
-			Task.Run(async () => {
-				try {
-					document = await client.LoadFromWebAsync(siteWithoutHash);
-				}
-				// System.InvalidOperationException: 'The character set provided in ContentType is invalid. Cannot read content as string using an invalid character set.'
-				catch (InvalidOperationException) { }
-				catch (Exception e) when (e.Message == "Error downloading html") { }
-			}).Wait(3000);
+			try {
+				var documentTask = client.LoadFromWebAsync(siteWithoutHash);
+
+				Task.WaitAll(new Task[] { documentTask });
+
+				document = documentTask.Result;
+			}
+			// System.InvalidOperationException: 'The character set provided in ContentType is invalid. Cannot read content as string using an invalid character set.'
+			catch (InvalidOperationException) { }
+			catch (Exception e) when (e.Message == "Error downloading html") { }
 
 			if (document is null)
 				return returnResult;
@@ -754,6 +757,213 @@ namespace Forum3.Repositories {
 
 				DbContext.Notifications.Add(notification);
 			}
+		}
+
+		public ViewModels.Delay RebuildThreadsStart() {
+			var query = from message in DbContext.Messages
+						where message.LegacyParentId == 0
+						where message.ParentId == 0
+						select message.Id;
+
+			var recordCount = query.Count();
+
+			var take = SettingsRepository.TopicsPerPage();
+			var totalSteps = (int)Math.Ceiling(1D * recordCount / take);
+
+			return RebuildThreadsViewModel(new InputModels.Continue {
+				Stage = nameof(RebuildThreadsContinue),
+				CurrentStep = -1,
+				TotalSteps = totalSteps
+			});
+		}
+
+		public ViewModels.Delay RebuildThreadsContinue(InputModels.Continue input) {
+			input.ThrowIfNull(nameof(input));
+
+			var parentMessageQuery = from message in DbContext.Messages
+									 where message.LegacyParentId == 0
+									 where message.ParentId == 0
+									 orderby message.Id descending
+									 select message;
+
+			var take = SettingsRepository.TopicsPerPage();
+			var skip = input.CurrentStep * take;
+
+			var parents = parentMessageQuery.Skip(skip).Take(take).ToList();
+
+			foreach (var parent in parents) {
+				var messagesQuery = from message in DbContext.Messages
+									where message.ParentId == parent.Id || (parent.LegacyId != 0 && message.LegacyParentId == parent.LegacyId)
+									select message;
+
+				var messages = messagesQuery.ToList();
+
+				foreach (var message in messages)
+					RebuildMessageRelationships(parent, message, messages);
+
+				RecountReplies(parent, messages);
+				RebuildParticipants(parent, messages);
+			}
+
+			DbContext.SaveChanges();
+
+			return RebuildThreadsViewModel(input);
+		}
+
+		public ViewModels.Delay RebuildThreadsViewModel(InputModels.Continue input) {
+			var viewModel = new ViewModels.Delay {
+				ActionName = "Rebuilding Threads",
+				ActionNote = "Relinking child posts to their parent posts.",
+				CurrentPage = input.CurrentStep,
+				TotalPages = input.TotalSteps,
+				NextAction = UrlHelper.Action(nameof(Controllers.Messages.Admin), nameof(Controllers.Messages))
+			};
+
+			if (input.CurrentStep < input.TotalSteps) {
+				input.CurrentStep++;
+				viewModel.NextAction = UrlHelper.Action(nameof(Controllers.Messages.RebuildThreads), nameof(Controllers.Messages), input);
+			}
+
+			return viewModel;
+		}
+
+		public void RebuildMessageRelationships(DataModels.Message parent, DataModels.Message message, List<DataModels.Message> messages) {
+			if (message.ParentId == 0 && message.LegacyParentId != 0)
+				message.ParentId = parent.Id;
+
+			if (message.ReplyId == 0 && message.LegacyReplyId != 0) {
+				DataModels.Message reply = null;
+
+				if (message.LegacyReplyId == parent.LegacyId)
+					reply = parent;
+				else
+					reply = messages.First(item => item.LegacyId == message.LegacyReplyId);
+
+				message.ReplyId = reply.Id;
+			}
+
+			if (string.IsNullOrEmpty(message.PostedById)) {
+				var user = UserRepository.All.FirstOrDefault(item => item.LegacyId == message.LegacyPostedById);
+				message.PostedById = user?.Id ?? string.Empty;
+			}
+
+			if (string.IsNullOrEmpty(message.EditedById)) {
+				var user = UserRepository.All.FirstOrDefault(item => item.LegacyId == message.LegacyEditedById);
+				message.EditedById = user?.Id ?? string.Empty;
+			}
+		}
+
+		public void RecountReplies(DataModels.Message parentMessage, List<DataModels.Message> messages) {
+			var updated = false;
+
+			var replies = messages.Count();
+
+			if (parentMessage.ReplyCount != replies) {
+				parentMessage.ReplyCount = messages.Count();
+				updated = true;
+			}
+
+			var lastReply = messages.LastOrDefault();
+
+			if (lastReply != null && parentMessage.LastReplyId != lastReply.Id) {
+				parentMessage.LastReplyId = lastReply.Id;
+				parentMessage.LastReplyPosted = lastReply.TimePosted;
+				parentMessage.LastReplyById = lastReply.PostedById;
+				updated = true;
+			}
+
+			if (updated)
+				DbContext.Update(parentMessage);
+		}
+
+		public void RebuildParticipants(DataModels.Message parentMessage, List<DataModels.Message> messages) {
+			var newParticipants = new List<DataModels.Participant> {
+				new DataModels.Participant {
+					MessageId = parentMessage.Id,
+					UserId = parentMessage.PostedById,
+					Time = parentMessage.TimePosted
+				}
+			};
+
+			foreach (var message in messages) {
+				if (!newParticipants.Any(item => item.UserId == message.PostedById)) {
+					newParticipants.Add(new DataModels.Participant {
+						MessageId = parentMessage.Id,
+						UserId = message.PostedById,
+						Time = message.TimePosted
+					});
+				}
+			}
+
+			var oldParticipants = DbContext.Participants.Where(r => r.MessageId == parentMessage.Id);
+
+			if (oldParticipants.Count() != newParticipants.Count()) {
+				DbContext.RemoveRange(oldParticipants);
+				DbContext.Participants.AddRange(newParticipants);
+			}
+		}
+
+		public ViewModels.Delay ReprocessMessagesStart() {
+			var recordCount = DbContext.Messages.Count();
+
+			var take = SettingsRepository.MessagesPerPage();
+			var totalSteps = (int)Math.Ceiling(1D * recordCount / take);
+
+			return ReprocessMessagesViewModel(new InputModels.Continue {
+				Stage = nameof(ReprocessMessagesContinue),
+				CurrentStep = -1,
+				TotalSteps = totalSteps
+			});
+		}
+
+		public ViewModels.Delay ReprocessMessagesContinue(InputModels.Continue input) {
+			input.ThrowIfNull(nameof(input));
+
+			var messageQuery = from message in DbContext.Messages
+							   orderby message.Id descending
+							   select message;
+
+			var take = SettingsRepository.MessagesPerPage();
+			var skip = take * input.CurrentStep;
+
+			var messages = messageQuery.Skip(skip).Take(take).ToList();
+
+			// This is discarded.
+			var serviceResponse = new ServiceModels.ServiceResponse();
+
+			foreach (var message in messages) {
+				var processedMessage = ProcessMessageInput(serviceResponse, message.OriginalBody);
+
+				message.OriginalBody = processedMessage.OriginalBody;
+				message.DisplayBody = processedMessage.DisplayBody;
+				message.ShortPreview = processedMessage.ShortPreview;
+				message.LongPreview = processedMessage.LongPreview;
+				message.Cards = processedMessage.Cards;
+				message.Processed = true;
+
+				DbContext.Update(message);
+			}
+
+			DbContext.SaveChanges();
+
+			return ReprocessMessagesViewModel(input);
+		}
+
+		public ViewModels.Delay ReprocessMessagesViewModel(InputModels.Continue input) {
+			var viewModel = new ViewModels.Delay {
+				ActionName = "Running topic post-migration",
+				ActionNote = "Build threads, counting replies, and processing message text.",
+				CurrentPage = input.CurrentStep,
+				TotalPages = input.TotalSteps,
+				NextAction = UrlHelper.Action(nameof(Controllers.Messages.Admin), nameof(Controllers.Messages))
+			};
+
+			if (input.CurrentStep < input.TotalSteps) {
+				input.CurrentStep++;
+				viewModel.NextAction = UrlHelper.Action(nameof(Controllers.Messages.ReprocessMessages), nameof(Controllers.Messages), input);
+			}
+
+			return viewModel;
 		}
 	}
 }

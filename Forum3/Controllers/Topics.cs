@@ -62,7 +62,7 @@ namespace Forum3.Controllers {
 			if (!UserContext.IsAdmin && boardRoles.Any() && !boardRoles.Intersect(UserContext.Roles).Any())
 				throw new HttpForbiddenException("You are not authorized to view this board.");
 
-			var topicPreviews = TopicRepository.GetPreview(id, 0, unread);
+			var topicPreviews = TopicRepository.GetPreviews(id, 0, unread);
 
 			var after = 0L;
 
@@ -89,7 +89,7 @@ namespace Forum3.Controllers {
 			if (!UserContext.IsAdmin && boardRoles.Any() && !boardRoles.Intersect(UserContext.Roles).Any())
 				throw new HttpForbiddenException("You are not authorized to view this board.");
 
-			var topicPreviews = TopicRepository.GetPreview(id, after, unread);
+			var topicPreviews = TopicRepository.GetPreviews(id, after, unread);
 
 			if (topicPreviews.Any())
 				after = topicPreviews.Min(t => t.LastReplyPostedDT).Ticks;
@@ -123,23 +123,6 @@ namespace Forum3.Controllers {
 			ProcessServiceResponse(serviceResponse);
 
 			return RedirectFromService();
-		}
-
-		[Authorize(Roles = "Admin")]
-		[HttpGet]
-		public IActionResult Admin(InputModels.Continue input = null) => View();
-
-		[Authorize(Roles = "Admin")]
-		[HttpGet]
-		public IActionResult PostMigrationProcessing(InputModels.Continue input) {
-			ViewModels.Delay viewModel;
-
-			if (string.IsNullOrEmpty(input.Stage))
-				viewModel = TopicRepository.PostMigrationStart();
-			else
-				viewModel = TopicRepository.PostMigrationContinue(input);
-
-			return View("Delay", viewModel);
 		}
 
 		[HttpGet]
