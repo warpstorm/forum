@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -498,11 +499,15 @@ namespace Forum3.Repositories {
 				documentTask.Wait();
 				document = documentTask.Result;
 			}
-			// System.InvalidOperationException: 'The character set provided in ContentType is invalid. Cannot read content as string using an invalid character set.'
+			catch (UriFormatException) { }
+			catch (HttpRequestException e) when (e.Message == "An error occurred while sending the request.") { }
+			catch (AggregateException e) when (e.Message == "One or more errors occurred. (An error occurred while sending the request.)") { }
+			catch (HttpRequestException e) when (e.Message == "Error while copying content to a stream.") { }
+			catch (AggregateException e) when (e.Message == "One or more errors occurred. (Error while copying content to a stream.)") { }
 			catch (InvalidOperationException e) when (e.Message == "The character set provided in ContentType is invalid. Cannot read content as string using an invalid character set.") { }
-			// System.AggregateException: 'One or more errors occurred. (Error downloading html)'
-			catch (AggregateException e) when (e.Message == "One or more errors occurred. (Error downloading html)") { }
+			catch (AggregateException e) when (e.Message == "One or more errors occurred. (The character set provided in ContentType is invalid. Cannot read content as string using an invalid character set.)") { }
 			catch (Exception e) when (e.Message == "Error downloading html") { }
+			catch (AggregateException e) when (e.Message == "One or more errors occurred. (Error downloading html)") { }
 
 			if (document is null)
 				return returnResult;
@@ -961,8 +966,8 @@ namespace Forum3.Repositories {
 
 		public ViewModels.Delay ReprocessMessagesViewModel(InputModels.Continue input) {
 			var viewModel = new ViewModels.Delay {
-				ActionName = "Running topic post-migration",
-				ActionNote = "Build threads, counting replies, and processing message text.",
+				ActionName = "Reprocessing Messages",
+				ActionNote = "Processing message text, loading external sites, replacing smiley codes.",
 				CurrentPage = input.CurrentStep,
 				TotalPages = input.TotalSteps,
 				NextAction = UrlHelper.Action(nameof(Controllers.Messages.Admin), nameof(Controllers.Messages))
