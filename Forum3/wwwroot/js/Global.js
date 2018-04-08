@@ -2,13 +2,14 @@
 	"bold": "[b]  [/b]",
 	"italics": "[i]  [/i]",
 	"url": "[url=]  [/url]",
-	"quote": "[quote]  [/quote]",
+	"quote": "[quote]\n\n\n[/quote]",
 	"img": "[img] [/img]",
 	"underline": "[u]  [/u]",
 	"strike": "[s]  [/s]",
 	"color": "[color=#A335EE]  [/color]",
 	"list": "[ul]\n[li] [/li]\n[li] [/li]\n[li] [/li]\n[/ul]",
 	"numlist": "[ol]\n[li] [/li]\n[li] [/li]\n[li] [/li]\n[/ol]",
+	"code": "[code]\n\n\n[/code]",
 };
 
 $(function () {
