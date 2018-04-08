@@ -500,14 +500,7 @@ namespace Forum3.Repositories {
 				document = documentTask.Result;
 			}
 			catch (UriFormatException) { }
-			catch (HttpRequestException e) when (e.Message == "An error occurred while sending the request.") { }
-			catch (AggregateException e) when (e.Message == "One or more errors occurred. (An error occurred while sending the request.)") { }
-			catch (HttpRequestException e) when (e.Message == "Error while copying content to a stream.") { }
-			catch (AggregateException e) when (e.Message == "One or more errors occurred. (Error while copying content to a stream.)") { }
-			catch (InvalidOperationException e) when (e.Message == "The character set provided in ContentType is invalid. Cannot read content as string using an invalid character set.") { }
-			catch (AggregateException e) when (e.Message == "One or more errors occurred. (The character set provided in ContentType is invalid. Cannot read content as string using an invalid character set.)") { }
-			catch (Exception e) when (e.Message == "Error downloading html") { }
-			catch (AggregateException e) when (e.Message == "One or more errors occurred. (Error downloading html)") { }
+			catch (AggregateException) { }
 
 			if (document is null)
 				return returnResult;
