@@ -50,27 +50,28 @@ namespace Forum3.Repositories {
 		}
 
 		public List<ItemModels.Message> GetMessages(List<int> messageIds) {
+			var thoughtQuery = from mt in DbContext.MessageThoughts
+							   join s in SmileyRepository.All on mt.SmileyId equals s.Id
+							   join u in UserRepository.All on mt.UserId equals u.Id
+							   where messageIds.Contains(mt.MessageId)
+							   select new ItemModels.MessageThought {
+								   MessageId = mt.MessageId,
+								   Path = s.Path,
+								   Thought = s.Thought.Replace("{user}", u.DisplayName)
+							   };
+
+			var thoughts = thoughtQuery.ToList();
+
 			var messageQuery = from message in DbContext.Messages
-							   join postedBy in UserRepository.All on message.PostedById equals postedBy.Id
-							   join reply in DbContext.Messages on message.ReplyId equals reply.Id into Replies
-							   from reply in Replies.DefaultIfEmpty()
-							   join replyPostedBy in UserRepository.All on reply.PostedById equals replyPostedBy.Id into RepliesBy
-							   from replyPostedBy in RepliesBy.DefaultIfEmpty()
 							   where messageIds.Contains(message.Id)
-							   orderby message.Id
 							   select new ItemModels.Message {
 								   Id = message.Id,
 								   ParentId = message.ParentId,
 								   ReplyId = message.ReplyId,
-								   ReplyBody = reply == null ? string.Empty : reply.DisplayBody,
-								   ReplyPreview = reply == null ? string.Empty : reply.ShortPreview,
-								   ReplyPostedBy = replyPostedBy == null ? string.Empty : replyPostedBy.DisplayName,
 								   Body = message.DisplayBody,
 								   Cards = message.Cards,
 								   OriginalBody = message.OriginalBody,
-								   PostedByName = postedBy.DisplayName,
 								   PostedById = message.PostedById,
-								   PostedByAvatarPath = postedBy.AvatarPath,
 								   TimePostedDT = message.TimePosted,
 								   TimeEditedDT = message.TimeEdited,
 								   RecordTime = message.TimeEdited,
@@ -80,6 +81,19 @@ namespace Forum3.Repositories {
 			var messages = messageQuery.ToList();
 
 			foreach (var message in messages) {
+				var postedBy = UserRepository.All.FirstOrDefault(item => item.Id == message.PostedById);
+				message.PostedByAvatarPath = postedBy?.AvatarPath;
+				message.PostedByName = postedBy?.DisplayName;
+
+				if (message.ReplyId > 0) {
+					var reply = DbContext.Messages.FirstOrDefault(item => item.Id == message.ReplyId);
+					var replyPostedBy = UserRepository.All.FirstOrDefault(item => item.Id == reply.PostedById);
+
+					message.ReplyBody = reply == null ? string.Empty : reply.DisplayBody;
+					message.ReplyPreview = reply == null ? string.Empty : reply.ShortPreview;
+					message.ReplyPostedBy = replyPostedBy == null ? string.Empty : replyPostedBy.DisplayName;
+				}
+
 				message.TimePosted = message.TimePostedDT.ToPassedTimeString();
 				message.TimeEdited = message.TimeEditedDT.ToPassedTimeString();
 
@@ -92,16 +106,7 @@ namespace Forum3.Repositories {
 					Id = message.Id,
 				};
 
-				var thoughtQuery = from mt in DbContext.MessageThoughts
-								   join s in SmileyRepository.All on mt.SmileyId equals s.Id
-								   join u in UserRepository.All on mt.UserId equals u.Id
-								   where mt.MessageId == message.Id
-								   select new ItemModels.MessageThought {
-									   Path = s.Path,
-									   Thought = s.Thought.Replace("{user}", u.DisplayName)
-								   };
-
-				message.Thoughts = thoughtQuery.ToList();
+				message.Thoughts = thoughts.Where(item => item.MessageId == message.Id).ToList();
 			}
 
 			return messages;
@@ -444,3 +449,4 @@ namespace Forum3.Repositories {
 		}
 	}
 }
+ 

@@ -37,15 +37,6 @@ namespace Forum3.Contexts {
 			modelBuilder.Entity<Message>()
 				.HasIndex(r => r.LastReplyPosted);
 
-			modelBuilder.Entity<Message>()
-				.HasIndex(r => r.ParentId);
-
-			modelBuilder.Entity<Message>()
-				.HasIndex(r => r.LegacyId);
-
-			modelBuilder.Entity<Message>()
-				.HasIndex(r => r.LegacyParentId);
-
 			modelBuilder.Entity<Pin>()
 				.HasIndex(r => r.MessageId);
 
