@@ -19,6 +19,15 @@ namespace Forum3.Repositories {
 	using ServiceModels = Models.ServiceModels;
 
 	public class RoleRepository {
+		public List<DataModels.BoardRole> BoardRoles => _BoardRoles ?? (_BoardRoles = DbContext.BoardRoles.ToList());
+		List<DataModels.BoardRole> _BoardRoles;
+
+		public List<DataModels.ApplicationRole> SiteRoles => _SiteRoles ?? (_SiteRoles = DbContext.Roles.ToList());
+		List<DataModels.ApplicationRole> _SiteRoles;
+
+		public List<IdentityUserRole<string>> UserRoles => _UserRoles ?? (_UserRoles = DbContext.UserRoles.ToList());
+		List<IdentityUserRole<string>> _UserRoles;
+
 		ApplicationDbContext DbContext { get; }
 		UserContext UserContext { get; }
 		RoleManager<DataModels.ApplicationRole> RoleManager { get; }
@@ -44,7 +53,7 @@ namespace Forum3.Repositories {
 		}
 
 		public List<SelectListItem> PickList(int boardId) {
-			var boardRolesQuery = from boardRole in DbContext.BoardRoles
+			var boardRolesQuery = from boardRole in BoardRoles
 								  where boardRole.BoardId == boardId
 								  select boardRole.RoleId;
 

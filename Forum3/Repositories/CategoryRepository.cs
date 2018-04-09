@@ -14,27 +14,28 @@ namespace Forum3.Repositories {
 		ApplicationDbContext DbContext { get; }
 		UserContext UserContext { get; }
 		BoardRepository BoardRepository { get; }
+		RoleRepository RoleRepository { get; }
 
 		public CategoryRepository(
 			ApplicationDbContext dbContext,
 			UserContext userContext,
-			BoardRepository boardRepository
+			BoardRepository boardRepository,
+			RoleRepository roleRepository
 		) {
 			DbContext = dbContext;
 			UserContext = userContext;
 			BoardRepository = boardRepository;
+			RoleRepository = roleRepository;
 		}
 
 		public List<ItemViewModels.IndexCategory> Index() {
 			var categoryRecordsTask = DbContext.Categories.OrderBy(r => r.DisplayOrder).ToListAsync();
 			var boardRecordsTask = DbContext.Boards.OrderBy(r => r.DisplayOrder).ToListAsync();
-			var boardRoleRecordsTask = DbContext.BoardRoles.ToListAsync();
 
-			Task.WaitAll(categoryRecordsTask, boardRecordsTask, boardRoleRecordsTask);
+			Task.WaitAll(categoryRecordsTask, boardRecordsTask);
 
 			var categories = categoryRecordsTask.Result;
 			var boards = boardRecordsTask.Result;
-			var boardRoles = boardRoleRecordsTask.Result;
 
 			var indexCategories = new List<ItemViewModels.IndexCategory>();
 
@@ -46,7 +47,7 @@ namespace Forum3.Repositories {
 				};
 
 				foreach (var board in boards.Where(r => r.CategoryId == categoryRecord.Id)) {
-					var thisBoardRoles = boardRoles.Where(r => r.BoardId == board.Id);
+					var thisBoardRoles = RoleRepository.BoardRoles.Where(r => r.BoardId == board.Id);
 
 					var authorized = UserContext.IsAdmin || !thisBoardRoles.Any() || UserContext.Roles.Any(userRole => thisBoardRoles.Any(boardRole => boardRole.RoleId == userRole));
 

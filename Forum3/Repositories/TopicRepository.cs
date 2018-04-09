@@ -20,6 +20,7 @@ namespace Forum3.Repositories {
 		UserContext UserContext { get; }
 		MessageRepository MessageRepository { get; }
 		NotificationRepository NotificationRepository { get; }
+		RoleRepository RoleRepository { get; }
 		SettingsRepository SettingsRepository { get; }
 		SmileyRepository SmileyRepository { get; }
 		UserRepository UserRepository { get; }
@@ -30,6 +31,7 @@ namespace Forum3.Repositories {
 			UserContext userContext,
 			MessageRepository messageRepository,
 			NotificationRepository notificationRepository,
+			RoleRepository roleRepository,
 			SettingsRepository settingsRepository,
 			SmileyRepository smileyRepository,
 			UserRepository userRepository,
@@ -40,6 +42,7 @@ namespace Forum3.Repositories {
 			UserContext = userContext;
 			MessageRepository = messageRepository;
 			NotificationRepository = notificationRepository;
+			RoleRepository = roleRepository;
 			SettingsRepository = settingsRepository;
 			SmileyRepository = smileyRepository;
 			UserRepository = userRepository;
@@ -251,8 +254,8 @@ namespace Forum3.Repositories {
 										 BoardId = messageBoard == null ? -1 : messageBoard.BoardId
 									 };
 
-			var forbiddenBoardIdsQuery = from role in DbContext.Roles
-										 join board in DbContext.BoardRoles on role.Id equals board.RoleId
+			var forbiddenBoardIdsQuery = from role in RoleRepository.SiteRoles
+										 join board in RoleRepository.BoardRoles on role.Id equals board.RoleId
 										 where !UserContext.Roles.Contains(role.Id)
 										 select board.BoardId;
 

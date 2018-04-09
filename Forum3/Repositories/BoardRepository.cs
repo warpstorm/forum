@@ -14,16 +14,19 @@ namespace Forum3.Repositories {
 
 	public class BoardRepository {
 		ApplicationDbContext DbContext { get; }
+		RoleRepository RoleRepository { get; }
 		UserRepository UserRepository { get; }
 		IUrlHelper UrlHelper { get; }
 
 		public BoardRepository(
 			ApplicationDbContext dbContext,
+			RoleRepository roleRepository,
 			UserRepository userRepository,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory
 		) {
 			DbContext = dbContext;
+			RoleRepository = roleRepository;
 			UserRepository = userRepository;
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
@@ -195,13 +198,13 @@ namespace Forum3.Repositories {
 				record.CategoryId = newCategoryRecord.Id;
 			}
 
-			var boardRoles = DbContext.BoardRoles.Where(r => r.BoardId == record.Id).ToList();
+			var boardRoles = RoleRepository.BoardRoles.Where(r => r.BoardId == record.Id).ToList();
 
 			foreach (var boardRole in boardRoles)
 				DbContext.BoardRoles.Remove(boardRole);
 
 			if (input.Roles != null) {
-				var roleIds = DbContext.Roles.Select(r => r.Id).ToList();
+				var roleIds = RoleRepository.SiteRoles.Select(r => r.Id).ToList();
 
 				foreach (var inputRole in input.Roles) {
 					if (roleIds.Contains(inputRole)) {

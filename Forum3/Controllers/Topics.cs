@@ -23,6 +23,7 @@ namespace Forum3.Controllers {
 		BoardRepository BoardRepository { get; }
 		CategoryRepository CategoryRepository { get; }
 		MessageRepository MessageRepository { get; }
+		RoleRepository RoleRepository { get; }
 		SettingsRepository SettingsRepository { get; }
 		SmileyRepository SmileyRepository { get; }
 		TopicRepository TopicRepository { get; }
@@ -35,6 +36,7 @@ namespace Forum3.Controllers {
 			BoardRepository boardRepository,
 			CategoryRepository categoryRepository,
 			MessageRepository messageRepository,
+			RoleRepository roleRepository,
 			SettingsRepository settingsRepository,
 			SmileyRepository smileyRepository,
 			TopicRepository topicRepository,
@@ -47,6 +49,7 @@ namespace Forum3.Controllers {
 			BoardRepository = boardRepository;
 			CategoryRepository = categoryRepository;
 			MessageRepository = messageRepository;
+			RoleRepository = roleRepository;
 			SettingsRepository = settingsRepository;
 			SmileyRepository = smileyRepository;
 			TopicRepository = topicRepository;
@@ -56,7 +59,7 @@ namespace Forum3.Controllers {
 
 		[HttpGet]
 		public IActionResult Index(int id = 0, int unread = 0) {
-			var boardRoles = DbContext.BoardRoles.Where(r => r.BoardId == id).Select(r => r.RoleId).ToList();
+			var boardRoles = RoleRepository.BoardRoles.Where(r => r.BoardId == id).Select(r => r.RoleId).ToList();
 
 			if (!UserContext.IsAdmin && boardRoles.Any() && !boardRoles.Intersect(UserContext.Roles).Any())
 				throw new HttpForbiddenException("You are not authorized to view this board.");
@@ -79,7 +82,7 @@ namespace Forum3.Controllers {
 
 		[HttpGet]
 		public IActionResult IndexMore(int id = 0, int page = 0, int unread = 0) {
-			var boardRoles = DbContext.BoardRoles.Where(r => r.BoardId == id).Select(r => r.RoleId).ToList();
+			var boardRoles = RoleRepository.BoardRoles.Where(r => r.BoardId == id).Select(r => r.RoleId).ToList();
 
 			if (!UserContext.IsAdmin && boardRoles.Any() && !boardRoles.Intersect(UserContext.Roles).Any())
 				throw new HttpForbiddenException("You are not authorized to view this board.");
@@ -204,7 +207,7 @@ namespace Forum3.Controllers {
 
 			var assignedBoards = assignedBoardsQuery.ToList();
 
-			var boardRoles = DbContext.BoardRoles.Where(r => assignedBoards.Any(b => b.Id == r.BoardId)).Select(r => r.RoleId).ToList();
+			var boardRoles = RoleRepository.BoardRoles.Where(r => assignedBoards.Any(b => b.Id == r.BoardId)).Select(r => r.RoleId).ToList();
 
 			if (!UserContext.IsAdmin && boardRoles.Any() && !boardRoles.Intersect(UserContext.Roles).Any())
 				throw new HttpForbiddenException("You are not authorized to view this topic.");

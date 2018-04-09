@@ -17,6 +17,7 @@ namespace Forum3.Filters {
 		UserContext UserContext { get; }
 		UserManager<DataModels.ApplicationUser> UserManager { get; }
 		SignInManager<DataModels.ApplicationUser> SignInManager { get; }
+		RoleRepository RoleRepository { get; }
 		SettingsRepository SettingsRepository { get; }
 		UserRepository UserRepository { get; }
 
@@ -25,12 +26,14 @@ namespace Forum3.Filters {
 			UserContext userContext,
 			UserManager<DataModels.ApplicationUser> userManager,
 			SignInManager<DataModels.ApplicationUser> signInManager,
+			RoleRepository roleRepository,
 			SettingsRepository settingsRepository,
 			UserRepository userRepository
 		) {
 			DbContext = dbContext;
 			UserContext = userContext;
 			UserManager = userManager;
+			RoleRepository = roleRepository;
 			SignInManager = signInManager;
 			SettingsRepository = settingsRepository;
 			UserRepository = userRepository;
@@ -56,27 +59,19 @@ namespace Forum3.Filters {
 		}
 
 		public async Task LoadUserRoles() {
-			var userRolesQuery = from userRole in DbContext.UserRoles
-								 join role in DbContext.Roles on userRole.RoleId equals role.Id
+			var userRolesQuery = from userRole in RoleRepository.UserRoles
+								 join role in RoleRepository.SiteRoles on userRole.RoleId equals role.Id
 								 where userRole.UserId.Equals(UserContext.ApplicationUser.Id)
 								 select role.Id;
 
 			var adminUsersQuery = from user in UserRepository.All
-								  join userRole in DbContext.UserRoles on user.Id equals userRole.UserId
-								  join role in DbContext.Roles on userRole.RoleId equals role.Id
+								  join userRole in RoleRepository.UserRoles on user.Id equals userRole.UserId
+								  join role in RoleRepository.SiteRoles on userRole.RoleId equals role.Id
 								  where role.Name == "Admin"
 								  select user.Id;
 
-			var userRolesQueryTask = userRolesQuery.ToListAsync();
-			var adminRoleTask = DbContext.Roles.SingleOrDefaultAsync(r => r.Name == "Admin");
-
-			await Task.WhenAll(new Task[] {
-				userRolesQueryTask,
-				adminRoleTask
-			});
-
-			UserContext.Roles = userRolesQueryTask.Result;
-			var adminRole = adminRoleTask.Result;
+			UserContext.Roles = userRolesQuery.ToList();
+			var adminRole = RoleRepository.SiteRoles.FirstOrDefault(r => r.Name == "Admin");
 			var anyAdminUsers = adminUsersQuery.Any();
 
 			// Occurs when there is no admin role created yet.
