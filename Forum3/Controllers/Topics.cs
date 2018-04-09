@@ -2,7 +2,6 @@
 using Forum3.Contexts;
 using Forum3.Exceptions;
 using Forum3.Repositories;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
@@ -268,7 +267,7 @@ namespace Forum3.Controllers {
 
 			var latestMessageTime = messages.Max(r => r.RecordTime);
 
-			TopicRepository.MarkRead(record.Id, latestMessageTime);
+			TopicRepository.MarkRead(record.Id, latestMessageTime, pageMessageIds);
 
 			return viewModel;
 		}

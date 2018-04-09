@@ -19,6 +19,7 @@ namespace Forum3.Repositories {
 		ApplicationDbContext DbContext { get; }
 		UserContext UserContext { get; }
 		MessageRepository MessageRepository { get; }
+		NotificationRepository NotificationRepository { get; }
 		SettingsRepository SettingsRepository { get; }
 		SmileyRepository SmileyRepository { get; }
 		UserRepository UserRepository { get; }
@@ -28,6 +29,7 @@ namespace Forum3.Repositories {
 			ApplicationDbContext dbContext,
 			UserContext userContext,
 			MessageRepository messageRepository,
+			NotificationRepository notificationRepository,
 			SettingsRepository settingsRepository,
 			SmileyRepository smileyRepository,
 			UserRepository userRepository,
@@ -37,6 +39,7 @@ namespace Forum3.Repositories {
 			DbContext = dbContext;
 			UserContext = userContext;
 			MessageRepository = messageRepository;
+			NotificationRepository = notificationRepository;
 			SettingsRepository = settingsRepository;
 			SmileyRepository = smileyRepository;
 			UserRepository = userRepository;
@@ -393,7 +396,7 @@ namespace Forum3.Repositories {
 			return serviceResponse;
 		}
 
-		public void MarkRead(int topicId, DateTime latestMessageTime) {
+		public void MarkRead(int topicId, DateTime latestMessageTime, List<int> pageMessageIds) {
 			var viewLogs = DbContext.ViewLogs.Where(v =>
 				v.UserId == UserContext.ApplicationUser.Id
 				&& (v.TargetType == EViewLogTargetType.All || (v.TargetType == EViewLogTargetType.Message && v.TargetId == topicId))
@@ -421,6 +424,13 @@ namespace Forum3.Repositories {
 				TargetType = EViewLogTargetType.Message,
 				UserId = UserContext.ApplicationUser.Id
 			});
+
+			foreach (var messageId in pageMessageIds) {
+				foreach (var notification in NotificationRepository.ForCurrentUser.Where(item => item.MessageId == messageId)) {
+					notification.Unread = false;
+					DbContext.Update(notification);
+				}
+			}
 
 			//try {
 			DbContext.SaveChanges();

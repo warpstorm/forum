@@ -5,17 +5,31 @@ using Forum3.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Forum3.Repositories {
+	using DataModels = Models.DataModels;
 	using ServiceModels = Models.ServiceModels;
 	using ViewModels = Models.ViewModels.Notifications;
 
 	public class NotificationRepository {
+		public List<DataModels.Notification> ForCurrentUser {
+			get {
+				if (_ForCurrentUser is null) {
+					var notificationQuery = from n in DbContext.Notifications
+											where n.UserId == UserContext.ApplicationUser.Id
+											select n;
+
+					_ForCurrentUser = notificationQuery.ToList();
+				}
+
+				return _ForCurrentUser;
+			}
+		}
+		List<DataModels.Notification> _ForCurrentUser;
+
 		ApplicationDbContext DbContext { get; }
 		UserContext UserContext { get; }
 		UserRepository UserRepository { get; }
@@ -41,13 +55,10 @@ namespace Forum3.Repositories {
 			var hiddenTimeLimit = DateTime.Now.AddDays(-7);
 			var recentTimeLimit = DateTime.Now.AddMinutes(-30);
 
-			// TODO - validate the indexes on these columns.
-
-			var notificationQuery = from n in DbContext.Notifications
+			var notificationQuery = from n in ForCurrentUser
 									join targetUser in UserRepository.All on n.TargetUserId equals targetUser.Id into targetUsers
 									from targetUser in targetUsers.DefaultIfEmpty()
 									where n.Time > hiddenTimeLimit
-									where n.UserId == UserContext.ApplicationUser.Id
 									where showRead || n.Unread
 									orderby n.Time descending
 									select new ViewModels.Items.IndexItem {
@@ -66,15 +77,14 @@ namespace Forum3.Repositories {
 			return notifications;
 		}
 
-		public async Task<ServiceModels.ServiceResponse> Open(int id) {
+		public ServiceModels.ServiceResponse Open(int id) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
-			var recordQuery = from n in DbContext.Notifications
-							  where n.UserId == UserContext.ApplicationUser.Id
+			var recordQuery = from n in ForCurrentUser
 							  where n.Id == id
 							  select n;
 
-			var record = await recordQuery.SingleOrDefaultAsync();
+			var record = recordQuery.FirstOrDefault();
 
 			if (record.Unread) {
 				record.Unread = false;

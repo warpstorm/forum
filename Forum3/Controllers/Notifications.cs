@@ -1,6 +1,5 @@
 ﻿using Forum3.Repositories;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
 
 namespace Forum3.Controllers {
 	using ViewModels = Models.ViewModels.Notifications;
@@ -31,8 +30,8 @@ namespace Forum3.Controllers {
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> Open(int id) {
-			var serviceResponse = await NotificationRepository.Open(id);
+		public IActionResult Open(int id) {
+			var serviceResponse = NotificationRepository.Open(id);
 			ProcessServiceResponse(serviceResponse);
 
 			return RedirectFromService();
