@@ -217,6 +217,22 @@ a.borderless * {
 	margin-bottom: 20px;
 }
 
+.gap-left {
+	margin-left: 20px;
+}
+
+.small-gap-left {
+	margin-left: 10px;
+}
+
+.gap-right {
+	margin-right: 20px;
+}
+
+.small-gap-right {
+	margin-right: 10px;
+}
+
 @media only screen and (max-width: 768px) {
 	.gap {
 		margin: 8px 0;
@@ -228,6 +244,14 @@ a.borderless * {
 
 	.gap-bottom {
 		margin-bottom: 15px;
+	}
+
+	.gap-left {
+		margin-left: 15px;
+	}
+
+	.gap-right {
+		margin-right: 15px;
 	}
 }
 
