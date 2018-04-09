@@ -5,18 +5,15 @@ using Forum3.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Forum3.Repositories {
 	using DataModels = Models.DataModels;
 	using InputModels = Models.InputModels;
 	using ItemModels = Models.ViewModels.Topics.Items;
 	using ServiceModels = Models.ServiceModels;
-	using ViewModels = Models.ViewModels;
 
 	public class TopicRepository {
 		ApplicationDbContext DbContext { get; }
@@ -304,19 +301,19 @@ namespace Forum3.Repositories {
 			var unread = 1;
 
 			if (UserContext.IsAuthenticated) {
-				foreach (var viewLog in viewLogs) {
+				foreach (var viewLog in viewLogs.Where(item => item.LogTime >= lastReplyTime)) {
 					switch (viewLog.TargetType) {
 						case EViewLogTargetType.All:
-							if (viewLog.LogTime >= lastReplyTime)
-								unread = 0;
+							unread = 0;
 							break;
 
 						case EViewLogTargetType.Message:
-							if (viewLog.TargetId == messageId && viewLog.LogTime >= lastReplyTime)
+							if (viewLog.TargetId == messageId)
 								unread = 0;
 							break;
 					}
 
+					// Exit the loop early if we already know it's been read.
 					if (unread == 0)
 						break;
 				}

@@ -76,6 +76,7 @@ namespace Forum3 {
 			// Keep for future reference on rewriting.
 			//app.UseRewriter(new RewriteOptions().AddRedirect("forum(.*)", "Boards/Index"));
 
+			// Temporarily make everyone see this page until bugs are worked out.
 			app.UseDeveloperExceptionPage();
 
 			if (env.IsDevelopment()) {
