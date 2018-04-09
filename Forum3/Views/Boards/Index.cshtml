@@ -48,6 +48,16 @@
 	</ul>
 </div>
 
+@if (User.Identity.IsAuthenticated) {
+	<ul class="inline">
+		<li class="note">Topics:</li>
+		<li clickable-link-parent><a class="small-button" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)" asp-route-id="0">All</a></li>
+		<li clickable-link-parent><a class="small-button" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)" asp-route-id="0" asp-route-unread="1">Unread</a></li>
+		<li clickable-link-parent><a class="small-button" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)" asp-route-id="0" asp-route-unread="2">Replies</a></li>
+		<li clickable-link-parent><a class="small-button" asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.Create)" asp-route-id="1">Create</a></li>
+	</ul>
+}
+
 <div id="categories">
 	@foreach (var indexCategory in Model.Categories) {
 		@await Html.PartialAsync("_IndexCategory", indexCategory)

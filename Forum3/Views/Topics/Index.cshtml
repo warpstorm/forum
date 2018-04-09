@@ -1,5 +1,21 @@
 @model TopicIndexPage
 
+@if (User.Identity.IsAuthenticated) {
+	<ul class="inline gap-top">
+		<li class="note"></li>
+		<li clickable-link-parent><a class="small-button" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)" asp-route-id="@Model.BoardId">All</a></li>
+		<li clickable-link-parent><a class="small-button" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)" asp-route-id="@Model.BoardId" asp-route-unread="1">Unread</a></li>
+		<li clickable-link-parent><a class="small-button" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)" asp-route-id="@Model.BoardId" asp-route-unread="2">Replies</a></li>
+		
+		@if (Model.BoardId > 0) {
+			<li clickable-link-parent><a class="small-button" asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.Create)" asp-route-id="@Model.BoardId">Create</a></li>
+		}
+		else {
+			<li clickable-link-parent><a class="small-button" asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.Create)" asp-route-id="1">Create</a></li>
+		}
+	</ul>
+}
+
 <section id="topic-list">
 	@foreach (var item in Model.Topics) {
 		@await Html.PartialAsync("_IndexItem", item)
@@ -13,19 +29,11 @@
 @{ViewData["Title"] = Model.BoardName;}
 @section Header {@ViewData["Title"]}
 
-@section PageActions {
-	@if (User.Identity.IsAuthenticated && Model.BoardId > 0) {
-		<li>
-			<a class="button" asp-action="@nameof(Messages.Create)" asp-controller="@nameof(Messages)" asp-route-id="@Model.BoardId">Create a new Topic</a>
-		</li>
-	}
-}
-
 @section scripts {
 	<script>
-		window.boardId = @Model.BoardId;
-		window.page = @Model.Page;
-		window.unreadFilter = @Model.UnreadFilter;
+	window.boardId = @Model.BoardId;
+	window.page = @Model.Page;
+	window.unreadFilter = @Model.UnreadFilter;
 	</script>
 
 	<environment include="Development">
