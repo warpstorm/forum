@@ -72,8 +72,10 @@ namespace Forum3 {
 			services.AddMigrator(Configuration);
 		}
 
-		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
 		public void Configure(IApplicationBuilder app, IHostingEnvironment env) {
+			// Keep for future reference on rewriting.
+			//app.UseRewriter(new RewriteOptions().AddRedirect("forum(.*)", "Boards/Index"));
+
 			app.UseDeveloperExceptionPage();
 
 			if (env.IsDevelopment()) {
