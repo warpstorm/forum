@@ -10,7 +10,8 @@
 	<span id="load-more-topics" class="hidden small-button">More Topics</span>
 </footer>
 
-@{ViewData["Title"] = "Topics";}
+@{ViewData["Title"] = Model.BoardName;}
+@section Header {@ViewData["Title"]}
 
 @section PageActions {
 	@if (User.Identity.IsAuthenticated && Model.BoardId > 0) {
