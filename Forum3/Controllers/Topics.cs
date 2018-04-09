@@ -96,10 +96,10 @@ namespace Forum3.Controllers {
 		}
 
 		[HttpGet]
-		public IActionResult Display(int id, int pageId = 1, int target = 0, bool rebuild = false) {
+		public IActionResult Display(int id, int pageId = 1, int target = 0) {
 			ViewData["Smileys"] = SmileyRepository.GetSelectorList();
 
-			var viewModel = GetDisplayPageModel(id, pageId, target, rebuild);
+			var viewModel = GetDisplayPageModel(id, pageId, target);
 
 			if (string.IsNullOrEmpty(viewModel.RedirectPath))
 				return View(viewModel);
@@ -164,11 +164,7 @@ namespace Forum3.Controllers {
 			return UrlHelper.Action(nameof(Topics.Display), nameof(Topics), routeValues) + "#message" + messageId;
 		}
 
-		public string GetMigrationRedirectPath(int messageId) {
-			return UrlHelper.Action(nameof(Messages.Migrate), nameof(Messages), new { id = messageId });
-		}
-
-		public PageModels.TopicDisplayPage GetDisplayPageModel(int id, int pageId = 1, int target = 0, bool rebuild = false) {
+		public PageModels.TopicDisplayPage GetDisplayPageModel(int id, int pageId = 1, int target = 0) {
 			var viewModel = new PageModels.TopicDisplayPage();
 
 			var record = DbContext.Messages.Find(id);
@@ -189,17 +185,6 @@ namespace Forum3.Controllers {
 
 			if (parentId != id) {
 				viewModel.RedirectPath = GetRedirectPath(id, record.ParentId, messageIds);
-				return viewModel;
-			}
-
-			var unprocessedMessagesQuery = from message in DbContext.Messages
-										   where !message.Processed
-										   where message.Id == parentId || message.ParentId == parentId || message.LegacyParentId == record.LegacyId
-										   where message.LegacyParentId != 0 && message.LegacyId != 0
-										   select message.Id;
-
-			if (unprocessedMessagesQuery.Any() || rebuild) {
-				viewModel.RedirectPath = GetMigrationRedirectPath(parentId);
 				return viewModel;
 			}
 

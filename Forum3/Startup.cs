@@ -2,7 +2,6 @@
 using Forum3.Contexts;
 using Forum3.Controllers;
 using Forum3.Extensions;
-using Forum3.Migrator;
 using Forum3.Models.DataModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -68,8 +67,6 @@ namespace Forum3 {
 
 				config.Filters.Add(new AuthorizeFilter(policy));
 			});
-
-			services.AddMigrator(Configuration);
 		}
 
 		public void Configure(IApplicationBuilder app, IHostingEnvironment env) {

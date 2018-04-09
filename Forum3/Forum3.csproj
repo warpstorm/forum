@@ -10,6 +10,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Migrator\**" />
+    <Content Remove="Migrator\**" />
+    <EmbeddedResource Remove="Migrator\**" />
+    <None Remove="Migrator\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="Properties\PublishProfiles\warpstormdev - Web Deploy.pubxml" />
   </ItemGroup>
 

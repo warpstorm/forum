@@ -17,7 +17,6 @@ namespace Forum3.Repositories {
 	using DataModels = Models.DataModels;
 	using InputModels = Models.InputModels;
 	using ServiceModels = Models.ServiceModels;
-	using ViewModels = Models.ViewModels;
 
 	public class MessageRepository {
 		ApplicationDbContext DbContext { get; }
@@ -50,57 +49,6 @@ namespace Forum3.Repositories {
 
 			var messagesPerPage = SettingsRepository.MessagesPerPage();
 			return Convert.ToInt32(Math.Ceiling(index / messagesPerPage));
-		}
-
-		public void MigrateMessageRecord(DataModels.Message record, bool force = false) {
-			if (record.Processed && !force)
-				return;
-
-			if (record.LegacyId == 0) {
-				record.Processed = true;
-				DbContext.Update(record);
-				return;
-			}
-
-			var parentTask = DbContext.Messages.FirstOrDefaultAsync(m => record.LegacyParentId != 0 && m.LegacyId == record.LegacyParentId);
-			var replyTask = DbContext.Messages.FirstOrDefaultAsync(m => record.LegacyReplyId != 0 && m.LegacyId == record.LegacyReplyId);
-
-			Task.WaitAll(parentTask, replyTask);
-
-			var message = ProcessMessageInput(new ServiceModels.ServiceResponse(), record.OriginalBody);
-
-			record.OriginalBody = message.OriginalBody;
-			record.DisplayBody = message.DisplayBody;
-			record.ShortPreview = message.ShortPreview;
-			record.LongPreview = message.LongPreview;
-			record.Cards = message.Cards;
-			record.Processed = true;
-
-			record.ReplyId = replyTask.Result?.Id ?? 0;
-			record.PostedById = UserRepository.All.FirstOrDefault(u => u.LegacyId == record.LegacyPostedById)?.Id ?? string.Empty;
-			record.EditedById = UserRepository.All.FirstOrDefault(u => u.LegacyId == record.LegacyEditedById)?.Id ?? string.Empty;
-
-			var parent = parentTask.Result;
-
-			if (parent is null) {
-				UpdateTopicParticipation(record.Id, record.PostedById, record.TimePosted);
-			}
-			else {
-				if (record.Id != parent.Id)
-					record.ParentId = parent.Id;
-
-				DbContext.Update(record);
-
-				if (record.Id != parent.Id) {
-					parent.LastReplyId = record.Id;
-					parent.LastReplyById = record.PostedById;
-					parent.LastReplyPosted = record.TimePosted;
-
-					DbContext.Update(parent);
-				}
-
-				UpdateTopicParticipation(parent.Id, record.PostedById, record.TimePosted);
-			}
 		}
 
 		public ServiceModels.ServiceResponse CreateTopic(InputModels.MessageInput input) {
@@ -758,9 +706,8 @@ namespace Forum3.Repositories {
 			}
 		}
 
-		public ViewModels.Delay RebuildThreadsStart() {
+		public int RecountReplies() {
 			var query = from message in DbContext.Messages
-						where message.LegacyParentId == 0
 						where message.ParentId == 0
 						select message.Id;
 
@@ -769,18 +716,13 @@ namespace Forum3.Repositories {
 			var take = SettingsRepository.TopicsPerPage();
 			var totalSteps = (int)Math.Ceiling(1D * recordCount / take);
 
-			return RebuildThreadsViewModel(new InputModels.Continue {
-				Stage = nameof(RebuildThreadsContinue),
-				CurrentStep = -1,
-				TotalSteps = totalSteps
-			});
+			return totalSteps;
 		}
 
-		public ViewModels.Delay RebuildThreadsContinue(InputModels.Continue input) {
+		public void RecountRepliesContinue(InputModels.Continue input) {
 			input.ThrowIfNull(nameof(input));
 
 			var parentMessageQuery = from message in DbContext.Messages
-									 where message.LegacyParentId == 0
 									 where message.ParentId == 0
 									 orderby message.Id descending
 									 select message;
@@ -792,142 +734,122 @@ namespace Forum3.Repositories {
 
 			foreach (var parent in parents) {
 				var messagesQuery = from message in DbContext.Messages
-									where message.ParentId == parent.Id || (parent.LegacyId != 0 && message.LegacyParentId == parent.LegacyId)
+									where message.ParentId == parent.Id
 									select message;
 
 				var messages = messagesQuery.ToList();
 
-				var pages = (int) Math.Ceiling(1D * messages.Count() / take);
+				Recount(parent, messages);
+			}
 
-				for (var i = 0; i < pages; i++) {
-					foreach (var message in messages.Skip(i * take).Take(take))
-						RebuildMessageRelationships(parent, message, messages);
+			void Recount(DataModels.Message parentMessage, List<DataModels.Message> messages) {
+				var updated = false;
 
+				var replies = messages.Count();
+
+				if (parentMessage.ReplyCount != replies) {
+					parentMessage.ReplyCount = replies;
+					updated = true;
+				}
+
+				var lastReply = messages.LastOrDefault();
+
+				if (lastReply != null && parentMessage.LastReplyId != lastReply.Id) {
+					parentMessage.LastReplyId = lastReply.Id;
+					parentMessage.LastReplyPosted = lastReply.TimePosted;
+					parentMessage.LastReplyById = lastReply.PostedById;
+					updated = true;
+				}
+
+				if (updated) {
+					DbContext.Update(parentMessage);
 					DbContext.SaveChanges();
 				}
-
-				RecountReplies(parent, messages);
-				RebuildParticipants(parent, messages);
-			}
-
-			return RebuildThreadsViewModel(input);
-		}
-
-		public ViewModels.Delay RebuildThreadsViewModel(InputModels.Continue input) {
-			var viewModel = new ViewModels.Delay {
-				ActionName = "Rebuilding Threads",
-				ActionNote = "Relinking child posts to their parent posts.",
-				CurrentPage = input.CurrentStep,
-				TotalPages = input.TotalSteps,
-				NextAction = UrlHelper.Action(nameof(Controllers.Messages.Admin), nameof(Controllers.Messages))
-			};
-
-			if (input.CurrentStep < input.TotalSteps) {
-				input.CurrentStep++;
-				viewModel.NextAction = UrlHelper.Action(nameof(Controllers.Messages.RebuildThreads), nameof(Controllers.Messages), input);
-			}
-
-			return viewModel;
-		}
-
-		public void RebuildMessageRelationships(DataModels.Message parent, DataModels.Message message, List<DataModels.Message> messages) {
-			if (message.ParentId == 0 && message.LegacyParentId != 0)
-				message.ParentId = parent.Id;
-
-			if (message.ReplyId == 0 && message.LegacyReplyId != 0) {
-				DataModels.Message reply = null;
-
-				if (message.LegacyReplyId == parent.LegacyId)
-					reply = parent;
-				else
-					reply = messages.First(item => item.LegacyId == message.LegacyReplyId);
-
-				message.ReplyId = reply.Id;
-			}
-
-			if (string.IsNullOrEmpty(message.PostedById)) {
-				var user = UserRepository.All.FirstOrDefault(item => item.LegacyId == message.LegacyPostedById);
-				message.PostedById = user?.Id ?? string.Empty;
-			}
-
-			if (string.IsNullOrEmpty(message.EditedById)) {
-				var user = UserRepository.All.FirstOrDefault(item => item.LegacyId == message.LegacyEditedById);
-				message.EditedById = user?.Id ?? string.Empty;
 			}
 		}
 
-		public void RecountReplies(DataModels.Message parentMessage, List<DataModels.Message> messages) {
-			var updated = false;
+		public int RebuildParticipants() {
+			var query = from message in DbContext.Messages
+						where message.ParentId == 0
+						select message.Id;
 
-			var replies = messages.Count();
+			var recordCount = query.Count();
 
-			if (parentMessage.ReplyCount != replies) {
-				parentMessage.ReplyCount = replies;
-				updated = true;
-			}
+			var take = SettingsRepository.TopicsPerPage();
+			var totalSteps = (int)Math.Ceiling(1D * recordCount / take);
 
-			var lastReply = messages.LastOrDefault();
-
-			if (lastReply != null && parentMessage.LastReplyId != lastReply.Id) {
-				parentMessage.LastReplyId = lastReply.Id;
-				parentMessage.LastReplyPosted = lastReply.TimePosted;
-				parentMessage.LastReplyById = lastReply.PostedById;
-				updated = true;
-			}
-
-			if (updated) {
-				DbContext.Update(parentMessage);
-				DbContext.SaveChanges();
-			}
+			return totalSteps;
 		}
 
-		public void RebuildParticipants(DataModels.Message parentMessage, List<DataModels.Message> messages) {
-			var newParticipants = new List<DataModels.Participant> {
-				new DataModels.Participant {
-					MessageId = parentMessage.Id,
-					UserId = parentMessage.PostedById,
-					Time = parentMessage.TimePosted
+		public void RebuildParticipantsContinue(InputModels.Continue input) {
+			input.ThrowIfNull(nameof(input));
+
+			var parentMessageQuery = from message in DbContext.Messages
+									 where message.ParentId == 0
+									 orderby message.Id descending
+									 select message;
+
+			var take = SettingsRepository.TopicsPerPage();
+			var skip = input.CurrentStep * take;
+
+			var parents = parentMessageQuery.Skip(skip).Take(take).ToList();
+
+			foreach (var parent in parents) {
+				var messagesQuery = from message in DbContext.Messages
+									where message.ParentId == parent.Id
+									select message;
+
+				var messages = messagesQuery.ToList();
+				messages.Add(parent);
+
+				RebuildParticipants(parent.Id, messages);
+			}
+
+			void RebuildParticipants(int topicId, List<DataModels.Message> messages) {
+				var newParticipants = new List<DataModels.Participant>();
+
+				foreach (var message in messages) {
+					if (!newParticipants.Any(item => item.UserId == message.PostedById)) {
+						newParticipants.Add(new DataModels.Participant {
+							MessageId = topicId,
+							UserId = message.PostedById,
+							Time = message.TimePosted
+						});
+					}
 				}
-			};
 
-			foreach (var message in messages) {
-				if (!newParticipants.Any(item => item.UserId == message.PostedById)) {
-					newParticipants.Add(new DataModels.Participant {
-						MessageId = parentMessage.Id,
-						UserId = message.PostedById,
-						Time = message.TimePosted
-					});
+				var oldParticipants = DbContext.Participants.Where(r => r.MessageId == topicId).ToList();
+
+				if (oldParticipants.Count() != newParticipants.Count()) {
+					DbContext.RemoveRange(oldParticipants);
+					DbContext.SaveChanges();
+
+					DbContext.Participants.AddRange(newParticipants);
+					DbContext.SaveChanges();
 				}
 			}
-
-			var oldParticipants = DbContext.Participants.Where(r => r.MessageId == parentMessage.Id).ToList();
-
-			if (oldParticipants.Count() != newParticipants.Count()) {
-				DbContext.RemoveRange(oldParticipants);
-				DbContext.SaveChanges();
-
-				DbContext.Participants.AddRange(newParticipants);
-				DbContext.SaveChanges();
-			}
 		}
 
-		public ViewModels.Delay ReprocessMessagesStart() {
-			var recordCount = DbContext.Messages.Count();
+		public int ReprocessMessages() => ProcessMessages(true);
+		public int ProcessMessages(bool force = false) {
+			var records = from message in DbContext.Messages
+						  where force || !message.Processed
+						  select message.Id;
+
+			var recordCount = records.Count();
 
 			var take = SettingsRepository.MessagesPerPage();
 			var totalSteps = (int)Math.Ceiling(1D * recordCount / take);
 
-			return ReprocessMessagesViewModel(new InputModels.Continue {
-				Stage = nameof(ReprocessMessagesContinue),
-				CurrentStep = -1,
-				TotalSteps = totalSteps
-			});
+			return totalSteps;
 		}
 
-		public ViewModels.Delay ReprocessMessagesContinue(InputModels.Continue input) {
+		public void ReprocessMessagesContinue(InputModels.Continue input) => ProcessMessagesContinue(input, true);
+		public void ProcessMessagesContinue(InputModels.Continue input, bool force = false) {
 			input.ThrowIfNull(nameof(input));
 
 			var messageQuery = from message in DbContext.Messages
+							   where force || !message.Processed
 							   orderby message.Id descending
 							   select message;
 
@@ -953,25 +875,6 @@ namespace Forum3.Repositories {
 			}
 
 			DbContext.SaveChanges();
-
-			return ReprocessMessagesViewModel(input);
-		}
-
-		public ViewModels.Delay ReprocessMessagesViewModel(InputModels.Continue input) {
-			var viewModel = new ViewModels.Delay {
-				ActionName = "Reprocessing Messages",
-				ActionNote = "Processing message text, loading external sites, replacing smiley codes.",
-				CurrentPage = input.CurrentStep,
-				TotalPages = input.TotalSteps,
-				NextAction = UrlHelper.Action(nameof(Controllers.Messages.Admin), nameof(Controllers.Messages))
-			};
-
-			if (input.CurrentStep < input.TotalSteps) {
-				input.CurrentStep++;
-				viewModel.NextAction = UrlHelper.Action(nameof(Controllers.Messages.ReprocessMessages), nameof(Controllers.Messages), input);
-			}
-
-			return viewModel;
 		}
 	}
 }
