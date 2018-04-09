@@ -501,6 +501,7 @@ namespace Forum3.Repositories {
 			}
 			catch (UriFormatException) { }
 			catch (AggregateException) { }
+			catch (ArgumentException) { }
 
 			if (document is null)
 				return returnResult;
