@@ -62,3 +62,8 @@
 			border-color: #7090c6 ;
 			cursor: pointer;
 		}
+
+
+.g-recaptcha {
+	margin: 20px 0;
+}

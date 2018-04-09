@@ -24,6 +24,8 @@
 			<dt><input asp-for="@Model.RememberMe" /> Remember Me</dt>
 		</dl>
 
+		<div class="g-recaptcha" data-sitekey="@Options.Value.RecaptchaSiteKey"></div>
+
 		<ul>
 			<li><button>Log in</button></li>
 			<li><a class="button" asp-action="@nameof(Account.Register)" asp-route-returnurl="@ViewData["Referrer"]">Register as a new user?</a></li>
@@ -37,3 +39,9 @@
 
 @{ViewData["Title"] = "Login";}
 @section Header {@ViewData["Title"]}
+
+@section Head {
+<environment exclude="Development">
+	<script src='https://www.google.com/recaptcha/api.js'></script>
+</environment>
+}

@@ -1,4 +1,4 @@
-﻿using Forum3.ActionFilters;
+﻿using Forum3.Filters;
 using Forum3.Contexts;
 using Forum3.Controllers;
 using Forum3.Extensions;
@@ -76,16 +76,16 @@ namespace Forum3 {
 			// Keep for future reference on rewriting.
 			//app.UseRewriter(new RewriteOptions().AddRedirect("forum(.*)", "Boards/Index"));
 
-			// Temporarily make everyone see this page until bugs are worked out.
-			app.UseDeveloperExceptionPage();
-
 			if (env.IsDevelopment()) {
 				//app.UseDeveloperExceptionPage();
 				app.UseBrowserLink();
 				app.UseDatabaseErrorPage();
 			}
 			else {
-				app.UseExceptionHandler("/Boards/Error");
+				// Temporarily make everyone see this page until bugs are worked out.
+				app.UseDeveloperExceptionPage();
+
+				//app.UseExceptionHandler("/Boards/Error");
 			}
 
 			app.UseStaticFiles();

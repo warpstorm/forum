@@ -1,4 +1,6 @@
-﻿using Forum3.Contexts;
+﻿using Forum3.Annotations;
+using Forum3.Contexts;
+using Forum3.Interfaces.Filters;
 using Forum3.Interfaces.Users;
 using Forum3.Middleware;
 using Forum3.Models.ServiceModels;
@@ -28,6 +30,10 @@ namespace Forum3.Extensions {
 			RegisterRepositories(services, configuration);
 
 			RegisterAzureStorage(services, configuration);
+
+			services.Configure<RecaptchaOptions>(configuration);
+			services.AddTransient<IRecaptchaValidator, RecaptchaValidator>();
+			services.AddTransient<ValidateRecaptchaActionFilter>();
 
 			services.Configure<EmailSenderOptions>(configuration);
 			services.AddTransient<IEmailSender, EmailSender>();

@@ -1,4 +1,5 @@
-﻿using Forum3.Contexts;
+﻿using Forum3.Annotations;
+using Forum3.Contexts;
 using Forum3.Extensions;
 using Forum3.Repositories;
 using Microsoft.AspNetCore.Authorization;
@@ -221,6 +222,7 @@ namespace Forum3.Controllers {
 		[HttpPost]
 		[AllowAnonymous]
 		[ValidateAntiForgeryToken]
+		[ValidateRecaptcha]
 		public async Task<IActionResult> Login(InputModels.LoginInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await AccountRepository.Login(input);
@@ -284,6 +286,7 @@ namespace Forum3.Controllers {
 		[HttpPost]
 		[AllowAnonymous]
 		[ValidateAntiForgeryToken]
+		[ValidateRecaptcha]
 		public async Task<IActionResult> Register(InputModels.RegisterInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await AccountRepository.Register(input);
@@ -329,6 +332,7 @@ namespace Forum3.Controllers {
 		[HttpPost]
 		[AllowAnonymous]
 		[ValidateAntiForgeryToken]
+		[ValidateRecaptcha]
 		public async Task<IActionResult> ForgotPassword(InputModels.ForgotPasswordInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await AccountRepository.ForgotPassword(input);
@@ -372,6 +376,7 @@ namespace Forum3.Controllers {
 		[HttpPost]
 		[AllowAnonymous]
 		[ValidateAntiForgeryToken]
+		[ValidateRecaptcha]
 		public async Task<IActionResult> ResetPassword(InputModels.ResetPasswordInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await AccountRepository.ResetPassword(input);

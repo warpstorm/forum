@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Forum3.ActionFilters {
+namespace Forum3.Filters {
 	using DataModels = Models.DataModels;
 
 	public class UserContextActionFilter : IAsyncActionFilter {
