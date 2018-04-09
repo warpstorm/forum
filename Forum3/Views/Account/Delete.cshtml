@@ -1,0 +1,29 @@
+﻿@model string
+
+<style>
+	ul, li {
+		list-style: circle;
+	}
+
+	li {
+		margin-left: 20px;
+	}
+</style>
+
+<section class="content-box pad">
+	<h2>When you delete your account, here's what happens:</h2>
+
+	<ul class="gap">
+		<li>Your messages are replaced with a notice that your account has been deleted.</li>
+		<li>Your messages are reattributed to a global deleted account.</li>
+		<li>Your thoughts on posts are removed.</li>
+		<li>Your account is deleted.</li>
+	</ul>
+
+	<p>All of this can be verified by viewing the source for this site on GitHub.</p>
+
+	<p><a class="small-button" asp-action="@nameof(Account.ConfirmDelete)" asp-route-userId="@Model" onclick="return confirm('Seriously, are you really sure you want to delete your account? I can\'t undo this.');">Finalize Account Deletion</a></p>
+</section>
+
+@{ ViewData["Title"] = $"Delete Account"; }
+@section Header {@ViewData["Title"]}

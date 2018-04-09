@@ -49,7 +49,7 @@ namespace Forum3.Repositories {
 				foreach (var board in boards.Where(r => r.CategoryId == categoryRecord.Id)) {
 					var thisBoardRoles = RoleRepository.BoardRoles.Where(r => r.BoardId == board.Id);
 
-					var authorized = UserContext.IsAdmin || !thisBoardRoles.Any() || UserContext.Roles.Any(userRole => thisBoardRoles.Any(boardRole => boardRole.RoleId == userRole));
+					var authorized = UserContext.IsAdmin || !thisBoardRoles.Any() || (UserContext.Roles?.Any(userRole => thisBoardRoles.Any(boardRole => boardRole.RoleId == userRole)) ?? false);
 
 					if (!authorized)
 						continue;

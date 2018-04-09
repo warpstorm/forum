@@ -74,6 +74,8 @@
 				<li><a href="@ViewData["Referrer"]" class="button">Cancel</a></li>
 			</ul>
 		</form>
+
+		<p class="gap-top"><a class="note" asp-action="@nameof(Account.Delete)" asp-route-userId="@Model.Id" onclick="return confirm('Delete your account? Are you really sure??');">Delete Account</a></p>
 	</div>
 </div>
 

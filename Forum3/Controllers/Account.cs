@@ -1,5 +1,6 @@
 ﻿using Forum3.Annotations;
 using Forum3.Contexts;
+using Forum3.Exceptions;
 using Forum3.Extensions;
 using Forum3.Repositories;
 using Microsoft.AspNetCore.Authorization;
@@ -402,5 +403,54 @@ namespace Forum3.Controllers {
 		[HttpGet]
 		[AllowAnonymous]
 		public IActionResult ResetPasswordConfirmation() => View();
+
+		[HttpGet]
+		public IActionResult Delete(string userId) => View("Delete", userId);
+
+		[HttpGet]
+		public async Task<IActionResult> ConfirmDelete(string userId) {
+			if (UserContext.ApplicationUser.Id != userId && !UserContext.IsAdmin)
+				throw new HttpForbiddenException();
+
+			var deletedAccount = DbContext.Users.FirstOrDefault(item => item.DisplayName == "Deleted Account");
+
+			if (deletedAccount is null) {
+				deletedAccount = new DataModels.ApplicationUser {
+					DisplayName = "Deleted Account",
+					UserName = Guid.NewGuid().ToString(),
+					Email = Guid.NewGuid().ToString(),
+					AvatarPath = string.Empty,
+					Birthday = new DateTime(2000, 1, 1),
+					Registered = new DateTime(2000, 1, 1),
+				};
+
+				DbContext.Users.Add(deletedAccount);
+				DbContext.SaveChanges();
+			}
+
+			foreach (var item in DbContext.MessageThoughts.Where(item => item.UserId == userId).ToList())
+				DbContext.Remove(item);
+
+			DbContext.SaveChanges();
+
+			foreach (var item in DbContext.Messages.Where(item => item.PostedById == userId).ToList()) {
+				item.PostedById = deletedAccount.Id;
+				item.EditedById = deletedAccount.Id;
+				item.OriginalBody = string.Empty;
+				item.DisplayBody = "This account has been deleted.";
+				item.LongPreview = string.Empty;
+				item.ShortPreview = string.Empty;
+				item.Cards = string.Empty;
+			}
+
+			DbContext.SaveChanges();
+
+			var account = DbContext.Users.Find(userId);
+			await UserManager.DeleteAsync(account);
+
+			DbContext.SaveChanges();
+
+			return RedirectToAction(nameof(Boards.Index), nameof(Boards));
+		}
 	}
 }
