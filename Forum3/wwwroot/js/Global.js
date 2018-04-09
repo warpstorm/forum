@@ -10,6 +10,7 @@
 	"list": "[ul]\n[li] [/li]\n[li] [/li]\n[li] [/li]\n[/ul]",
 	"numlist": "[ol]\n[li] [/li]\n[li] [/li]\n[li] [/li]\n[/ol]",
 	"code": "[code]\n\n\n[/code]",
+	"size": "[size=10]   [/size]",
 };
 
 $(function () {

@@ -313,6 +313,7 @@ namespace Forum3.Repositories {
 				new BBTag("ol", @"<ol class=""bbc-list"">", "</ul>"),
 				new BBTag("li", @"<li class=""bbc-list-item"">", "</li>"),
 				new BBTag("url", @"<a class=""bbc-anchor"" href=""${href}"" target=""_blank"">", "</a>", new BBAttribute("href", ""), new BBAttribute("href", "href")),
+				new BBTag("size", @"<span style=""font-size: ${size}pt"">", "</span>", new BBAttribute("size", ""), new BBAttribute("size", "size")),
 				new BBTag("color", @"<span style=""color: ${color};"">", "</span>", new BBAttribute("color", ""), new BBAttribute("color", "color")),
 			});
 
