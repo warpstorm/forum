@@ -87,11 +87,17 @@ namespace Forum3.Repositories {
 
 				if (message.ReplyId > 0) {
 					var reply = DbContext.Messages.FirstOrDefault(item => item.Id == message.ReplyId);
-					var replyPostedBy = UserRepository.All.FirstOrDefault(item => item.Id == reply.PostedById);
 
-					message.ReplyBody = reply == null ? string.Empty : reply.DisplayBody;
-					message.ReplyPreview = reply == null ? string.Empty : reply.ShortPreview;
-					message.ReplyPostedBy = replyPostedBy == null ? string.Empty : replyPostedBy.DisplayName;
+					if (reply != null) {
+						var replyPostedBy = UserRepository.All.FirstOrDefault(item => item.Id == reply.PostedById);
+
+						if (string.IsNullOrEmpty(reply.ShortPreview))
+							reply.ShortPreview = "No preview";
+
+						message.ReplyBody = reply.DisplayBody;
+						message.ReplyPreview = reply.ShortPreview;
+						message.ReplyPostedBy = replyPostedBy.DisplayName;
+					}
 				}
 
 				message.TimePosted = message.TimePostedDT.ToPassedTimeString();
@@ -203,6 +209,9 @@ namespace Forum3.Repositories {
 			var take = SettingsRepository.MessagesPerPage();
 
 			foreach (var message in messages) {
+				if (string.IsNullOrEmpty(message.ShortPreview))
+					message.ShortPreview = "No subject";
+
 				message.Pages = Convert.ToInt32(Math.Ceiling(1.0 * message.Replies / take));
 				message.LastReplyPosted = message.LastReplyPostedDT.ToPassedTimeString();
 

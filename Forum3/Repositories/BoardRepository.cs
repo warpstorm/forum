@@ -41,6 +41,8 @@ namespace Forum3.Repositories {
 			};
 
 			if (boardRecord.LastMessageId != null) {
+				// TODO - permission trim this list and handle empty shortPreviews
+
 				var lastMessageQuery = from lastReply in DbContext.Messages
 									   where lastReply.Id == boardRecord.LastMessageId
 									   join lastReplyBy in UserRepository.All on lastReply.LastReplyById equals lastReplyBy.Id

@@ -290,13 +290,6 @@ namespace Forum3.Repositories {
 			if (string.IsNullOrEmpty(displayBody))
 				throw new Exception("Message body cannot be empty.");
 
-			// make absolutely sure it targets a new window.
-			displayBody = new Regex(@"<a ").Replace(displayBody, "<a target='_blank' ");
-
-			// trim extra lines from quotes
-			displayBody = new Regex(@"<blockquote>\r*\n*").Replace(displayBody, "<blockquote>");
-			displayBody = new Regex(@"\r*\n*</blockquote>\r*\n*").Replace(displayBody, "</blockquote>");
-
 			// keep this as close to the smiley replacement as possible to prevent HTML-izing the bracket.
 			displayBody = displayBody.Replace("*heartsmiley*", "<3");
 
@@ -524,6 +517,13 @@ namespace Forum3.Repositories {
 		/// Minor post processing
 		/// </summary>
 		public void PostProcessMessageInput(InputModels.ProcessedMessageInput processedMessageInput) {
+			// make absolutely sure it targets a new window.
+			processedMessageInput.DisplayBody = new Regex(@"<a ").Replace(processedMessageInput.DisplayBody, "<a target='_blank' ");
+
+			// trim extra lines from quotes
+			processedMessageInput.DisplayBody = new Regex(@"<blockquote(.*?)>(\r|\n|\r\n)*").Replace(processedMessageInput.DisplayBody, match => $"<blockquote{match.Groups[1].Value}>");
+			processedMessageInput.DisplayBody = new Regex(@"(\r|\n|\r\n)*</blockquote>(\r|\n|\r\n)*").Replace(processedMessageInput.DisplayBody, "</blockquote>");
+
 			processedMessageInput.DisplayBody = processedMessageInput.DisplayBody.Trim();
 			processedMessageInput.ShortPreview = GetMessagePreview(processedMessageInput.DisplayBody, 100);
 			processedMessageInput.LongPreview = GetMessagePreview(processedMessageInput.DisplayBody, 500, true);
@@ -540,7 +540,7 @@ namespace Forum3.Repositories {
 			preview = Regex.Replace(preview, @"(<.+?>|\[.+?\])", string.Empty, RegexOptions.Compiled);
 
 			if (!multiline)
-				preview = Regex.Match(preview, @"^(.+)?\n*", RegexOptions.Compiled).Groups[1].Value;
+				preview = Regex.Match(preview, @"^(.+)?(\r|\n|\r\n|)*", RegexOptions.Compiled).Groups[1].Value;
 
 			if (preview.Length > previewLength) {
 				var matches = Regex.Match(preview, @"^(.{" + (previewLength - 1) + "})", RegexOptions.Compiled);
@@ -548,6 +548,8 @@ namespace Forum3.Repositories {
 			}
 			else if (preview.Length <= 0)
 				preview = "No text";
+
+			preview = preview.Trim();
 
 			return preview;
 		}

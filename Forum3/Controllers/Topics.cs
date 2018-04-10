@@ -227,6 +227,9 @@ namespace Forum3.Controllers {
 
 			var messages = TopicRepository.GetMessages(pageMessageIds);
 
+			if (string.IsNullOrEmpty(record.ShortPreview))
+				record.ShortPreview = "No subject";
+
 			viewModel = new PageModels.TopicDisplayPage {
 				Id = record.Id,
 				TopicHeader = new ItemModels.TopicHeader {
