@@ -143,7 +143,7 @@ namespace Forum3.Repositories {
 		public async Task<ServiceModels.ServiceResponse> DeleteMessage(int messageId) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
-			var record = await DbContext.Messages.SingleAsync(m => m.Id == messageId);
+			var record = DbContext.Messages.FirstOrDefault(m => m.Id == messageId);
 
 			if (record is null)
 				serviceResponse.Error(string.Empty, $@"No record was found with the id '{messageId}'");
@@ -151,8 +151,10 @@ namespace Forum3.Repositories {
 			if (!serviceResponse.Success)
 				return serviceResponse;
 
-			if (record.ParentId != 0) {
-				serviceResponse.RedirectPath = UrlHelper.DirectMessage(record.ParentId);
+			var parentId = record.ParentId;
+
+			if (parentId != 0) {
+				serviceResponse.RedirectPath = UrlHelper.DirectMessage(parentId);
 
 				var directReplies = await DbContext.Messages.Where(m => m.ReplyId == messageId).ToListAsync();
 
@@ -196,6 +198,13 @@ namespace Forum3.Repositories {
 			DbContext.Messages.Remove(record);
 
 			DbContext.SaveChanges();
+
+			if (parentId > 0) {
+				var parent = DbContext.Messages.FirstOrDefault(item => item.Id == parentId);
+
+				if (parent != null)
+					RecountRepliesForTopic(parent);
+			}
 
 			return serviceResponse;
 		}
@@ -733,39 +742,38 @@ namespace Forum3.Repositories {
 
 			var parents = parentMessageQuery.Skip(skip).Take(take).ToList();
 
-			foreach (var parent in parents) {
-				var messagesQuery = from message in DbContext.Messages
-									where message.ParentId == parent.Id
-									select message;
+			foreach (var parent in parents)
+				RecountRepliesForTopic(parent);
+		}
 
-				var messages = messagesQuery.ToList();
+		public void RecountRepliesForTopic(DataModels.Message parentMessage) {
+			var messagesQuery = from message in DbContext.Messages
+								where message.ParentId == parentMessage.Id
+								select message;
 
-				Recount(parent, messages);
+			var messages = messagesQuery.ToList();
+
+			var updated = false;
+
+			var replies = messages.Count();
+
+			if (parentMessage.ReplyCount != replies) {
+				parentMessage.ReplyCount = replies;
+				updated = true;
 			}
 
-			void Recount(DataModels.Message parentMessage, List<DataModels.Message> messages) {
-				var updated = false;
+			var lastReply = messages.LastOrDefault();
 
-				var replies = messages.Count();
+			if (lastReply != null && parentMessage.LastReplyId != lastReply.Id) {
+				parentMessage.LastReplyId = lastReply.Id;
+				parentMessage.LastReplyPosted = lastReply.TimePosted;
+				parentMessage.LastReplyById = lastReply.PostedById;
+				updated = true;
+			}
 
-				if (parentMessage.ReplyCount != replies) {
-					parentMessage.ReplyCount = replies;
-					updated = true;
-				}
-
-				var lastReply = messages.LastOrDefault();
-
-				if (lastReply != null && parentMessage.LastReplyId != lastReply.Id) {
-					parentMessage.LastReplyId = lastReply.Id;
-					parentMessage.LastReplyPosted = lastReply.TimePosted;
-					parentMessage.LastReplyById = lastReply.PostedById;
-					updated = true;
-				}
-
-				if (updated) {
-					DbContext.Update(parentMessage);
-					DbContext.SaveChanges();
-				}
+			if (updated) {
+				DbContext.Update(parentMessage);
+				DbContext.SaveChanges();
 			}
 		}
 
