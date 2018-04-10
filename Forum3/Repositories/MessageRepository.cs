@@ -1,6 +1,7 @@
 ﻿using CodeKicker.BBCode;
 using Forum3.Contexts;
 using Forum3.Extensions;
+using Forum3.Services;
 using HtmlAgilityPack;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -432,36 +433,20 @@ namespace Forum3.Repositories {
 
 			var siteWithoutHash = remoteUrl.Split('#')[0];
 
-			HtmlDocument document = null;
-
-			var client = new HtmlWeb() {
-				UserAgent = "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36"
-			};
-
-			ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
-
-			client.PreRequest += request => {
-				request.ServicePoint.Expect100Continue = false;
-				request.AllowAutoRedirect = true;
-				request.MaximumAutomaticRedirections = 3;
-				request.AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip;
-				request.Timeout = 5000;
-				request.CookieContainer = new CookieContainer();
-
-				return true;
-			};
+			var document = new HtmlDocument();
 
 			try {
-				var documentTask = client.LoadFromWebAsync(siteWithoutHash);
-				documentTask.Wait();
-				document = documentTask.Result;
+				var client = new GzipWebClient();
+				var data = client.DownloadString(siteWithoutHash);
+
+				if (string.IsNullOrEmpty(data))
+					return returnResult;
+
+				document.LoadHtml(data);
 			}
 			catch (UriFormatException) { }
 			catch (AggregateException) { }
 			catch (ArgumentException) { }
-
-			if (document is null)
-				return returnResult;
 
 			var titleTag = document.DocumentNode.SelectSingleNode(@"//title");
 
