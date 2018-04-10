@@ -148,7 +148,7 @@ namespace Forum3.Repositories {
 
 			var messageIdQuery = from message in DbContext.Messages
 								 where message.Id == record.Id || message.ParentId == record.Id
-								 where message.TimePosted >= latestViewTime
+								 where message.TimePosted > latestViewTime
 								 select message.Id;
 
 			var latestMessageId = messageIdQuery.FirstOrDefault();
@@ -419,7 +419,7 @@ namespace Forum3.Repositories {
 			else
 				latestTime = latestMessageTime;
 
-			var historyTimeLimit = SettingsRepository.HistoryTimeLimit();
+			latestTime.AddSeconds(1);
 
 			var existingLogs = viewLogs.Where(r => r.TargetType == EViewLogTargetType.Message);
 
