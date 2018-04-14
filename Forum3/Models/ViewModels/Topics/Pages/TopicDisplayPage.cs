@@ -18,5 +18,6 @@ namespace Forum3.Models.ViewModels.Topics.Pages {
 		public bool IsAuthenticated { get; internal set; }
 		public IMessageViewModel ReplyForm { get; set; }
 		public string RedirectPath { get; set; }
+		public bool ShowFavicons { get; set; }
 	}
 }

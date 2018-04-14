@@ -51,9 +51,9 @@ namespace Forum3.Controllers {
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		[PreventRapidRequests]
-		public IActionResult Create(InputModels.MessageInput input) {
+		public async Task<IActionResult> Create(InputModels.MessageInput input) {
 			if (ModelState.IsValid) {
-				var serviceResponse = MessageRepository.CreateTopic(input);
+				var serviceResponse = await MessageRepository.CreateTopic(input);
 				ProcessServiceResponse(serviceResponse);
 
 				if (serviceResponse.Success)
@@ -87,9 +87,9 @@ namespace Forum3.Controllers {
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		[PreventRapidRequests]
-		public IActionResult Edit(InputModels.MessageInput input) {
+		public async Task<IActionResult> Edit(InputModels.MessageInput input) {
 			if (ModelState.IsValid) {
-				var serviceResponse = MessageRepository.EditMessage(input);
+				var serviceResponse = await MessageRepository.EditMessage(input);
 				ProcessServiceResponse(serviceResponse);
 
 				if (serviceResponse.Success)
@@ -127,7 +127,7 @@ namespace Forum3.Controllers {
 
 		[Authorize(Roles = "Admin")]
 		[HttpGet]
-		public IActionResult ProcessMessages(InputModels.Continue input) {
+		public async Task<IActionResult> ProcessMessages(InputModels.Continue input) {
 			if (string.IsNullOrEmpty(input.Stage)) {
 				var totalSteps = MessageRepository.ProcessMessages();
 
@@ -138,7 +138,7 @@ namespace Forum3.Controllers {
 				};
 			}
 			else
-				MessageRepository.ProcessMessagesContinue(input);
+				await MessageRepository.ProcessMessagesContinue(input);
 
 			var viewModel = new ViewModels.Delay {
 				ActionName = "Processing Messages",

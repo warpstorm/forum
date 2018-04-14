@@ -1,6 +1,7 @@
 ﻿using CodeKicker.BBCode;
 using Forum3.Contexts;
 using Forum3.Extensions;
+using Forum3.Interfaces.Services;
 using Forum3.Services;
 using HtmlAgilityPack;
 using Microsoft.AspNetCore.Mvc;
@@ -25,6 +26,7 @@ namespace Forum3.Repositories {
 		SettingsRepository SettingsRepository { get; }
 		SmileyRepository SmileyRepository { get; }
 		UserRepository UserRepository { get; }
+		IImageStore ImageStore { get; }
 		IUrlHelper UrlHelper { get; }
 
 		public MessageRepository(
@@ -34,7 +36,8 @@ namespace Forum3.Repositories {
 			SmileyRepository smileyRepository,
 			UserRepository userRepository,
 			IActionContextAccessor actionContextAccessor,
-			IUrlHelperFactory urlHelperFactory
+			IUrlHelperFactory urlHelperFactory,
+			IImageStore imageStore
 		) {
 			DbContext = dbContext;
 			UserContext = userContext;
@@ -42,6 +45,7 @@ namespace Forum3.Repositories {
 			SmileyRepository = smileyRepository;
 			UserRepository = userRepository;
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
+			ImageStore = imageStore;
 		}
 
 		public int GetPageNumber(int messageId, List<int> messageIds) {
@@ -52,7 +56,7 @@ namespace Forum3.Repositories {
 			return Convert.ToInt32(Math.Ceiling(index / messagesPerPage));
 		}
 
-		public ServiceModels.ServiceResponse CreateTopic(InputModels.MessageInput input) {
+		public async Task<ServiceModels.ServiceResponse> CreateTopic(InputModels.MessageInput input) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			if (input.BoardId is null)
@@ -67,7 +71,7 @@ namespace Forum3.Repositories {
 			if (!serviceResponse.Success)
 				return serviceResponse;
 
-			var processedMessage = ProcessMessageInput(serviceResponse, input.Body);
+			var processedMessage = await ProcessMessageInput(serviceResponse, input.Body);
 
 			if (!serviceResponse.Success)
 				return serviceResponse;
@@ -97,7 +101,7 @@ namespace Forum3.Repositories {
 				throw new Exception($"No record ID specified.");
 
 			var replyRecord = DbContext.Messages.FirstOrDefault(m => m.Id == input.Id);
-			var processedMessage = ProcessMessageInput(serviceResponse, input.Body);
+			var processedMessage = await ProcessMessageInput(serviceResponse, input.Body);
 
 			if (replyRecord is null)
 				serviceResponse.Error(string.Empty, $"A record does not exist with ID '{input.Id}'");
@@ -124,14 +128,14 @@ namespace Forum3.Repositories {
 			return serviceResponse;
 		}
 
-		public ServiceModels.ServiceResponse EditMessage(InputModels.MessageInput input) {
+		public async Task<ServiceModels.ServiceResponse> EditMessage(InputModels.MessageInput input) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			if (input.Id == 0)
 				throw new Exception($"No record ID specified.");
 
 			var record = DbContext.Messages.FirstOrDefault(m => m.Id == input.Id);
-			var processedMessage = ProcessMessageInput(serviceResponse, input.Body);
+			var processedMessage = await ProcessMessageInput(serviceResponse, input.Body);
 
 			if (serviceResponse.Success) {
 				serviceResponse.RedirectPath = UrlHelper.DirectMessage(record.Id);
@@ -263,12 +267,12 @@ namespace Forum3.Repositories {
 			return serviceResponse;
 		}
 
-		public InputModels.ProcessedMessageInput ProcessMessageInput(ServiceModels.ServiceResponse serviceResponse, string messageBody) {
+		public async Task<InputModels.ProcessedMessageInput> ProcessMessageInput(ServiceModels.ServiceResponse serviceResponse, string messageBody) {
 			var processedMessage = PreProcessMessageInput(messageBody);
 			PreProcessSmileys(processedMessage);
 			ParseBBC(processedMessage);
 			ProcessSmileys(processedMessage);
-			ProcessMessageBodyUrls(processedMessage);
+			await ProcessMessageBodyUrls(processedMessage);
 			FindMentionedUsers(processedMessage);
 			PostProcessMessageInput(processedMessage);
 
@@ -326,7 +330,7 @@ namespace Forum3.Repositories {
 		/// <summary>
 		/// Attempt to replace URLs in the message body with something better
 		/// </summary>
-		public void ProcessMessageBodyUrls(InputModels.ProcessedMessageInput processedMessageInput) {
+		public async Task ProcessMessageBodyUrls(InputModels.ProcessedMessageInput processedMessageInput) {
 			var displayBody = processedMessageInput.DisplayBody;
 
 			var regexUrl = new Regex("(^| )((https?\\://){1}\\S+)", RegexOptions.Compiled | RegexOptions.Multiline);
@@ -343,7 +347,7 @@ namespace Forum3.Repositories {
 				var siteUrl = regexMatch.Groups[2].Value;
 
 				if (!string.IsNullOrEmpty(siteUrl)) {
-					var remoteUrlReplacement = GetRemoteUrlReplacement(siteUrl);
+					var remoteUrlReplacement = await GetRemoteUrlReplacement(siteUrl);
 
 					displayBody = remoteUrlReplacement.Regex.Replace(displayBody, remoteUrlReplacement.ReplacementText, 1);
 
@@ -373,9 +377,14 @@ namespace Forum3.Repositories {
 		/// <summary>
 		/// Attempt to replace the ugly URL with a human readable title.
 		/// </summary>
-		public ServiceModels.RemoteUrlReplacement GetRemoteUrlReplacement(string remoteUrl) {
-			var remotePageDetails = GetRemotePageDetails(remoteUrl);
+		public async Task<ServiceModels.RemoteUrlReplacement> GetRemoteUrlReplacement(string remoteUrl) {
+			var remotePageDetails = await GetRemotePageDetails(remoteUrl);
 			remotePageDetails.Title = remotePageDetails.Title.Replace("$", "&#36;");
+
+			var favicon = string.Empty;
+
+			if (!string.IsNullOrEmpty(remotePageDetails.Favicon))
+				favicon = $@"<img class=""link-favicon"" src=""{remotePageDetails.Favicon}"" /> ";
 
 			const string youtubePattern = @"(?:https?:\/\/)?(?:www\.)?(?:(?:(?:youtube.com\/watch\?[^?]*v=|youtu.be\/)([\w\-]+))(?:[^\s?]+)?)";
 			const string youtubeIframePartial = "<iframe type='text/html' title='YouTube video player' class='youtubePlayer' src='https://www.youtube.com/embed/{0}' frameborder='0' allowfullscreen='1'></iframe>";
@@ -392,7 +401,7 @@ namespace Forum3.Repositories {
 
 				return new ServiceModels.RemoteUrlReplacement {
 					Regex = regexYoutube,
-					ReplacementText = "<a target='_blank' href='" + remoteUrl + "'>" + remotePageDetails.Title + "</a>",
+					ReplacementText = $@"<a target=""_blank"" href=""{remoteUrl}"">{favicon}{remotePageDetails.Title}</a>",
 					Card = $@"<div class=""embedded-video"">{youtubeIframeClosed}</div>"
 				};
 			}
@@ -403,7 +412,7 @@ namespace Forum3.Repositories {
 
 				return new ServiceModels.RemoteUrlReplacement {
 					Regex = regexEmbeddedVideo,
-					ReplacementText = " <a target='_blank' href='" + remoteUrl + "'>" + remotePageDetails.Title + "</a>",
+					ReplacementText = $@"<a target=""_blank"" href=""{remoteUrl}"">{favicon}{remotePageDetails.Title}</a>",
 					Card = $@"<div class=""embedded-video"">{embeddedVideoTag}</div>"
 				};
 			}
@@ -411,7 +420,7 @@ namespace Forum3.Repositories {
 			// replace the URL with the HTML
 			return new ServiceModels.RemoteUrlReplacement {
 				Regex = regexUrl,
-				ReplacementText = "$1<a target='_blank' href='" + remoteUrl + "'>" + remotePageDetails.Title + "</a>",
+				ReplacementText = $@"$1<a target=""_blank"" href=""{remoteUrl}"">{favicon}{remotePageDetails.Title}</a>",
 				Card = remotePageDetails.Card ?? string.Empty
 			};
 		}
@@ -419,9 +428,10 @@ namespace Forum3.Repositories {
 		/// <summary>
 		/// I really should make this async. Load a remote page by URL and attempt to get details about it.
 		/// </summary>
-		public ServiceModels.RemotePageDetails GetRemotePageDetails(string remoteUrl) {
+		public async Task<ServiceModels.RemotePageDetails> GetRemotePageDetails(string remoteUrl) {
 			var returnResult = new ServiceModels.RemotePageDetails {
-				Title = remoteUrl
+				Title = remoteUrl,
+				Favicon = await GetFaviconPath(remoteUrl)
 			};
 
 			var siteWithoutHash = remoteUrl.Split('#')[0];
@@ -478,6 +488,26 @@ namespace Forum3.Repositories {
 			}
 
 			return returnResult;
+		}
+
+		/// <summary>
+		/// Loads the favicon.ico file from a remote site, stores it in Azure, and returns the path to the Azure cached image.
+		/// </summary>
+		public async Task<string> GetFaviconPath(string remoteUrl) {
+			var uri = new Uri(remoteUrl);
+			var domain = uri.Host.Replace("/www.", "/");
+
+			var webRequest = WebRequest.Create($"{uri.GetLeftPart(UriPartial.Authority)}/favicon.ico");
+
+			using (var webResponse = webRequest.GetResponse())
+			using (var inputStream = webResponse.GetResponseStream()) {
+				return await ImageStore.StoreImage(new ServiceModels.ImageStoreOptions {
+					ContainerName = "favicons",
+					FileName = domain,
+					InputStream = inputStream,
+					MaxDimension = 16
+				});
+			}
 		}
 
 		/// <summary>
@@ -840,8 +870,8 @@ namespace Forum3.Repositories {
 			return totalSteps;
 		}
 
-		public void ReprocessMessagesContinue(InputModels.Continue input) => ProcessMessagesContinue(input, true);
-		public void ProcessMessagesContinue(InputModels.Continue input, bool force = false) {
+		public async Task ReprocessMessagesContinue(InputModels.Continue input) => await ProcessMessagesContinue(input, true);
+		public async Task ProcessMessagesContinue(InputModels.Continue input, bool force = false) {
 			input.ThrowIfNull(nameof(input));
 
 			var messageQuery = from message in DbContext.Messages
@@ -858,7 +888,7 @@ namespace Forum3.Repositories {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			foreach (var message in messages) {
-				var processedMessage = ProcessMessageInput(serviceResponse, message.OriginalBody);
+				var processedMessage = await ProcessMessageInput(serviceResponse, message.OriginalBody);
 
 				message.OriginalBody = processedMessage.OriginalBody;
 				message.DisplayBody = processedMessage.DisplayBody;

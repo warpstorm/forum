@@ -1,7 +1,7 @@
 ﻿using Forum3.Annotations;
 using Forum3.Contexts;
 using Forum3.Interfaces.Filters;
-using Forum3.Interfaces.Users;
+using Forum3.Interfaces.Services;
 using Forum3.Middleware;
 using Forum3.Models.ServiceModels;
 using Forum3.Services;
@@ -37,6 +37,8 @@ namespace Forum3.Extensions {
 
 			services.Configure<EmailSenderOptions>(configuration);
 			services.AddTransient<IEmailSender, EmailSender>();
+
+			services.AddTransient<IImageStore, ImageStore>();
 
 			services.AddScoped<UserContext>();
 

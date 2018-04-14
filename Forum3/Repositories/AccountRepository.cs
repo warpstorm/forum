@@ -1,7 +1,7 @@
 ﻿using Forum3.Contexts;
 using Forum3.Controllers;
 using Forum3.Extensions;
-using Forum3.Interfaces.Users;
+using Forum3.Interfaces.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -9,12 +9,8 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.Logging;
-using Microsoft.WindowsAzure.Storage.Blob;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -28,39 +24,43 @@ namespace Forum3.Repositories {
 		public bool IsAuthenticated => UserContext.IsAuthenticated;
 
 		ApplicationDbContext DbContext { get; }
-		SettingsRepository SettingsRepository { get; }
-		CloudBlobClient CloudBlobClient { get; }
 		UserContext UserContext { get; }
+		SettingsRepository SettingsRepository { get; }
 		UserManager<DataModels.ApplicationUser> UserManager { get; }
 		SignInManager<DataModels.ApplicationUser> SignInManager { get; }
-		IEmailSender EmailSender { get; }
-		IUrlHelper UrlHelper { get; }
-		ILogger Logger { get; }
 		IHttpContextAccessor HttpContextAccessor { get; }
+		IUrlHelper UrlHelper { get; }
+		IEmailSender EmailSender { get; }
+		IImageStore ImageStore { get; }
+		ILogger Logger { get; }
 
 		public AccountRepository(
 			ApplicationDbContext dbContext,
 			UserContext userContext,
 			SettingsRepository settingsRepository,
-			CloudBlobClient cloudBlobClient,
 			UserManager<DataModels.ApplicationUser> userManager,
 			SignInManager<DataModels.ApplicationUser> signInManager,
 			IHttpContextAccessor httpContextAccessor,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory,
 			IEmailSender emailSender,
+			IImageStore imageStore,
 			ILogger<AccountRepository> logger
 		) {
 			DbContext = dbContext;
 			UserContext = userContext;
+
 			SettingsRepository = settingsRepository;
-			CloudBlobClient = cloudBlobClient;
+
 			UserManager = userManager;
 			SignInManager = signInManager;
-			EmailSender = emailSender;
-			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
-			Logger = logger;
+
 			HttpContextAccessor = httpContextAccessor;
+			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
+
+			EmailSender = emailSender;
+			ImageStore = imageStore;
+			Logger = logger;
 		}
 
 		public async Task<ServiceModels.ServiceResponse> Login(InputModels.LoginInput input) {
@@ -231,48 +231,17 @@ namespace Forum3.Repositories {
 			if (!serviceResponse.Success)
 				return serviceResponse;
 
-			var container = CloudBlobClient.GetContainerReference("avatars");
-
-			if (await container.CreateIfNotExistsAsync())
-				await container.SetPermissionsAsync(new BlobContainerPermissions { PublicAccess = BlobContainerPublicAccessType.Blob });
-
-			var blobReference = container.GetBlockBlobReference($"avatar{userRecord.Id}.png");
-			blobReference.Properties.ContentType = "image/png";
-
 			using (var inputStream = input.NewAvatar.OpenReadStream()) {
 				inputStream.Position = 0;
 
-				using (var src = Image.FromStream(inputStream)) {
-					var largestDimension = src.Width > src.Height ? src.Width : src.Height;
-					var avatarMax = SettingsRepository.AvatarSize();
-
-					if (largestDimension > avatarMax || extension != ".png") {
-						var ratio = (double)avatarMax / largestDimension;
-
-						var destinationWidth = Convert.ToInt32(src.Width * ratio);
-						var destinationHeight = Convert.ToInt32(src.Height * ratio);
-
-						using (var dst = new Bitmap(destinationWidth, destinationHeight)) {
-							using (var g = Graphics.FromImage(dst)) {
-								g.SmoothingMode = SmoothingMode.AntiAlias;
-								g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-								g.DrawImage(src, 0, 0, dst.Width, dst.Height);
-							}
-
-							using (var ms = new MemoryStream()) {
-								dst.Save(ms, ImageFormat.Png);
-								ms.Position = 0;
-
-								await blobReference.UploadFromStreamAsync(ms);
-							}
-						}
-					}
-					else
-						await blobReference.UploadFromStreamAsync(inputStream);
-				}
+				userRecord.AvatarPath = await ImageStore.StoreImage(new ServiceModels.ImageStoreOptions {
+					ContainerName = "avatars",
+					FileName = $"avatar{userRecord.Id}",
+					InputStream = inputStream,
+					MaxDimension = SettingsRepository.AvatarSize(),
+					Overwrite = true
+				});
 			}
-
-			userRecord.AvatarPath = blobReference.Uri.AbsoluteUri;
 
 			DbContext.Update(userRecord);
 			DbContext.SaveChanges();

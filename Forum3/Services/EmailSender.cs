@@ -1,4 +1,4 @@
-﻿using Forum3.Interfaces.Users;
+﻿using Forum3.Interfaces.Services;
 using Forum3.Models.ServiceModels;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;

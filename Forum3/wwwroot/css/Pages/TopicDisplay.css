@@ -132,3 +132,8 @@ blockquote.card {
 	.card-title a {
 		border: 0;
 	}
+
+.link-favicon {
+	display: none;
+	vertical-align: middle;
+}

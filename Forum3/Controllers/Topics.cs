@@ -230,6 +230,8 @@ namespace Forum3.Controllers {
 			if (string.IsNullOrEmpty(record.ShortPreview))
 				record.ShortPreview = "No subject";
 
+			var showFavicons = SettingsRepository.GetBool(Constants.Settings.ShowFavicons, UserContext.ApplicationUser.Id);
+
 			viewModel = new PageModels.TopicDisplayPage {
 				Id = record.Id,
 				TopicHeader = new ItemModels.TopicHeader {
@@ -246,6 +248,7 @@ namespace Forum3.Controllers {
 				ReplyCount = record.ReplyCount,
 				ViewCount = record.ViewCount,
 				CurrentPage = pageId,
+				ShowFavicons = showFavicons,
 				ReplyForm = new ItemModels.ReplyForm {
 					Id = record.Id
 				}

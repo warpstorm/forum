@@ -101,6 +101,7 @@
 	<script>
 		var currentPage = @Model.CurrentPage;
 		var totalPages = @Model.TotalPages;
+		var showFavicons = @Model.ShowFavicons.ToString().ToLower();
 
 		var togglePath = "@Url.Action(nameof(Topics.ToggleBoard), nameof(Topics), new { MessageId = Model.Id })";
 

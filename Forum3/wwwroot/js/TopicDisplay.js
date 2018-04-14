@@ -21,6 +21,9 @@
 	$("blockquote.reply").on("click.show-full-reply", ShowFullReply);
 
 	$("[toggle-board]").on("click", ToggleBoard);
+
+	if (window.showFavicons)
+		$(".link-favicon").show();
 });
 
 function ToggleBoard(event) {

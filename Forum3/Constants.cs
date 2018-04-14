@@ -16,6 +16,7 @@
 			public const string OnlineTimeLimit = nameof(OnlineTimeLimit);
 			public const string PopularityLimit = nameof(PopularityLimit);
 			public const string TopicsPerPage = nameof(TopicsPerPage);
+			public const string ShowFavicons = nameof(ShowFavicons);
 		}
 	}
 }

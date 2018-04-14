@@ -152,7 +152,7 @@ namespace Forum3.Repositories {
 
 			DbContext.SaveChanges();
 
-			serviceResponse.Message = $"The smiley was updated.";
+			serviceResponse.Message = $"Site settings were updated.";
 			return serviceResponse;
 		}
 	}
