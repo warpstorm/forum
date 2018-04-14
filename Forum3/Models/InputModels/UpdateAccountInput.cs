@@ -29,5 +29,7 @@ namespace Forum3.Models.InputModels {
 
 		[Range(1900, 2100)]
 		public int BirthdayYear { get; set; }
+
+		public EditSettingInput[] Settings { get; set; }
 	}
 }

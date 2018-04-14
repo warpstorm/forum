@@ -1,12 +1,16 @@
 ﻿using Forum3.Contexts;
+using Forum3.Extensions;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Forum3.Repositories {
 	using DataModels = Models.DataModels;
 	using InputModels = Models.InputModels;
 	using ServiceModels = Models.ServiceModels;
+	using ViewModels = Models.ViewModels.SiteSettings;
 
 	public class SettingsRepository {
 		ApplicationDbContext DbContext { get; }
@@ -124,13 +128,62 @@ namespace Forum3.Repositories {
 		public bool GetBool(string name, string userId = "") {
 			var setting = GetSetting(name, userId);
 
-			if (string.IsNullOrEmpty(setting))
-				return default(bool);
-
-			return Convert.ToBoolean(setting);
+			try {
+				return Convert.ToBoolean(setting);
+			}
+			catch (FormatException) {
+				return false;
+			}
 		}
 
-		public ServiceModels.ServiceResponse Update(InputModels.EditSettingsInput input) {
+		public async Task<List<ViewModels.IndexItem>> GetUserSettingsList(string userId) {
+			var settingNames = typeof(Constants.Settings).GetConstants();
+			var settingsRecords = await DbContext.SiteSettings.Where(record => string.IsNullOrEmpty(record.UserId) || record.UserId == userId).OrderByDescending(record => record.UserId).ToListAsync();
+
+			var settingsList = new List<ViewModels.IndexItem>();
+
+			foreach (var item in settingNames) {
+				var existingRecord = settingsRecords.FirstOrDefault(record => record.Name == item);
+
+				if (!existingRecord?.AdminOnly ?? false) {
+					settingsList.Add(new ViewModels.IndexItem {
+						Key = item,
+						Value = existingRecord?.Value ?? string.Empty,
+					});
+				}
+			}
+
+			return settingsList;
+		}
+
+		public void UpdateUserSettings(InputModels.UpdateAccountInput input) {
+			var existingRecords = DbContext.SiteSettings.Where(s => s.UserId == input.Id).ToList();
+
+			if (existingRecords.Any())
+				DbContext.RemoveRange(existingRecords);
+
+			foreach (var settingInput in input.Settings) {
+				if (string.IsNullOrEmpty(settingInput.Value))
+					continue;
+
+				var siteSetting = DbContext.SiteSettings.FirstOrDefault(s => !s.AdminOnly && s.Name == settingInput.Key && string.IsNullOrEmpty(s.UserId));
+
+				if (siteSetting != null) {
+					var record = new DataModels.SiteSetting {
+						UserId = input.Id,
+						Name = siteSetting.Name,
+						Value = settingInput.Value,
+						AdminOnly = siteSetting.AdminOnly
+					};
+
+					DbContext.SiteSettings.Add(record);
+				}
+			}
+
+			DbContext.SaveChanges();
+		}
+
+		public ServiceModels.ServiceResponse UpdateSiteSettings(InputModels.EditSettingsInput input) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			foreach (var settingInput in input.Settings) {

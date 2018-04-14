@@ -39,5 +39,7 @@ namespace Forum3.Models.ViewModels.Account {
 		[MaxFileSize(256, ErrorMessage = "Maximum allowed file size is {0} KB")]
 		public IFormFile NewAvatar { get; set; }
 		public string AvatarPath { get; set; }
+
+		public List<SiteSettings.IndexItem> Settings { get; set; }
 	}
 }

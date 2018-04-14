@@ -10,7 +10,9 @@ form li, form dt {
 }
 
 form dl {
-	padding-top: 10px;
+	margin: 10px 0;
+	padding: 10px 0 20px 0;
+	border-bottom: 1px solid #253248;
 }
 
 form dd {
@@ -27,6 +29,14 @@ textarea {
 	max-width: 95%;
 	background-color: #0a0d12;
 	color: #d6e3eb;
+}
+
+:focus::placeholder {
+	color: transparent;
+}
+
+:focus::-ms-input-placeholder {
+	color: transparent;
 }
 
 textarea {

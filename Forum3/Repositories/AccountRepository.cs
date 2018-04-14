@@ -181,6 +181,8 @@ namespace Forum3.Repositories {
 				return serviceResponse;
 			}
 
+			SettingsRepository.UpdateUserSettings(input);
+
 			// This allows admins to reset user passwords as well, assuming they don't set the password to the same thing as theirs.
 			if (!string.IsNullOrEmpty(input.NewPassword) && input.Password != input.NewPassword) {
 				var identityResult = await UserManager.ChangePasswordAsync(userRecord, input.Password, input.NewPassword);

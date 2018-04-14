@@ -56,7 +56,7 @@ namespace Forum3.Controllers {
 		[PreventRapidRequests]
 		public IActionResult Edit(InputModels.EditSettingsInput input) {
 			if (ModelState.IsValid) {
-				var serviceResponse = SettingsRepository.Update(input);
+				var serviceResponse = SettingsRepository.UpdateSiteSettings(input);
 				ProcessServiceResponse(serviceResponse);
 			}
 

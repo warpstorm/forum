@@ -57,8 +57,25 @@
 				</dd>
 			</dl>
 
+			@if(Model.Settings.Any()) {
+				<dl>
+					<dt>Site Settings</dt>
+					<dd>
+						<ol>
+							@for (int i = 0; i < Model.Settings.Count; i++) {
+								<li>
+									<input asp-for="@Model.Settings[i].Key" type="hidden" />
+									<span class="note">@Model.Settings[i].Key</span> <input asp-for="@Model.Settings[i].Value" value="" placeholder="@Model.Settings[i].Value" />
+									<span asp-validation-for="@Model.Settings[i].Value" class="error"></span>
+								</li>
+							}
+						</ol>
+					</dd>
+				</dl>
+			}
+
 			<dl>
-				<dt>New Password</dt>
+				<dt>New Password <span class="note">(Optional)</span></dt>
 				<dd><input asp-for="@Model.NewPassword" /></dd>
 				<dd><span asp-validation-for="@Model.NewPassword" class="error"></span></dd>
 			</dl>

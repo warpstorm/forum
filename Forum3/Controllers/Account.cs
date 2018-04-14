@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -20,7 +21,9 @@ namespace Forum3.Controllers {
 	public class Account : ForumController {
 		ApplicationDbContext DbContext { get; }
 		UserContext UserContext { get; }
+
 		AccountRepository AccountRepository { get; }
+		SettingsRepository SettingsRepository { get; }
 
 		UserManager<DataModels.ApplicationUser> UserManager { get; }
 		ILogger Logger { get; }
@@ -29,12 +32,15 @@ namespace Forum3.Controllers {
 			ApplicationDbContext dbContext,
 			UserContext userContext,
 			AccountRepository accountRepository,
+			SettingsRepository settingsRepository,
 			UserManager<DataModels.ApplicationUser> userManager,
 			ILogger<Account> logger
 		) {
 			DbContext = dbContext;
 			UserContext = userContext;
+
 			AccountRepository = accountRepository;
+			SettingsRepository = settingsRepository;
 
 			UserManager = userManager;
 			Logger = logger;
@@ -71,13 +77,6 @@ namespace Forum3.Controllers {
 
 			AccountRepository.CanEdit(userRecord.Id);
 
-			var settingsQuery = from setting in DbContext.SiteSettings
-								select new ViewModels.SiteSettings.IndexItem {
-									Key = setting.Name,
-									Value = setting.Value,
-									AdminOnly = setting.AdminOnly
-								};
-
 			var viewModel = new ViewModels.Account.DetailsPage {
 				AvatarPath = userRecord.AvatarPath,
 				Id = userRecord.Id,
@@ -90,6 +89,7 @@ namespace Forum3.Controllers {
 				BirthdayDay = userRecord.Birthday.Day.ToString(),
 				BirthdayMonth = userRecord.Birthday.Month.ToString(),
 				BirthdayYear = userRecord.Birthday.Year.ToString(),
+				Settings = await SettingsRepository.GetUserSettingsList(userRecord.Id)
 			};
 
 			ModelState.Clear();
