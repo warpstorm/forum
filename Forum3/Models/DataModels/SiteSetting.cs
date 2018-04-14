@@ -12,6 +12,8 @@ namespace Forum3.Models.DataModels {
 		[StringLength(64)]
 		public string Value { get; set; }
 
+		public bool AdminOnly { get; set; }
+
 		public string UserId { get; set; }
 	}
 }

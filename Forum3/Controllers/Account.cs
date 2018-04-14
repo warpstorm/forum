@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 namespace Forum3.Controllers {
 	using DataModels = Models.DataModels;
 	using InputModels = Models.InputModels;
-	using ViewModels = Models.ViewModels.Account;
+	using ViewModels = Models.ViewModels;
 
 	public class Account : ForumController {
 		ApplicationDbContext DbContext { get; }
@@ -42,12 +42,12 @@ namespace Forum3.Controllers {
 
 		[HttpGet]
 		public async Task<IActionResult> Index() {
-			var viewModel = new ViewModels.IndexPage();
+			var viewModel = new ViewModels.Account.IndexPage();
 
 			var users = await DbContext.Users.OrderBy(u => u.DisplayName).ToListAsync();
 
 			foreach (var user in users) {
-				var indexItem = new ViewModels.IndexItem {
+				var indexItem = new ViewModels.Account.IndexItem {
 					User = user,
 					Registered = user.Registered.ToPassedTimeString(),
 					LastOnline = user.LastOnline.ToPassedTimeString()
@@ -71,7 +71,14 @@ namespace Forum3.Controllers {
 
 			AccountRepository.CanEdit(userRecord.Id);
 
-			var viewModel = new ViewModels.DetailsPage {
+			var settingsQuery = from setting in DbContext.SiteSettings
+								select new ViewModels.SiteSettings.IndexItem {
+									Key = setting.Name,
+									Value = setting.Value,
+									AdminOnly = setting.AdminOnly
+								};
+
+			var viewModel = new ViewModels.Account.DetailsPage {
 				AvatarPath = userRecord.AvatarPath,
 				Id = userRecord.Id,
 				DisplayName = userRecord.DisplayName,
@@ -115,7 +122,7 @@ namespace Forum3.Controllers {
 
 			AccountRepository.CanEdit(userRecord.Id);
 
-			var viewModel = new ViewModels.DetailsPage {
+			var viewModel = new ViewModels.Account.DetailsPage {
 				DisplayName = input.DisplayName,
 				Email = input.Email,
 				AvatarPath = userRecord.AvatarPath,
@@ -154,7 +161,7 @@ namespace Forum3.Controllers {
 
 			AccountRepository.CanEdit(userRecord.Id);
 
-			var viewModel = new ViewModels.DetailsPage {
+			var viewModel = new ViewModels.Account.DetailsPage {
 				AvatarPath = userRecord.AvatarPath,
 				Id = userRecord.Id,
 				DisplayName = userRecord.DisplayName,
@@ -216,7 +223,7 @@ namespace Forum3.Controllers {
 
 			await AccountRepository.SignOut();
 
-			var viewModel = new ViewModels.LoginPage();
+			var viewModel = new ViewModels.Account.LoginPage();
 			return View(viewModel);
 		}
 
@@ -242,7 +249,7 @@ namespace Forum3.Controllers {
 
 			await AccountRepository.SignOut();
 
-			var viewModel = new ViewModels.LoginPage {
+			var viewModel = new ViewModels.Account.LoginPage {
 				Email = input.Email,
 				RememberMe = input.RememberMe
 			};
@@ -275,7 +282,7 @@ namespace Forum3.Controllers {
 		public async Task<IActionResult> Register() {
 			await AccountRepository.SignOut();
 
-			var viewModel = new ViewModels.RegisterPage {
+			var viewModel = new ViewModels.Account.RegisterPage {
 				BirthdayDays = AccountRepository.DayPickList(),
 				BirthdayMonths = AccountRepository.MonthPickList(),
 				BirthdayYears = AccountRepository.YearPickList()
@@ -303,7 +310,7 @@ namespace Forum3.Controllers {
 
 			await AccountRepository.SignOut();
 
-			var viewModel = new ViewModels.RegisterPage {
+			var viewModel = new ViewModels.Account.RegisterPage {
 				BirthdayDays = AccountRepository.DayPickList(),
 				BirthdayDay = input.BirthdayDay.ToString(),
 				BirthdayMonths = AccountRepository.MonthPickList(),
@@ -325,7 +332,7 @@ namespace Forum3.Controllers {
 		public async Task<IActionResult> ForgotPassword() {
 			await AccountRepository.SignOut();
 
-			var viewModel = new ViewModels.ForgotPasswordPage();
+			var viewModel = new ViewModels.Account.ForgotPasswordPage();
 
 			return View(viewModel);
 		}
@@ -349,7 +356,7 @@ namespace Forum3.Controllers {
 
 			await AccountRepository.SignOut();
 
-			var viewModel = new ViewModels.ForgotPasswordPage {
+			var viewModel = new ViewModels.Account.ForgotPasswordPage {
 				Email = input.Email
 			};
 
@@ -367,7 +374,7 @@ namespace Forum3.Controllers {
 
 			await AccountRepository.SignOut();
 
-			var viewModel = new ViewModels.ResetPasswordPage {
+			var viewModel = new ViewModels.Account.ResetPasswordPage {
 				Code = code
 			};
 
@@ -393,7 +400,7 @@ namespace Forum3.Controllers {
 
 			await AccountRepository.SignOut();
 
-			var viewModel = new ViewModels.ResetPasswordPage {
+			var viewModel = new ViewModels.Account.ResetPasswordPage {
 				Code = input.Code
 			};
 

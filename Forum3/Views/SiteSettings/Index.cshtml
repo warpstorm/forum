@@ -9,6 +9,7 @@
 				@for (int i = 0; i < Model.Settings.Count; i++) {
 					<li>
 						<span asp-validation-for="@Model.Settings[i].Value" class="error"></span>
+						<input asp-for="@Model.Settings[i].AdminOnly" />
 						<input value="@Model.Settings[i].Key" disabled="disabled" />
 						<input asp-for="@Model.Settings[i].Key" type="hidden" />
 						<input asp-for="@Model.Settings[i].Value" />

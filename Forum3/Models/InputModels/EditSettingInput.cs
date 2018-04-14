@@ -8,5 +8,7 @@ namespace Forum3.Models.InputModels {
 
 		[MaxLength(200)]
 		public string Value { get; set; }
+
+		public bool AdminOnly { get; set; }
 	}
 }

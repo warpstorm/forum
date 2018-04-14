@@ -144,7 +144,8 @@ namespace Forum3.Repositories {
 
 				var record = new DataModels.SiteSetting {
 					Name = settingInput.Key,
-					Value = settingInput.Value
+					Value = settingInput.Value,
+					AdminOnly = settingInput.AdminOnly
 				};
 
 				DbContext.SiteSettings.Add(record);
