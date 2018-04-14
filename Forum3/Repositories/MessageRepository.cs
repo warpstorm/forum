@@ -434,6 +434,13 @@ namespace Forum3.Repositories {
 				Favicon = await GetFaviconPath(remoteUrl)
 			};
 
+			var domain = new Uri(remoteUrl).Host.Replace("/www.", "/");
+
+			if (domain == "warpstorm.com") {
+				returnResult.Title = "Warpstorm";
+				return returnResult;
+			}
+
 			var siteWithoutHash = remoteUrl.Split('#')[0];
 
 			var document = new HtmlDocument();
@@ -497,17 +504,24 @@ namespace Forum3.Repositories {
 			var uri = new Uri(remoteUrl);
 			var domain = uri.Host.Replace("/www.", "/");
 
+			// /favicon.ico default doesn't work for fivethirtyeight
+			// <link rel="shortcut icon" href="https://s2.wp.com/wp-content/themes/vip/espn-fivethirtyeight/assets/images/favicon.ico?v=1.0.6">
 			var webRequest = WebRequest.Create($"{uri.GetLeftPart(UriPartial.Authority)}/favicon.ico");
-
-			using (var webResponse = webRequest.GetResponse())
-			using (var inputStream = webResponse.GetResponseStream()) {
-				return await ImageStore.StoreImage(new ServiceModels.ImageStoreOptions {
-					ContainerName = "favicons",
-					FileName = domain,
-					InputStream = inputStream,
-					MaxDimension = 16
-				});
+			
+			try {
+				using (var webResponse = webRequest.GetResponse())
+				using (var inputStream = webResponse.GetResponseStream()) {
+					return await ImageStore.StoreImage(new ServiceModels.ImageStoreOptions {
+						ContainerName = "favicons",
+						FileName = domain,
+						InputStream = inputStream,
+						MaxDimension = 16
+					});
+				}
 			}
+			catch (WebException) { }
+
+			return string.Empty;
 		}
 
 		/// <summary>
