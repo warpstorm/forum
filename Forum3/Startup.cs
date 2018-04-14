@@ -23,7 +23,7 @@ namespace Forum3 {
 
 		// This method gets called by the runtime. Use this method to add services to the container.
 		public void ConfigureServices(IServiceCollection services) {
-			services.AddApplicationInsightsTelemetry(Configuration);
+			// services.AddApplicationInsightsTelemetry(Configuration);
 
 			// Loads from the environment
 			var dbConnectionString = Configuration["DefaultConnection"];
@@ -70,20 +70,13 @@ namespace Forum3 {
 		}
 
 		public void Configure(IApplicationBuilder app, IHostingEnvironment env) {
-			// Keep for future reference on rewriting.
-			//app.UseRewriter(new RewriteOptions().AddRedirect("forum(.*)", "Boards/Index"));
-
 			if (env.IsDevelopment()) {
-				//app.UseDeveloperExceptionPage();
+				app.UseDeveloperExceptionPage();
 				app.UseBrowserLink();
 				app.UseDatabaseErrorPage();
 			}
-			else {
-				// Temporarily make everyone see this page until bugs are worked out.
-				app.UseDeveloperExceptionPage();
-
-				//app.UseExceptionHandler("/Boards/Error");
-			}
+			else
+				app.UseExceptionHandler("/Boards/Error");
 
 			app.UseStaticFiles();
 
