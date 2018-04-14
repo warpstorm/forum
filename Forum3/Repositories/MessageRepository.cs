@@ -429,13 +429,18 @@ namespace Forum3.Repositories {
 		/// I really should make this async. Load a remote page by URL and attempt to get details about it.
 		/// </summary>
 		public async Task<ServiceModels.RemotePageDetails> GetRemotePageDetails(string remoteUrl) {
+			var uri = new Uri(remoteUrl);
+			var domain = uri.Host.Replace("/www.", "/").ToLower();
+
+			// /favicon.ico default doesn't work for fivethirtyeight
+			// <link rel="shortcut icon" href="https://s2.wp.com/wp-content/themes/vip/espn-fivethirtyeight/assets/images/favicon.ico?v=1.0.6">
+			var faviconPath = $"{uri.GetLeftPart(UriPartial.Authority)}/favicon.ico";
+			var faviconStoragePath = await GetFaviconStoragePath(domain, faviconPath);
+
 			var returnResult = new ServiceModels.RemotePageDetails {
 				Title = remoteUrl,
-				Favicon = await GetFaviconPath(remoteUrl)
+				Favicon = faviconStoragePath
 			};
-
-			var uri = new Uri(remoteUrl);
-			var domain = uri.Host.Replace("/www.", "/");
 
 			if (domain == "warpstorm.com") {
 				returnResult.Title = "Warpstorm";
@@ -463,6 +468,12 @@ namespace Forum3.Repositories {
 
 			if (titleTag != null && !string.IsNullOrEmpty(titleTag.InnerText.Trim()))
 				returnResult.Title = titleTag.InnerText.Trim();
+
+			if (string.IsNullOrEmpty(faviconStoragePath)) {
+				var shortcutIconElement = document.DocumentNode.SelectSingleNode(@"//link[@rel='shortcut icon']");
+				faviconPath = shortcutIconElement.Attributes["href"].Value.Trim();
+				returnResult.Favicon = await GetFaviconStoragePath(domain, faviconPath);
+			}
 
 			// try to find the opengraph title
 			var ogTitle = document.DocumentNode.SelectSingleNode(@"//meta[@property='og:title']");
@@ -507,13 +518,8 @@ namespace Forum3.Repositories {
 		/// <summary>
 		/// Loads the favicon.ico file from a remote site, stores it in Azure, and returns the path to the Azure cached image.
 		/// </summary>
-		public async Task<string> GetFaviconPath(string remoteUrl) {
-			var uri = new Uri(remoteUrl);
-			var domain = uri.Host.Replace("/www.", "/");
-
-			// /favicon.ico default doesn't work for fivethirtyeight
-			// <link rel="shortcut icon" href="https://s2.wp.com/wp-content/themes/vip/espn-fivethirtyeight/assets/images/favicon.ico?v=1.0.6">
-			var webRequest = WebRequest.Create($"{uri.GetLeftPart(UriPartial.Authority)}/favicon.ico");
+		public async Task<string> GetFaviconStoragePath(string domain, string faviconPath) {
+			var webRequest = WebRequest.Create(faviconPath);
 			
 			try {
 				using (var webResponse = webRequest.GetResponse())
