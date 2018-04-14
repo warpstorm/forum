@@ -75,22 +75,9 @@ namespace Forum3.Repositories {
 		}
 
 		public string GetSetting(string name, string userId = "") {
-			DataModels.SiteSetting setting = null;
 			var settingValue = string.Empty;
 
-			if (string.IsNullOrEmpty(userId)) {
-				if (!Settings.ContainsKey(name)) {
-					setting = DbContext.SiteSettings.Where(r => r.Name == name && string.IsNullOrEmpty(r.UserId)).FirstOrDefault();
-
-					lock (Settings) {
-						if (!Settings.ContainsKey(name))
-							Settings.Add(name, setting is null ? string.Empty : setting.Value);
-					}
-				}
-
-				Settings.TryGetValue(name, out settingValue);
-			}
-			else {
+			if (!string.IsNullOrEmpty(userId)) {
 				if (!UserSettings.ContainsKey(userId)) {
 					lock (UserSettings) {
 						UserSettings.TryAdd(userId, new Dictionary<string, string>());
@@ -98,15 +85,28 @@ namespace Forum3.Repositories {
 				}
 
 				if (!UserSettings[userId].ContainsKey(name)) {
-					setting = DbContext.SiteSettings.Where(r => r.Name == name && r.UserId == userId).FirstOrDefault();
+					var setting = DbContext.SiteSettings.Where(r => r.Name == name && r.UserId == userId).FirstOrDefault();
 
 					lock (UserSettings[userId]) {
 						if (!UserSettings[userId].ContainsKey(name))
-							UserSettings[userId].Add(name, setting is null ? string.Empty : setting.Value);
+							UserSettings[userId].Add(name, setting?.Value ?? string.Empty);
 					}
 				}
 
 				UserSettings[userId].TryGetValue(name, out settingValue);
+			}
+
+			if (string.IsNullOrEmpty(settingValue)) {
+				if (!Settings.ContainsKey(name)) {
+					var setting = DbContext.SiteSettings.Where(r => r.Name == name && string.IsNullOrEmpty(r.UserId)).FirstOrDefault();
+
+					lock (Settings) {
+						if (!Settings.ContainsKey(name))
+							Settings.Add(name, setting?.Value ?? string.Empty);
+					}
+				}
+
+				Settings.TryGetValue(name, out settingValue);
 			}
 
 			return settingValue;
