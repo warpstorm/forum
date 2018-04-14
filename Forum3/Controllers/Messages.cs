@@ -35,10 +35,15 @@ namespace Forum3.Controllers {
 
 		[HttpGet]
 		public async Task<IActionResult> Create(int id = 0) {
-			var board = await DbContext.Boards.SingleOrDefaultAsync(b => b.Id == id);
+			var board = await DbContext.Boards.FindAsync(id);
 
 			if (board is null)
 				throw new Exception($"A record does not exist with ID '{id}'");
+
+			Request.Query.TryGetValue("source", out var source);
+
+			if (!string.IsNullOrEmpty(source))
+				return await Create(new InputModels.MessageInput { BoardId = board.Id, Body = source });
 
 			var viewModel = new ViewModels.Messages.CreateTopicPage {
 				BoardId = id,

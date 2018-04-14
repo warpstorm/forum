@@ -471,8 +471,11 @@ namespace Forum3.Repositories {
 
 			if (string.IsNullOrEmpty(faviconStoragePath)) {
 				var shortcutIconElement = document.DocumentNode.SelectSingleNode(@"//link[@rel='shortcut icon']");
-				faviconPath = shortcutIconElement.Attributes["href"].Value.Trim();
-				returnResult.Favicon = await GetFaviconStoragePath(domain, faviconPath);
+				
+				if (shortcutIconElement != null) {
+					faviconPath = shortcutIconElement.Attributes["href"].Value.Trim();
+					returnResult.Favicon = await GetFaviconStoragePath(domain, faviconPath);
+				}
 			}
 
 			// try to find the opengraph title
