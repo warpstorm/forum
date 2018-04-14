@@ -20,7 +20,8 @@ form dd {
 }
 
 input,
-textarea {
+textarea,
+select {
 	padding: 4px 10px;
 	margin: 2px;
 	font: 96%/1.4em "Segoe UI", "Segoe UI Web Regular", "Segoe UI Symbol", "Helvetica Neue", Arial, "sans-serif";
