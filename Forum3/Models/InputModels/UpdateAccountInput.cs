@@ -10,7 +10,7 @@ namespace Forum3.Models.InputModels {
 
 		[Required]
 		[EmailAddress]
-		public string Email { get; set; }
+		public string NewEmail { get; set; }
 
 		[Required]
 		[MinLength(3)]

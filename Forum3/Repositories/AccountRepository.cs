@@ -128,39 +128,39 @@ namespace Forum3.Repositories {
 
 			DbContext.SaveChanges();
 
-			if (input.Email != userRecord.Email) {
+			if (input.NewEmail != userRecord.Email) {
 				serviceResponse.RedirectPath = UrlHelper.Action(nameof(Account.Details), nameof(Account), new { id = input.DisplayName });
 
-				var identityResult = await UserManager.SetEmailAsync(userRecord, input.Email);
+				var identityResult = await UserManager.SetEmailAsync(userRecord, input.NewEmail);
 
 				if (!identityResult.Succeeded) {
 					foreach (var error in identityResult.Errors) {
-						Logger.LogError($"Error modifying email by '{UserContext.ApplicationUser.DisplayName}' from '{userRecord.Email}' to '{input.Email}'. Message: {error.Description}");
+						Logger.LogError($"Error modifying email by '{UserContext.ApplicationUser.DisplayName}' from '{userRecord.Email}' to '{input.NewEmail}'. Message: {error.Description}");
 						serviceResponse.Error(error.Description);
 					}
 
 					return serviceResponse;
 				}
 
-				identityResult = await UserManager.SetUserNameAsync(userRecord, input.Email);
+				identityResult = await UserManager.SetUserNameAsync(userRecord, input.NewEmail);
 
 				if (!identityResult.Succeeded) {
 					foreach (var error in identityResult.Errors) {
-						Logger.LogError($"Error modifying username by '{UserContext.ApplicationUser.DisplayName}' from '{userRecord.Email}' to '{input.Email}'. Message: {error.Description}");
+						Logger.LogError($"Error modifying username by '{UserContext.ApplicationUser.DisplayName}' from '{userRecord.Email}' to '{input.NewEmail}'. Message: {error.Description}");
 						serviceResponse.Error(error.Description);
 					}
 
 					return serviceResponse;
 				}
 
-				Logger.LogInformation($"Email address was modified by '{UserContext.ApplicationUser.DisplayName}' from '{userRecord.Email}' to '{input.Email}'.");
+				Logger.LogInformation($"Email address was modified by '{UserContext.ApplicationUser.DisplayName}' from '{userRecord.Email}' to '{input.NewEmail}'.");
 
 				var code = await UserManager.GenerateEmailConfirmationTokenAsync(userRecord);
 
 				if (EmailSender.Ready) {
 					var callbackUrl = EmailConfirmationLink(userRecord.Id, code);
 
-					await EmailSender.SendEmailConfirmationAsync(input.Email, callbackUrl);
+					await EmailSender.SendEmailConfirmationAsync(input.NewEmail, callbackUrl);
 
 					if (userRecord.Id == UserContext.ApplicationUser.Id)
 						await SignOut();
@@ -183,8 +183,7 @@ namespace Forum3.Repositories {
 
 			SettingsRepository.UpdateUserSettings(input);
 
-			// This allows admins to reset user passwords as well, assuming they don't set the password to the same thing as theirs.
-			if (!string.IsNullOrEmpty(input.NewPassword) && input.Password != input.NewPassword) {
+			if (!string.IsNullOrEmpty(input.NewPassword) && input.Password != input.NewPassword && UserContext.ApplicationUser.Id == input.Id) {
 				var identityResult = await UserManager.ChangePasswordAsync(userRecord, input.Password, input.NewPassword);
 
 				if (!identityResult.Succeeded) {

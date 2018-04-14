@@ -81,7 +81,7 @@ namespace Forum3.Controllers {
 				AvatarPath = userRecord.AvatarPath,
 				Id = userRecord.Id,
 				DisplayName = userRecord.DisplayName,
-				Email = userRecord.Email,
+				NewEmail = userRecord.Email,
 				EmailConfirmed = userRecord.EmailConfirmed,
 				BirthdayDays = AccountRepository.DayPickList(userRecord.Birthday.Day),
 				BirthdayMonths = AccountRepository.MonthPickList(userRecord.Birthday.Month),
@@ -124,7 +124,7 @@ namespace Forum3.Controllers {
 
 			var viewModel = new ViewModels.Account.DetailsPage {
 				DisplayName = input.DisplayName,
-				Email = input.Email,
+				NewEmail = input.NewEmail,
 				AvatarPath = userRecord.AvatarPath,
 				Id = userRecord.Id,
 				EmailConfirmed = userRecord.EmailConfirmed,
@@ -166,7 +166,7 @@ namespace Forum3.Controllers {
 				AvatarPath = userRecord.AvatarPath,
 				Id = userRecord.Id,
 				DisplayName = userRecord.DisplayName,
-				Email = userRecord.Email,
+				NewEmail = userRecord.Email,
 				EmailConfirmed = userRecord.EmailConfirmed,
 				BirthdayDays = AccountRepository.DayPickList(userRecord.Birthday.Day),
 				BirthdayMonths = AccountRepository.MonthPickList(userRecord.Birthday.Month),

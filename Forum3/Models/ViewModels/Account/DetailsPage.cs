@@ -13,7 +13,7 @@ namespace Forum3.Models.ViewModels.Account {
 
 		[Required]
 		[EmailAddress]
-		public string Email { get; set; }
+		public string NewEmail { get; set; }
 
 		public bool EmailConfirmed { get; set; }
 

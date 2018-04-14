@@ -36,11 +36,11 @@
 
 			<dl>
 				<dt>Email</dt>
-				<dd><input asp-for="@Model.Email" /></dd>
+				<dd><input asp-for="@Model.NewEmail" /></dd>
 				@if (!Model.EmailConfirmed) {
 					<dd><a asp-action="@nameof(Account.SendVerificationEmail)" class="button">Send verification email</a></dd>
 				}
-				<dd><span asp-validation-for="@Model.Email" class="error"></span></dd>
+				<dd><span asp-validation-for="@Model.NewEmail" class="error"></span></dd>
 			</dl>
 
 			<dl>
