@@ -122,7 +122,7 @@ blockquote.card {
 .card-image {
 	margin: 0 15px 0 0;
 	max-width: 150px;
-	min-height: 100px;
+	min-height: 150px;
 	float: left;
 }
 
