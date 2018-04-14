@@ -221,12 +221,12 @@ namespace Forum3.Repositories {
 			if (!serviceResponse.Success)
 				return serviceResponse;
 
-			var allowedExtensions = new[] { ".gif", ".jpg", ".png" };
+			var allowedExtensions = new[] { ".gif", ".jpg", ".png", ".jpeg" };
 
 			var extension = Path.GetExtension(input.NewAvatar.FileName).ToLower();
 
 			if (!allowedExtensions.Contains(extension))
-				serviceResponse.Error(nameof(input.NewAvatar), "Your avatar must end with .gif, .jpg, or .png");
+				serviceResponse.Error(nameof(input.NewAvatar), "Your avatar must end with .gif, .jpg, .jpeg, or .png");
 
 			if (!serviceResponse.Success)
 				return serviceResponse;
@@ -259,11 +259,12 @@ namespace Forum3.Repositories {
 								g.DrawImage(src, 0, 0, dst.Width, dst.Height);
 							}
 
-							var ms = new MemoryStream();
-							dst.Save(ms, ImageFormat.Png);
-							ms.Position = 0;
+							using (var ms = new MemoryStream()) {
+								dst.Save(ms, ImageFormat.Png);
+								ms.Position = 0;
 
-							await blobReference.UploadFromStreamAsync(ms);
+								await blobReference.UploadFromStreamAsync(ms);
+							}
 						}
 					}
 					else
