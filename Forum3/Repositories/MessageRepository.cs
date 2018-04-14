@@ -434,7 +434,8 @@ namespace Forum3.Repositories {
 				Favicon = await GetFaviconPath(remoteUrl)
 			};
 
-			var domain = new Uri(remoteUrl).Host.Replace("/www.", "/");
+			var uri = new Uri(remoteUrl);
+			var domain = uri.Host.Replace("/www.", "/");
 
 			if (domain == "warpstorm.com") {
 				returnResult.Title = "Warpstorm";
@@ -475,8 +476,14 @@ namespace Forum3.Repositories {
 				if (ogDescription != null && ogDescription.Attributes["content"] != null && !string.IsNullOrEmpty(ogDescription.Attributes["content"].Value.Trim())) {
 					returnResult.Card += "<blockquote class='card pointer hover-highlight' clickable-link-parent>";
 
-					if (ogImage != null && ogImage.Attributes["content"] != null && !string.IsNullOrEmpty(ogImage.Attributes["content"].Value.Trim()))
-						returnResult.Card += "<div class='card-image'><img src='" + ogImage.Attributes["content"].Value.Trim() + "' /></div>";
+					if (ogImage != null && ogImage.Attributes["content"] != null && !string.IsNullOrEmpty(ogImage.Attributes["content"].Value.Trim())) {
+						var imagePath = ogImage.Attributes["content"].Value.Trim();
+
+						if (imagePath.StartsWith("/"))
+							imagePath = $"{uri.GetLeftPart(UriPartial.Authority)}{imagePath}";
+
+						returnResult.Card += $"<div class='card-image'><img src='{imagePath}' /></div>";
+					}
 
 					returnResult.Card += "<div>";
 					returnResult.Card += "<p class='card-title'><a target='_blank' href='" + remoteUrl + "'>" + returnResult.Title + "</a></p>";
