@@ -43,7 +43,7 @@ a.small-button {
 	white-space: nowrap;
 	letter-spacing: .35px;
 	cursor: pointer;
-	background: linear-gradient(0, #35568e, #4d6690);
+	background: linear-gradient(0deg, #35568e, #4d6690);
 	text-shadow: #000 0 0 5px;
 	border: 1px solid #253248;
 	border-radius: 2px;
@@ -56,7 +56,7 @@ a.small-button {
 	.small-button.highlight,
 	a.small-button.highlight {
 		color: #000;
-		background: linear-gradient(0, #92abba, #d6e3eb);
+		background: linear-gradient(0deg, #92abba, #d6e3eb);
 		text-shadow: none;
 	}
 
