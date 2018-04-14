@@ -439,7 +439,6 @@ namespace Forum3.Repositories {
 
 			var returnResult = new ServiceModels.RemotePageDetails {
 				Title = remoteUrl,
-				Favicon = faviconStoragePath
 			};
 
 			if (domain == "warpstorm.com") {
@@ -470,13 +469,24 @@ namespace Forum3.Repositories {
 				returnResult.Title = titleTag.InnerText.Trim();
 
 			if (string.IsNullOrEmpty(faviconStoragePath)) {
-				var shortcutIconElement = document.DocumentNode.SelectSingleNode(@"//link[@rel='shortcut icon']");
+				var element = document.DocumentNode.SelectSingleNode(@"//link[@rel='shortcut icon']");
 				
-				if (shortcutIconElement != null) {
-					faviconPath = shortcutIconElement.Attributes["href"].Value.Trim();
-					returnResult.Favicon = await GetFaviconStoragePath(domain, faviconPath);
+				if (element != null) {
+					faviconPath = element.Attributes["href"].Value.Trim();
+					faviconStoragePath = await GetFaviconStoragePath(domain, faviconPath);
 				}
 			}
+
+			if (string.IsNullOrEmpty(faviconStoragePath)) {
+				var element = document.DocumentNode.SelectSingleNode(@"//link[@rel='icon']");
+
+				if (element != null) {
+					faviconPath = element.Attributes["href"].Value.Trim();
+					faviconStoragePath = await GetFaviconStoragePath(domain, faviconPath);
+				}
+			}
+
+			returnResult.Favicon = faviconStoragePath;
 
 			// try to find the opengraph title
 			var ogTitle = document.DocumentNode.SelectSingleNode(@"//meta[@property='og:title']");
