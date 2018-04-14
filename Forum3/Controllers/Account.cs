@@ -134,6 +134,7 @@ namespace Forum3.Controllers {
 				BirthdayDay = input.BirthdayDay.ToString(),
 				BirthdayMonth = input.BirthdayMonth.ToString(),
 				BirthdayYear = input.BirthdayYear.ToString(),
+				Settings = await SettingsRepository.GetUserSettingsList(userRecord.Id)
 			};
 
 			return View(viewModel);

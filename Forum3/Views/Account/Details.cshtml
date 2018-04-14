@@ -63,11 +63,20 @@
 					<dd>
 						<ol>
 							@for (int i = 0; i < Model.Settings.Count; i++) {
-								<li>
-									<input asp-for="@Model.Settings[i].Key" type="hidden" />
-									<span class="note">@Model.Settings[i].Key</span> <input asp-for="@Model.Settings[i].Value" value="" placeholder="@Model.Settings[i].Value" />
-									<span asp-validation-for="@Model.Settings[i].Value" class="error"></span>
-								</li>
+							<li>
+								<input asp-for="@Model.Settings[i].Key" type="hidden" />
+								<span class="note">@Model.Settings[i].Display</span>
+
+								@if (Model.Settings[i].Options.Any()) {
+									<select asp-for="@Model.Settings[i].Value" asp-items="@Model.Settings[i].Options"></select>
+								}
+								else {
+									<input asp-for="@Model.Settings[i].Value" value="" placeholder="@Model.Settings[i].Value" />
+								}
+
+								<img src="~/images/thought.png" title="@Model.Settings[i].Description" />
+								<span asp-validation-for="@Model.Settings[i].Value" class="error"></span>
+							</li>
 							}
 						</ol>
 					</dd>

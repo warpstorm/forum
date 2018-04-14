@@ -1,9 +1,9 @@
 ﻿using Forum3.Annotations;
 using Forum3.Contexts;
-using Forum3.Extensions;
 using Forum3.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,18 +28,34 @@ namespace Forum3.Controllers {
 
 		[HttpGet]
 		public async Task<IActionResult> Index() {
-			var settingNames = typeof(Constants.Settings).GetConstants();
+			var settings = new BaseSettings();
 
 			var settingsRecords = await DbContext.SiteSettings.Where(record => string.IsNullOrEmpty(record.UserId)).ToListAsync();
 
 			var settingsList = new List<ViewModels.IndexItem>();
 
-			foreach (var item in settingNames) {
-				var existingRecord = settingsRecords.FirstOrDefault(record => record.Name == item);
+			foreach (var item in settings) {
+				var existingRecord = settingsRecords.FirstOrDefault(record => record.Name == item.Key);
+
+				var options = new List<SelectListItem>();
+				var value = existingRecord?.Value ?? string.Empty;
+
+				if (item.Options != null) {
+					foreach (var option in item.Options) {
+						options.Add(new SelectListItem {
+							Text = option,
+							Value = option,
+							Selected = option == value
+						});
+					}
+				}
 
 				settingsList.Add(new ViewModels.IndexItem {
-					Key = item,
-					Value = existingRecord?.Value ?? string.Empty,
+					Key = item.Key,
+					Display = item.Display,
+					Description = item.Description,
+					Options = options,
+					Value = value,
 					AdminOnly = existingRecord?.AdminOnly ?? false,
 				});
 			}

@@ -1,4 +1,5 @@
-﻿using Forum3.Interfaces.Services;
+﻿using Forum3.Contexts;
+using Forum3.Interfaces.Services;
 using Forum3.Repositories;
 using Microsoft.WindowsAzure.Storage.Blob;
 using System;
@@ -12,13 +13,16 @@ namespace Forum3.Services {
 	using ServiceModels = Models.ServiceModels;
 
 	public class ImageStore : IImageStore {
+		UserContext UserContext { get; }
 		SettingsRepository SettingsRepository { get; }
 		CloudBlobClient CloudBlobClient { get; }
 
 		public ImageStore(
+			UserContext userContext,
 			SettingsRepository settingsRepository,
 			CloudBlobClient cloudBlobClient
 		) {
+			UserContext = userContext;
 			SettingsRepository = settingsRepository;
 			CloudBlobClient = cloudBlobClient;
 		}
@@ -35,7 +39,7 @@ namespace Forum3.Services {
 
 			if (exists) {
 				var lastModified = blobReference.Properties.LastModified ?? DateTime.Now;
-				expired = lastModified < SettingsRepository.HistoryTimeLimit();
+				expired = lastModified < SettingsRepository.HistoryTimeLimit(UserContext.ApplicationUser.Id);
 			}
 
 			if (!exists || options.Overwrite || expired) {

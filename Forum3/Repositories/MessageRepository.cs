@@ -52,7 +52,7 @@ namespace Forum3.Repositories {
 			var index = (double)messageIds.FindIndex(id => id == messageId);
 			index++;
 
-			var messagesPerPage = SettingsRepository.MessagesPerPage();
+			var messagesPerPage = SettingsRepository.MessagesPerPage(UserContext.ApplicationUser.Id);
 			return Convert.ToInt32(Math.Ceiling(index / messagesPerPage));
 		}
 
@@ -780,7 +780,7 @@ namespace Forum3.Repositories {
 
 			var recordCount = query.Count();
 
-			var take = SettingsRepository.TopicsPerPage();
+			var take = SettingsRepository.TopicsPerPage(UserContext.ApplicationUser.Id);
 			var totalSteps = (int)Math.Ceiling(1D * recordCount / take);
 
 			return totalSteps;
@@ -794,7 +794,7 @@ namespace Forum3.Repositories {
 									 orderby message.Id descending
 									 select message;
 
-			var take = SettingsRepository.TopicsPerPage();
+			var take = SettingsRepository.TopicsPerPage(UserContext.ApplicationUser.Id);
 			var skip = input.CurrentStep * take;
 
 			var parents = parentMessageQuery.Skip(skip).Take(take).ToList();
@@ -841,7 +841,7 @@ namespace Forum3.Repositories {
 
 			var recordCount = query.Count();
 
-			var take = SettingsRepository.TopicsPerPage();
+			var take = SettingsRepository.TopicsPerPage(UserContext.ApplicationUser.Id);
 			var totalSteps = (int)Math.Ceiling(1D * recordCount / take);
 
 			return totalSteps;
@@ -855,7 +855,7 @@ namespace Forum3.Repositories {
 									 orderby message.Id descending
 									 select message;
 
-			var take = SettingsRepository.TopicsPerPage();
+			var take = SettingsRepository.TopicsPerPage(UserContext.ApplicationUser.Id);
 			var skip = input.CurrentStep * take;
 
 			var parents = parentMessageQuery.Skip(skip).Take(take).ToList();
@@ -904,7 +904,7 @@ namespace Forum3.Repositories {
 
 			var recordCount = records.Count();
 
-			var take = SettingsRepository.MessagesPerPage();
+			var take = SettingsRepository.MessagesPerPage(UserContext.ApplicationUser.Id);
 			var totalSteps = (int)Math.Ceiling(1D * recordCount / take);
 
 			return totalSteps;
@@ -919,7 +919,7 @@ namespace Forum3.Repositories {
 							   orderby message.Id descending
 							   select message;
 
-			var take = SettingsRepository.MessagesPerPage();
+			var take = SettingsRepository.MessagesPerPage(UserContext.ApplicationUser.Id);
 			var skip = take * input.CurrentStep;
 
 			var messages = messageQuery.Skip(skip).Take(take).ToList();

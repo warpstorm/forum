@@ -12,7 +12,13 @@
 						<input asp-for="@Model.Settings[i].AdminOnly" />
 						<input value="@Model.Settings[i].Key" disabled="disabled" />
 						<input asp-for="@Model.Settings[i].Key" type="hidden" />
-						<input asp-for="@Model.Settings[i].Value" />
+
+						@if (Model.Settings[i].Options.Any()) {
+							<select asp-for="@Model.Settings[i].Value" asp-items="@Model.Settings[i].Options"></select>
+						}
+						else {
+							<input asp-for="@Model.Settings[i].Value" />
+						}
 					</li>
 				}
 			}

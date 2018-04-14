@@ -12,13 +12,16 @@ namespace Forum3.Repositories {
 		public List<DataModels.ApplicationUser> All { get; }
 
 		ApplicationDbContext DbContext { get; }
+		UserContext UserContext { get; }
 		SettingsRepository SettingsRepository { get; }
 
 		public UserRepository(
 			ApplicationDbContext dbContext,
+			UserContext userContext,
 			SettingsRepository settingsRepository
 		) {
 			DbContext = dbContext;
+			UserContext = userContext;
 			SettingsRepository = settingsRepository;
 
 			All = DbContext.Users.ToList();
@@ -50,7 +53,7 @@ namespace Forum3.Repositories {
 		}
 
 		public List<ItemViewModels.OnlineUser> GetOnlineList() {
-			var onlineTimeLimitSetting = SettingsRepository.OnlineTimeLimit();
+			var onlineTimeLimitSetting = SettingsRepository.OnlineTimeLimit(UserContext.ApplicationUser.Id);
 			onlineTimeLimitSetting *= -1;
 
 			var onlineTimeLimit = DateTime.Now.AddMinutes(onlineTimeLimitSetting);

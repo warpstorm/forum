@@ -1,5 +1,5 @@
 ﻿using Forum3.Contexts;
-using Forum3.Extensions;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -24,8 +24,8 @@ namespace Forum3.Repositories {
 			DbContext = dbContext;
 		}
 
-		public int AvatarSize() {
-			var setting = GetInt(Constants.Settings.AvatarSize);
+		public int AvatarSize(string userId = "") {
+			var setting = GetInt("AvatarSize", userId);
 
 			if (setting == 0)
 				setting = 100;
@@ -33,8 +33,8 @@ namespace Forum3.Repositories {
 			return setting;
 		}
 
-		public DateTime HistoryTimeLimit() {
-			var setting = GetInt(Constants.Settings.HistoryTimeLimit);
+		public DateTime HistoryTimeLimit(string userId = "") {
+			var setting = GetInt("HistoryTimeLimit", userId);
 
 			if (setting == 0)
 				setting = -14;
@@ -42,8 +42,8 @@ namespace Forum3.Repositories {
 			return DateTime.Now.AddDays(setting);
 		}
 
-		public int MessagesPerPage() {
-			var setting = GetInt(Constants.Settings.MessagesPerPage);
+		public int MessagesPerPage(string userId = "") {
+			var setting = GetInt("MessagesPerPage", userId);
 
 			if (setting == 0)
 				setting = 15;
@@ -51,8 +51,8 @@ namespace Forum3.Repositories {
 			return setting;
 		}
 
-		public int OnlineTimeLimit() {
-			var setting = GetInt(Constants.Settings.OnlineTimeLimit);
+		public int OnlineTimeLimit(string userId = "") {
+			var setting = GetInt("OnlineTimeLimit", userId);
 
 			if (setting == 0)
 				setting = 5;
@@ -60,8 +60,8 @@ namespace Forum3.Repositories {
 			return setting;
 		}
 
-		public int PopularityLimit() {
-			var setting = GetInt(Constants.Settings.PopularityLimit);
+		public int PopularityLimit(string userId = "") {
+			var setting = GetInt("PopularityLimit", userId);
 
 			if (setting == 0)
 				setting = 25;
@@ -69,11 +69,22 @@ namespace Forum3.Repositories {
 			return setting;
 		}
 
-		public int TopicsPerPage() {
-			var setting = GetInt(Constants.Settings.TopicsPerPage);
+		public int TopicsPerPage(string userId = "") {
+			var setting = GetInt("TopicsPerPage", userId);
 
 			if (setting == 0)
 				setting = 15;
+
+			return setting;
+		}
+
+		public bool ShowFavicons(string userId = "") =>  GetBool("ShowFavicons", userId);
+
+		public string FrontPage(string userId = "") {
+			var setting = GetSetting("FrontPage", userId);
+
+			if (string.IsNullOrEmpty(setting))
+				setting = "BoardIndex";
 
 			return setting;
 		}
@@ -137,18 +148,36 @@ namespace Forum3.Repositories {
 		}
 
 		public async Task<List<ViewModels.IndexItem>> GetUserSettingsList(string userId) {
-			var settingNames = typeof(Constants.Settings).GetConstants();
+			var settings = new BaseSettings();
+
 			var settingsRecords = await DbContext.SiteSettings.Where(record => string.IsNullOrEmpty(record.UserId) || record.UserId == userId).OrderByDescending(record => record.UserId).ToListAsync();
 
 			var settingsList = new List<ViewModels.IndexItem>();
 
-			foreach (var item in settingNames) {
-				var existingRecord = settingsRecords.FirstOrDefault(record => record.Name == item);
+			foreach (var item in settings) {
+				var existingRecord = settingsRecords.FirstOrDefault(record => record.Name == item.Key);
 
 				if (!existingRecord?.AdminOnly ?? false) {
+					var options = new List<SelectListItem>();
+
+					var value = existingRecord?.Value ?? string.Empty;
+
+					if (item.Options != null) {
+						foreach (var option in item.Options) {
+							options.Add(new SelectListItem {
+								Text = option,
+								Value = option,
+								Selected = option == value
+							});
+						}
+					}
+
 					settingsList.Add(new ViewModels.IndexItem {
-						Key = item,
-						Value = existingRecord?.Value ?? string.Empty,
+						Key = item.Key,
+						Display = item.Display,
+						Description = item.Description,
+						Options = options,
+						Value = value,
 					});
 				}
 			}
@@ -169,6 +198,11 @@ namespace Forum3.Repositories {
 				var siteSetting = DbContext.SiteSettings.FirstOrDefault(s => !s.AdminOnly && s.Name == settingInput.Key && string.IsNullOrEmpty(s.UserId));
 
 				if (siteSetting != null) {
+					var baseSetting = BaseSettings.Get(siteSetting.Name);
+
+					if (baseSetting.Options != null && !baseSetting.Options.Contains(settingInput.Value))
+						throw new ArgumentException("You hackin' bro?");
+
 					var record = new DataModels.SiteSetting {
 						UserId = input.Id,
 						Name = siteSetting.Name,
@@ -194,6 +228,11 @@ namespace Forum3.Repositories {
 
 				if (string.IsNullOrEmpty(settingInput.Value))
 					continue;
+
+				var baseSetting = BaseSettings.Get(settingInput.Key);
+
+				if (baseSetting.Options != null && !baseSetting.Options.Contains(settingInput.Value))
+					throw new ArgumentException("You hackin' bro?");
 
 				var record = new DataModels.SiteSetting {
 					Name = settingInput.Key,

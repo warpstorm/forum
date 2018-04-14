@@ -134,7 +134,7 @@ namespace Forum3.Repositories {
 				return serviceResponse;
 			}
 
-			var historyTimeLimit = SettingsRepository.HistoryTimeLimit();
+			var historyTimeLimit = SettingsRepository.HistoryTimeLimit(UserContext.ApplicationUser.Id);
 			var viewLogs = DbContext.ViewLogs.Where(r => r.UserId == UserContext.ApplicationUser.Id && r.LogTime >= historyTimeLimit).ToList();
 			var latestViewTime = historyTimeLimit;
 
@@ -173,7 +173,7 @@ namespace Forum3.Repositories {
 		public List<ItemModels.MessagePreview> GetPreviews(int boardId, int page, int unread) {
 			var participation = new List<DataModels.Participant>();
 			var viewLogs = new List<DataModels.ViewLog>();
-			var historyTimeLimit = SettingsRepository.HistoryTimeLimit();
+			var historyTimeLimit = SettingsRepository.HistoryTimeLimit(UserContext.ApplicationUser.Id);
 
 			if (UserContext.IsAuthenticated) {
 				participation = DbContext.Participants.Where(r => r.UserId == UserContext.ApplicationUser.Id).ToList();
@@ -206,7 +206,7 @@ namespace Forum3.Repositories {
 
 			var messages = messageRecordQuery.ToList();
 
-			var take = SettingsRepository.MessagesPerPage();
+			var take = SettingsRepository.MessagesPerPage(UserContext.ApplicationUser.Id);
 
 			foreach (var message in messages) {
 				if (string.IsNullOrEmpty(message.ShortPreview))
@@ -223,7 +223,7 @@ namespace Forum3.Repositories {
 		}
 
 		public List<int> GetIndexIds(int boardId, int page, int unreadFilter, DateTime historyTimeLimit, List<DataModels.Participant> participation, List<DataModels.ViewLog> viewLogs) {
-			var take = SettingsRepository.TopicsPerPage();
+			var take = SettingsRepository.TopicsPerPage(UserContext.ApplicationUser.Id);
 			var skip = (page - 1) * take;
 
 			var messageQuery = from message in DbContext.Messages

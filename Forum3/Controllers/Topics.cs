@@ -215,7 +215,7 @@ namespace Forum3.Controllers {
 			if (pageId < 1)
 				pageId = 1;
 
-			var take = SettingsRepository.MessagesPerPage();
+			var take = SettingsRepository.MessagesPerPage(UserContext.ApplicationUser.Id);
 			var skip = take * (pageId - 1);
 			var totalPages = Convert.ToInt32(Math.Ceiling(1.0 * messageIds.Count / take));
 
@@ -230,7 +230,7 @@ namespace Forum3.Controllers {
 			if (string.IsNullOrEmpty(record.ShortPreview))
 				record.ShortPreview = "No subject";
 
-			var showFavicons = SettingsRepository.GetBool(Constants.Settings.ShowFavicons, UserContext.ApplicationUser.Id);
+			var showFavicons = SettingsRepository.ShowFavicons(UserContext.ApplicationUser.Id);
 
 			viewModel = new PageModels.TopicDisplayPage {
 				Id = record.Id,
