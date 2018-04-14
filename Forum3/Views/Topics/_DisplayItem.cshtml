@@ -77,15 +77,19 @@
 		}
 
 		<div class="message-body">@Html.Raw(Model.Body)</div>
-		<div class="float-right note">
-			<a asp-action="@nameof(Topics.Display)" asp-route-id="@Model.Id">#@Model.Id</a>
-		</div>
-		<br class="clear" />
 
 		<div class="hidden reply-form pad gap-top">
 			<p>Reply directly to this message:</p>
 			@Html.Partial("_MessageForm", Model.ReplyForm)
 		</div>
+
+		<section class="message-cards">@Html.Raw(Model.Cards)</section>
+
+		<div class="float-right note">
+			<a asp-action="@nameof(Topics.Display)" asp-route-id="@Model.Id">#@Model.Id</a>
+		</div>
+
+		<br class="clear" />
 	</section>
 
 	<section class="message-thoughts pad-left">
@@ -95,6 +99,4 @@
 			}
 		</ol>
 	</section>
-
-	<section class="message-cards">@Html.Raw(Model.Cards)</section>
 </article>

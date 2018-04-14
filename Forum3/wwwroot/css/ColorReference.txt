@@ -2,8 +2,11 @@
 content box			#121822
 text				#d6e3eb
 subdued text		#92abba
-area highlight		#253248
 border				#253248
 border highlight	#7090c6
 button				#35568e - #4d6690
 input				#0c0f14
+
+area highlight		#2a3951
+area border			#2a3951
+area background		#253248
