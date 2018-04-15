@@ -1,4 +1,5 @@
 ﻿@inject UserContext UserContext
+@using BoardItemViewModels = Forum3.Models.ViewModels.Boards.Items;
 
 @{ 
 	if (string.IsNullOrEmpty(ViewData["LogoPath"] as string)) {
@@ -26,7 +27,17 @@
 					<span class="small-button pointer">Boards</span>					
 					<div class="menu-wrapper hidden">
 						<ul class="drop-down-menu content-box">
-							<li class="hover-highlight" clickable-link-parent><a asp-controller="@nameof(Boards)" asp-action="@nameof(Boards.Index)">Main Index</a></li>
+							<li class="hover-highlight" clickable-link-parent><a asp-controller="@nameof(Boards)" asp-action="@nameof(Boards.Index)">Board Index</a></li>
+							@foreach (BoardItemViewModels.IndexCategory category in ViewData["Categories"] as List<BoardItemViewModels.IndexCategory>) {
+								<li>
+									@category.Name
+									<ul>
+										@foreach (var board in category.Boards) {
+											<li class="hover-highlight" clickable-link-parent><a asp-action="@nameof(Topics.Index)" asp-controller="@nameof(Topics)" asp-route-id="@board.Id">@board.Name</a></li>
+										}
+									</ul>
+								</li>
+							}
 						</ul>
 					</div>
 				</li>
