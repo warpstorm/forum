@@ -12,7 +12,5 @@ namespace Forum3.Interfaces.Models.ViewModels {
 
 		string FormAction { get; }
 		string FormController { get; }
-
-		string CancelPath { get; set; }
 	}
 }

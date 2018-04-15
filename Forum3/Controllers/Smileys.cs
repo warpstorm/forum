@@ -1,5 +1,6 @@
 ﻿using Forum3.Annotations;
 using Forum3.Contexts;
+using Forum3.Interfaces.Services;
 using Forum3.Models.InputModels;
 using Forum3.Repositories;
 using Microsoft.AspNetCore.Authorization;
@@ -10,16 +11,19 @@ namespace Forum3.Controllers {
 	using ViewModels = Models.ViewModels.Smileys;
 
 	[Authorize(Roles="Admin")]
-	public class Smileys : ForumController {
+	public class Smileys : Controller {
 		ApplicationDbContext DbContext { get; }
 		SmileyRepository SmileyRepository { get; }
+		IForumViewResult ForumViewResult { get; }
 
 		public Smileys(
 			ApplicationDbContext dbContext,
-			SmileyRepository smileyRepository
+			SmileyRepository smileyRepository,
+			IForumViewResult forumViewResult
 		) {
 			DbContext = dbContext;
 			SmileyRepository = smileyRepository;
+			ForumViewResult = forumViewResult;
 		}
 
 		[HttpGet]
@@ -40,13 +44,13 @@ namespace Forum3.Controllers {
 				});
 			}
 
-			return View(viewModel);
+			return ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpGet]
 		public IActionResult Create() {
 			var viewModel = new ViewModels.CreatePage();
-			return View(viewModel);
+			return ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpPost]
@@ -55,38 +59,49 @@ namespace Forum3.Controllers {
 		public async Task<IActionResult> Create(CreateSmileyInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await SmileyRepository.Create(input);
-				ProcessServiceResponse(serviceResponse);
-
-				if (serviceResponse.Success)
-					return RedirectFromService();
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
-			var viewModel = new ViewModels.CreatePage {
-				Code = input.Code,
-				Thought = input.Thought
-			};
+			return await FailureCallback();
 
-			return View(viewModel);
+			async Task<IActionResult> FailureCallback() {
+				var viewModel = new ViewModels.CreatePage {
+					Code = input.Code,
+					Thought = input.Thought
+				};
+
+				return await Task.Run(() => { return ForumViewResult.ViewResult(this, viewModel); });
+			}
 		}
 
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		[PreventRapidRequests]
-		public IActionResult Edit(EditSmileysInput input) {
+		public async Task<IActionResult> Edit(EditSmileysInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = SmileyRepository.Update(input);
-				ProcessServiceResponse(serviceResponse);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
-			return RedirectFromService();
+			return await FailureCallback();
+
+			async Task<IActionResult> FailureCallback() {
+				return await Task.Run(() => { return ForumViewResult.RedirectToReferrer(this); });
+			}
 		}
 
 		[HttpGet]
 		public async Task<IActionResult> Delete(int id) {
-			var serviceResponse = await SmileyRepository.Delete(id);
-			ProcessServiceResponse(serviceResponse);
+			if (ModelState.IsValid) {
+				var serviceResponse = await SmileyRepository.Delete(id);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+			}
 
-			return RedirectFromService();
+			return await FailureCallback();
+
+			async Task<IActionResult> FailureCallback() {
+				return await Task.Run(() => { return ForumViewResult.RedirectToReferrer(this); });
+			}
 		}
 	}
 }

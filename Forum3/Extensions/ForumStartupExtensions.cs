@@ -39,6 +39,7 @@ namespace Forum3.Extensions {
 			services.AddTransient<IEmailSender, EmailSender>();
 
 			services.AddTransient<IImageStore, ImageStore>();
+			services.AddTransient<IForumViewResult, ForumViewResult>();
 
 			services.AddScoped<UserContext>();
 

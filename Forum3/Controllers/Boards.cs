@@ -1,21 +1,24 @@
 ﻿using Forum3.Contexts;
+using Forum3.Exceptions;
+using Forum3.Interfaces.Services;
 using Forum3.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Forum3.Controllers {
 	using InputModels = Models.InputModels;
 	using PageViewModels = Models.ViewModels.Boards.Pages;
 
-	public class Boards : ForumController {
+	public class Boards : Controller {
 		ApplicationDbContext DbContext { get; }
 		BoardRepository BoardRepository { get; }
 		CategoryRepository CategoryRepository { get; }
 		RoleRepository RoleRepository { get; }
 		UserRepository UserRepository { get; }
 		NotificationRepository NotificationRepository { get; }
+		IForumViewResult ForumViewResult { get; }
 
 		public Boards(
 			ApplicationDbContext dbContext,
@@ -23,7 +26,8 @@ namespace Forum3.Controllers {
 			CategoryRepository categoryRepository,
 			RoleRepository roleRepository,
 			UserRepository userRepository,
-			NotificationRepository notificationRepository
+			NotificationRepository notificationRepository,
+			IForumViewResult forumViewResult
 		) {
 			DbContext = dbContext;
 			BoardRepository = boardRepository;
@@ -31,6 +35,7 @@ namespace Forum3.Controllers {
 			RoleRepository = roleRepository;
 			UserRepository = userRepository;
 			NotificationRepository = notificationRepository;
+			ForumViewResult = forumViewResult;
 		}
 
 		[HttpGet]
@@ -46,7 +51,7 @@ namespace Forum3.Controllers {
 				Notifications = notifications
 			};
 
-			return View(viewModel);
+			return ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[Authorize(Roles="Admin")]
@@ -56,7 +61,7 @@ namespace Forum3.Controllers {
 				Categories = CategoryRepository.Index()
 			};
 
-			return View(viewModel);
+			return ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[Authorize(Roles="Admin")]
@@ -66,40 +71,41 @@ namespace Forum3.Controllers {
 				Categories = CategoryRepository.PickList()
 			};
 
-			return View(viewModel);
+			return ForumViewResult.ViewResult(this, viewModel);
 		}
 
-		[Authorize(Roles="Admin")]
+		[Authorize(Roles = "Admin")]
 		[HttpPost]
-		public IActionResult Create(InputModels.CreateBoardInput input) {
+		public async Task<IActionResult> Create(InputModels.CreateBoardInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = BoardRepository.Add(input);
-				ProcessServiceResponse(serviceResponse);
-
-				if (serviceResponse.Success)
-					return RedirectFromService();
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
-			var viewModel = new PageViewModels.CreatePage() {
-				Categories = CategoryRepository.PickList()
-			};
+			return await FailureCallback();
 
-			viewModel.Name = input.Name;
-			viewModel.Description = input.Description;
+			async Task<IActionResult> FailureCallback() {
+				var viewModel = new PageViewModels.CreatePage() {
+					Categories = CategoryRepository.PickList()
+				};
 
-			if (!string.IsNullOrEmpty(input.Category))
-				viewModel.Categories.First(item => item.Value == input.Category).Selected = true;
+				viewModel.Name = input.Name;
+				viewModel.Description = input.Description;
 
-			return View(viewModel);
+				if (!string.IsNullOrEmpty(input.Category))
+					viewModel.Categories.First(item => item.Value == input.Category).Selected = true;
+
+				return await Task.Run(() => { return ForumViewResult.ViewResult(this, viewModel); });
+			}
 		}
 
 		[Authorize(Roles="Admin")]
 		[HttpGet]
 		public IActionResult Edit(int id) {
-			var boardRecord = DbContext.Boards.FirstOrDefault(b => b.Id == id);
+			var boardRecord = BoardRepository.FirstOrDefault(b => b.Id == id);
 
 			if (boardRecord is null)
-				throw new Exception($"A record does not exist with ID '{id}'");
+				throw new HttpNotFoundException($"A record does not exist with ID '{id}'");
 
 			var viewModel = new PageViewModels.EditPage {
 				Id = boardRecord.Id,
@@ -113,86 +119,101 @@ namespace Forum3.Controllers {
 			viewModel.Description = boardRecord.Description;
 			viewModel.Categories.First(item => item.Text == category.Name).Selected = true;
 
-			return View(viewModel);
+			return ForumViewResult.ViewResult(this, viewModel);
 		}
 
-		[Authorize(Roles="Admin")]
+		[Authorize(Roles = "Admin")]
 		[HttpPost]
-		public IActionResult Edit(InputModels.EditBoardInput input) {
+		public async Task<IActionResult> Edit(InputModels.EditBoardInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = BoardRepository.Update(input);
-				ProcessServiceResponse(serviceResponse);
-
-				if (serviceResponse.Success)
-					return RedirectFromService();
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
-			var boardRecord = DbContext.Boards.FirstOrDefault(b => b.Id == input.Id);
+			return await FailureCallback();
 
-			if (boardRecord is null)
-				throw new Exception($"A record does not exist with ID '{input.Id}'");
+			async Task<IActionResult> FailureCallback() {
+				var boardRecord = BoardRepository.FirstOrDefault(b => b.Id == input.Id);
 
-			var viewModel = new PageViewModels.EditPage {
-				Id = boardRecord.Id,
-				Categories = CategoryRepository.PickList(),
-				Roles = RoleRepository.PickList(boardRecord.Id)
-			};
+				if (boardRecord is null)
+					throw new HttpNotFoundException($"A record does not exist with ID '{input.Id}'");
 
-			viewModel.Name = input.Name;
-			viewModel.Description = input.Description;
+				var viewModel = new PageViewModels.EditPage {
+					Id = boardRecord.Id,
+					Categories = CategoryRepository.PickList(),
+					Roles = RoleRepository.PickList(boardRecord.Id)
+				};
 
-			if (!string.IsNullOrEmpty(input.Category))
-				viewModel.Categories.First(item => item.Value == input.Category).Selected = true;
+				viewModel.Name = input.Name;
+				viewModel.Description = input.Description;
 
-			return View(viewModel);
+				if (!string.IsNullOrEmpty(input.Category))
+					viewModel.Categories.First(item => item.Value == input.Category).Selected = true;
+
+				return await Task.Run(() => { return ForumViewResult.ViewResult(this, viewModel); });
+			}
 		}
 
 		[Authorize(Roles="Admin")]
 		[HttpGet]
-		public IActionResult MoveCategoryUp(
-			int id
-		) {
-			var serviceResponse = CategoryRepository.MoveUp(id);
-			ProcessServiceResponse(serviceResponse);
+		public async Task<IActionResult> MoveCategoryUp(int id) {
+			if (ModelState.IsValid) {
+				var serviceResponse = CategoryRepository.MoveUp(id);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+			}
 
-			return RedirectFromService();
+			return await FailureCallback();
+
+			async Task<IActionResult> FailureCallback() {
+				return await Task.Run(() => { return ForumViewResult.RedirectToReferrer(this); });
+			}
 		}
 
 		[Authorize(Roles="Admin")]
 		[HttpGet]
-		public IActionResult MoveBoardUp(
-			int id
-		) {
-			var serviceResponse = BoardRepository.MoveUp(id);
-			ProcessServiceResponse(serviceResponse);
+		public async Task<IActionResult> MoveBoardUp(int id) {
+			if (ModelState.IsValid) {
+				var serviceResponse = BoardRepository.MoveUp(id);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+			}
 
-			return RedirectFromService();
+			return await FailureCallback();
+
+			async Task<IActionResult> FailureCallback() {
+				return await Task.Run(() => { return ForumViewResult.RedirectToReferrer(this); });
+			}
 		}
 
 		[Authorize(Roles="Admin")]
 		[HttpPost]
-		public IActionResult MergeCategory(
+		public async Task<IActionResult> MergeCategory(
 			InputModels.MergeInput input
 		) {
 			if (ModelState.IsValid) {
 				var serviceResponse = CategoryRepository.Merge(input);
-				ProcessServiceResponse(serviceResponse);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
-			return RedirectFromService();
+			return await FailureCallback();
+
+			async Task<IActionResult> FailureCallback() {
+				return await Task.Run(() => { return ForumViewResult.RedirectToReferrer(this); });
+			}
 		}
 
 		[Authorize(Roles="Admin")]
 		[HttpPost]
-		public IActionResult MergeBoard(
-			InputModels.MergeInput input
-		) {
+		public async Task<IActionResult> MergeBoard(InputModels.MergeInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = BoardRepository.Merge(input);
-				ProcessServiceResponse(serviceResponse);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
-			return RedirectFromService();
+			return await FailureCallback();
+
+			async Task<IActionResult> FailureCallback() {
+				return await Task.Run(() => { return ForumViewResult.RedirectToReferrer(this); });
+			}
 		}
 	}
 }

@@ -1,5 +1,6 @@
 ﻿using Forum3.Annotations;
 using Forum3.Contexts;
+using Forum3.Interfaces.Services;
 using Forum3.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,16 +15,19 @@ namespace Forum3.Controllers {
 	using ViewModels = Models.ViewModels.SiteSettings;
 
 	[Authorize(Roles="Admin")]
-	public class SiteSettings : ForumController {
+	public class SiteSettings : Controller {
 		ApplicationDbContext DbContext { get; }
 		SettingsRepository SettingsRepository { get; }
+		IForumViewResult ForumViewResult { get; }
 
 		public SiteSettings(
 			ApplicationDbContext dbContext,
-			SettingsRepository settingsRepository
+			SettingsRepository settingsRepository,
+			IForumViewResult forumViewResult
 		) {
 			DbContext = dbContext;
 			SettingsRepository = settingsRepository;
+			ForumViewResult = forumViewResult;
 		}
 
 		[HttpGet]
@@ -64,19 +68,23 @@ namespace Forum3.Controllers {
 				Settings = settingsList
 			};
 
-			return View(viewModel);
+			return ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		[PreventRapidRequests]
-		public IActionResult Edit(InputModels.EditSettingsInput input) {
+		public async Task<IActionResult> Edit(InputModels.EditSettingsInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = SettingsRepository.UpdateSiteSettings(input);
-				ProcessServiceResponse(serviceResponse);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
-			return RedirectFromService();
+			return await FailureCallback();
+
+			async Task<IActionResult> FailureCallback() {
+				return await Task.Run(() => { return ForumViewResult.RedirectToReferrer(this); });
+			}
 		}
 	}
 }

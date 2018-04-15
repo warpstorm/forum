@@ -29,13 +29,7 @@ namespace Forum3.Repositories {
 		}
 
 		public List<ItemViewModels.IndexCategory> Index() {
-			var categoryRecordsTask = DbContext.Categories.OrderBy(r => r.DisplayOrder).ToListAsync();
-			var boardRecordsTask = DbContext.Boards.OrderBy(r => r.DisplayOrder).ToListAsync();
-
-			Task.WaitAll(categoryRecordsTask, boardRecordsTask);
-
-			var categories = categoryRecordsTask.Result;
-			var boards = boardRecordsTask.Result;
+			var categories = DbContext.Categories.OrderBy(r => r.DisplayOrder).ToList();
 
 			var indexCategories = new List<ItemViewModels.IndexCategory>();
 
@@ -46,7 +40,7 @@ namespace Forum3.Repositories {
 					DisplayOrder = categoryRecord.DisplayOrder
 				};
 
-				foreach (var board in boards.Where(r => r.CategoryId == categoryRecord.Id)) {
+				foreach (var board in BoardRepository.Where(r => r.CategoryId == categoryRecord.Id)) {
 					var thisBoardRoles = RoleRepository.BoardRoles.Where(r => r.BoardId == board.Id);
 
 					var authorized = UserContext.IsAdmin || !thisBoardRoles.Any() || (UserContext.Roles?.Any(userRole => thisBoardRoles.Any(boardRole => boardRole.RoleId == userRole)) ?? false);
@@ -54,7 +48,7 @@ namespace Forum3.Repositories {
 					if (!authorized)
 						continue;
 
-					var indexBoard = BoardRepository.Get(board);
+					var indexBoard = BoardRepository.GetIndexItem(board);
 
 					indexCategory.Boards.Add(indexBoard);
 				}
@@ -97,7 +91,7 @@ namespace Forum3.Repositories {
 			if (!serviceResponse.Success)
 				return serviceResponse;
 
-			var displacedBoards = DbContext.Boards.Where(b => b.CategoryId == fromCategory.Id).ToList();
+			var displacedBoards = BoardRepository.Where(b => b.CategoryId == fromCategory.Id).ToList();
 
 			foreach (var displacedBoard in displacedBoards) {
 				displacedBoard.CategoryId = toCategory.Id;

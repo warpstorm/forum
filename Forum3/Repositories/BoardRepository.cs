@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Forum3.Repositories {
@@ -12,7 +13,7 @@ namespace Forum3.Repositories {
 	using ItemViewModels = Models.ViewModels.Boards.Items;
 	using ServiceModels = Models.ServiceModels;
 
-	public class BoardRepository {
+	public class BoardRepository : Repository<DataModels.Board> {
 		ApplicationDbContext DbContext { get; }
 		RoleRepository RoleRepository { get; }
 		UserRepository UserRepository { get; }
@@ -29,9 +30,11 @@ namespace Forum3.Repositories {
 			RoleRepository = roleRepository;
 			UserRepository = userRepository;
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
+
+			Records = DbContext.Boards.OrderBy(record => record.DisplayOrder).ToList();
 		}
 
-		public ItemViewModels.IndexBoard Get(DataModels.Board boardRecord) {
+		public ItemViewModels.IndexBoard GetIndexItem(DataModels.Board boardRecord) {
 			var indexBoard = new ItemViewModels.IndexBoard {
 				Id = boardRecord.Id,
 				Name = boardRecord.Name,
@@ -64,7 +67,7 @@ namespace Forum3.Repositories {
 		public ServiceModels.ServiceResponse Add(InputModels.CreateBoardInput input) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
-			if (DbContext.Boards.Any(b => b.Name == input.Name))
+			if (Records.Any(b => b.Name == input.Name))
 				serviceResponse.Error(nameof(input.Name), "A board with that name already exists");
 
 			DataModels.Category categoryRecord = null;
@@ -108,7 +111,7 @@ namespace Forum3.Repositories {
 			if (!string.IsNullOrEmpty(input.Description))
 				input.Description = input.Description.Trim();
 
-			var existingRecord = DbContext.Boards.FirstOrDefault(b => b.Name == input.Name);
+			var existingRecord = Records.FirstOrDefault(b => b.Name == input.Name);
 
 			if (existingRecord != null)
 				serviceResponse.Error(nameof(input.Name), "A board with that name already exists");
@@ -136,7 +139,7 @@ namespace Forum3.Repositories {
 		public ServiceModels.ServiceResponse Update(InputModels.EditBoardInput input) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
-			var record = DbContext.Boards.FirstOrDefault(b => b.Id == input.Id);
+			var record = Records.FirstOrDefault(b => b.Id == input.Id);
 
 			if (record is null)
 				serviceResponse.Error(string.Empty, $"A record does not exist with ID '{input.Id}'");
@@ -192,7 +195,7 @@ namespace Forum3.Repositories {
 			var oldCategoryId = -1;
 
 			if (record.CategoryId != newCategoryRecord.Id) {
-				var categoryBoards = DbContext.Boards.Where(r => r.CategoryId == record.CategoryId).ToList();
+				var categoryBoards = Records.Where(r => r.CategoryId == record.CategoryId).ToList();
 
 				if (categoryBoards.Count() <= 1)
 					oldCategoryId = record.CategoryId;
@@ -240,8 +243,8 @@ namespace Forum3.Repositories {
 		public ServiceModels.ServiceResponse Merge(InputModels.MergeInput input) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
-			var fromBoard = DbContext.Boards.FirstOrDefault(b => b.Id == input.FromId);
-			var toBoard = DbContext.Boards.FirstOrDefault(b => b.Id == input.ToId);
+			var fromBoard = Records.FirstOrDefault(b => b.Id == input.FromId);
+			var toBoard = Records.FirstOrDefault(b => b.Id == input.ToId);
 
 			if (fromBoard is null)
 				serviceResponse.Error(string.Empty, $"A record does not exist with ID '{input.FromId}'");
@@ -284,14 +287,14 @@ namespace Forum3.Repositories {
 		public ServiceModels.ServiceResponse MoveUp(int id) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
-			var targetBoard = DbContext.Boards.FirstOrDefault(b => b.Id == id);
+			var targetBoard = Records.FirstOrDefault(b => b.Id == id);
 
 			if (targetBoard is null) {
 				serviceResponse.Error(string.Empty, "No board found with that ID.");
 				return serviceResponse;
 			}
 
-			var categoryBoards = DbContext.Boards.Where(b => b.CategoryId == targetBoard.CategoryId).OrderBy(b => b.DisplayOrder).ToList();
+			var categoryBoards = Records.Where(b => b.CategoryId == targetBoard.CategoryId).OrderBy(b => b.DisplayOrder).ToList();
 
 			var currentIndex = 1;
 

@@ -23,6 +23,7 @@ namespace Forum3.Repositories {
 	public class MessageRepository {
 		ApplicationDbContext DbContext { get; }
 		UserContext UserContext { get; }
+		BoardRepository BoardRepository { get; }
 		SettingsRepository SettingsRepository { get; }
 		SmileyRepository SmileyRepository { get; }
 		UserRepository UserRepository { get; }
@@ -32,6 +33,7 @@ namespace Forum3.Repositories {
 		public MessageRepository(
 			ApplicationDbContext dbContext,
 			UserContext userContext,
+			BoardRepository boardRepository,
 			SettingsRepository settingsRepository,
 			SmileyRepository smileyRepository,
 			UserRepository userRepository,
@@ -41,6 +43,7 @@ namespace Forum3.Repositories {
 		) {
 			DbContext = dbContext;
 			UserContext = userContext;
+			BoardRepository = boardRepository;
 			SettingsRepository = settingsRepository;
 			SmileyRepository = smileyRepository;
 			UserRepository = userRepository;
@@ -63,7 +66,7 @@ namespace Forum3.Repositories {
 				serviceResponse.Error(nameof(input.BoardId), $"Board ID is required");
 
 			var boardId = Convert.ToInt32(input.BoardId);
-			var boardRecord = DbContext.Boards.SingleOrDefault(b => b.Id == boardId);
+			var boardRecord = BoardRepository.FirstOrDefault(b => b.Id == boardId);
 
 			if (boardRecord is null)
 				serviceResponse.Error(string.Empty, $"A record does not exist with ID '{boardId}'");

@@ -6,7 +6,7 @@
 	<form method="post"
 		  asp-action="@Model.FormAction"
 		  asp-controller="@Model.FormController"
-		  asp-route-returnurl="@Model.CancelPath">
+		  asp-route-returnurl="@ViewData["Referrer"]">
 
 		<input type="hidden" name="Id" value="@Model.Id" />
 
@@ -41,8 +41,8 @@
 		<p>
 			<button>Save</button>
 
-			@if (!string.IsNullOrEmpty(Model.CancelPath)) {
-				<a class="button" href="@Model.CancelPath">Cancel</a>
+			@if (!string.IsNullOrEmpty(ViewData["Referrer"] as string)) {
+				<a class="button" href="@ViewData["Referrer"]">Cancel</a>
 			}
 		</p>
 	</form>

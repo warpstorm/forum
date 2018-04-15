@@ -1,6 +1,7 @@
 ﻿using Forum3.Annotations;
 using Forum3.Contexts;
 using Forum3.Exceptions;
+using Forum3.Interfaces.Services;
 using Forum3.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -16,7 +17,7 @@ namespace Forum3.Controllers {
 	using PageModels = Models.ViewModels.Topics.Pages;
 	using ViewModels = Models.ViewModels;
 
-	public class Topics : ForumController {
+	public class Topics : Controller {
 		ApplicationDbContext DbContext { get; }
 		UserContext UserContext { get; }
 
@@ -28,6 +29,7 @@ namespace Forum3.Controllers {
 		SmileyRepository SmileyRepository { get; }
 		TopicRepository TopicRepository { get; }
 
+		IForumViewResult ForumViewResult { get; }
 		IUrlHelper UrlHelper { get; }
 
 		public Topics(
@@ -40,6 +42,7 @@ namespace Forum3.Controllers {
 			SettingsRepository settingsRepository,
 			SmileyRepository smileyRepository,
 			TopicRepository topicRepository,
+			IForumViewResult forumViewResult,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory
 		) {
@@ -54,6 +57,7 @@ namespace Forum3.Controllers {
 			SmileyRepository = smileyRepository;
 			TopicRepository = topicRepository;
 
+			ForumViewResult = forumViewResult;
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
@@ -67,7 +71,7 @@ namespace Forum3.Controllers {
 			var page = 1;
 			var topicPreviews = TopicRepository.GetPreviews(id, page, unread);
 
-			var boardRecord = DbContext.Boards.Find(id);
+			var boardRecord = BoardRepository.FirstOrDefault(record => record.Id == id);
 
 			var viewModel = new PageModels.TopicIndexPage {
 				BoardId = id,
@@ -77,7 +81,7 @@ namespace Forum3.Controllers {
 				UnreadFilter = unread
 			};
 
-			return View(viewModel);
+			return ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpGet]
@@ -95,7 +99,7 @@ namespace Forum3.Controllers {
 				Topics = topicPreviews
 			};
 
-			return View(viewModel);
+			return ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpGet]
@@ -105,33 +109,43 @@ namespace Forum3.Controllers {
 			var viewModel = GetDisplayPageModel(id, pageId, target);
 
 			if (string.IsNullOrEmpty(viewModel.RedirectPath))
-				return View(viewModel);
+				return ForumViewResult.ViewResult(this, viewModel);
 			else
 				return Redirect(viewModel.RedirectPath);
 		}
 
 		[HttpGet]
-		public IActionResult Latest(int id) {
-			var serviceResponse = TopicRepository.GetLatest(id);
-			ProcessServiceResponse(serviceResponse);
+		public async Task<IActionResult> Latest(int id) {
+			if (ModelState.IsValid) {
+				var serviceResponse = TopicRepository.GetLatest(id);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+			}
 
-			return RedirectFromService();
+			return await FailureCallback();
+
+			async Task<IActionResult> FailureCallback() {
+				return await Task.Run(() => { return ForumViewResult.RedirectToReferrer(this); });
+			}
 		}
 
 		[HttpGet]
-		public IActionResult Pin(int id) {
-			var serviceResponse = TopicRepository.Pin(id);
-			ProcessServiceResponse(serviceResponse);
+		public async Task<IActionResult> Pin(int id) {
+			if (ModelState.IsValid) {
+				var serviceResponse = TopicRepository.Pin(id);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+			}
 
-			return RedirectFromService();
+			return await FailureCallback();
+
+			async Task<IActionResult> FailureCallback() {
+				return await Task.Run(() => { return ForumViewResult.RedirectToReferrer(this); });
+			}
 		}
 
 		[HttpGet]
 		public IActionResult ToggleBoard(InputModels.ToggleBoardInput input) {
-			if (ModelState.IsValid) {
-				var serviceResponse = TopicRepository.Toggle(input);
-				ProcessServiceResponse(serviceResponse);
-			}
+			if (ModelState.IsValid)
+				TopicRepository.Toggle(input);
 
 			return new NoContentResult();
 		}
@@ -142,16 +156,17 @@ namespace Forum3.Controllers {
 		public async Task<IActionResult> TopicReply(InputModels.MessageInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await MessageRepository.CreateReply(input);
-				ProcessServiceResponse(serviceResponse);
-
-				if (serviceResponse.Success)
-					return RedirectFromService();
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
-			var viewModel = GetDisplayPageModel(input.Id);
-			viewModel.ReplyForm.Body = input.Body;
+			return await FailureCallback();
 
-			return View(nameof(Display), viewModel);
+			async Task<IActionResult> FailureCallback() {
+				var viewModel = GetDisplayPageModel(input.Id);
+				viewModel.ReplyForm.Body = input.Body;
+
+				return await Task.Run(() => { return ForumViewResult.ViewResult(this, nameof(Display), viewModel); });
+			}
 		}
 
 		public string GetRedirectPath(int messageId, int parentMessageId, List<int> messageIds) {
@@ -255,7 +270,7 @@ namespace Forum3.Controllers {
 			};
 
 			foreach (var assignedBoard in assignedBoards) {
-				var indexBoard = BoardRepository.Get(assignedBoard);
+				var indexBoard = BoardRepository.GetIndexItem(assignedBoard);
 				viewModel.AssignedBoards.Add(indexBoard);
 			}
 

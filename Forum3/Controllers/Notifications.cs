@@ -1,16 +1,21 @@
-﻿using Forum3.Repositories;
+﻿using Forum3.Interfaces.Services;
+using Forum3.Repositories;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace Forum3.Controllers {
 	using ViewModels = Models.ViewModels.Notifications;
 
-	public class Notifications : ForumController {
+	public class Notifications : Controller {
 		NotificationRepository NotificationRepository { get; }
+		IForumViewResult ForumViewResult { get; }
 
 		public Notifications(
-			NotificationRepository notificationRepository
+			NotificationRepository notificationRepository,
+			IForumViewResult forumViewResult
 		) {
 			NotificationRepository = notificationRepository;
+			ForumViewResult = forumViewResult;
 		}
 
 		[HttpGet]
@@ -26,20 +31,26 @@ namespace Forum3.Controllers {
 				Notifications = notifications
 			};
 
-			return View(viewModel);
+			return ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpGet]
-		public IActionResult Open(int id) {
-			var serviceResponse = NotificationRepository.Open(id);
-			ProcessServiceResponse(serviceResponse);
+		public async Task<IActionResult> Open(int id) {
+			if (ModelState.IsValid) {
+				var serviceResponse = NotificationRepository.Open(id);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+			}
 
-			return RedirectFromService();
+			return await FailureCallback();
+
+			async Task<IActionResult> FailureCallback() {
+				return await Task.Run(() => { return ForumViewResult.RedirectToReferrer(this); });
+			}
 		}
 
 		[HttpGet]
 		public ActionResult MarkAllRead() {
-			return RedirectToAction(nameof(Boards.Index), nameof(Boards));
+			return RedirectToAction(nameof(Home.FrontPage), nameof(Home));
 		}
 	}
 }

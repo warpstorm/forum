@@ -1,4 +1,5 @@
 ﻿using Forum3.Extensions;
+using Forum3.Interfaces.Services;
 using Forum3.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -17,19 +18,22 @@ namespace Forum3.Controllers {
 	using PageViewModels = Models.ViewModels.Roles.Pages;
 
 	[Authorize(Roles = "Admin")]
-	public class Roles : ForumController {
+	public class Roles : Controller {
 		RoleRepository RoleRepository { get; }
 		UserManager<DataModels.ApplicationUser> UserManager { get; }
 		RoleManager<DataModels.ApplicationRole> RoleManager { get; }
+		IForumViewResult ForumViewResult { get; }
 
 		public Roles(
 			RoleRepository roleRepository,
 			UserManager<DataModels.ApplicationUser> userManager,
-			RoleManager<DataModels.ApplicationRole> roleManager
+			RoleManager<DataModels.ApplicationRole> roleManager,
+			IForumViewResult forumViewResult
 		) {
 			RoleRepository = roleRepository;
 			UserManager = userManager;
 			RoleManager = roleManager;
+			ForumViewResult = forumViewResult;
 		}
 
 
@@ -70,13 +74,13 @@ namespace Forum3.Controllers {
 				});
 			}
 
-			return View(viewModel);
+			return ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpGet]
 		public IActionResult Create() {
 			var viewModel = new PageViewModels.CreatePage();
-			return View(viewModel);
+			return ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpPost]
@@ -84,25 +88,26 @@ namespace Forum3.Controllers {
 		public async Task<IActionResult> Create(InputModels.CreateRoleInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await RoleRepository.Create(input);
-				ProcessServiceResponse(serviceResponse);
-
-				if (serviceResponse.Success)
-					return RedirectFromService();
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
-			var viewModel = new PageViewModels.CreatePage() {
-				Name = input.Name,
-				Description = input.Description
-			};
+			return await FailureCallback();
 
-			return View(viewModel);
+			async Task<IActionResult> FailureCallback() {
+				var viewModel = new PageViewModels.CreatePage() {
+					Name = input.Name,
+					Description = input.Description
+				};
+
+				return await Task.Run(() => { return ForumViewResult.ViewResult(this, viewModel); });
+			}
 		}
 
 		[HttpGet]
 		public async Task<IActionResult> Edit(string id) {
 			var viewModel = await GetEditPageModel(id);
 
-			return View(viewModel);
+			return ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpPost]
@@ -110,18 +115,19 @@ namespace Forum3.Controllers {
 		public async Task<IActionResult> Edit(InputModels.EditRoleInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await RoleRepository.Edit(input);
-				ProcessServiceResponse(serviceResponse);
-
-				if (serviceResponse.Success)
-					return RedirectFromService();
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
-			var viewModel = await GetEditPageModel(input.Id);
+			return await FailureCallback();
 
-			viewModel.Name = input.Name;
-			viewModel.Description = input.Description;
+			async Task<IActionResult> FailureCallback() {
+				var viewModel = await GetEditPageModel(input.Id);
 
-			return View(viewModel);
+				viewModel.Name = input.Name;
+				viewModel.Description = input.Description;
+
+				return await Task.Run(() => { return ForumViewResult.ViewResult(this, viewModel); });
+			}
 		}
 
 		[HttpGet]
@@ -129,37 +135,43 @@ namespace Forum3.Controllers {
 			if (ModelState.IsValid)
 				await RoleRepository.Delete(id);
 
-			return RedirectFromService();
+			return ForumViewResult.RedirectToReferrer(this);
 		}
 
 		[HttpGet]
 		public async Task<IActionResult> UserList(string id) {
 			var viewModel = await RoleRepository.UserList(id);
-			return View(viewModel);
+			return ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpGet]
 		public async Task<IActionResult> AddUser(string id, string user) {
-			var serviceResponse = await RoleRepository.AddUser(id, user);
-			ProcessServiceResponse(serviceResponse);
+			if (ModelState.IsValid) {
+				var serviceResponse = await RoleRepository.AddUser(id, user);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+			}
 
-			if (serviceResponse.Success)
-				return RedirectFromService();
+			return await FailureCallback();
 
-			var viewModel = await GetEditPageModel(id);
-			return View(nameof(Edit), viewModel);
+			async Task<IActionResult> FailureCallback() {
+				var viewModel = await GetEditPageModel(id);
+				return await Task.Run(() => { return ForumViewResult.ViewResult(this, nameof(Edit), viewModel); });
+			}
 		}
 
 		[HttpGet]
 		public async Task<IActionResult> RemoveUser(string id, string user) {
-			var serviceResponse = await RoleRepository.RemoveUser(id, user);
-			ProcessServiceResponse(serviceResponse);
+			if (ModelState.IsValid) {
+				var serviceResponse = await RoleRepository.RemoveUser(id, user);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+			}
 
-			if (serviceResponse.Success)
-				return RedirectFromService();
+			return await FailureCallback();
 
-			var viewModel = await GetEditPageModel(id);
-			return View(nameof(Edit), viewModel);
+			async Task<IActionResult> FailureCallback() {
+				var viewModel = await GetEditPageModel(id);
+				return await Task.Run(() => { return ForumViewResult.ViewResult(this, nameof(Edit), viewModel); });
+			}
 		}
 
 		public async Task<PageViewModels.EditPage> GetEditPageModel(string id) {

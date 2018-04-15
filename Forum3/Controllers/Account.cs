@@ -2,6 +2,7 @@
 using Forum3.Contexts;
 using Forum3.Exceptions;
 using Forum3.Extensions;
+using Forum3.Interfaces.Services;
 using Forum3.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -9,7 +10,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -18,7 +18,7 @@ namespace Forum3.Controllers {
 	using InputModels = Models.InputModels;
 	using ViewModels = Models.ViewModels;
 
-	public class Account : ForumController {
+	public class Account : Controller {
 		ApplicationDbContext DbContext { get; }
 		UserContext UserContext { get; }
 
@@ -26,6 +26,7 @@ namespace Forum3.Controllers {
 		SettingsRepository SettingsRepository { get; }
 
 		UserManager<DataModels.ApplicationUser> UserManager { get; }
+		IForumViewResult ForumViewResult { get; }
 		ILogger Logger { get; }
 
 		public Account(
@@ -34,6 +35,7 @@ namespace Forum3.Controllers {
 			AccountRepository accountRepository,
 			SettingsRepository settingsRepository,
 			UserManager<DataModels.ApplicationUser> userManager,
+			IForumViewResult forumViewResult,
 			ILogger<Account> logger
 		) {
 			DbContext = dbContext;
@@ -43,6 +45,7 @@ namespace Forum3.Controllers {
 			SettingsRepository = settingsRepository;
 
 			UserManager = userManager;
+			ForumViewResult = forumViewResult;
 			Logger = logger;
 		}
 
@@ -68,7 +71,7 @@ namespace Forum3.Controllers {
 				viewModel.IndexItems.Add(indexItem);
 			}
 
-			return View(viewModel);
+			return ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpGet]
@@ -97,7 +100,7 @@ namespace Forum3.Controllers {
 
 			ModelState.Clear();
 
-			return View(viewModel);
+			return ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpPost]
@@ -105,42 +108,39 @@ namespace Forum3.Controllers {
 		public async Task<IActionResult> Details(InputModels.UpdateAccountInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await AccountRepository.UpdateAccount(input);
-				ProcessServiceResponse(serviceResponse);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+			}
 
-				if (serviceResponse.Success) {
-					if (!string.IsNullOrEmpty(serviceResponse.RedirectPath))
-						return Redirect(serviceResponse.RedirectPath);
-					else
-						return RedirectToReferrer();
+			return await FailureCallback();
+
+			async Task<IActionResult> FailureCallback() {
+				var userRecord = await DbContext.Users.FindAsync(input.Id);
+
+				if (userRecord is null) {
+					var message = $"No record found with the display name '{input.DisplayName}'";
+					Logger.LogWarning(message);
+					throw new ApplicationException("You hackin' bro?");
 				}
+
+				AccountRepository.CanEdit(userRecord.Id);
+
+				var viewModel = new ViewModels.Account.DetailsPage {
+					DisplayName = input.DisplayName,
+					NewEmail = input.NewEmail,
+					AvatarPath = userRecord.AvatarPath,
+					Id = userRecord.Id,
+					EmailConfirmed = userRecord.EmailConfirmed,
+					BirthdayDays = AccountRepository.DayPickList(input.BirthdayDay),
+					BirthdayMonths = AccountRepository.MonthPickList(input.BirthdayMonth),
+					BirthdayYears = AccountRepository.YearPickList(input.BirthdayYear),
+					BirthdayDay = input.BirthdayDay.ToString(),
+					BirthdayMonth = input.BirthdayMonth.ToString(),
+					BirthdayYear = input.BirthdayYear.ToString(),
+					Settings = await SettingsRepository.GetUserSettingsList(userRecord.Id)
+				};
+
+				return ForumViewResult.ViewResult(this, viewModel);
 			}
-
-			var userRecord = await DbContext.Users.FindAsync(input.Id);
-
-			if (userRecord is null) {
-				var message = $"No record found with the display name '{input.DisplayName}'";
-				Logger.LogWarning(message);
-				throw new ApplicationException("You hackin' bro?");
-			}
-
-			AccountRepository.CanEdit(userRecord.Id);
-
-			var viewModel = new ViewModels.Account.DetailsPage {
-				DisplayName = input.DisplayName,
-				NewEmail = input.NewEmail,
-				AvatarPath = userRecord.AvatarPath,
-				Id = userRecord.Id,
-				EmailConfirmed = userRecord.EmailConfirmed,
-				BirthdayDays = AccountRepository.DayPickList(input.BirthdayDay),
-				BirthdayMonths = AccountRepository.MonthPickList(input.BirthdayMonth),
-				BirthdayYears = AccountRepository.YearPickList(input.BirthdayYear),
-				BirthdayDay = input.BirthdayDay.ToString(),
-				BirthdayMonth = input.BirthdayMonth.ToString(),
-				BirthdayYear = input.BirthdayYear.ToString(),
-				Settings = await SettingsRepository.GetUserSettingsList(userRecord.Id)
-			};
-
-			return View(viewModel);
 		}
 
 		[HttpPost]
@@ -148,38 +148,35 @@ namespace Forum3.Controllers {
 		public async Task<IActionResult> UpdateAvatar(InputModels.UpdateAvatarInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await AccountRepository.UpdateAvatar(input);
-				ProcessServiceResponse(serviceResponse);
-
-				if (serviceResponse.Success) {
-					if (!string.IsNullOrEmpty(serviceResponse.RedirectPath))
-						return Redirect(serviceResponse.RedirectPath);
-					else
-						return RedirectToReferrer();
-				}
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
-			var userRecord = input.Id is null ? UserContext.ApplicationUser : await UserManager.FindByIdAsync(input.Id);
+			return await FailureCallback();
 
-			if (userRecord is null)
-				userRecord = UserContext.ApplicationUser;
+			async Task<IActionResult> FailureCallback() {
+				var userRecord = input.Id is null ? UserContext.ApplicationUser : await UserManager.FindByIdAsync(input.Id);
 
-			AccountRepository.CanEdit(userRecord.Id);
+				if (userRecord is null)
+					userRecord = UserContext.ApplicationUser;
 
-			var viewModel = new ViewModels.Account.DetailsPage {
-				AvatarPath = userRecord.AvatarPath,
-				Id = userRecord.Id,
-				DisplayName = userRecord.DisplayName,
-				NewEmail = userRecord.Email,
-				EmailConfirmed = userRecord.EmailConfirmed,
-				BirthdayDays = AccountRepository.DayPickList(userRecord.Birthday.Day),
-				BirthdayMonths = AccountRepository.MonthPickList(userRecord.Birthday.Month),
-				BirthdayYears = AccountRepository.YearPickList(userRecord.Birthday.Year),
-				BirthdayDay = userRecord.Birthday.Day.ToString(),
-				BirthdayMonth = userRecord.Birthday.Month.ToString(),
-				BirthdayYear = userRecord.Birthday.Year.ToString(),
-			};
+				AccountRepository.CanEdit(userRecord.Id);
 
-			return View(nameof(Details), viewModel);
+				var viewModel = new ViewModels.Account.DetailsPage {
+					AvatarPath = userRecord.AvatarPath,
+					Id = userRecord.Id,
+					DisplayName = userRecord.DisplayName,
+					NewEmail = userRecord.Email,
+					EmailConfirmed = userRecord.EmailConfirmed,
+					BirthdayDays = AccountRepository.DayPickList(userRecord.Birthday.Day),
+					BirthdayMonths = AccountRepository.MonthPickList(userRecord.Birthday.Month),
+					BirthdayYears = AccountRepository.YearPickList(userRecord.Birthday.Year),
+					BirthdayDay = userRecord.Birthday.Day.ToString(),
+					BirthdayMonth = userRecord.Birthday.Month.ToString(),
+					BirthdayYear = userRecord.Birthday.Year.ToString(),
+				};
+
+				return ForumViewResult.ViewResult(this, nameof(Details), viewModel);
+			}
 		}
 
 		[HttpPost]
@@ -188,17 +185,14 @@ namespace Forum3.Controllers {
 		public async Task<IActionResult> SendVerificationEmail() {
 			if (ModelState.IsValid) {
 				var serviceResponse = await AccountRepository.SendVerificationEmail();
-				ProcessServiceResponse(serviceResponse);
-
-				if (serviceResponse.Success) {
-					if (!string.IsNullOrEmpty(serviceResponse.RedirectPath))
-						return Redirect(serviceResponse.RedirectPath);
-					else
-						return RedirectToReferrer();
-				}
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
-			return RedirectToAction(nameof(Profile.Details), nameof(Profile));
+			return await FailureCallback();
+
+			async Task<IActionResult> FailureCallback() {
+				return await Task.Run(() => { return RedirectToAction(nameof(Profile.Details), nameof(Profile)); });
+			}
 		}
 
 		[HttpGet]
@@ -206,29 +200,26 @@ namespace Forum3.Controllers {
 		public async Task<IActionResult> ConfirmEmail(InputModels.ConfirmEmailInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await AccountRepository.ConfirmEmail(input);
-				ProcessServiceResponse(serviceResponse);
-
-				if (serviceResponse.Success) {
-					if (!string.IsNullOrEmpty(serviceResponse.RedirectPath))
-						return Redirect(serviceResponse.RedirectPath);
-					else
-						return RedirectToAction(nameof(Boards.Index), nameof(Boards));
-				}
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
-			return View();
+			return await FailureCallback();
+
+			async Task<IActionResult> FailureCallback() {
+				return await Task.Run(() => { return ForumViewResult.ViewResult(this); });
+			}
 		}
 
 		[HttpGet]
 		[AllowAnonymous]
 		public async Task<IActionResult> Login() {
 			if (AccountRepository.IsAuthenticated)
-				return RedirectToAction(nameof(Boards.Index), nameof(Boards));
+				return RedirectToAction(nameof(Home.FrontPage), nameof(Home));
 
 			await AccountRepository.SignOut();
 
 			var viewModel = new ViewModels.Account.LoginPage();
-			return View(viewModel);
+			return ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpPost]
@@ -238,47 +229,42 @@ namespace Forum3.Controllers {
 		public async Task<IActionResult> Login(InputModels.LoginInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await AccountRepository.Login(input);
-				ProcessServiceResponse(serviceResponse);
-
-				if (serviceResponse.Success) {
-					if (string.IsNullOrEmpty(serviceResponse.RedirectPath))
-						return RedirectToAction(nameof(Boards.Index), nameof(Boards));
-					else
-						return RedirectFromService();
-				}
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
-			if (AccountRepository.IsAuthenticated)
-				return RedirectToAction(nameof(Boards.Index), nameof(Boards));
+			return await FailureCallback();
 
-			await AccountRepository.SignOut();
+			async Task<IActionResult> FailureCallback() {
+				if (AccountRepository.IsAuthenticated)
+					return RedirectToAction(nameof(Home.FrontPage), nameof(Home));
 
-			var viewModel = new ViewModels.Account.LoginPage {
-				Email = input.Email,
-				RememberMe = input.RememberMe
-			};
+				await AccountRepository.SignOut();
 
-			return View(viewModel);
+				var viewModel = new ViewModels.Account.LoginPage {
+					Email = input.Email,
+					RememberMe = input.RememberMe
+				};
+
+				return ForumViewResult.ViewResult(this, viewModel);
+			}
 		}
 
 		[HttpGet]
 		[AllowAnonymous]
-		public IActionResult AccessDenied() {
-			return View();
-		}
+		public IActionResult AccessDenied() => View();
 
 		[HttpGet]
 		[AllowAnonymous]
 		public async Task<IActionResult> Lockout() {
 			await AccountRepository.SignOut();
-			return View();
+			return ForumViewResult.ViewResult(this);
 		}
 
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> Logout() {
 			await AccountRepository.SignOut();
-			return RedirectToAction(nameof(Boards.Index), nameof(Boards));
+			return RedirectToAction(nameof(Home.FrontPage), nameof(Home));
 		}
 
 		[HttpGet]
@@ -292,7 +278,7 @@ namespace Forum3.Controllers {
 				BirthdayYears = AccountRepository.YearPickList()
 			};
 
-			return View(viewModel);
+			return ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpPost]
@@ -302,33 +288,30 @@ namespace Forum3.Controllers {
 		public async Task<IActionResult> Register(InputModels.RegisterInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await AccountRepository.Register(input);
-				ProcessServiceResponse(serviceResponse);
-
-				if (serviceResponse.Success) {
-					if (!string.IsNullOrEmpty(serviceResponse.RedirectPath))
-						return Redirect(serviceResponse.RedirectPath);
-					else
-						return RedirectToAction(nameof(Login));
-				}
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
-			await AccountRepository.SignOut();
+			return await FailureCallback();
 
-			var viewModel = new ViewModels.Account.RegisterPage {
-				BirthdayDays = AccountRepository.DayPickList(),
-				BirthdayDay = input.BirthdayDay.ToString(),
-				BirthdayMonths = AccountRepository.MonthPickList(),
-				BirthdayMonth = input.BirthdayMonth.ToString(),
-				BirthdayYears = AccountRepository.YearPickList(),
-				BirthdayYear = input.BirthdayYear.ToString(),
-				DisplayName = input.DisplayName,
-				Email = input.Email,
-				ConfirmEmail = input.ConfirmEmail,
-				Password = input.Password,
-				ConfirmPassword = input.ConfirmPassword,
-			};
+			async Task<IActionResult> FailureCallback() {
+				await AccountRepository.SignOut();
 
-			return View(viewModel);
+				var viewModel = new ViewModels.Account.RegisterPage {
+					BirthdayDays = AccountRepository.DayPickList(),
+					BirthdayDay = input.BirthdayDay.ToString(),
+					BirthdayMonths = AccountRepository.MonthPickList(),
+					BirthdayMonth = input.BirthdayMonth.ToString(),
+					BirthdayYears = AccountRepository.YearPickList(),
+					BirthdayYear = input.BirthdayYear.ToString(),
+					DisplayName = input.DisplayName,
+					Email = input.Email,
+					ConfirmEmail = input.ConfirmEmail,
+					Password = input.Password,
+					ConfirmPassword = input.ConfirmPassword,
+				};
+
+				return ForumViewResult.ViewResult(this, viewModel);
+			}
 		}
 
 		[HttpGet]
@@ -338,7 +321,7 @@ namespace Forum3.Controllers {
 
 			var viewModel = new ViewModels.Account.ForgotPasswordPage();
 
-			return View(viewModel);
+			return ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpPost]
@@ -348,23 +331,20 @@ namespace Forum3.Controllers {
 		public async Task<IActionResult> ForgotPassword(InputModels.ForgotPasswordInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await AccountRepository.ForgotPassword(input);
-				ProcessServiceResponse(serviceResponse);
-
-				if (serviceResponse.Success) {
-					if (!string.IsNullOrEmpty(serviceResponse.RedirectPath))
-						return Redirect(serviceResponse.RedirectPath);
-					else
-						return RedirectToAction(nameof(Login));
-				}
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
-			await AccountRepository.SignOut();
+			return await FailureCallback();
 
-			var viewModel = new ViewModels.Account.ForgotPasswordPage {
-				Email = input.Email
-			};
+			async Task<IActionResult> FailureCallback() {
+				await AccountRepository.SignOut();
 
-			return View(viewModel);
+				var viewModel = new ViewModels.Account.ForgotPasswordPage {
+					Email = input.Email
+				};
+
+				return ForumViewResult.ViewResult(this, viewModel);
+			}
 		}
 
 		[HttpGet]
@@ -382,7 +362,7 @@ namespace Forum3.Controllers {
 				Code = code
 			};
 
-			return View(viewModel);
+			return ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpPost]
@@ -392,23 +372,20 @@ namespace Forum3.Controllers {
 		public async Task<IActionResult> ResetPassword(InputModels.ResetPasswordInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await AccountRepository.ResetPassword(input);
-				ProcessServiceResponse(serviceResponse);
-
-				if (serviceResponse.Success) {
-					if (!string.IsNullOrEmpty(serviceResponse.RedirectPath))
-						return Redirect(serviceResponse.RedirectPath);
-					else
-						return RedirectToAction(nameof(Login));
-				}
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
-			await AccountRepository.SignOut();
+			return await FailureCallback();
 
-			var viewModel = new ViewModels.Account.ResetPasswordPage {
-				Code = input.Code
-			};
+			async Task<IActionResult> FailureCallback() {
+				await AccountRepository.SignOut();
 
-			return View(viewModel);
+				var viewModel = new ViewModels.Account.ResetPasswordPage {
+					Code = input.Code
+				};
+
+				return ForumViewResult.ViewResult(this, viewModel);
+			}
 		}
 
 		[HttpGet]
@@ -461,7 +438,7 @@ namespace Forum3.Controllers {
 
 			DbContext.SaveChanges();
 
-			return RedirectToAction(nameof(Boards.Index), nameof(Boards));
+			return RedirectToAction(nameof(Home.FrontPage), nameof(Home));
 		}
 	}
 }

@@ -1,4 +1,5 @@
 ﻿using Forum3.Contexts;
+using Forum3.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Text.Encodings.Web;
@@ -7,18 +8,21 @@ using System.Threading.Tasks;
 namespace Forum3.Controllers {
 	using ViewModels = Models.ViewModels.Profile;
 
-	public class Profile : ForumController {
+	public class Profile : Controller {
 		ApplicationDbContext DbContext { get; }
 		UserContext UserContext { get; }
+		IForumViewResult ForumViewResult { get; }
 		UrlEncoder UrlEncoder { get; }
 
 		public Profile(
 			ApplicationDbContext dbContext,
 			UserContext userContext,
+			IForumViewResult forumViewResult,
 			UrlEncoder urlEncoder
 		) {
 			DbContext = dbContext;
 			UserContext = userContext;
+			ForumViewResult = forumViewResult;
 			UrlEncoder = urlEncoder;
 		}
 		
@@ -40,7 +44,7 @@ namespace Forum3.Controllers {
 				Email = userRecord.Email,
 			};
 
-			return View(viewModel);
+			return ForumViewResult.ViewResult(this, viewModel);
 		}
 	}
 }

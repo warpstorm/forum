@@ -1,4 +1,5 @@
 ﻿using Forum3.Contexts;
+using Forum3.Interfaces.Services;
 using Forum3.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -7,15 +8,18 @@ using System.Diagnostics;
 namespace Forum3.Controllers {
 	using ViewModels = Models.ViewModels;
 
-	public class Home : ForumController {
+	public class Home : Controller {
 		UserContext UserContext { get; }
 		SettingsRepository SettingsRepository { get; }
+		IForumViewResult ForumViewResult { get; }
 
 		public Home(
 			UserContext userContext,
+			IForumViewResult forumViewResult,
 			SettingsRepository settingsRepository
 		) {
 			UserContext = userContext;
+			ForumViewResult = forumViewResult;
 			SettingsRepository = settingsRepository;
 		}
 
@@ -26,7 +30,7 @@ namespace Forum3.Controllers {
 			switch (frontpage) {
 				default:
 				case "Board List":
-					return RedirectToAction(nameof(Boards.Index), nameof(Boards));
+					return RedirectToAction(nameof(Home.FrontPage), nameof(Home));
 
 				case "All Topics":
 					return RedirectToAction(nameof(Topics.Index), nameof(Topics), new { id = 0 });
@@ -42,7 +46,7 @@ namespace Forum3.Controllers {
 				RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
 			};
 
-			return View(viewModel);
+			return ForumViewResult.ViewResult(this, viewModel);
 		}
 	}
 }

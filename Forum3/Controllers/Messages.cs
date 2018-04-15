@@ -1,5 +1,7 @@
 ﻿using Forum3.Annotations;
 using Forum3.Contexts;
+using Forum3.Exceptions;
+using Forum3.Interfaces.Services;
 using Forum3.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,31 +16,37 @@ namespace Forum3.Controllers {
 	using InputModels = Models.InputModels;
 	using ViewModels = Models.ViewModels;
 
-	public class Messages : ForumController {
+	public class Messages : Controller {
 		ApplicationDbContext DbContext { get; }
+		BoardRepository BoardRepository { get; }
 		MessageRepository MessageRepository { get; }
 		SettingsRepository SettingsRepository { get; }
+		IForumViewResult ForumViewResult { get; }
 		IUrlHelper UrlHelper { get; }
 
 		public Messages(
 			ApplicationDbContext dbContext,
+			BoardRepository boardRepository,
 			MessageRepository messageRepository,
 			SettingsRepository settingsRepository,
 			IActionContextAccessor actionContextAccessor,
+			IForumViewResult forumViewResult,
 			IUrlHelperFactory urlHelperFactory
 		) {
 			DbContext = dbContext;
+			BoardRepository = boardRepository;
 			MessageRepository = messageRepository;
 			SettingsRepository = settingsRepository;
+			ForumViewResult = forumViewResult;
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
 		[HttpGet]
 		public async Task<IActionResult> Create(int id = 0) {
-			var board = await DbContext.Boards.FindAsync(id);
+			var board = BoardRepository.FirstOrDefault(record => record.Id == id);
 
 			if (board is null)
-				throw new Exception($"A record does not exist with ID '{id}'");
+				throw new HttpNotFoundException($"A record does not exist with ID '{id}'");
 
 			Request.Query.TryGetValue("source", out var source);
 
@@ -46,11 +54,10 @@ namespace Forum3.Controllers {
 				return await Create(new InputModels.MessageInput { BoardId = board.Id, Body = source });
 
 			var viewModel = new ViewModels.Messages.CreateTopicPage {
-				BoardId = id,
-				CancelPath = Referrer
+				BoardId = id
 			};
 
-			return View(viewModel);
+			return ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpPost]
@@ -59,18 +66,19 @@ namespace Forum3.Controllers {
 		public async Task<IActionResult> Create(InputModels.MessageInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await MessageRepository.CreateTopic(input);
-				ProcessServiceResponse(serviceResponse);
-
-				if (serviceResponse.Success)
-					return RedirectFromService();
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
-			var viewModel = new ViewModels.Messages.CreateTopicPage() {
-				BoardId = input.BoardId,
-				Body = input.Body
-			};
+			return await FailureCallback();
 
-			return View(viewModel);
+			async Task<IActionResult> FailureCallback() {
+				var viewModel = new ViewModels.Messages.CreateTopicPage() {
+					BoardId = input.BoardId,
+					Body = input.Body
+				};
+
+				return await Task.Run(() => { return ForumViewResult.ViewResult(this, viewModel); });
+			}
 		}
 
 		[HttpGet]
@@ -82,11 +90,10 @@ namespace Forum3.Controllers {
 
 			var viewModel = new ViewModels.Messages.EditMessagePage {
 				Id = id,
-				Body = record.OriginalBody,
-				CancelPath = Referrer
+				Body = record.OriginalBody
 			};
 
-			return View(viewModel);
+			return ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpPost]
@@ -95,35 +102,48 @@ namespace Forum3.Controllers {
 		public async Task<IActionResult> Edit(InputModels.MessageInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await MessageRepository.EditMessage(input);
-				ProcessServiceResponse(serviceResponse);
-
-				if (serviceResponse.Success)
-					return RedirectFromService();
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
-			var viewModel = new ViewModels.Messages.CreateTopicPage() {
-				Body = input.Body
-			};
+			return await FailureCallback();
 
-			return View(viewModel);
+			async Task<IActionResult> FailureCallback() {
+				var viewModel = new ViewModels.Messages.CreateTopicPage {
+					Body = input.Body
+				};
+
+				return await Task.Run(() => { return ForumViewResult.ViewResult(this, viewModel); });
+			}
 		}
 
 		[HttpGet]
 		public async Task<IActionResult> Delete(int id) {
-			var serviceResponse = await MessageRepository.DeleteMessage(id);
-			ProcessServiceResponse(serviceResponse);
+			if (ModelState.IsValid) {
+				var serviceResponse = await MessageRepository.DeleteMessage(id);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+			}
 
-			return RedirectFromService();
+			return await FailureCallback();
+
+			async Task<IActionResult> FailureCallback() {
+				return await Task.Run(() => { return ForumViewResult.RedirectToReferrer(this); });
+			}
 		}
 
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		[PreventRapidRequests]
 		public async Task<IActionResult> AddThought(InputModels.ThoughtInput input) {
-			var serviceResponse = await MessageRepository.AddThought(input);
-			ProcessServiceResponse(serviceResponse);
+			if (ModelState.IsValid) {
+				var serviceResponse = await MessageRepository.AddThought(input);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+			}
 
-			return RedirectFromService();
+			return await FailureCallback();
+
+			async Task<IActionResult> FailureCallback() {
+				return await Task.Run(() => { return ForumViewResult.RedirectToReferrer(this); });
+			}
 		}
 
 		[Authorize(Roles = "Admin")]
@@ -158,12 +178,12 @@ namespace Forum3.Controllers {
 				viewModel.NextAction = UrlHelper.Action(nameof(Messages.ProcessMessages), nameof(Messages), input);
 			}
 
-			return View("Delay", viewModel);
+			return ForumViewResult.ViewResult(this, "Delay", viewModel);
 		}
 
 		[Authorize(Roles = "Admin")]
 		[HttpGet]
-		public IActionResult ReprocessMessages(InputModels.Continue input) {
+		public async Task<IActionResult> ReprocessMessages(InputModels.Continue input) {
 			if (string.IsNullOrEmpty(input.Stage)) {
 				var totalSteps = MessageRepository.ReprocessMessages();
 
@@ -174,7 +194,7 @@ namespace Forum3.Controllers {
 				};
 			}
 			else
-				MessageRepository.ReprocessMessagesContinue(input);
+				await MessageRepository.ReprocessMessagesContinue(input);
 
 			var viewModel = new ViewModels.Delay {
 				ActionName = "Reprocessing Messages",
@@ -189,7 +209,7 @@ namespace Forum3.Controllers {
 				viewModel.NextAction = UrlHelper.Action(nameof(Messages.ReprocessMessages), nameof(Messages), input);
 			}
 
-			return View("Delay", viewModel);
+			return ForumViewResult.ViewResult(this, "Delay", viewModel);
 		}
 
 		[Authorize(Roles="Admin")]
@@ -219,7 +239,7 @@ namespace Forum3.Controllers {
 				viewModel.NextAction = UrlHelper.Action(nameof(Messages.RecountReplies), nameof(Messages), input);
 			}
 
-			return View("Delay", viewModel);
+			return ForumViewResult.ViewResult(this, "Delay", viewModel);
 		}
 
 		[Authorize(Roles = "Admin")]
@@ -249,7 +269,7 @@ namespace Forum3.Controllers {
 				viewModel.NextAction = UrlHelper.Action(nameof(Messages.RebuildParticipants), nameof(Messages), input);
 			}
 
-			return View("Delay", viewModel);
+			return ForumViewResult.ViewResult(this, "Delay", viewModel);
 		}
 	}
 }
