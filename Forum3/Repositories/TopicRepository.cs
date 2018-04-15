@@ -18,6 +18,7 @@ namespace Forum3.Repositories {
 	public class TopicRepository {
 		ApplicationDbContext DbContext { get; }
 		UserContext UserContext { get; }
+		BoardRepository BoardRepository { get; }
 		MessageRepository MessageRepository { get; }
 		NotificationRepository NotificationRepository { get; }
 		RoleRepository RoleRepository { get; }
@@ -29,6 +30,7 @@ namespace Forum3.Repositories {
 		public TopicRepository(
 			ApplicationDbContext dbContext,
 			UserContext userContext,
+			BoardRepository boardRepository,
 			MessageRepository messageRepository,
 			NotificationRepository notificationRepository,
 			RoleRepository roleRepository,
@@ -40,6 +42,7 @@ namespace Forum3.Repositories {
 		) {
 			DbContext = dbContext;
 			UserContext = userContext;
+			BoardRepository = boardRepository;
 			MessageRepository = messageRepository;
 			NotificationRepository = notificationRepository;
 			RoleRepository = roleRepository;
@@ -373,24 +376,19 @@ namespace Forum3.Repositories {
 			return new ServiceModels.ServiceResponse();
 		}
 
-		public ServiceModels.ServiceResponse Toggle(InputModels.ToggleBoardInput input) {
-			var serviceResponse = new ServiceModels.ServiceResponse();
-
+		public void Toggle(InputModels.ToggleBoardInput input) {
 			var messageRecord = DbContext.Messages.Find(input.MessageId);
 
 			if (messageRecord is null)
 				throw new HttpNotFoundException($@"No message was found with the id '{input.MessageId}'");
 
+			if (!BoardRepository.Any(r => r.Id == input.BoardId))
+				throw new HttpNotFoundException();
+
 			var messageId = input.MessageId;
 
 			if (messageRecord.ParentId > 0)
 				messageId = messageRecord.ParentId;
-
-			if (!DbContext.Boards.Any(r => r.Id == input.BoardId))
-				serviceResponse.Error(string.Empty, $@"No board was found with the id '{input.BoardId}'");
-
-			if (!serviceResponse.Success)
-				return serviceResponse;
 
 			var boardId = input.BoardId;
 
@@ -409,8 +407,6 @@ namespace Forum3.Repositories {
 				DbContext.MessageBoards.Remove(existingRecord);
 
 			DbContext.SaveChanges();
-
-			return serviceResponse;
 		}
 
 		public void MarkRead(int topicId, DateTime latestMessageTime, List<int> pageMessageIds) {
