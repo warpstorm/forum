@@ -1,5 +1,6 @@
 ﻿using CodeKicker.BBCode;
 using Forum3.Contexts;
+using Forum3.Controllers;
 using Forum3.Extensions;
 using Forum3.Interfaces.Services;
 using Forum3.Services;
@@ -180,7 +181,7 @@ namespace Forum3.Repositories {
 				DbContext.SaveChanges();
 			}
 			else
-				serviceResponse.RedirectPath = UrlHelper.TopicIndex();
+				serviceResponse.RedirectPath = UrlHelper.Action(nameof(Topics.Index), nameof(Topics));
 
 			var topicReplies = await DbContext.Messages.Where(m => m.ParentId == messageId).ToListAsync();
 
