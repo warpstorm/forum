@@ -50,16 +50,14 @@ namespace Forum3.Extensions {
 		}
 
 		static void RegisterRepositories(IServiceCollection services, IConfiguration configuration) {
-			services.AddTransient<Repositories.AccountRepository>();
-			services.AddTransient<Repositories.BoardRepository>();
-			services.AddTransient<Repositories.CategoryRepository>();
-			services.AddTransient<Repositories.MessageRepository>();
-			services.AddTransient<Repositories.NotificationRepository>();
-			services.AddTransient<Repositories.RoleRepository>();
-			services.AddTransient<Repositories.SettingsRepository>();
-			services.AddTransient<Repositories.SmileyRepository>();
-			services.AddTransient<Repositories.TopicRepository>();
-			services.AddTransient<Repositories.UserRepository>();
+			services.AddScoped<Repositories.AccountRepository>();
+			services.AddScoped<Repositories.BoardRepository>();
+			services.AddScoped<Repositories.MessageRepository>();
+			services.AddScoped<Repositories.NotificationRepository>();
+			services.AddScoped<Repositories.RoleRepository>();
+			services.AddScoped<Repositories.SettingsRepository>();
+			services.AddScoped<Repositories.SmileyRepository>();
+			services.AddScoped<Repositories.TopicRepository>();
 		}
 
 		static void RegisterAzureStorage(IServiceCollection services, IConfiguration configuration) {

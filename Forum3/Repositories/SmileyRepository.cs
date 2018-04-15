@@ -12,9 +12,7 @@ namespace Forum3.Repositories {
 	using ServiceModels = Models.ServiceModels;
 	using ViewModels = Models.ViewModels.Smileys;
 
-	public class SmileyRepository {
-		public List<DataModels.Smiley> All { get; }
-
+	public class SmileyRepository : Repository<DataModels.Smiley> {
 		ApplicationDbContext DbContext { get; }
 		CloudBlobClient CloudBlobClient { get; }
 
@@ -25,7 +23,7 @@ namespace Forum3.Repositories {
 			DbContext = dbContext;
 			CloudBlobClient = cloudBlobClient;
 
-			All = DbContext.Smileys.Where(s => s.Code != null).OrderBy(s => s.SortOrder).ToList();
+			Records = DbContext.Smileys.Where(s => s.Code != null).OrderBy(s => s.SortOrder).ToList();
 		}
 
 		public List<List<ViewModels.IndexItem>> GetSelectorList() {
@@ -35,7 +33,7 @@ namespace Forum3.Repositories {
 
 			List<ViewModels.IndexItem> currentColumnList = null;
 
-			foreach (var smiley in All) {
+			foreach (var smiley in Records) {
 				var sortColumn = smiley.SortOrder / 1000;
 				var sortRow = smiley.SortOrder % 1000;
 

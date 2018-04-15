@@ -32,19 +32,19 @@ namespace Forum3.Repositories {
 
 		ApplicationDbContext DbContext { get; }
 		UserContext UserContext { get; }
-		UserRepository UserRepository { get; }
+		AccountRepository AccountRepository { get; }
 		IUrlHelper UrlHelper { get; }
 
 		public NotificationRepository (
 			ApplicationDbContext dbContext,
 			UserContext userContext,
-			UserRepository userRepository,
+			AccountRepository accountRepository,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory
 		) {
 			DbContext = dbContext;
 			UserContext = userContext;
-			UserRepository = userRepository;
+			AccountRepository = accountRepository;
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
@@ -56,7 +56,7 @@ namespace Forum3.Repositories {
 			var recentTimeLimit = DateTime.Now.AddMinutes(-30);
 
 			var notificationQuery = from n in ForCurrentUser
-									join targetUser in UserRepository.All on n.TargetUserId equals targetUser.Id into targetUsers
+									join targetUser in DbContext.Users on n.TargetUserId equals targetUser.Id into targetUsers
 									from targetUser in targetUsers.DefaultIfEmpty()
 									where n.Time > hiddenTimeLimit
 									where showRead || n.Unread

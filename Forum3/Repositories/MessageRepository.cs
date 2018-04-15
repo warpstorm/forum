@@ -27,7 +27,7 @@ namespace Forum3.Repositories {
 		BoardRepository BoardRepository { get; }
 		SettingsRepository SettingsRepository { get; }
 		SmileyRepository SmileyRepository { get; }
-		UserRepository UserRepository { get; }
+		AccountRepository AccountRepository { get; }
 		IImageStore ImageStore { get; }
 		IUrlHelper UrlHelper { get; }
 
@@ -37,7 +37,7 @@ namespace Forum3.Repositories {
 			BoardRepository boardRepository,
 			SettingsRepository settingsRepository,
 			SmileyRepository smileyRepository,
-			UserRepository userRepository,
+			AccountRepository accountRepository,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory,
 			IImageStore imageStore
@@ -47,7 +47,7 @@ namespace Forum3.Repositories {
 			BoardRepository = boardRepository;
 			SettingsRepository = settingsRepository;
 			SmileyRepository = smileyRepository;
-			UserRepository = userRepository;
+			AccountRepository = accountRepository;
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 			ImageStore = imageStore;
 		}
@@ -363,17 +363,17 @@ namespace Forum3.Repositories {
 		}
 
 		public void PreProcessSmileys(InputModels.ProcessedMessageInput processedMessageInput) {
-			for (var i = 0; i < SmileyRepository.All.Count(); i++) {
-				var pattern = @"(^|[\r\n\s])" + Regex.Escape(SmileyRepository.All[i].Code) + @"(?=$|[\r\n\s])";
+			for (var i = 0; i < SmileyRepository.Count(); i++) {
+				var pattern = @"(^|[\r\n\s])" + Regex.Escape(SmileyRepository[i].Code) + @"(?=$|[\r\n\s])";
 				var replacement = $"$1SMILEY_{i}_INDEX";
 				processedMessageInput.DisplayBody = Regex.Replace(processedMessageInput.DisplayBody, pattern, replacement, RegexOptions.Singleline);
 			}
 		}
 
 		public void ProcessSmileys(InputModels.ProcessedMessageInput processedMessageInput) {
-			for (var i = 0; i < SmileyRepository.All.Count(); i++) {
+			for (var i = 0; i < SmileyRepository.Count(); i++) {
 				var pattern = $@"SMILEY_{i}_INDEX";
-				var replacement = "<img src='" + SmileyRepository.All[i].Path + "' />";
+				var replacement = "<img src='" + SmileyRepository[i].Path + "' />";
 				processedMessageInput.DisplayBody = Regex.Replace(processedMessageInput.DisplayBody, pattern, replacement);
 			}
 		}
@@ -571,11 +571,11 @@ namespace Forum3.Repositories {
 
 				var matchedTag = regexMatch.Groups[1].Value;
 
-				var user = UserRepository.All.SingleOrDefault(u => u.DisplayName.ToLower() == matchedTag.ToLower());
+				var user = AccountRepository.FirstOrDefault(u => u.DisplayName.ToLower() == matchedTag.ToLower());
 
 				// try to guess what they meant
 				if (user is null)
-					user = UserRepository.All.FirstOrDefault(u => u.UserName.ToLower().Contains(matchedTag.ToLower()));
+					user = AccountRepository.FirstOrDefault(u => u.UserName.ToLower().Contains(matchedTag.ToLower()));
 
 				if (user != null) {
 					if (user.Id != UserContext.ApplicationUser.Id)

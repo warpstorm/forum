@@ -12,7 +12,7 @@ namespace Forum3.Repositories {
 	using ServiceModels = Models.ServiceModels;
 	using ViewModels = Models.ViewModels.SiteSettings;
 
-	public class SettingsRepository {
+	public class SettingsRepository : Repository<DataModels.SiteSetting> {
 		ApplicationDbContext DbContext { get; }
 		UserContext UserContext { get; }
 
@@ -25,6 +25,8 @@ namespace Forum3.Repositories {
 		) {
 			DbContext = dbContext;
 			UserContext = userContext;
+
+			Records = DbContext.SiteSettings.ToList();
 		}
 
 		public int AvatarSize(bool forceGlobal = false) {
@@ -105,7 +107,7 @@ namespace Forum3.Repositories {
 				}
 
 				if (!UserSettings[userId].ContainsKey(name)) {
-					var setting = DbContext.SiteSettings.Where(r => r.Name == name && r.UserId == userId).FirstOrDefault();
+					var setting = Records.FirstOrDefault(r => r.Name == name && r.UserId == userId);
 
 					lock (UserSettings[userId]) {
 						if (!UserSettings[userId].ContainsKey(name))
@@ -118,7 +120,7 @@ namespace Forum3.Repositories {
 
 			if (string.IsNullOrEmpty(settingValue)) {
 				if (!Settings.ContainsKey(name)) {
-					var setting = DbContext.SiteSettings.Where(r => r.Name == name && string.IsNullOrEmpty(r.UserId)).FirstOrDefault();
+					var setting = Records.FirstOrDefault(r => r.Name == name && string.IsNullOrEmpty(r.UserId));
 
 					lock (Settings) {
 						if (!Settings.ContainsKey(name))
@@ -152,10 +154,10 @@ namespace Forum3.Repositories {
 			}
 		}
 
-		public async Task<List<ViewModels.IndexItem>> GetUserSettingsList(string userId) {
+		public List<ViewModels.IndexItem> GetUserSettingsList(string userId) {
 			var settings = new BaseSettings();
 
-			var settingsRecords = await DbContext.SiteSettings.Where(record => string.IsNullOrEmpty(record.UserId) || record.UserId == userId).OrderByDescending(record => record.UserId).ToListAsync();
+			var settingsRecords = Records.Where(record => string.IsNullOrEmpty(record.UserId) || record.UserId == userId).OrderByDescending(record => record.UserId).ToList();
 
 			var settingsList = new List<ViewModels.IndexItem>();
 
@@ -191,7 +193,7 @@ namespace Forum3.Repositories {
 		}
 
 		public void UpdateUserSettings(InputModels.UpdateAccountInput input) {
-			var existingRecords = DbContext.SiteSettings.Where(s => s.UserId == input.Id).ToList();
+			var existingRecords = Records.Where(s => s.UserId == input.Id).ToList();
 
 			if (existingRecords.Any())
 				DbContext.RemoveRange(existingRecords);
@@ -200,7 +202,7 @@ namespace Forum3.Repositories {
 				if (string.IsNullOrEmpty(settingInput.Value))
 					continue;
 
-				var siteSetting = DbContext.SiteSettings.FirstOrDefault(s => !s.AdminOnly && s.Name == settingInput.Key && string.IsNullOrEmpty(s.UserId));
+				var siteSetting = Records.FirstOrDefault(s => !s.AdminOnly && s.Name == settingInput.Key && string.IsNullOrEmpty(s.UserId));
 
 				if (siteSetting != null) {
 					var baseSetting = BaseSettings.Get(siteSetting.Name);
@@ -226,7 +228,7 @@ namespace Forum3.Repositories {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			foreach (var settingInput in input.Settings) {
-				var existingRecords = DbContext.SiteSettings.Where(s => s.Name == settingInput.Key && string.IsNullOrEmpty(s.UserId)).ToList();
+				var existingRecords = Records.Where(s => s.Name == settingInput.Key && string.IsNullOrEmpty(s.UserId)).ToList();
 
 				if (existingRecords.Any())
 					DbContext.RemoveRange(existingRecords);

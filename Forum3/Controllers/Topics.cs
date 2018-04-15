@@ -22,7 +22,6 @@ namespace Forum3.Controllers {
 		UserContext UserContext { get; }
 
 		BoardRepository BoardRepository { get; }
-		CategoryRepository CategoryRepository { get; }
 		MessageRepository MessageRepository { get; }
 		RoleRepository RoleRepository { get; }
 		SettingsRepository SettingsRepository { get; }
@@ -36,7 +35,6 @@ namespace Forum3.Controllers {
 			ApplicationDbContext applicationDbContext,
 			UserContext userContext,
 			BoardRepository boardRepository,
-			CategoryRepository categoryRepository,
 			MessageRepository messageRepository,
 			RoleRepository roleRepository,
 			SettingsRepository settingsRepository,
@@ -50,7 +48,6 @@ namespace Forum3.Controllers {
 			UserContext = userContext;
 
 			BoardRepository = boardRepository;
-			CategoryRepository = categoryRepository;
 			MessageRepository = messageRepository;
 			RoleRepository = roleRepository;
 			SettingsRepository = settingsRepository;
@@ -255,7 +252,7 @@ namespace Forum3.Controllers {
 					Views = record.ViewCount,
 				},
 				Messages = messages,
-				Categories = CategoryRepository.Index(),
+				Categories = BoardRepository.CategoryIndex(),
 				AssignedBoards = new List<ViewModels.Boards.Items.IndexBoard>(),
 				IsAuthenticated = UserContext.IsAuthenticated,
 				CanManage = UserContext.IsAdmin || record.PostedById == UserContext.ApplicationUser.Id,
@@ -270,7 +267,7 @@ namespace Forum3.Controllers {
 			};
 
 			foreach (var assignedBoard in assignedBoards) {
-				var indexBoard = BoardRepository.GetIndexItem(assignedBoard);
+				var indexBoard = BoardRepository.GetIndexBoard(assignedBoard);
 				viewModel.AssignedBoards.Add(indexBoard);
 			}
 

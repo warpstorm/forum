@@ -31,10 +31,10 @@ namespace Forum3.Controllers {
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> Index() {
+		public IActionResult Index() {
 			var settings = new BaseSettings();
 
-			var settingsRecords = await DbContext.SiteSettings.Where(record => string.IsNullOrEmpty(record.UserId)).ToListAsync();
+			var settingsRecords = SettingsRepository.Where(record => string.IsNullOrEmpty(record.UserId)).ToList();
 
 			var settingsList = new List<ViewModels.IndexItem>();
 

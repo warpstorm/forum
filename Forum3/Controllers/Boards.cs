@@ -14,39 +14,36 @@ namespace Forum3.Controllers {
 	public class Boards : Controller {
 		ApplicationDbContext DbContext { get; }
 		BoardRepository BoardRepository { get; }
-		CategoryRepository CategoryRepository { get; }
 		RoleRepository RoleRepository { get; }
-		UserRepository UserRepository { get; }
+		AccountRepository AccountRepository { get; }
 		NotificationRepository NotificationRepository { get; }
 		IForumViewResult ForumViewResult { get; }
 
 		public Boards(
 			ApplicationDbContext dbContext,
 			BoardRepository boardRepository,
-			CategoryRepository categoryRepository,
 			RoleRepository roleRepository,
-			UserRepository userRepository,
+			AccountRepository accountRepository,
 			NotificationRepository notificationRepository,
 			IForumViewResult forumViewResult
 		) {
 			DbContext = dbContext;
 			BoardRepository = boardRepository;
-			CategoryRepository = categoryRepository;
 			RoleRepository = roleRepository;
-			UserRepository = userRepository;
+			AccountRepository = accountRepository;
 			NotificationRepository = notificationRepository;
 			ForumViewResult = forumViewResult;
 		}
 
 		[HttpGet]
 		public IActionResult Index() {
-			var birthdays = UserRepository.GetBirthdaysList();
-			var onlineUsers = UserRepository.GetOnlineList();
+			var birthdays = AccountRepository.GetBirthdaysList();
+			var onlineUsers = AccountRepository.GetOnlineList();
 			var notifications = NotificationRepository.Index();
 
 			var viewModel = new PageViewModels.IndexPage {
 				Birthdays = birthdays.ToArray(),
-				Categories = CategoryRepository.Index(),
+				Categories = BoardRepository.CategoryIndex(true),
 				OnlineUsers = onlineUsers,
 				Notifications = notifications
 			};
@@ -58,7 +55,7 @@ namespace Forum3.Controllers {
 		[HttpGet]
 		public IActionResult Manage() {
 			var viewModel = new PageViewModels.IndexPage {
-				Categories = CategoryRepository.Index()
+				Categories = BoardRepository.CategoryIndex()
 			};
 
 			return ForumViewResult.ViewResult(this, viewModel);
@@ -68,7 +65,7 @@ namespace Forum3.Controllers {
 		[HttpGet]
 		public IActionResult Create() {
 			var viewModel = new PageViewModels.CreatePage() {
-				Categories = CategoryRepository.PickList()
+				Categories = BoardRepository.CategoryPickList()
 			};
 
 			return ForumViewResult.ViewResult(this, viewModel);
@@ -78,7 +75,7 @@ namespace Forum3.Controllers {
 		[HttpPost]
 		public async Task<IActionResult> Create(InputModels.CreateBoardInput input) {
 			if (ModelState.IsValid) {
-				var serviceResponse = BoardRepository.Add(input);
+				var serviceResponse = BoardRepository.AddBoard(input);
 				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
@@ -86,7 +83,7 @@ namespace Forum3.Controllers {
 
 			async Task<IActionResult> FailureCallback() {
 				var viewModel = new PageViewModels.CreatePage() {
-					Categories = CategoryRepository.PickList()
+					Categories = BoardRepository.CategoryPickList()
 				};
 
 				viewModel.Name = input.Name;
@@ -109,11 +106,11 @@ namespace Forum3.Controllers {
 
 			var viewModel = new PageViewModels.EditPage {
 				Id = boardRecord.Id,
-				Categories = CategoryRepository.PickList(),
+				Categories = BoardRepository.CategoryPickList(),
 				Roles = RoleRepository.PickList(boardRecord.Id)
 			};
 
-			var category = DbContext.Categories.Find(boardRecord.CategoryId);
+			var category = BoardRepository.Categories.FirstOrDefault(item => item.Id == boardRecord.CategoryId);
 
 			viewModel.Name = boardRecord.Name;
 			viewModel.Description = boardRecord.Description;
@@ -126,7 +123,7 @@ namespace Forum3.Controllers {
 		[HttpPost]
 		public async Task<IActionResult> Edit(InputModels.EditBoardInput input) {
 			if (ModelState.IsValid) {
-				var serviceResponse = BoardRepository.Update(input);
+				var serviceResponse = BoardRepository.UpdateBoard(input);
 				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
@@ -140,7 +137,7 @@ namespace Forum3.Controllers {
 
 				var viewModel = new PageViewModels.EditPage {
 					Id = boardRecord.Id,
-					Categories = CategoryRepository.PickList(),
+					Categories = BoardRepository.CategoryPickList(),
 					Roles = RoleRepository.PickList(boardRecord.Id)
 				};
 
@@ -158,7 +155,7 @@ namespace Forum3.Controllers {
 		[HttpGet]
 		public async Task<IActionResult> MoveCategoryUp(int id) {
 			if (ModelState.IsValid) {
-				var serviceResponse = CategoryRepository.MoveUp(id);
+				var serviceResponse = BoardRepository.MoveCategoryUp(id);
 				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
@@ -173,7 +170,7 @@ namespace Forum3.Controllers {
 		[HttpGet]
 		public async Task<IActionResult> MoveBoardUp(int id) {
 			if (ModelState.IsValid) {
-				var serviceResponse = BoardRepository.MoveUp(id);
+				var serviceResponse = BoardRepository.MoveBoardUp(id);
 				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
@@ -190,7 +187,7 @@ namespace Forum3.Controllers {
 			InputModels.MergeInput input
 		) {
 			if (ModelState.IsValid) {
-				var serviceResponse = CategoryRepository.Merge(input);
+				var serviceResponse = BoardRepository.MergeCategory(input);
 				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
@@ -205,7 +202,7 @@ namespace Forum3.Controllers {
 		[HttpPost]
 		public async Task<IActionResult> MergeBoard(InputModels.MergeInput input) {
 			if (ModelState.IsValid) {
-				var serviceResponse = BoardRepository.Merge(input);
+				var serviceResponse = BoardRepository.MergeBoard(input);
 				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 

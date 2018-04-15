@@ -13,15 +13,15 @@ namespace Forum3.Services {
 	using ServiceModels = Models.ServiceModels;
 
 	public class ForumViewResult : IForumViewResult {
-		CategoryRepository CategoryRepository { get; }
+		BoardRepository BoardRepository { get; }
 		IUrlHelper UrlHelper { get; }
 
 		public ForumViewResult(
-			CategoryRepository categoryRepository,
+			BoardRepository boardRepository,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory
 		) {
-			CategoryRepository = categoryRepository;
+			BoardRepository = boardRepository;
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
@@ -59,7 +59,7 @@ namespace Forum3.Services {
 		public IActionResult ViewResult(Controller controller, string viewName, object model = null) {
 			controller.ViewData["LogoPath"] = GetLogoPath();
 			controller.ViewData["Referrer"] = GetReferrer(controller);
-			controller.ViewData["Categories"] = CategoryRepository.Index();
+			controller.ViewData["Categories"] = BoardRepository.CategoryIndex();
 
 			return controller.View(viewName, model);
 		}

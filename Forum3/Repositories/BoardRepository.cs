@@ -2,6 +2,7 @@
 using Forum3.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.Routing;
 using System;
 using System.Collections.Generic;
@@ -14,27 +15,76 @@ namespace Forum3.Repositories {
 	using ServiceModels = Models.ServiceModels;
 
 	public class BoardRepository : Repository<DataModels.Board> {
+		public List<DataModels.Category> Categories { get; }
+
 		ApplicationDbContext DbContext { get; }
+		UserContext UserContext { get; }
 		RoleRepository RoleRepository { get; }
-		UserRepository UserRepository { get; }
 		IUrlHelper UrlHelper { get; }
 
 		public BoardRepository(
 			ApplicationDbContext dbContext,
+			UserContext userContext,
 			RoleRepository roleRepository,
-			UserRepository userRepository,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory
 		) {
 			DbContext = dbContext;
+			UserContext = userContext;
 			RoleRepository = roleRepository;
-			UserRepository = userRepository;
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 
 			Records = DbContext.Boards.OrderBy(record => record.DisplayOrder).ToList();
+			Categories = DbContext.Categories.OrderBy(record => record.DisplayOrder).ToList();
 		}
 
-		public ItemViewModels.IndexBoard GetIndexItem(DataModels.Board boardRecord) {
+		public List<SelectListItem> CategoryPickList() {
+			var pickList = new List<SelectListItem>();
+
+			foreach (var categoryRecord in Categories) {
+				pickList.Add(new SelectListItem {
+					Text = categoryRecord.Name,
+					Value = categoryRecord.Id.ToString()
+				});
+			}
+
+			return pickList;
+		}
+
+		public List<ItemViewModels.IndexCategory> CategoryIndex(bool includeReplies = false) {
+			var categories = Categories.OrderBy(r => r.DisplayOrder).ToList();
+
+			var indexCategories = new List<ItemViewModels.IndexCategory>();
+
+			foreach (var categoryRecord in categories) {
+				var indexCategory = new ItemViewModels.IndexCategory {
+					Id = categoryRecord.Id,
+					Name = categoryRecord.Name,
+					DisplayOrder = categoryRecord.DisplayOrder
+				};
+
+				foreach (var board in Records.Where(r => r.CategoryId == categoryRecord.Id)) {
+					var thisBoardRoles = RoleRepository.BoardRoles.Where(r => r.BoardId == board.Id);
+
+					var authorized = UserContext.IsAdmin || !thisBoardRoles.Any() || (UserContext.Roles?.Any(userRole => thisBoardRoles.Any(boardRole => boardRole.RoleId == userRole)) ?? false);
+
+					if (!authorized)
+						continue;
+
+					var indexBoard = GetIndexBoard(board, includeReplies);
+
+					indexCategory.Boards.Add(indexBoard);
+				}
+
+				// Don't index the category if there's no boards available to the user
+				if (indexCategory.Boards.Any())
+					indexCategories.Add(indexCategory);
+			}
+
+			return indexCategories;
+		}
+
+		public ItemViewModels.IndexBoard GetIndexBoard(DataModels.Board boardRecord, bool includeReplies = false) {
 			var indexBoard = new ItemViewModels.IndexBoard {
 				Id = boardRecord.Id,
 				Name = boardRecord.Name,
@@ -43,12 +93,12 @@ namespace Forum3.Repositories {
 				Unread = false
 			};
 
-			if (boardRecord.LastMessageId != null) {
+			if (includeReplies && boardRecord.LastMessageId != null) {
 				// TODO - permission trim this list and handle empty shortPreviews
 
 				var lastMessageQuery = from lastReply in DbContext.Messages
 									   where lastReply.Id == boardRecord.LastMessageId
-									   join lastReplyBy in UserRepository.All on lastReply.LastReplyById equals lastReplyBy.Id
+									   join lastReplyBy in DbContext.Users on lastReply.LastReplyById equals lastReplyBy.Id
 									   select new Models.ViewModels.Topics.Items.MessagePreview {
 										   Id = lastReply.Id,
 										   ShortPreview = lastReply.ShortPreview,
@@ -64,7 +114,7 @@ namespace Forum3.Repositories {
 			return indexBoard;
 		}
 
-		public ServiceModels.ServiceResponse Add(InputModels.CreateBoardInput input) {
+		public ServiceModels.ServiceResponse AddBoard(InputModels.CreateBoardInput input) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			if (Records.Any(b => b.Name == input.Name))
@@ -76,10 +126,10 @@ namespace Forum3.Repositories {
 				input.NewCategory = input.NewCategory.Trim();
 
 			if (!string.IsNullOrEmpty(input.NewCategory)) {
-				categoryRecord = DbContext.Categories.FirstOrDefault(c => c.Name == input.NewCategory);
+				categoryRecord = Categories.FirstOrDefault(c => c.Name == input.NewCategory);
 
 				if (categoryRecord is null) {
-					var displayOrder = DbContext.Categories.DefaultIfEmpty().Max(c => c.DisplayOrder);
+					var displayOrder = Categories.DefaultIfEmpty().Max(c => c.DisplayOrder);
 
 					categoryRecord = new DataModels.Category {
 						Name = input.NewCategory,
@@ -92,7 +142,7 @@ namespace Forum3.Repositories {
 			else {
 				try {
 					var categoryId = Convert.ToInt32(input.Category);
-					categoryRecord = DbContext.Categories.FirstOrDefault(c => c.Id == categoryId);
+					categoryRecord = Categories.FirstOrDefault(c => c.Id == categoryId);
 
 					if (categoryRecord is null)
 						serviceResponse.Error(nameof(input.Category), "No category was found with this ID.");
@@ -136,7 +186,7 @@ namespace Forum3.Repositories {
 			return serviceResponse;
 		}
 
-		public ServiceModels.ServiceResponse Update(InputModels.EditBoardInput input) {
+		public ServiceModels.ServiceResponse UpdateBoard(InputModels.EditBoardInput input) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			var record = Records.FirstOrDefault(b => b.Id == input.Id);
@@ -150,10 +200,10 @@ namespace Forum3.Repositories {
 				input.NewCategory = input.NewCategory.Trim();
 
 			if (!string.IsNullOrEmpty(input.NewCategory)) {
-				newCategoryRecord = DbContext.Categories.FirstOrDefault(c => c.Name == input.NewCategory);
+				newCategoryRecord = Categories.FirstOrDefault(c => c.Name == input.NewCategory);
 
 				if (newCategoryRecord is null) {
-					var displayOrder = DbContext.Categories.Max(c => c.DisplayOrder);
+					var displayOrder = Categories.DefaultIfEmpty().Max(c => c.DisplayOrder);
 
 					newCategoryRecord = new DataModels.Category {
 						Name = input.NewCategory,
@@ -167,7 +217,7 @@ namespace Forum3.Repositories {
 			else {
 				try {
 					var newCategoryId = Convert.ToInt32(input.Category);
-					newCategoryRecord = DbContext.Categories.FirstOrDefault(c => c.Id == newCategoryId);
+					newCategoryRecord = Categories.FirstOrDefault(c => c.Id == newCategoryId);
 
 					if (newCategoryRecord is null)
 						serviceResponse.Error(nameof(input.Category), "No category was found with this ID.");
@@ -230,7 +280,7 @@ namespace Forum3.Repositories {
 			DbContext.SaveChanges();
 
 			if (oldCategoryId >= 0) {
-				var oldCategoryRecord = DbContext.Categories.Find(oldCategoryId);
+				var oldCategoryRecord = Categories.FirstOrDefault(item => item.Id == oldCategoryId);
 				DbContext.Categories.Remove(oldCategoryRecord);
 				DbContext.SaveChanges();
 			}
@@ -240,7 +290,7 @@ namespace Forum3.Repositories {
 			return serviceResponse;
 		}
 
-		public ServiceModels.ServiceResponse Merge(InputModels.MergeInput input) {
+		public ServiceModels.ServiceResponse MergeBoard(InputModels.MergeInput input) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			var fromBoard = Records.FirstOrDefault(b => b.Id == input.FromId);
@@ -274,7 +324,7 @@ namespace Forum3.Repositories {
 
 			// Remove the category if empty
 			if (!DbContext.Boards.Any(b => b.CategoryId == categoryId)) {
-				var categoryRecord = DbContext.Categories.FirstOrDefault(c => c.Id == categoryId);
+				var categoryRecord = Categories.FirstOrDefault(item => item.Id == categoryId);
 
 				DbContext.Categories.Remove(categoryRecord);
 
@@ -284,7 +334,38 @@ namespace Forum3.Repositories {
 			return serviceResponse;
 		}
 
-		public ServiceModels.ServiceResponse MoveUp(int id) {
+		public ServiceModels.ServiceResponse MergeCategory(InputModels.MergeInput input) {
+			var serviceResponse = new ServiceModels.ServiceResponse();
+
+			var fromCategory = Categories.FirstOrDefault(b => b.Id == input.FromId);
+			var toCategory = Categories.FirstOrDefault(b => b.Id == input.ToId);
+
+			if (fromCategory is null)
+				serviceResponse.Error(string.Empty, $"A record does not exist with ID '{input.FromId}'");
+
+			if (toCategory is null)
+				serviceResponse.Error(string.Empty, $"A record does not exist with ID '{input.ToId}'");
+
+			if (!serviceResponse.Success)
+				return serviceResponse;
+
+			var displacedBoards = Records.Where(b => b.CategoryId == fromCategory.Id).ToList();
+
+			foreach (var displacedBoard in displacedBoards) {
+				displacedBoard.CategoryId = toCategory.Id;
+				DbContext.Update(displacedBoard);
+			}
+
+			DbContext.SaveChanges();
+
+			DbContext.Categories.Remove(fromCategory);
+
+			DbContext.SaveChanges();
+
+			return serviceResponse;
+		}
+
+		public ServiceModels.ServiceResponse MoveBoardUp(int id) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			var targetBoard = Records.FirstOrDefault(b => b.Id == id);
@@ -322,6 +403,31 @@ namespace Forum3.Repositories {
 			}
 			else
 				targetBoard.DisplayOrder = 2;
+
+			return serviceResponse;
+		}
+		
+		public ServiceModels.ServiceResponse MoveCategoryUp(int id) {
+			var serviceResponse = new ServiceModels.ServiceResponse();
+
+			var targetCategory = Categories.FirstOrDefault(b => b.Id == id);
+
+			if (targetCategory is null) {
+				serviceResponse.Error(string.Empty, "No category found with that ID.");
+				return serviceResponse;
+			}
+
+			if (targetCategory.DisplayOrder > 1) {
+				var displacedCategory = Categories.First(b => b.DisplayOrder == targetCategory.DisplayOrder - 1);
+
+				displacedCategory.DisplayOrder++;
+				DbContext.Update(displacedCategory);
+
+				targetCategory.DisplayOrder--;
+				DbContext.Update(targetCategory);
+
+				DbContext.SaveChanges();
+			}
 
 			return serviceResponse;
 		}

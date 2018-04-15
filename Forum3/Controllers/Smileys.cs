@@ -30,7 +30,7 @@ namespace Forum3.Controllers {
 		public IActionResult Index() {
 			var viewModel = new ViewModels.IndexPage();
 
-			foreach (var smiley in SmileyRepository.All) {
+			foreach (var smiley in SmileyRepository) {
 				var sortColumn = smiley.SortOrder / 1000;
 				var sortRow = smiley.SortOrder % 1000;
 

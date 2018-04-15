@@ -24,7 +24,7 @@ namespace Forum3.Repositories {
 		RoleRepository RoleRepository { get; }
 		SettingsRepository SettingsRepository { get; }
 		SmileyRepository SmileyRepository { get; }
-		UserRepository UserRepository { get; }
+		AccountRepository AccountRepository { get; }
 		IUrlHelper UrlHelper { get; }
 
 		public TopicRepository(
@@ -36,7 +36,7 @@ namespace Forum3.Repositories {
 			RoleRepository roleRepository,
 			SettingsRepository settingsRepository,
 			SmileyRepository smileyRepository,
-			UserRepository userRepository,
+			AccountRepository accountRepository,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory
 		) {
@@ -48,14 +48,14 @@ namespace Forum3.Repositories {
 			RoleRepository = roleRepository;
 			SettingsRepository = settingsRepository;
 			SmileyRepository = smileyRepository;
-			UserRepository = userRepository;
+			AccountRepository = accountRepository;
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
 		public List<ItemModels.Message> GetMessages(List<int> messageIds) {
 			var thoughtQuery = from mt in DbContext.MessageThoughts
-							   join s in SmileyRepository.All on mt.SmileyId equals s.Id
-							   join u in UserRepository.All on mt.UserId equals u.Id
+							   join s in DbContext.Smileys on mt.SmileyId equals s.Id
+							   join u in DbContext.Users on mt.UserId equals u.Id
 							   where messageIds.Contains(mt.MessageId)
 							   select new ItemModels.MessageThought {
 								   MessageId = mt.MessageId,
@@ -84,7 +84,7 @@ namespace Forum3.Repositories {
 			var messages = messageQuery.ToList();
 
 			foreach (var message in messages) {
-				var postedBy = UserRepository.All.FirstOrDefault(item => item.Id == message.PostedById);
+				var postedBy = AccountRepository.FirstOrDefault(item => item.Id == message.PostedById);
 				message.PostedByAvatarPath = postedBy?.AvatarPath;
 				message.PostedByName = postedBy?.DisplayName;
 
@@ -92,7 +92,7 @@ namespace Forum3.Repositories {
 					var reply = DbContext.Messages.FirstOrDefault(item => item.Id == message.ReplyId);
 
 					if (reply != null) {
-						var replyPostedBy = UserRepository.All.FirstOrDefault(item => item.Id == reply.PostedById);
+						var replyPostedBy = AccountRepository.FirstOrDefault(item => item.Id == reply.PostedById);
 
 						if (string.IsNullOrEmpty(reply.ShortPreview))
 							reply.ShortPreview = "No preview";
@@ -189,7 +189,7 @@ namespace Forum3.Repositories {
 									 where message.ParentId == 0 && messageIds.Contains(message.Id)
 									 join reply in DbContext.Messages on message.LastReplyId equals reply.Id into replies
 									 from reply in replies.DefaultIfEmpty()
-									 join replyPostedBy in UserRepository.All on message.LastReplyById equals replyPostedBy.Id
+									 join replyPostedBy in DbContext.Users on message.LastReplyById equals replyPostedBy.Id
 									 join pin in DbContext.Pins on message.Id equals pin.MessageId into pins
 									 from pin in pins.DefaultIfEmpty()
 									 let pinned = pin != null && pin.UserId == UserContext.ApplicationUser.Id

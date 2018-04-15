@@ -50,12 +50,10 @@ namespace Forum3.Controllers {
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> Index() {
+		public IActionResult Index() {
 			var viewModel = new ViewModels.Account.IndexPage();
 
-			var users = await DbContext.Users.OrderBy(u => u.DisplayName).ToListAsync();
-
-			foreach (var user in users) {
+			foreach (var user in AccountRepository) {
 				if (user.DisplayName == "Deleted Account")
 					continue;
 
@@ -95,7 +93,7 @@ namespace Forum3.Controllers {
 				BirthdayDay = userRecord.Birthday.Day.ToString(),
 				BirthdayMonth = userRecord.Birthday.Month.ToString(),
 				BirthdayYear = userRecord.Birthday.Year.ToString(),
-				Settings = await SettingsRepository.GetUserSettingsList(userRecord.Id)
+				Settings = SettingsRepository.GetUserSettingsList(userRecord.Id)
 			};
 
 			ModelState.Clear();
@@ -114,7 +112,7 @@ namespace Forum3.Controllers {
 			return await FailureCallback();
 
 			async Task<IActionResult> FailureCallback() {
-				var userRecord = await DbContext.Users.FindAsync(input.Id);
+				var userRecord = AccountRepository.FirstOrDefault(item => item.Id == input.Id);
 
 				if (userRecord is null) {
 					var message = $"No record found with the display name '{input.DisplayName}'";
@@ -136,10 +134,10 @@ namespace Forum3.Controllers {
 					BirthdayDay = input.BirthdayDay.ToString(),
 					BirthdayMonth = input.BirthdayMonth.ToString(),
 					BirthdayYear = input.BirthdayYear.ToString(),
-					Settings = await SettingsRepository.GetUserSettingsList(userRecord.Id)
+					Settings = SettingsRepository.GetUserSettingsList(userRecord.Id)
 				};
 
-				return ForumViewResult.ViewResult(this, viewModel);
+				return await Task.Run(() => { return ForumViewResult.ViewResult(this, viewModel); });
 			}
 		}
 
@@ -400,7 +398,7 @@ namespace Forum3.Controllers {
 			if (UserContext.ApplicationUser.Id != userId && !UserContext.IsAdmin)
 				throw new HttpForbiddenException();
 
-			var deletedAccount = DbContext.Users.FirstOrDefault(item => item.DisplayName == "Deleted Account");
+			var deletedAccount = AccountRepository.FirstOrDefault(item => item.DisplayName == "Deleted Account");
 
 			if (deletedAccount is null) {
 				deletedAccount = new DataModels.ApplicationUser {
@@ -433,7 +431,7 @@ namespace Forum3.Controllers {
 
 			DbContext.SaveChanges();
 
-			var account = DbContext.Users.Find(userId);
+			var account = AccountRepository.FirstOrDefault(item => item.Id == userId);
 			await UserManager.DeleteAsync(account);
 
 			DbContext.SaveChanges();

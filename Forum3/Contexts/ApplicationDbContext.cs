@@ -22,6 +22,9 @@ namespace Forum3.Contexts {
 		protected override void OnModelCreating(ModelBuilder modelBuilder) {
 			base.OnModelCreating(modelBuilder);
 
+			modelBuilder.Entity<ApplicationUser>()
+				.HasIndex(r => r.DisplayName);
+
 			modelBuilder.Entity<BoardRole>()
 				.HasIndex(r => r.BoardId);
 

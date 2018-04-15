@@ -19,7 +19,7 @@ namespace Forum3.Filters {
 		SignInManager<DataModels.ApplicationUser> SignInManager { get; }
 		RoleRepository RoleRepository { get; }
 		SettingsRepository SettingsRepository { get; }
-		UserRepository UserRepository { get; }
+		AccountRepository AccountRepository { get; }
 
 		public UserContextActionFilter(
 			ApplicationDbContext dbContext,
@@ -28,7 +28,7 @@ namespace Forum3.Filters {
 			SignInManager<DataModels.ApplicationUser> signInManager,
 			RoleRepository roleRepository,
 			SettingsRepository settingsRepository,
-			UserRepository userRepository
+			AccountRepository accountRepository
 		) {
 			DbContext = dbContext;
 			UserContext = userContext;
@@ -36,7 +36,7 @@ namespace Forum3.Filters {
 			RoleRepository = roleRepository;
 			SignInManager = signInManager;
 			SettingsRepository = settingsRepository;
-			UserRepository = userRepository;
+			AccountRepository = accountRepository;
 		}
 
 		public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next) {
@@ -64,7 +64,7 @@ namespace Forum3.Filters {
 								 where userRole.UserId.Equals(UserContext.ApplicationUser.Id)
 								 select role.Id;
 
-			var adminUsersQuery = from user in UserRepository.All
+			var adminUsersQuery = from user in AccountRepository
 								  join userRole in RoleRepository.UserRoles on user.Id equals userRole.UserId
 								  join role in RoleRepository.SiteRoles on userRole.RoleId equals role.Id
 								  where role.Name == "Admin"
