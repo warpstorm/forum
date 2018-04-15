@@ -39,7 +39,7 @@ namespace Forum3.Services {
 
 			if (exists) {
 				var lastModified = blobReference.Properties.LastModified ?? DateTime.Now;
-				expired = lastModified < SettingsRepository.HistoryTimeLimit(UserContext.ApplicationUser.Id);
+				expired = lastModified < SettingsRepository.HistoryTimeLimit(true);
 			}
 
 			if (!exists || options.Overwrite || expired) {

@@ -1,31 +1,19 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 
 namespace Forum3.Controllers {
 	using ServiceModels = Models.ServiceModels;
-	using ViewModels = Models.ViewModels;
 
 	public class ForumController : Controller {
-		[AllowAnonymous]
-		public IActionResult Error() {
-			var viewModel = new ViewModels.Error {
-				RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
-			};
-
-			return View(viewModel);
-		}
-
 		public string Referrer {
 			get {
-				var referrer = Request.Query["ReturnUrl"].ToString();
+				Request.Query.TryGetValue("ReturnUrl", out var referrer);
 
 				if (string.IsNullOrEmpty(referrer))
-					referrer = Request.Headers["Referer"].ToString();
+					Request.Query.TryGetValue("Referer", out referrer);
 
 				if (string.IsNullOrEmpty(referrer))
 					return "/";

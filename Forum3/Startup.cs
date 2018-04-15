@@ -21,14 +21,13 @@ namespace Forum3 {
 			Configuration = configuration;
 		}
 
-		// This method gets called by the runtime. Use this method to add services to the container.
 		public void ConfigureServices(IServiceCollection services) {
 			// services.AddApplicationInsightsTelemetry(Configuration);
 
 			// Loads from the environment
 			var dbConnectionString = Configuration["DefaultConnection"];
 
-			// Or use the one defined in appsettings.json
+			// Or use the one defined in ConnectionStrings setting of app configuration.
 			if (string.IsNullOrEmpty(dbConnectionString))
 				dbConnectionString = Configuration.GetConnectionString("DefaultConnection");
 
@@ -76,7 +75,7 @@ namespace Forum3 {
 				app.UseDatabaseErrorPage();
 			}
 			else
-				app.UseExceptionHandler("/Boards/Error");
+				app.UseExceptionHandler("/Home/Error");
 
 			app.UseStaticFiles();
 
@@ -89,7 +88,7 @@ namespace Forum3 {
 			app.UseMvc(routes => {
 				routes.MapRoute(
 					name: "default",
-					template: "{controller=Boards}/{action=Index}/{id?}/{pageId?}/{target?}");
+					template: "{controller=Home}/{action=FrontPage}/{id?}/{pageId?}/{target?}");
 			});
 		}
 	}

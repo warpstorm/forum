@@ -53,6 +53,9 @@ namespace Forum3.Controllers {
 			var users = await DbContext.Users.OrderBy(u => u.DisplayName).ToListAsync();
 
 			foreach (var user in users) {
+				if (user.DisplayName == "Deleted Account")
+					continue;
+
 				var indexItem = new ViewModels.Account.IndexItem {
 					User = user,
 					Registered = user.Registered.ToPassedTimeString(),

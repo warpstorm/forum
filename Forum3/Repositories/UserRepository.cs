@@ -53,7 +53,7 @@ namespace Forum3.Repositories {
 		}
 
 		public List<ItemViewModels.OnlineUser> GetOnlineList() {
-			var onlineTimeLimitSetting = SettingsRepository.OnlineTimeLimit(UserContext.ApplicationUser.Id);
+			var onlineTimeLimitSetting = SettingsRepository.OnlineTimeLimit();
 			onlineTimeLimitSetting *= -1;
 
 			var onlineTimeLimit = DateTime.Now.AddMinutes(onlineTimeLimitSetting);

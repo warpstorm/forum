@@ -102,7 +102,7 @@ namespace Forum3.Filters {
 		}
 
 		public async Task LoadViewLogs() {
-			var historyTimeLimit = SettingsRepository.HistoryTimeLimit(UserContext.ApplicationUser.Id).AddDays(-1);
+			var historyTimeLimit = SettingsRepository.HistoryTimeLimit().AddDays(-1);
 
 			var viewLogsQuery = from record in DbContext.ViewLogs
 								where record.UserId == UserContext.ApplicationUser.Id

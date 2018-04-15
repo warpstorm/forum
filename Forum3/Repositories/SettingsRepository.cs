@@ -14,18 +14,21 @@ namespace Forum3.Repositories {
 
 	public class SettingsRepository {
 		ApplicationDbContext DbContext { get; }
+		UserContext UserContext { get; }
 
 		Dictionary<string, string> Settings { get; } = new Dictionary<string, string>();
 		Dictionary<string, Dictionary<string, string>> UserSettings { get; } = new Dictionary<string, Dictionary<string, string>>();
 
 		public SettingsRepository(
-			ApplicationDbContext dbContext
+			ApplicationDbContext dbContext,
+			UserContext userContext
 		) {
 			DbContext = dbContext;
+			UserContext = userContext;
 		}
 
-		public int AvatarSize(string userId = "") {
-			var setting = GetInt("AvatarSize", userId);
+		public int AvatarSize(bool forceGlobal = false) {
+			var setting = GetInt("AvatarSize", forceGlobal);
 
 			if (setting == 0)
 				setting = 100;
@@ -33,8 +36,8 @@ namespace Forum3.Repositories {
 			return setting;
 		}
 
-		public DateTime HistoryTimeLimit(string userId = "") {
-			var setting = GetInt("HistoryTimeLimit", userId);
+		public DateTime HistoryTimeLimit(bool forceGlobal = false) {
+			var setting = GetInt("HistoryTimeLimit", forceGlobal);
 
 			if (setting == 0)
 				setting = -14;
@@ -42,8 +45,8 @@ namespace Forum3.Repositories {
 			return DateTime.Now.AddDays(setting);
 		}
 
-		public int MessagesPerPage(string userId = "") {
-			var setting = GetInt("MessagesPerPage", userId);
+		public int MessagesPerPage(bool forceGlobal = false) {
+			var setting = GetInt("MessagesPerPage", forceGlobal);
 
 			if (setting == 0)
 				setting = 15;
@@ -51,8 +54,8 @@ namespace Forum3.Repositories {
 			return setting;
 		}
 
-		public int OnlineTimeLimit(string userId = "") {
-			var setting = GetInt("OnlineTimeLimit", userId);
+		public int OnlineTimeLimit(bool forceGlobal = false) {
+			var setting = GetInt("OnlineTimeLimit", forceGlobal);
 
 			if (setting == 0)
 				setting = 5;
@@ -60,8 +63,8 @@ namespace Forum3.Repositories {
 			return setting;
 		}
 
-		public int PopularityLimit(string userId = "") {
-			var setting = GetInt("PopularityLimit", userId);
+		public int PopularityLimit(bool forceGlobal = false) {
+			var setting = GetInt("PopularityLimit", forceGlobal);
 
 			if (setting == 0)
 				setting = 25;
@@ -69,8 +72,8 @@ namespace Forum3.Repositories {
 			return setting;
 		}
 
-		public int TopicsPerPage(string userId = "") {
-			var setting = GetInt("TopicsPerPage", userId);
+		public int TopicsPerPage(bool forceGlobal = false) {
+			var setting = GetInt("TopicsPerPage", forceGlobal);
 
 			if (setting == 0)
 				setting = 15;
@@ -78,21 +81,23 @@ namespace Forum3.Repositories {
 			return setting;
 		}
 
-		public bool ShowFavicons(string userId = "") =>  GetBool("ShowFavicons", userId);
+		public bool ShowFavicons(bool forceGlobal = false) =>  GetBool("ShowFavicons", forceGlobal);
 
-		public string FrontPage(string userId = "") {
-			var setting = GetSetting("FrontPage", userId);
+		public string FrontPage(bool forceGlobal = false) {
+			var setting = GetSetting("FrontPage", forceGlobal);
 
 			if (string.IsNullOrEmpty(setting))
-				setting = "BoardIndex";
+				setting = "Board List";
 
 			return setting;
 		}
 
-		public string GetSetting(string name, string userId = "") {
+		public string GetSetting(string name, bool forceGlobal) {
 			var settingValue = string.Empty;
 
-			if (!string.IsNullOrEmpty(userId)) {
+			if (!forceGlobal) {
+				var userId = UserContext.ApplicationUser.Id;
+
 				if (!UserSettings.ContainsKey(userId)) {
 					lock (UserSettings) {
 						UserSettings.TryAdd(userId, new Dictionary<string, string>());
@@ -127,8 +132,8 @@ namespace Forum3.Repositories {
 			return settingValue;
 		}
 
-		public int GetInt(string name, string userId = "") {
-			var setting = GetSetting(name, userId);
+		public int GetInt(string name, bool forceGlobal) {
+			var setting = GetSetting(name, forceGlobal);
 
 			if (string.IsNullOrEmpty(setting))
 				return default(int);
@@ -136,8 +141,8 @@ namespace Forum3.Repositories {
 			return Convert.ToInt32(setting);
 		}
 
-		public bool GetBool(string name, string userId = "") {
-			var setting = GetSetting(name, userId);
+		public bool GetBool(string name, bool forceGlobal) {
+			var setting = GetSetting(name, forceGlobal);
 
 			try {
 				return Convert.ToBoolean(setting);

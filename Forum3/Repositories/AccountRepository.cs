@@ -239,7 +239,7 @@ namespace Forum3.Repositories {
 					ContainerName = "avatars",
 					FileName = $"avatar{userRecord.Id}",
 					InputStream = inputStream,
-					MaxDimension = SettingsRepository.AvatarSize(UserContext.ApplicationUser.Id),
+					MaxDimension = SettingsRepository.AvatarSize(true),
 					Overwrite = true
 				});
 			}
