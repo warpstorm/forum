@@ -94,7 +94,6 @@ a.borderless * {
 
 .float-right {
 	float: right;
-	clear: right;
 }
 
 .float-left {

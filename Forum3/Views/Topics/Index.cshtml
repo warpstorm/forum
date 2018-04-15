@@ -1,54 +1,102 @@
 @model TopicIndexPage
 
-@if (User.Identity.IsAuthenticated) {
-	<ul class="inline gap-top">
-		<li class="note"></li>
-		<li clickable-link-parent><a class="small-button" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)" asp-route-id="@Model.BoardId">All</a></li>
-		<li clickable-link-parent><a class="small-button" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)" asp-route-id="@Model.BoardId" asp-route-unread="1">Unread</a></li>
-		<li clickable-link-parent><a class="small-button" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)" asp-route-id="@Model.BoardId" asp-route-unread="2">Replies</a></li>
-		
-		@if (Model.BoardId > 0) {
-			<li clickable-link-parent class="small-gap-left"><a class="small-button highlight" asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.Create)" asp-route-id="@Model.BoardId">Create</a></li>
-		}
-		else {
-			<li clickable-link-parent class="small-gap-left"><a class="small-button highlight" asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.Create)" asp-route-id="1">Create</a></li>
-		}
-	</ul>
-}
+	@if (User.Identity.IsAuthenticated) {
+		<ul class="inline gap-top">
+			<li class="note"></li>
+			<li clickable-link-parent><a class="small-button" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)" asp-route-id="@Model.BoardId">All</a></li>
+			<li clickable-link-parent><a class="small-button" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)" asp-route-id="@Model.BoardId" asp-route-unread="1">Unread</a></li>
+			<li clickable-link-parent><a class="small-button" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)" asp-route-id="@Model.BoardId" asp-route-unread="2">Replies</a></li>
 
-<section id="topic-list">
-	@foreach (var item in Model.Topics) {
-		@await Html.PartialAsync("_IndexItem", item)
+			@if (Model.BoardId > 0) {
+				<li clickable-link-parent class="small-gap-left"><a class="small-button highlight" asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.Create)" asp-route-id="@Model.BoardId">Create</a></li>
+			}
+			else {
+				<li clickable-link-parent class="small-gap-left"><a class="small-button highlight" asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.Create)" asp-route-id="1">Create</a></li>
+			}
+		</ul>
 	}
-</section>
 
-<footer>
-	<span id="load-more-topics" class="hidden small-button">More Topics</span>
-</footer>
+	<div id="side-bar" class="pad overflow-hidden float-right">
+		@if (Model.Birthdays.Any()) {
+		<p><img src="/images/birthday.gif" /></p>
+		<h4>Happy birthday!</h4>
+		<ul class="gap-bottom">
+			@foreach (var birthdayPerson in Model.Birthdays) {
+			<li>@birthdayPerson</li>
+			}
+		</ul>
+		}
 
-@{ViewData["Title"] = Model.BoardName;}
-@section Header {@ViewData["Title"]}
+		<h4><a asp-controller="@nameof(Notifications)" asp-action="@nameof(Notifications.Index)">Notifications</a></h4>
+		<ul class="gap-bottom note">
+			@if (Model.Notifications.Any()) {
+			@foreach (var notification in Model.Notifications) {
+			<li class="hover-highlight pointer" clickable-link-parent>
+				<p>
+					@if (notification.Recent) {
+					<span class="chiclet chiclet-gold"></span>
+					}
+					<a asp-controller="@nameof(Notifications)" asp-action="@nameof(Notifications.Open)" asp-route-id="@notification.Id">@notification.Text</a>
+				</p>
+				<p><time>@notification.Time</time></p>
+			</li>
+			}
+			}
+			else {
+			<li>None</li>
+			}
+		</ul>
 
-@section scripts {
-	<script>
+		<h4>Who's online <span class="note">(@Model.OnlineUsers.Count)</span></h4>
+		<ul id="whos-online">
+			<li class="note"><a asp-controller="@nameof(Account)" asp-action="@nameof(Account.Index)">View All Users</a></li>
+			@foreach (var onlineUser in Model.OnlineUsers) {
+			<li class="note">
+				<p>
+					@if (onlineUser.Online) {
+					<span class="chiclet chiclet-green"></span>
+					}
+					<span>@onlineUser.Name</span>
+				</p>
+				<p><time>@onlineUser.LastOnlineString</time></p>
+			</li>
+			}
+		</ul>
+	</div>
+
+	<section id="topic-list">
+		@foreach (var item in Model.Topics) {
+			@await Html.PartialAsync("_IndexItem", item)
+		}
+	</section>
+
+	<footer>
+		<span id="load-more-topics" class="hidden small-button">More Topics</span>
+	</footer>
+
+	@{ViewData["Title"] = Model.BoardName;}
+	@section Header {@ViewData["Title"]}
+
+	@section scripts {
+		<script>
 	window.boardId = @Model.BoardId;
 	window.page = @Model.Page;
 	window.unreadFilter = @Model.UnreadFilter;
-	</script>
+		</script>
 
-	<environment include="Development">
-		<script src="~/js/TopicIndex.js" asp-append-version="true"></script>
-	</environment>
-	<environment exclude="Development">
-		<script src="~/js/TopicIndex.min.js" asp-append-version="true"></script>
-	</environment>
-}
+		<environment include="Development">
+			<script src="~/js/TopicIndex.js" asp-append-version="true"></script>
+		</environment>
+		<environment exclude="Development">
+			<script src="~/js/TopicIndex.min.js" asp-append-version="true"></script>
+		</environment>
+	}
 
-@section styles {
-	<environment include="Development">
-		<link rel="stylesheet" href="~/css/Pages/TopicIndex.css" asp-append-version="true" />
-	</environment>
-	<environment exclude="Development">
-		<link rel="stylesheet" href="~/css/min/TopicIndex.min.css" asp-append-version="true" />
-	</environment>
-}
+	@section styles {
+		<environment include="Development">
+			<link rel="stylesheet" href="~/css/Pages/TopicIndex.css" asp-append-version="true" />
+		</environment>
+		<environment exclude="Development">
+			<link rel="stylesheet" href="~/css/min/TopicIndex.min.css" asp-append-version="true" />
+		</environment>
+	}

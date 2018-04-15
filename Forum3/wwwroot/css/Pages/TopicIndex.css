@@ -11,3 +11,13 @@ div.hover-highlight:hover {
 	border-top-color: #4d6690;
 	box-shadow: #4d6690 0 -2px 0 inset;
 }
+
+#topic-list {
+	margin-right: 230px;
+}
+
+@media only screen and (max-width: 900px) {
+	#topic-list {
+		margin-right: 0;
+	}
+}

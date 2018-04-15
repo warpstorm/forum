@@ -466,6 +466,7 @@ namespace Forum3.Repositories {
 			catch (UriFormatException) { }
 			catch (AggregateException) { }
 			catch (ArgumentException) { }
+			catch (WebException) { }
 
 			var titleTag = document.DocumentNode.SelectSingleNode(@"//title");
 
@@ -549,7 +550,7 @@ namespace Forum3.Repositories {
 					});
 				}
 			}
-			catch (WebException) { }
+			catch (Exception) { }
 
 			return string.Empty;
 		}

@@ -21,9 +21,11 @@ namespace Forum3.Controllers {
 		ApplicationDbContext DbContext { get; }
 		UserContext UserContext { get; }
 
+		AccountRepository AccountRepository { get; }
 		BoardRepository BoardRepository { get; }
 		MessageRepository MessageRepository { get; }
 		RoleRepository RoleRepository { get; }
+		NotificationRepository NotificationRepository { get; }
 		SettingsRepository SettingsRepository { get; }
 		SmileyRepository SmileyRepository { get; }
 		TopicRepository TopicRepository { get; }
@@ -34,8 +36,10 @@ namespace Forum3.Controllers {
 		public Topics(
 			ApplicationDbContext applicationDbContext,
 			UserContext userContext,
+			AccountRepository accountRepository,
 			BoardRepository boardRepository,
 			MessageRepository messageRepository,
+			NotificationRepository notificationRepository,
 			RoleRepository roleRepository,
 			SettingsRepository settingsRepository,
 			SmileyRepository smileyRepository,
@@ -47,8 +51,10 @@ namespace Forum3.Controllers {
 			DbContext = applicationDbContext;
 			UserContext = userContext;
 
+			AccountRepository = accountRepository;
 			BoardRepository = boardRepository;
 			MessageRepository = messageRepository;
+			NotificationRepository = notificationRepository;
 			RoleRepository = roleRepository;
 			SettingsRepository = settingsRepository;
 			SmileyRepository = smileyRepository;
@@ -60,6 +66,10 @@ namespace Forum3.Controllers {
 
 		[HttpGet]
 		public IActionResult Index(int id = 0, int unread = 0) {
+			var birthdays = AccountRepository.GetBirthdaysList();
+			var onlineUsers = AccountRepository.GetOnlineList();
+			var notifications = NotificationRepository.Index();
+			
 			var boardRoles = RoleRepository.BoardRoles.Where(r => r.BoardId == id).Select(r => r.RoleId).ToList();
 
 			if (!UserContext.IsAdmin && boardRoles.Any() && !boardRoles.Intersect(UserContext.Roles).Any())
@@ -75,7 +85,10 @@ namespace Forum3.Controllers {
 				BoardName = boardRecord?.Name ?? "All Topics",
 				Page = page,
 				Topics = topicPreviews,
-				UnreadFilter = unread
+				UnreadFilter = unread,
+				Birthdays = birthdays.ToArray(),
+				OnlineUsers = onlineUsers,
+				Notifications = notifications
 			};
 
 			return ForumViewResult.ViewResult(this, viewModel);
