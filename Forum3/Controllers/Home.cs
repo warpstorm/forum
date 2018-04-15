@@ -30,7 +30,7 @@ namespace Forum3.Controllers {
 			switch (frontpage) {
 				default:
 				case "Board List":
-					return RedirectToAction(nameof(Home.FrontPage), nameof(Home));
+					return RedirectToAction(nameof(Boards.Index), nameof(Boards));
 
 				case "All Topics":
 					return RedirectToAction(nameof(Topics.Index), nameof(Topics), new { id = 0 });

@@ -1,7 +1,7 @@
 ﻿@model MessagePreview
 
 <div class="content-box gap hover-highlight">
-	<div class="pin float-right pad gap">
+	<div class="pin float-right small-pad-top gap">
 		@if (Model.Pinned) {
 			<a asp-action="@nameof(Topics.Pin)" asp-route-id="@Model.Id"><img src="~/images/pinned.png" /></a>
 		}
@@ -18,41 +18,43 @@
 				}
 			</a>
 		</p>
-		<div class="note pad-left small-pad-top">
-			<p>
-				@Model.Views
-				@if (Model.Views > 1) {
-					<text>views</text>
-				}
-				else {
-					<text>view</text>
-				}
-
-				&nbsp;
-
-				@Model.Replies
-				@if (Model.Replies > 1) {
-					<text>replies</text>
-				}
-				else {
-					<text>reply</text>
-				}
-
-				&nbsp;
-
-				@if (Model.Pages > 1) {
-					<text>Pages:</text>
-					for (var i = Model.Pages - 4; i <= Model.Pages; i++) {
-						if (i <= 0) {
-							continue;
-						}
-
-						<a class="small-pad-left" asp-action="@nameof(Topics.Display)" asp-route-id="@Model.Id" asp-route-pageId="@i">@i</a>
+		@if (!Model.Pinned) {
+			<div class="note pad-left small-pad-top">
+				<p>
+					@Model.Views
+					@if (Model.Views > 1) {
+						<text>views</text>
 					}
-				}
-			</p>
-			<p class="small-pad-top">Last post was @Model.LastReplyPosted by @Model.LastReplyByName</p>
-			<p class="small-pad-left">@Html.Raw(Model.LastReplyPreview)</p>
-		</div>
+					else {
+						<text>view</text>
+					}
+
+					&nbsp;
+
+					@Model.Replies
+					@if (Model.Replies > 1) {
+						<text>replies</text>
+					}
+					else {
+						<text>reply</text>
+					}
+
+					&nbsp;
+
+					@if (Model.Pages > 1) {
+						<text>Pages:</text>
+						for (var i = Model.Pages - 4; i <= Model.Pages; i++) {
+							if (i <= 0) {
+								continue;
+							}
+
+							<a class="small-pad-left" asp-action="@nameof(Topics.Display)" asp-route-id="@Model.Id" asp-route-pageId="@i">@i</a>
+						}
+					}
+				</p>
+				<p class="small-pad-top">Last post was @Model.LastReplyPosted by @Model.LastReplyByName</p>
+				<p class="small-pad-left">@Html.Raw(Model.LastReplyPreview)</p>
+			</div>
+		}
 	</div>
 </div>
