@@ -100,7 +100,8 @@ namespace Forum3.Repositories {
 							   orderby message.LastReplyPosted descending
 							   select new {
 								   messageBoard.MessageId,
-								   message.LastReplyId,
+								   LastReplyId = message.LastReplyId > 0 ? message.LastReplyId : message.Id,
+								   TopicPreview = message.ShortPreview
 							   };
 
 				// Only checks the most recent 10 topics. If all 10 are forbidden, then LastMessage stays null.
@@ -113,14 +114,13 @@ namespace Forum3.Repositories {
 					if (UserContext.IsAdmin || !messageRoles.Any() || messageRoles.Intersect(UserContext.Roles).Any()) {
 						var lastReply = from message in DbContext.Messages
 										join lastReplyBy in DbContext.Users on message.PostedById equals lastReplyBy.Id
-										where message.Id == item.MessageId
+										where message.Id == item.LastReplyId
 										select new Models.ViewModels.Topics.Items.MessagePreview {
 											Id = message.Id,
-											ShortPreview = message.ShortPreview,
+											ShortPreview = item.TopicPreview,
 											LastReplyByName = lastReplyBy.DisplayName,
 											LastReplyId = message.LastReplyId,
 											LastReplyPosted = message.LastReplyPosted.ToPassedTimeString(),
-											LastReplyPreview = message.ShortPreview
 										};
 
 						indexBoard.LastMessage = lastReply.FirstOrDefault();
