@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
@@ -434,12 +435,13 @@ namespace Forum3.Repositories {
 		/// </summary>
 		public async Task<ServiceModels.RemotePageDetails> GetRemotePageDetails(string remoteUrl) {
 			var uri = new Uri(remoteUrl);
+			var remoteUrlAuthority = uri.GetLeftPart(UriPartial.Authority);
 			var domain = uri.Host.Replace("/www.", "/").ToLower();
 
 			// /favicon.ico default doesn't work for fivethirtyeight
 			// <link rel="shortcut icon" href="https://s2.wp.com/wp-content/themes/vip/espn-fivethirtyeight/assets/images/favicon.ico?v=1.0.6">
-			var faviconPath = $"{uri.GetLeftPart(UriPartial.Authority)}/favicon.ico";
-			var faviconStoragePath = await GetFaviconStoragePath(domain, faviconPath);
+			var faviconPath = $"{remoteUrlAuthority}/favicon.ico";
+			var faviconStoragePath = await CacheFavicon(domain, uri.GetLeftPart(UriPartial.Path), faviconPath);
 
 			var returnResult = new ServiceModels.RemotePageDetails {
 				Title = remoteUrl,
@@ -478,7 +480,7 @@ namespace Forum3.Repositories {
 				
 				if (element != null) {
 					faviconPath = element.Attributes["href"].Value.Trim();
-					faviconStoragePath = await GetFaviconStoragePath(domain, faviconPath);
+					faviconStoragePath = await CacheFavicon(domain, uri.GetLeftPart(UriPartial.Path), faviconPath);
 				}
 			}
 
@@ -487,7 +489,7 @@ namespace Forum3.Repositories {
 
 				if (element != null) {
 					faviconPath = element.Attributes["href"].Value.Trim();
-					faviconStoragePath = await GetFaviconStoragePath(domain, faviconPath);
+					faviconStoragePath = await CacheFavicon(domain, uri.GetLeftPart(UriPartial.Path), faviconPath);
 				}
 			}
 
@@ -509,7 +511,7 @@ namespace Forum3.Repositories {
 						var imagePath = ogImage.Attributes["content"].Value.Trim();
 
 						if (imagePath.StartsWith("/"))
-							imagePath = $"{uri.GetLeftPart(UriPartial.Authority)}{imagePath}";
+							imagePath = $"{remoteUrlAuthority}{imagePath}";
 
 						returnResult.Card += $"<div class='card-image'><img src='{imagePath}' /></div>";
 					}
@@ -536,10 +538,15 @@ namespace Forum3.Repositories {
 		/// <summary>
 		/// Loads the favicon.ico file from a remote site, stores it in Azure, and returns the path to the Azure cached image.
 		/// </summary>
-		public async Task<string> GetFaviconStoragePath(string domain, string faviconPath) {
-			var webRequest = WebRequest.Create(faviconPath);
-			
+		public async Task<string> CacheFavicon(string domain, string remoteUrlBase, string faviconPath) {
 			try {
+				if (!Uri.TryCreate(faviconPath, UriKind.Absolute, out var faviconUri)) {
+					var baseUri = new Uri(remoteUrlBase, UriKind.Absolute);
+					faviconUri = new Uri(baseUri, faviconPath);
+				}
+
+				var webRequest = WebRequest.Create(faviconUri);
+
 				using (var webResponse = webRequest.GetResponse())
 				using (var inputStream = webResponse.GetResponseStream()) {
 					return await ImageStore.StoreImage(new ServiceModels.ImageStoreOptions {
@@ -550,7 +557,9 @@ namespace Forum3.Repositories {
 					});
 				}
 			}
-			catch (Exception) { }
+			catch (Exception e) {
+				Debug.WriteLine(e.Message);
+			}
 
 			return string.Empty;
 		}
