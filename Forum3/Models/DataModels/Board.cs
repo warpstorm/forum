@@ -7,7 +7,6 @@
 
 		public int DisplayOrder { get; set; }
 
-		public int? LastMessageId { get; set; }
 		public int CategoryId { get; set; }
 	}
 }

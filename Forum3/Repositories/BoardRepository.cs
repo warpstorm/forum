@@ -93,22 +93,40 @@ namespace Forum3.Repositories {
 				Unread = false
 			};
 
-			if (includeReplies && boardRecord.LastMessageId != null) {
-				// TODO - permission trim this list and handle empty shortPreviews
+			if (includeReplies) {
+				var messages = from messageBoard in DbContext.MessageBoards
+							   join message in DbContext.Messages on messageBoard.MessageId equals message.Id
+							   where messageBoard.BoardId == boardRecord.Id
+							   orderby message.LastReplyPosted descending
+							   select new {
+								   messageBoard.MessageId,
+								   message.LastReplyId,
+							   };
 
-				var lastMessageQuery = from lastReply in DbContext.Messages
-									   where lastReply.Id == boardRecord.LastMessageId
-									   join lastReplyBy in DbContext.Users on lastReply.LastReplyById equals lastReplyBy.Id
-									   select new Models.ViewModels.Topics.Items.MessagePreview {
-										   Id = lastReply.Id,
-										   ShortPreview = lastReply.ShortPreview,
-										   LastReplyByName = lastReplyBy.DisplayName,
-										   LastReplyId = lastReply.LastReplyId,
-										   LastReplyPosted = lastReply.LastReplyPosted.ToPassedTimeString(),
-										   LastReplyPreview = lastReply.ShortPreview
-									   };
+				// Only checks the most recent 10 topics. If all 10 are forbidden, then LastMessage stays null.
+				foreach (var item in messages.Take(10)) {
+					var messageRoles = from messageBoard in DbContext.MessageBoards
+									   join boardRole in DbContext.BoardRoles on messageBoard.BoardId equals boardRole.BoardId
+									   where messageBoard.MessageId == item.MessageId
+									   select boardRole.RoleId;
 
-				indexBoard.LastMessage = lastMessageQuery.FirstOrDefault();
+					if (UserContext.IsAdmin || !messageRoles.Any() || messageRoles.Intersect(UserContext.Roles).Any()) {
+						var lastReply = from message in DbContext.Messages
+										join lastReplyBy in DbContext.Users on message.PostedById equals lastReplyBy.Id
+										where message.Id == item.MessageId
+										select new Models.ViewModels.Topics.Items.MessagePreview {
+											Id = message.Id,
+											ShortPreview = message.ShortPreview,
+											LastReplyByName = lastReplyBy.DisplayName,
+											LastReplyId = message.LastReplyId,
+											LastReplyPosted = message.LastReplyPosted.ToPassedTimeString(),
+											LastReplyPreview = message.ShortPreview
+										};
+
+						indexBoard.LastMessage = lastReply.FirstOrDefault();
+						break;
+					}
+				}
 			}
 
 			return indexBoard;
@@ -406,7 +424,7 @@ namespace Forum3.Repositories {
 
 			return serviceResponse;
 		}
-		
+
 		public ServiceModels.ServiceResponse MoveCategoryUp(int id) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 

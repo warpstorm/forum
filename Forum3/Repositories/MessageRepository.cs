@@ -113,19 +113,6 @@ namespace Forum3.Repositories {
 
 			var record = CreateMessageRecord(processedMessage, replyRecord);
 
-			var boardRecords = await (from message in DbContext.Messages
-									  join messageBoard in DbContext.MessageBoards on message.Id equals messageBoard.MessageId
-									  join board in DbContext.Boards on messageBoard.BoardId equals board.Id
-									  where message.Id == record.ParentId
-									  select board).ToListAsync();
-
-			foreach (var boardRecord in boardRecords) {
-				boardRecord.LastMessageId = record.ParentId;
-				DbContext.Update(boardRecord);
-			}
-
-			DbContext.SaveChanges();
-
 			serviceResponse.RedirectPath = UrlHelper.DirectMessage(record.Id);
 			return serviceResponse;
 		}
