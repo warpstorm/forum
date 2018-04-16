@@ -1,6 +1,8 @@
 @model ViewModels.Messages.EditMessagePage
 
-@Html.Partial("_MessageForm", Model)
+<div class="content-box pad">
+	@Html.Partial("_MessageForm", Model)
+</div>
 
 @{ViewData["Title"] = "Edit";}
 @section Header {@ViewData["Title"]}

@@ -56,7 +56,7 @@
 			<li class="note">
 				<p>
 					@if (onlineUser.Online) {
-					<span class="chiclet chiclet-green"></span>
+						<span class="chiclet chiclet-green"></span>
 					}
 					<span>@onlineUser.Name</span>
 				</p>
@@ -67,8 +67,13 @@
 	</div>
 
 	<section id="topic-list">
-		@foreach (var item in Model.Topics) {
-			@await Html.PartialAsync("_IndexItem", item)
+		@if (Model.Topics.Any()) {
+			@foreach (var item in Model.Topics) {
+				@await Html.PartialAsync("_IndexItem", item)
+			}
+		}
+		else {
+			<text>No topics found that matched the specified criteria.</text>
 		}
 	</section>
 
@@ -81,9 +86,9 @@
 
 	@section scripts {
 		<script>
-	window.boardId = @Model.BoardId;
-	window.page = @Model.Page;
-	window.unreadFilter = @Model.UnreadFilter;
+			window.boardId = @Model.BoardId;
+			window.page = @Model.Page;
+			window.unreadFilter = @Model.UnreadFilter;
 		</script>
 
 		<environment include="Development">

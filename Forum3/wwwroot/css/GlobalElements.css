@@ -29,6 +29,12 @@ a {
 		color: #ffffff;
 	}
 
+hr {
+	color: #253248;
+	background-color: #253248;
+	border-color: #253248;
+}
+
 h1,
 h2,
 h3,

@@ -1,49 +1,51 @@
 ﻿@model Forum3.Interfaces.Models.ViewModels.IMessageViewModel
 
-<div>
-	<div asp-validation-summary="ModelOnly"></div>
+<div asp-validation-summary="ModelOnly"></div>
 
-	<form method="post"
-		  asp-action="@Model.FormAction"
-		  asp-controller="@Model.FormController"
-		  asp-route-returnurl="@ViewData["Referrer"]">
+<form method="post"
+		asp-action="@Model.FormAction"
+		asp-controller="@Model.FormController"
+		asp-route-returnurl="@ViewData["Referrer"]">
 
-		<input type="hidden" name="Id" value="@Model.Id" />
+	<input type="hidden" name="Id" value="@Model.Id" />
 
-		@if (Model.BoardId != null) {
-			<input type="hidden" name="BoardId" value="@Model.BoardId" />
-		}
-
-		<div>
-			<p class="pad-top">
-				<button class="add-bbcode small-button" bbcode="quote">Quote</button>
-				<button class="add-bbcode small-button" bbcode="url">Link</button>
-				<button class="add-bbcode small-button" bbcode="img">Image</button>
-				<button class="add-bbcode small-button" bbcode="code">Code</button>
-				<button class="add-bbcode small-button" bbcode="list">List</button>
-				<button class="add-bbcode small-button" bbcode="numlist"># List</button>
-			</p>
-			<p class="pad-top">
-				<button class="add-bbcode small-button" bbcode="bold"><span class="bbc-bold">Bold</span></button>
-				<button class="add-bbcode small-button" bbcode="italics"><span class="bbc-italic">Italics</span></button>
-				<button class="add-bbcode small-button" bbcode="underline"><span class="bbc-underline">Underline</span></button>
-				<button class="add-bbcode small-button" bbcode="strike"><span class="bbc-strike">Strike</span></button>
-				<button class="add-bbcode small-button" bbcode="color"><span>Color</span></button>
-				<button class="add-bbcode small-button" bbcode="size"><span>Size</span></button>
-
-				<img class="add-smiley pointer align-middle pad-left" src="~/images/smiley.png" alt="Smiley" title="Smiley" />
-			</p>
-
-			<p class="pad-top"><textarea asp-for="@Model.Body"></textarea></p>
-			<p class="pad-top"><span asp-validation-for="@Model.Body" /></p>
-		</div>
-
-		<p>
-			<button>Save</button>
-
-			@if (!string.IsNullOrEmpty(ViewData["Referrer"] as string)) {
-				<a class="button" href="@ViewData["Referrer"]">Cancel</a>
+	@if (ViewData["Categories"] is List<ViewModels.Boards.Items.IndexCategory>) {
+		@foreach (var category in ViewData["Categories"] as List<ViewModels.Boards.Items.IndexCategory>) {
+			@foreach (var board in category.Boards) {
+				<input type="hidden" name="Selected_@board.Id" value="@(board.Id == Model.BoardId ? "True" : "False")" />
 			}
+		}
+	}
+	
+	<div>
+		<p class="pad-top">
+			<button class="add-bbcode small-button" bbcode="quote">Quote</button>
+			<button class="add-bbcode small-button" bbcode="url">Link</button>
+			<button class="add-bbcode small-button" bbcode="img">Image</button>
+			<button class="add-bbcode small-button" bbcode="code">Code</button>
+			<button class="add-bbcode small-button" bbcode="list">List</button>
+			<button class="add-bbcode small-button" bbcode="numlist"># List</button>
 		</p>
-	</form>
-</div>
+		<p class="pad-top">
+			<button class="add-bbcode small-button" bbcode="bold"><span class="bbc-bold">Bold</span></button>
+			<button class="add-bbcode small-button" bbcode="italics"><span class="bbc-italic">Italics</span></button>
+			<button class="add-bbcode small-button" bbcode="underline"><span class="bbc-underline">Underline</span></button>
+			<button class="add-bbcode small-button" bbcode="strike"><span class="bbc-strike">Strike</span></button>
+			<button class="add-bbcode small-button" bbcode="color"><span>Color</span></button>
+			<button class="add-bbcode small-button" bbcode="size"><span>Size</span></button>
+
+			<img class="add-smiley pointer align-middle pad-left" src="~/images/smiley.png" alt="Smiley" title="Smiley" />
+		</p>
+
+		<p class="pad-top"><textarea asp-for="@Model.Body"></textarea></p>
+		<p class="pad-top"><span asp-validation-for="@Model.Body" /></p>
+	</div>
+
+	<p>
+		<button>Save</button>
+
+		@if (!string.IsNullOrEmpty(ViewData["Referrer"] as string)) {
+			<a class="button" href="@ViewData["Referrer"]">Cancel</a>
+		}
+	</p>
+</form>

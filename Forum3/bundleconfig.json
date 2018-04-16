@@ -13,6 +13,10 @@
 		]
 	},
 	{
+		"outputFileName": "wwwroot/css/min/MessageCreate.min.css",
+		"inputFiles": [ "wwwroot/css/Pages/MessageCreate.css" ]
+	},
+	{
 		"outputFileName": "wwwroot/css/min/TopicDisplay.min.css",
 		"inputFiles": [ "wwwroot/css/Pages/TopicDisplay.css" ]
 	},
@@ -41,6 +45,15 @@
 	{
 		"outputFileName": "wwwroot/js/TopicDisplay.min.js",
 		"inputFiles": [ "wwwroot/js/TopicDisplay.js" ],
+		"minify": {
+			"enabled": true,
+			"renameLocals": true
+		},
+		"sourceMap": false
+	},
+	{
+		"outputFileName": "wwwroot/js/MessageCreate.min.js",
+		"inputFiles": [ "wwwroot/js/MessageCreate.js" ],
 		"minify": {
 			"enabled": true,
 			"renameLocals": true

@@ -64,18 +64,6 @@ namespace Forum3.Repositories {
 		public async Task<ServiceModels.ServiceResponse> CreateTopic(InputModels.MessageInput input) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
-			if (input.BoardId is null)
-				serviceResponse.Error(nameof(input.BoardId), $"Board ID is required");
-
-			var boardId = Convert.ToInt32(input.BoardId);
-			var boardRecord = BoardRepository.FirstOrDefault(b => b.Id == boardId);
-
-			if (boardRecord is null)
-				serviceResponse.Error(string.Empty, $"A record does not exist with ID '{boardId}'");
-
-			if (!serviceResponse.Success)
-				return serviceResponse;
-
 			var processedMessage = await ProcessMessageInput(serviceResponse, input.Body);
 
 			if (!serviceResponse.Success)
@@ -83,16 +71,25 @@ namespace Forum3.Repositories {
 
 			var record = CreateMessageRecord(processedMessage, null);
 
-			DbContext.MessageBoards.Add(new DataModels.MessageBoard {
-				MessageId = record.Id,
-				BoardId = boardRecord.Id,
-				TimeAdded = DateTime.Now,
-				UserId = UserContext.ApplicationUser.Id
-			});
+			var existingMessageBoards = DbContext.MessageBoards.Where(item => item.MessageId == record.Id).ToList();
 
-			boardRecord.LastMessageId = record.Id;
+			foreach (var item in existingMessageBoards)
+				DbContext.Remove(item);
 
-			DbContext.Update(boardRecord);
+			DbContext.SaveChanges();
+
+			if (!input.SelectedBoards.Any())
+				input.SelectedBoards.Add(1);
+
+			foreach (var item in input.SelectedBoards) {
+				DbContext.MessageBoards.Add(new DataModels.MessageBoard {
+					MessageId = record.Id,
+					BoardId = item,
+					TimeAdded = DateTime.Now,
+					UserId = UserContext.ApplicationUser.Id
+				});
+			}
+
 			DbContext.SaveChanges();
 
 			serviceResponse.RedirectPath = UrlHelper.DirectMessage(record.Id);

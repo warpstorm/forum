@@ -65,6 +65,13 @@ namespace Forum3.Controllers {
 		[PreventRapidRequests]
 		public async Task<IActionResult> Create(InputModels.MessageInput input) {
 			if (ModelState.IsValid) {
+				foreach (var board in BoardRepository) {
+					if (Request.Form.TryGetValue("Selected_" + board.Id, out var boardSelected)) {
+						if (boardSelected == "True")
+							input.SelectedBoards.Add(board.Id);
+					}
+				}
+
 				var serviceResponse = await MessageRepository.CreateTopic(input);
 				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
