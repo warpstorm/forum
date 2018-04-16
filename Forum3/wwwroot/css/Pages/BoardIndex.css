@@ -23,6 +23,7 @@
 	max-width: 300px;
 	white-space: nowrap;
 	overflow: hidden;
+	clear: right;
 }
 
 @media only screen and (max-width: 480px) {
