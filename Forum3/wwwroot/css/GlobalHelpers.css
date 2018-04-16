@@ -26,6 +26,7 @@
 	right: 0;
 	border: 1px solid #253248;
 	box-shadow: #121822 0 3px 8px;
+	z-index: 999;
 }
 
 	.drop-down-menu li {

@@ -3,10 +3,7 @@
 <head>
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	
-	<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-	<link rel="icon" href="/favicon.ico" type="image/x-icon">
-	
+
 	<title>@Html.Raw(ViewData["Title"])</title>
 
 	<environment include="Development">
@@ -21,6 +18,11 @@
 	<environment exclude="Development">
 		<link rel="stylesheet" href="~/css/min/Global.min.css" asp-append-version="true" />
 	</environment>
+
+	<link rel="shortcut icon" href="~/images/logos/favicon.png" asp-append-version="true">
+	<link rel="icon" href="~/images/logos/favicon.png" asp-append-version="true">
+	<link rel="apple-touch-icon" href="~/images/logos/apple-touch-icon.png" asp-append-version="true">
+	<link rel="mask-icon" color="#1d2737" href="~/images/logos/mask-icon.svg" asp-append-version="true">
 
 	@await RenderSectionAsync("Styles", required: false)
 
