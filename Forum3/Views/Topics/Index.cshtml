@@ -69,7 +69,12 @@
 	<section id="topic-list">
 		@if (Model.Topics.Any()) {
 			@foreach (var item in Model.Topics) {
-				@await Html.PartialAsync("_IndexItem", item)
+				if (item.Pinned) {
+					@await Html.PartialAsync("_PinnedIndexItem", item)
+				}
+				else {
+					@await Html.PartialAsync("_IndexItem", item)
+				}
 			}
 		}
 		else {

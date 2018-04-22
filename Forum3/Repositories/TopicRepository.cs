@@ -183,46 +183,77 @@ namespace Forum3.Repositories {
 				viewLogs = DbContext.ViewLogs.Where(r => r.LogTime >= historyTimeLimit && r.UserId == UserContext.ApplicationUser.Id).ToList();
 			}
 
-			var messageIds = GetIndexIds(boardId, page, unread, historyTimeLimit, participation, viewLogs);
+			var sortedMessageIds = GetIndexIds(boardId, page, unread, historyTimeLimit, participation, viewLogs);
 
-			var messageRecordQuery = from message in DbContext.Messages
-									 where message.ParentId == 0 && messageIds.Contains(message.Id)
-									 join reply in DbContext.Messages on message.LastReplyId equals reply.Id into replies
-									 from reply in replies.DefaultIfEmpty()
-									 join replyPostedBy in DbContext.Users on message.LastReplyById equals replyPostedBy.Id
-									 join pin in DbContext.Pins on message.Id equals pin.MessageId into pins
-									 from pin in pins.DefaultIfEmpty()
-									 let pinned = pin != null && pin.UserId == UserContext.ApplicationUser.Id
-									 orderby (pinned ? pin.Id : 0) descending, message.LastReplyPosted descending
-									 select new ItemModels.MessagePreview {
-										 Id = message.Id,
-										 ShortPreview = message.ShortPreview,
-										 LastReplyId = message.LastReplyId == 0 ? message.Id : message.LastReplyId,
-										 LastReplyById = message.LastReplyById,
-										 LastReplyByName = replyPostedBy.DisplayName,
-										 LastReplyPostedDT = message.LastReplyPosted,
-										 LastReplyPreview = reply.ShortPreview,
-										 Views = message.ViewCount,
-										 Replies = message.ReplyCount,
-										 Pinned = pinned
-									 };
+			var messageQuery = from message in DbContext.Messages
+							   where sortedMessageIds.Contains(message.Id)
+							   select new {
+								   message.Id,
+								   message.ShortPreview,
+								   message.ViewCount,
+								   message.ReplyCount,
+								   message.TimePosted,
+								   message.LastReplyId,
+								   message.LastReplyById,
+								   message.LastReplyPosted
+							   };
 
-			var messages = messageRecordQuery.ToList();
+			var messages = messageQuery.ToList();
 
 			var take = SettingsRepository.MessagesPerPage();
+			var popularityLimit = SettingsRepository.PopularityLimit();
 
-			foreach (var message in messages) {
-				if (string.IsNullOrEmpty(message.ShortPreview))
-					message.ShortPreview = "No subject";
+			var messagePreviews = new List<ItemModels.MessagePreview>();
 
-				message.Pages = Convert.ToInt32(Math.Ceiling(1.0 * message.Replies / take));
-				message.LastReplyPosted = message.LastReplyPostedDT.ToPassedTimeString();
+			foreach (var messageId in sortedMessageIds) {
+				var message = messages.First(item => item.Id == messageId);
 
-				if (message.LastReplyPostedDT > historyTimeLimit)
-					message.Unread = GetUnreadLevel(message.Id, message.LastReplyPostedDT, participation, viewLogs);
+				var messagePreview = new ItemModels.MessagePreview {
+					Id = message.Id,
+					ShortPreview = string.IsNullOrEmpty(message.ShortPreview.Trim()) ? "No subject" : message.ShortPreview,
+					Views = message.ViewCount,
+					Replies = message.ReplyCount,
+					Pages = Convert.ToInt32(Math.Ceiling(1.0 * message.ReplyCount / take)),
+					LastReplyId = message.Id,
+					Popular = message.ReplyCount > popularityLimit
+				};
+
+				messagePreviews.Add(messagePreview);
+
+				var pins = from pin in DbContext.Pins
+						   where pin.MessageId == message.Id
+						   where pin.UserId == UserContext.ApplicationUser.Id
+						   select pin.Id;
+
+				messagePreview.Pinned = pins.Any();
+
+				var lastMessageTime = message.TimePosted;
+
+				if (message.LastReplyId != 0) {
+					var lastReplyDetails = (from item in DbContext.Messages
+											join postedBy in DbContext.Users on item.PostedById equals postedBy.Id
+											where item.Id == message.LastReplyId
+											select new {
+												postedBy.DisplayName,
+												item.ShortPreview
+											}).FirstOrDefault();
+
+					if (lastReplyDetails != null) {
+						messagePreview.LastReplyId = message.LastReplyId;
+						messagePreview.LastReplyPreview = lastReplyDetails.ShortPreview;
+						messagePreview.LastReplyByName = lastReplyDetails.DisplayName;
+						messagePreview.LastReplyById = message.LastReplyById;
+						messagePreview.LastReplyPosted = message.LastReplyPosted.ToPassedTimeString();
+						messagePreview.LastReplyPostedDT = message.LastReplyPosted;
+						lastMessageTime = message.LastReplyPosted;
+					}
+				}
+
+				if (lastMessageTime > historyTimeLimit)
+					messagePreview.Unread = GetUnreadLevel(message.Id, lastMessageTime, participation, viewLogs);
 			}
 
-			return messages;
+			return messagePreviews;
 		}
 
 		public List<int> GetIndexIds(int boardId, int page, int unreadFilter, DateTime historyTimeLimit, List<DataModels.Participant> participation, List<DataModels.ViewLog> viewLogs) {
@@ -320,11 +351,11 @@ namespace Forum3.Repositories {
 			return messageBoards.Any() && messageBoards.Intersect(forbiddenBoardIds).Any();
 		}
 
-		public int GetUnreadLevel(int messageId, DateTime lastReplyTime, List<DataModels.Participant> participation, List<DataModels.ViewLog> viewLogs) {
+		public int GetUnreadLevel(int messageId, DateTime lastMessageTime, List<DataModels.Participant> participation, List<DataModels.ViewLog> viewLogs) {
 			var unread = 1;
 
 			if (UserContext.IsAuthenticated) {
-				foreach (var viewLog in viewLogs.Where(item => item.LogTime >= lastReplyTime)) {
+				foreach (var viewLog in viewLogs.Where(item => item.LogTime >= lastMessageTime)) {
 					switch (viewLog.TargetType) {
 						case EViewLogTargetType.All:
 							unread = 0;
@@ -454,4 +485,3 @@ namespace Forum3.Repositories {
 		}
 	}
 }
- 

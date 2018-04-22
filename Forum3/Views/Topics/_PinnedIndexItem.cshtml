@@ -1,0 +1,20 @@
+﻿@model MessagePreview
+
+<div class="highlight gap-top">
+	<div class="pin float-right small-pad-top">
+		<a asp-action="@nameof(Topics.Pin)" asp-route-id="@Model.Id"><img src="~/images/pinned.png" /></a>
+	</div>
+	<div class="details pointer small-pad" clickable-link-parent>
+		<p>
+			<a asp-action="@nameof(Topics.Latest)" asp-route-id="@Model.Id">
+				@Html.Raw(Model.ShortPreview)
+				@if (Model.Popular) {
+					<img src="~/images/flame.png" title="Popular" />
+				}
+				@if (Model.Unread == 1 || Model.Unread == 2) {
+					<span class="small-button">new</span>
+				}
+			</a>
+		</p>
+	</div>
+</div>

@@ -56,6 +56,7 @@ a.small-button {
 	.small-button.highlight,
 	a.small-button.highlight {
 		color: #000;
+		border: 1px solid #7090c6 !important;
 		background: linear-gradient(0deg, #92abba, #d6e3eb);
 		text-shadow: none;
 	}

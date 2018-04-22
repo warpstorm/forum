@@ -72,7 +72,7 @@ a.borderless * {
 }
 
 .highlight {
-	border: 1px solid #7090c6 !important;
+	background-color: #253248;
 }
 
 .underline {

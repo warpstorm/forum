@@ -1,60 +1,62 @@
 ﻿@model MessagePreview
 
-	<div class="content-box gap hover-highlight">
-		<div class="pin float-right small-pad-top gap">
-			@if (Model.Pinned) {
-				<a asp-action="@nameof(Topics.Pin)" asp-route-id="@Model.Id"><img src="~/images/pinned.png" /></a>
-			}
-			else {
-				<a asp-action="@nameof(Topics.Pin)" asp-route-id="@Model.Id"><img src="~/images/unpinned.png" /></a>
-			}
-		</div>
-		<div class="details pointer pad" clickable-link-parent>
+<div class="content-box gap hover-highlight">
+	<div class="pin float-right small-pad-top gap">
+		<a asp-action="@nameof(Topics.Pin)" asp-route-id="@Model.Id"><img src="~/images/unpinned.png" /></a>
+	</div>
+	<div class="details pointer pad" clickable-link-parent>
+		<p>
+			<a asp-action="@nameof(Topics.Latest)" asp-route-id="@Model.Id">
+				@Html.Raw(Model.ShortPreview)
+				@if (Model.Popular) {
+					<img src="~/images/flame.png" title="Popular" />
+				}
+				@if (Model.Unread == 1 || Model.Unread == 2) {
+					<span class="small-button">new</span>
+				}
+			</a>
+		</p>
+		<div class="note pad-left small-pad-top">
 			<p>
-				<a asp-action="@nameof(Topics.Latest)" asp-route-id="@Model.Id">
-					@Html.Raw(Model.ShortPreview)
-					@if (Model.Unread == 1 || Model.Unread == 2) {
-						<span class="small-button">new</span>
+				@if (Model.Views == 0) {
+					<text>No views yet</text>
+				}
+				else if (Model.Views == 1) {
+					<text>1 view</text>
+				}
+				else {
+					@Model.Views <text> views</text>
+				}
+
+				&nbsp;
+
+				@if (Model.Replies == 0) {
+					<text>No replies yet</text>
+				}
+				else if (Model.Replies == 1) {
+					<text>1 reply</text>
+				}
+				else {
+					@Model.Replies <text> replies</text>
+				}
+
+				&nbsp;
+
+				@if (Model.Pages > 1) {
+					<text>Pages:</text>
+					for (var i = Model.Pages - 4; i <= Model.Pages; i++) {
+						if (i <= 0) {
+							continue;
+						}
+
+						<a class="small-pad-left" asp-action="@nameof(Topics.Display)" asp-route-id="@Model.Id" asp-route-pageId="@i">@i</a>
 					}
-				</a>
+				}
 			</p>
-			@if (!Model.Pinned) {
-				<div class="note pad-left small-pad-top">
-					<p>
-						@Model.Views
-						@if (Model.Views > 1) {
-							<text>views</text>
-						}
-						else {
-							<text>view</text>
-						}
-
-						&nbsp;
-
-						@Model.Replies
-						@if (Model.Replies > 1) {
-							<text>replies</text>
-						}
-						else {
-							<text>reply</text>
-						}
-
-						&nbsp;
-
-						@if (Model.Pages > 1) {
-							<text>Pages:</text>
-							for (var i = Model.Pages - 4; i <= Model.Pages; i++) {
-								if (i <= 0) {
-									continue;
-								}
-
-								<a class="small-pad-left" asp-action="@nameof(Topics.Display)" asp-route-id="@Model.Id" asp-route-pageId="@i">@i</a>
-							}
-						}
-					</p>
-					<p class="small-pad-top">Last post was @Model.LastReplyPosted by @Model.LastReplyByName</p>
-					<p class="small-pad-left">@Html.Raw(Model.LastReplyPreview)</p>
-				</div>
+			@if (Model.LastReplyId != Model.Id) {
+				<p class="small-pad-top">Last post was @Model.LastReplyPosted by @Model.LastReplyByName</p>
+				<p class="small-pad-left">@Html.Raw(Model.LastReplyPreview)</p>
 			}
 		</div>
 	</div>
+</div>
