@@ -1,9 +1,17 @@
-﻿@{ 
+﻿@{
 	var siteAge = DateTime.Now.Year - 2000;
+	var timerOutput = string.Empty;
+
+	if (Context.Items["PageTimer"] is System.Diagnostics.Stopwatch pageTimer) {
+		pageTimer.Stop();
+		var pageTimerSeconds = 1D * pageTimer.ElapsedMilliseconds / 1000;
+
+		timerOutput = $" | {pageTimerSeconds} seconds";
+	}
 }
 
 <footer id="page-footer" class="align-center">
-	<p><a href="https://github.com/jyarbro/forum/commits/master">Theme 12 | Code 3.4.0</a></p>
+	<p><a href="https://github.com/jyarbro/forum/commits/master">Theme 12 | Code 3.4.1 @timerOutput</a></p>
 	<p><span id="easter-egg">Bringing disorder to chaos for @siteAge years.</span></p>
 	<div id="danger-sign" class="hidden">
 		<img src="~/images/dangerSign.png" />

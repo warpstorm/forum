@@ -22,6 +22,7 @@ namespace Forum3.Extensions {
 	public static class ForumStartupExtensions {
 		public static IApplicationBuilder UseForum(this IApplicationBuilder builder) {
 			builder.UseMiddleware<HttpStatusCodeHandler>();
+			builder.UseMiddleware<PageTimer>();
 
 			return builder;
 		}

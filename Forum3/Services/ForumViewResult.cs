@@ -1,11 +1,13 @@
 ﻿using Forum3.Controllers;
 using Forum3.Interfaces.Services;
+using Forum3.Middleware;
 using Forum3.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -60,6 +62,13 @@ namespace Forum3.Services {
 			controller.ViewData["LogoPath"] = GetLogoPath();
 			controller.ViewData["Referrer"] = GetReferrer(controller);
 			controller.ViewData["Categories"] = BoardRepository.CategoryIndex();
+
+			if (controller.HttpContext.Items["PageTimer"] is Stopwatch pageTimer) {
+				pageTimer.Stop();
+				var pageTimerSeconds = 1D * pageTimer.ElapsedMilliseconds / 1000;
+
+				controller.ViewData["FooterPageTimer"] = $" | {pageTimerSeconds} seconds";
+			}
 
 			return controller.View(viewName, model);
 		}
