@@ -28,7 +28,7 @@ select {
 	border-radius: 2px;
 	max-width: 95%;
 	background-color: #0a0d12;
-	color: #d6e3eb;
+	color: #e1edf3;
 }
 
 :focus::placeholder {

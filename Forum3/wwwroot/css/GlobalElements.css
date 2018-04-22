@@ -11,7 +11,7 @@ html, body {
 
 body {
 	font: 1em/1.4em "Segoe UI", "Segoe UI Web Regular", "Segoe UI Symbol", "Helvetica Neue", Arial, "sans-serif";
-	color: #d6e3eb;
+	color: #e1edf3;
 }
 
 table {
@@ -22,7 +22,7 @@ table {
 
 a {
 	text-decoration: none;
-	color: #d6e3eb;
+	color: #e1edf3;
 }
 
 	a:hover {

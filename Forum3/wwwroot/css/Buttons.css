@@ -9,7 +9,6 @@ button,
 	padding: 4px 10px;
 	margin: 2px;
 	font: 96%/1.4em "Segoe UI", "Segoe UI Web Regular", "Segoe UI Symbol", "Helvetica Neue", Arial, "sans-serif";
-	color: #fff;
 }
 
 	button:disabled {
@@ -18,7 +17,6 @@ button,
 
 a.button {
 	border-bottom-width: 0;
-	color: #fff;
 }
 
 .small-button, a.small-button {
@@ -27,7 +25,6 @@ a.button {
 	font-size: 9pt;
 	line-height: 12pt;
 	font-weight: 600;
-	color: #d6e3eb;
 }
 
 	.small-button:hover, a.small-button:hover {
@@ -50,14 +47,22 @@ a.small-button {
 	box-shadow: none;
 }
 
+button,
+.button,
+a.button,
+.small-button,
+a.small-button {
+	color: #e1edf3 !important;
+}
+
 	button.highlight,
 	.button.highlight,
 	a.button.highlight,
 	.small-button.highlight,
 	a.small-button.highlight {
-		color: #000;
+		color: #000 !important;
 		border: 1px solid #7090c6 !important;
-		background: linear-gradient(0deg, #92abba, #d6e3eb);
+		background: linear-gradient(0deg, #92abba, #e1edf3);
 		text-shadow: none;
 	}
 
