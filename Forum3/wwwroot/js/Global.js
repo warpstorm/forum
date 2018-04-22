@@ -1,4 +1,6 @@
-﻿var BBCode = {
+﻿window.isFirefox = typeof InstallTrigger !== 'undefined'; //https://stackoverflow.com/a/9851769/2621693
+
+var BBCode = {
 	"bold": "[b]  [/b]",
 	"italics": "[i]  [/i]",
 	"url": "[url=]  [/url]",
@@ -20,9 +22,7 @@ $(function () {
 		event.preventDefault();
 	});
 
-	// TODO: Add middle click and shift click events too.
-	$("[clickable-link-parent]").on("mousedown", OpenLink);
-
+	BindLinks();
 	ShowPages();
 
 	$("#easter-egg").on("mouseenter", function () {
@@ -153,6 +153,15 @@ function ShowPages() {
 	});
 }
 
+function BindLinks() {
+	$("[clickable-link-parent]").off("boundLinks");
+
+	if (isFirefox)
+		$("[clickable-link-parent]").on("click.boundLinks", OpenLink);
+	else
+		$("[clickable-link-parent]").on("mousedown.boundLinks", OpenLink);
+}
+
 function OpenLink(event) {
 	event.stopPropagation();
 
@@ -175,7 +184,7 @@ function OpenLink(event) {
 			window.open(url, "_blank");
 			break;
 	}
-
+	
 	return true;
 }
 
