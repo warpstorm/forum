@@ -153,6 +153,20 @@ namespace Forum3.Controllers {
 		}
 
 		[HttpGet]
+		public async Task<IActionResult> MarkUnread(int id) {
+			if (ModelState.IsValid) {
+				var serviceResponse = TopicRepository.MarkUnread(id);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+			}
+
+			return await FailureCallback();
+
+			async Task<IActionResult> FailureCallback() {
+				return await Task.Run(() => { return ForumViewResult.RedirectToReferrer(this); });
+			}
+		}
+
+		[HttpGet]
 		public IActionResult ToggleBoard(InputModels.ToggleBoardInput input) {
 			if (ModelState.IsValid)
 				TopicRepository.Toggle(input);

@@ -407,6 +407,29 @@ namespace Forum3.Repositories {
 			return new ServiceModels.ServiceResponse();
 		}
 
+		public ServiceModels.ServiceResponse MarkUnread(int messageId) {
+			var record = DbContext.Messages.Find(messageId);
+
+			if (record is null)
+				throw new HttpNotFoundException($@"No record was found with the id '{messageId}'");
+
+			if (record.ParentId > 0)
+				messageId = record.ParentId;
+
+			var viewLogs = DbContext.ViewLogs.Where(item => item.UserId == UserContext.ApplicationUser.Id && item.TargetId == messageId && item.TargetType == EViewLogTargetType.Message).ToList();
+
+			if (viewLogs.Any()) {
+				foreach (var viewLog in viewLogs)
+					DbContext.Remove(viewLog);
+
+				DbContext.SaveChanges();
+			}
+
+			return new ServiceModels.ServiceResponse {
+				RedirectPath = "/"
+			};
+		}
+
 		public void Toggle(InputModels.ToggleBoardInput input) {
 			var messageRecord = DbContext.Messages.Find(input.MessageId);
 
