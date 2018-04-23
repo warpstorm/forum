@@ -197,6 +197,11 @@ namespace Forum3.Repositories {
 			foreach (var messageThought in messageThoughts)
 				DbContext.MessageThoughts.Remove(messageThought);
 
+			var notifications = DbContext.Notifications.Where(item => item.MessageId == record.Id).ToList();
+
+			foreach (var notification in notifications)
+				DbContext.Notifications.Remove(notification);
+
 			DbContext.Messages.Remove(record);
 
 			DbContext.SaveChanges();
@@ -255,8 +260,14 @@ namespace Forum3.Repositories {
 					DbContext.Notifications.Add(notification);
 				}
 			}
-			else
-				DbContext.MessageThoughts.Remove(existingRecord);
+			else {
+				DbContext.Remove(existingRecord);
+
+				var notification = DbContext.Notifications.FirstOrDefault(item => item.MessageId == existingRecord.MessageId && item.TargetUserId == existingRecord.UserId && item.Type == Enums.ENotificationType.Thought);
+
+				if (notification != null)
+					DbContext.Remove(notification);
+			}
 
 			DbContext.SaveChanges();
 
