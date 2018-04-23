@@ -1,6 +1,6 @@
 ﻿using Forum3.Annotations;
 using Forum3.Contexts;
-using Forum3.Exceptions;
+using Forum3.Errors;
 using Forum3.Interfaces.Services;
 using Forum3.Repositories;
 using Microsoft.AspNetCore.Mvc;
@@ -73,12 +73,12 @@ namespace Forum3.Controllers {
 			var boardRoles = RoleRepository.BoardRoles.Where(r => r.BoardId == id).Select(r => r.RoleId).ToList();
 
 			if (!UserContext.IsAdmin && boardRoles.Any() && !boardRoles.Intersect(UserContext.Roles).Any())
-				throw new HttpForbiddenException("You are not authorized to view this board.");
+				throw new HttpForbiddenError();
 
 			var page = 1;
 			var topicPreviews = TopicRepository.GetPreviews(id, page, unread);
 
-			var boardRecord = BoardRepository.FirstOrDefault(record => record.Id == id);
+			var boardRecord = id == 0 ? null : BoardRepository.FirstOrDefault(record => record.Id == id);
 
 			var viewModel = new PageModels.TopicIndexPage {
 				BoardId = id,
@@ -99,7 +99,7 @@ namespace Forum3.Controllers {
 			var boardRoles = RoleRepository.BoardRoles.Where(r => r.BoardId == id).Select(r => r.RoleId).ToList();
 
 			if (!UserContext.IsAdmin && boardRoles.Any() && !boardRoles.Intersect(UserContext.Roles).Any())
-				throw new HttpForbiddenException("You are not authorized to view this board.");
+				throw new HttpForbiddenError();
 
 			var topicPreviews = TopicRepository.GetPreviews(id, page, unread);
 
@@ -212,7 +212,7 @@ namespace Forum3.Controllers {
 			var record = DbContext.Messages.Find(id);
 
 			if (record is null)
-				throw new HttpNotFoundException($"A record does not exist with ID '{id}'");
+				throw new HttpNotFoundError();
 
 			var parentId = id;
 
@@ -249,7 +249,7 @@ namespace Forum3.Controllers {
 			var boardRoles = RoleRepository.BoardRoles.Where(r => assignedBoards.Any(b => b.Id == r.BoardId)).Select(r => r.RoleId).ToList();
 
 			if (!UserContext.IsAdmin && boardRoles.Any() && !boardRoles.Intersect(UserContext.Roles).Any())
-				throw new HttpForbiddenException("You are not authorized to view this topic.");
+				throw new HttpForbiddenError();
 
 			if (pageId < 1)
 				pageId = 1;

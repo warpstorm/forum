@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,8 +28,9 @@ namespace Forum3.Repositories {
 			UserContext userContext,
 			RoleRepository roleRepository,
 			IActionContextAccessor actionContextAccessor,
-			IUrlHelperFactory urlHelperFactory
-		) {
+			IUrlHelperFactory urlHelperFactory,
+			ILogger<BoardRepository> log
+		) : base(log) {
 			DbContext = dbContext;
 			UserContext = userContext;
 			RoleRepository = roleRepository;
@@ -160,7 +162,7 @@ namespace Forum3.Repositories {
 			else {
 				try {
 					var categoryId = Convert.ToInt32(input.Category);
-					categoryRecord = Categories.FirstOrDefault(c => c.Id == categoryId);
+					categoryRecord = Categories.First(c => c.Id == categoryId);
 
 					if (categoryRecord is null)
 						serviceResponse.Error(nameof(input.Category), "No category was found with this ID.");
@@ -210,7 +212,7 @@ namespace Forum3.Repositories {
 			var record = Records.FirstOrDefault(b => b.Id == input.Id);
 
 			if (record is null)
-				serviceResponse.Error(string.Empty, $"A record does not exist with ID '{input.Id}'");
+				serviceResponse.Error($"A record does not exist with ID '{input.Id}'");
 
 			DataModels.Category newCategoryRecord = null;
 
@@ -299,8 +301,11 @@ namespace Forum3.Repositories {
 
 			if (oldCategoryId >= 0) {
 				var oldCategoryRecord = Categories.FirstOrDefault(item => item.Id == oldCategoryId);
-				DbContext.Categories.Remove(oldCategoryRecord);
-				DbContext.SaveChanges();
+
+				if (oldCategoryRecord != null) {
+					DbContext.Categories.Remove(oldCategoryRecord);
+					DbContext.SaveChanges();
+				}
 			}
 
 			serviceResponse.RedirectPath = UrlHelper.Action(nameof(Controllers.Boards.Manage), nameof(Controllers.Boards), new { id = record.Id });
@@ -315,10 +320,10 @@ namespace Forum3.Repositories {
 			var toBoard = Records.FirstOrDefault(b => b.Id == input.ToId);
 
 			if (fromBoard is null)
-				serviceResponse.Error(string.Empty, $"A record does not exist with ID '{input.FromId}'");
+				serviceResponse.Error($"A record does not exist with ID '{input.FromId}'");
 
 			if (toBoard is null)
-				serviceResponse.Error(string.Empty, $"A record does not exist with ID '{input.ToId}'");
+				serviceResponse.Error($"A record does not exist with ID '{input.ToId}'");
 
 			if (!serviceResponse.Success)
 				return serviceResponse;
@@ -344,9 +349,10 @@ namespace Forum3.Repositories {
 			if (!DbContext.Boards.Any(b => b.CategoryId == categoryId)) {
 				var categoryRecord = Categories.FirstOrDefault(item => item.Id == categoryId);
 
-				DbContext.Categories.Remove(categoryRecord);
-
-				DbContext.SaveChanges();
+				if (categoryRecord != null) {
+					DbContext.Categories.Remove(categoryRecord);
+					DbContext.SaveChanges();
+				}
 			}
 
 			return serviceResponse;
@@ -359,10 +365,10 @@ namespace Forum3.Repositories {
 			var toCategory = Categories.FirstOrDefault(b => b.Id == input.ToId);
 
 			if (fromCategory is null)
-				serviceResponse.Error(string.Empty, $"A record does not exist with ID '{input.FromId}'");
+				serviceResponse.Error($"A record does not exist with ID '{input.FromId}'");
 
 			if (toCategory is null)
-				serviceResponse.Error(string.Empty, $"A record does not exist with ID '{input.ToId}'");
+				serviceResponse.Error($"A record does not exist with ID '{input.ToId}'");
 
 			if (!serviceResponse.Success)
 				return serviceResponse;
@@ -389,7 +395,7 @@ namespace Forum3.Repositories {
 			var targetBoard = Records.FirstOrDefault(b => b.Id == id);
 
 			if (targetBoard is null) {
-				serviceResponse.Error(string.Empty, "No board found with that ID.");
+				serviceResponse.Error("No board found with that ID.");
 				return serviceResponse;
 			}
 
@@ -431,7 +437,7 @@ namespace Forum3.Repositories {
 			var targetCategory = Categories.FirstOrDefault(b => b.Id == id);
 
 			if (targetCategory is null) {
-				serviceResponse.Error(string.Empty, "No category found with that ID.");
+				serviceResponse.Error("No category found with that ID.");
 				return serviceResponse;
 			}
 

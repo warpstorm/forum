@@ -1,5 +1,6 @@
 ﻿using Forum3.Contexts;
 using Forum3.Controllers;
+using Forum3.Errors;
 using Forum3.Extensions;
 using Forum3.Interfaces.Services;
 using Microsoft.AspNetCore.Http;
@@ -33,7 +34,6 @@ namespace Forum3.Repositories {
 		IUrlHelper UrlHelper { get; }
 		IEmailSender EmailSender { get; }
 		IImageStore ImageStore { get; }
-		ILogger Logger { get; }
 
 		public AccountRepository(
 			ApplicationDbContext dbContext,
@@ -46,8 +46,8 @@ namespace Forum3.Repositories {
 			IUrlHelperFactory urlHelperFactory,
 			IEmailSender emailSender,
 			IImageStore imageStore,
-			ILogger<AccountRepository> logger
-		) {
+			ILogger<AccountRepository> log
+		) : base(log) {
 			DbContext = dbContext;
 			UserContext = userContext;
 
@@ -61,7 +61,6 @@ namespace Forum3.Repositories {
 
 			EmailSender = emailSender;
 			ImageStore = imageStore;
-			Logger = logger;
 
 			Records = DbContext.Users.OrderBy(u => u.DisplayName).ToList();
 		}
@@ -122,15 +121,15 @@ namespace Forum3.Repositories {
 			var result = await SignInManager.PasswordSignInAsync(input.Email, input.Password, input.RememberMe, lockoutOnFailure: false);
 
 			if (result.IsLockedOut) {
-				Logger.LogWarning($"User account locked out '{input.Email}'.");
+				Log.LogWarning($"User account locked out '{input.Email}'.");
 				serviceResponse.RedirectPath = UrlHelper.Action(nameof(Account.Lockout), nameof(Account));
 			}
 			else if (!result.Succeeded) {
-				Logger.LogWarning($"Invalid login attempt for account '{input.Email}'.");
-				serviceResponse.Error(string.Empty, "Invalid login attempt.");
+				Log.LogWarning($"Invalid login attempt for account '{input.Email}'.");
+				serviceResponse.Error("Invalid login attempt.");
 			}
 			else
-				Logger.LogInformation($"User logged in '{input.Email}'.");
+				Log.LogInformation($"User logged in '{input.Email}'.");
 
 			return serviceResponse;
 		}
@@ -141,23 +140,23 @@ namespace Forum3.Repositories {
 			if (!await UserManager.CheckPasswordAsync(UserContext.ApplicationUser, input.Password)) {
 				var message = $"Invalid password for '{input.DisplayName}'.";
 				serviceResponse.Error(nameof(InputModels.UpdateAccountInput.Password), message);
-				Logger.LogWarning(message);
+				Log.LogWarning(message);
 			}
 
 			var userRecord = await UserManager.FindByIdAsync(input.Id);
 
 			if (userRecord is null) {
 				var message = $"No user record found for '{input.DisplayName}'.";
-				serviceResponse.Error(string.Empty, message);
-				Logger.LogCritical(message);
+				serviceResponse.Error(message);
+				Log.LogCritical(message);
 			}
 
 			CanEdit(userRecord.Id);
 
 			if (userRecord is null) {
 				var message = $"No user account found for '{input.DisplayName}'.";
-				serviceResponse.Error(string.Empty, message);
-				Logger.LogCritical(message);
+				serviceResponse.Error(message);
+				Log.LogCritical(message);
 			}
 
 			if (!serviceResponse.Success)
@@ -167,7 +166,7 @@ namespace Forum3.Repositories {
 				userRecord.DisplayName = input.DisplayName;
 				DbContext.Update(userRecord);
 
-				Logger.LogInformation($"Display name was modified by '{UserContext.ApplicationUser.DisplayName}' for account '{userRecord.DisplayName}'.");
+				Log.LogInformation($"Display name was modified by '{UserContext.ApplicationUser.DisplayName}' for account '{userRecord.DisplayName}'.");
 			}
 
 			var birthday = new DateTime(input.BirthdayYear, input.BirthdayMonth, input.BirthdayDay);
@@ -176,7 +175,7 @@ namespace Forum3.Repositories {
 				userRecord.Birthday = birthday;
 				DbContext.Update(userRecord);
 
-				Logger.LogInformation($"Birthday was modified by '{UserContext.ApplicationUser.DisplayName}' for account '{userRecord.DisplayName}'.");
+				Log.LogInformation($"Birthday was modified by '{UserContext.ApplicationUser.DisplayName}' for account '{userRecord.DisplayName}'.");
 			}
 
 			DbContext.SaveChanges();
@@ -188,7 +187,7 @@ namespace Forum3.Repositories {
 
 				if (!identityResult.Succeeded) {
 					foreach (var error in identityResult.Errors) {
-						Logger.LogError($"Error modifying email by '{UserContext.ApplicationUser.DisplayName}' from '{userRecord.Email}' to '{input.NewEmail}'. Message: {error.Description}");
+						Log.LogError($"Error modifying email by '{UserContext.ApplicationUser.DisplayName}' from '{userRecord.Email}' to '{input.NewEmail}'. Message: {error.Description}");
 						serviceResponse.Error(error.Description);
 					}
 
@@ -199,14 +198,14 @@ namespace Forum3.Repositories {
 
 				if (!identityResult.Succeeded) {
 					foreach (var error in identityResult.Errors) {
-						Logger.LogError($"Error modifying username by '{UserContext.ApplicationUser.DisplayName}' from '{userRecord.Email}' to '{input.NewEmail}'. Message: {error.Description}");
+						Log.LogError($"Error modifying username by '{UserContext.ApplicationUser.DisplayName}' from '{userRecord.Email}' to '{input.NewEmail}'. Message: {error.Description}");
 						serviceResponse.Error(error.Description);
 					}
 
 					return serviceResponse;
 				}
 
-				Logger.LogInformation($"Email address was modified by '{UserContext.ApplicationUser.DisplayName}' from '{userRecord.Email}' to '{input.NewEmail}'.");
+				Log.LogInformation($"Email address was modified by '{UserContext.ApplicationUser.DisplayName}' from '{userRecord.Email}' to '{input.NewEmail}'.");
 
 				var code = await UserManager.GenerateEmailConfirmationTokenAsync(userRecord);
 
@@ -223,12 +222,12 @@ namespace Forum3.Repositories {
 
 					if (!identityResult.Succeeded) {
 						foreach (var error in identityResult.Errors) {
-							Logger.LogError($"Error confirming '{userRecord.Email}'. Message: {error.Description}");
-							serviceResponse.Error(string.Empty, error.Description);
+							Log.LogError($"Error confirming '{userRecord.Email}'. Message: {error.Description}");
+							serviceResponse.Error(error.Description);
 						}
 					}
 					else
-						Logger.LogInformation($"User confirmed email '{userRecord.Email}'.");
+						Log.LogInformation($"User confirmed email '{userRecord.Email}'.");
 				}
 
 				return serviceResponse;
@@ -241,12 +240,12 @@ namespace Forum3.Repositories {
 
 				if (!identityResult.Succeeded) {
 					foreach (var error in identityResult.Errors) {
-						Logger.LogError($"Error modifying password by '{UserContext.ApplicationUser.DisplayName}' for '{userRecord.DisplayName}'. Message: {error.Description}");
+						Log.LogError($"Error modifying password by '{UserContext.ApplicationUser.DisplayName}' for '{userRecord.DisplayName}'. Message: {error.Description}");
 						serviceResponse.Error(nameof(InputModels.UpdateAccountInput.NewPassword), error.Description);
 					}
 				}
 				else if (userRecord.Id == UserContext.ApplicationUser.Id) {
-					Logger.LogInformation($"Password was modified by '{UserContext.ApplicationUser.DisplayName}' for '{userRecord.DisplayName}'.");
+					Log.LogInformation($"Password was modified by '{UserContext.ApplicationUser.DisplayName}' for '{userRecord.DisplayName}'.");
 					await SignOut();
 					serviceResponse.RedirectPath = UrlHelper.Action(nameof(Login));
 					return serviceResponse;
@@ -266,8 +265,8 @@ namespace Forum3.Repositories {
 
 			if (userRecord is null) {
 				var message = $"No user record found for '{input.Id}'.";
-				serviceResponse.Error(string.Empty, message);
-				Logger.LogCritical(message);
+				serviceResponse.Error(message);
+				Log.LogCritical(message);
 			}
 
 			CanEdit(input.Id);
@@ -300,7 +299,7 @@ namespace Forum3.Repositories {
 			DbContext.Update(userRecord);
 			DbContext.SaveChanges();
 
-			Logger.LogInformation($"Avatar was modified by '{UserContext.ApplicationUser.DisplayName}' for account '{userRecord.DisplayName}'.");
+			Log.LogInformation($"Avatar was modified by '{UserContext.ApplicationUser.DisplayName}' for account '{userRecord.DisplayName}'.");
 
 			return serviceResponse;
 		}
@@ -322,7 +321,7 @@ namespace Forum3.Repositories {
 			var identityResult = await UserManager.CreateAsync(user, input.Password);
 
 			if (identityResult.Succeeded) {
-				Logger.LogInformation($"User created a new account with password '{input.Email}'.");
+				Log.LogInformation($"User created a new account with password '{input.Email}'.");
 
 				var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
 				var callbackUrl = EmailConfirmationLink(user.Id, code);
@@ -336,8 +335,8 @@ namespace Forum3.Repositories {
 			}
 			else {
 				foreach (var error in identityResult.Errors) {
-					Logger.LogError($"Error registering '{input.Email}'. Message: {error.Description}");
-					serviceResponse.Error(string.Empty, error.Description);
+					Log.LogError($"Error registering '{input.Email}'. Message: {error.Description}");
+					serviceResponse.Error(error.Description);
 				}
 			}
 
@@ -368,19 +367,19 @@ namespace Forum3.Repositories {
 			var account = await UserManager.FindByIdAsync(input.UserId);
 
 			if (account is null)
-				serviceResponse.Error(string.Empty, $"Unable to load account '{input.UserId}'.");
+				serviceResponse.Error($"Unable to load account '{input.UserId}'.");
 
 			if (serviceResponse.Success) {
 				var identityResult = await UserManager.ConfirmEmailAsync(account, input.Code);
 
 				if (!identityResult.Succeeded) {
 					foreach (var error in identityResult.Errors) {
-						Logger.LogError($"Error confirming '{account.Email}'. Message: {error.Description}");
-						serviceResponse.Error(string.Empty, error.Description);
+						Log.LogError($"Error confirming '{account.Email}'. Message: {error.Description}");
+						serviceResponse.Error(error.Description);
 					}
 				}
 				else
-					Logger.LogInformation($"User confirmed email '{account.Id}'.");
+					Log.LogInformation($"User confirmed email '{account.Id}'.");
 			}
 
 			await SignOut();
@@ -419,10 +418,10 @@ namespace Forum3.Repositories {
 
 				if (!identityResult.Succeeded) {
 					foreach (var error in identityResult.Errors)
-						Logger.LogError($"Error resetting password for '{account.Email}'. Message: {error.Description}");
+						Log.LogError($"Error resetting password for '{account.Email}'. Message: {error.Description}");
 				}
 				else
-					Logger.LogInformation($"Password was reset for '{account.Email}'.");
+					Log.LogInformation($"Password was reset for '{account.Email}'.");
 			}
 
 			serviceResponse.RedirectPath = nameof(Account.ResetPasswordConfirmation);
@@ -433,9 +432,9 @@ namespace Forum3.Repositories {
 			if (userId == UserContext.ApplicationUser.Id || UserContext.IsAdmin)
 				return;
 
-			Logger.LogWarning($"A user tried to edit another user's profile. {UserContext.ApplicationUser.DisplayName}");
+			Log.LogWarning($"A user tried to edit another user's profile. {UserContext.ApplicationUser.DisplayName}");
 
-			throw new ApplicationException("You hackin' bro?");
+			throw new HttpForbiddenError();
 		}
 
 		public async Task SignOut() {

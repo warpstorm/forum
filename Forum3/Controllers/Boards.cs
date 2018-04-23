@@ -1,5 +1,4 @@
 ﻿using Forum3.Contexts;
-using Forum3.Exceptions;
 using Forum3.Interfaces.Services;
 using Forum3.Repositories;
 using Microsoft.AspNetCore.Authorization;
@@ -99,21 +98,17 @@ namespace Forum3.Controllers {
 		[Authorize(Roles="Admin")]
 		[HttpGet]
 		public IActionResult Edit(int id) {
-			var boardRecord = BoardRepository.FirstOrDefault(b => b.Id == id);
-
-			if (boardRecord is null)
-				throw new HttpNotFoundException($"A record does not exist with ID '{id}'");
+			var boardRecord = BoardRepository.First(b => b.Id == id);
+			var category = BoardRepository.Categories.First(item => item.Id == boardRecord.CategoryId);
 
 			var viewModel = new PageViewModels.EditPage {
 				Id = boardRecord.Id,
+				Name = boardRecord.Name,
+				Description = boardRecord.Description,
 				Categories = BoardRepository.CategoryPickList(),
-				Roles = RoleRepository.PickList(boardRecord.Id)
+				Roles = RoleRepository.PickList(boardRecord.Id),
 			};
 
-			var category = BoardRepository.Categories.FirstOrDefault(item => item.Id == boardRecord.CategoryId);
-
-			viewModel.Name = boardRecord.Name;
-			viewModel.Description = boardRecord.Description;
 			viewModel.Categories.First(item => item.Text == category.Name).Selected = true;
 
 			return ForumViewResult.ViewResult(this, viewModel);
@@ -130,10 +125,7 @@ namespace Forum3.Controllers {
 			return await FailureCallback();
 
 			async Task<IActionResult> FailureCallback() {
-				var boardRecord = BoardRepository.FirstOrDefault(b => b.Id == input.Id);
-
-				if (boardRecord is null)
-					throw new HttpNotFoundException($"A record does not exist with ID '{input.Id}'");
+				var boardRecord = BoardRepository.First(b => b.Id == input.Id);
 
 				var viewModel = new PageViewModels.EditPage {
 					Id = boardRecord.Id,

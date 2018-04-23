@@ -1,4 +1,5 @@
-﻿using Forum3.Extensions;
+﻿using Forum3.Errors;
+using Forum3.Extensions;
 using Forum3.Interfaces.Services;
 using Forum3.Repositories;
 using Microsoft.AspNetCore.Authorization;
@@ -178,7 +179,7 @@ namespace Forum3.Controllers {
 			var role = await RoleManager.FindByIdAsync(id);
 
 			if (role is null)
-				throw new Exception($"A record does not exist with ID '{id}'");
+				throw new HttpNotFoundError();
 
 			DataModels.ApplicationUser createdBy = null;
 			DataModels.ApplicationUser modifiedBy = null;

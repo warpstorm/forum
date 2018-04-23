@@ -1,6 +1,6 @@
 ﻿using Forum3.Contexts;
 using Forum3.Enums;
-using Forum3.Exceptions;
+using Forum3.Errors;
 using Forum3.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -99,7 +99,7 @@ namespace Forum3.Repositories {
 
 						message.ReplyBody = reply.DisplayBody;
 						message.ReplyPreview = reply.ShortPreview;
-						message.ReplyPostedBy = replyPostedBy.DisplayName;
+						message.ReplyPostedBy = replyPostedBy?.DisplayName;
 					}
 				}
 
@@ -127,7 +127,7 @@ namespace Forum3.Repositories {
 			var record = DbContext.Messages.Find(messageId);
 
 			if (record is null)
-				throw new HttpNotFoundException($@"No record was found with the id '{messageId}'");
+				throw new HttpNotFoundError();
 
 			if (record.ParentId > 0)
 				record = DbContext.Messages.Find(record.ParentId);
@@ -383,7 +383,7 @@ namespace Forum3.Repositories {
 			var record = DbContext.Messages.Find(messageId);
 
 			if (record is null)
-				throw new HttpNotFoundException($@"No record was found with the id '{messageId}'");
+				throw new HttpNotFoundError();
 
 			if (record.ParentId > 0)
 				messageId = record.ParentId;
@@ -411,7 +411,7 @@ namespace Forum3.Repositories {
 			var record = DbContext.Messages.Find(messageId);
 
 			if (record is null)
-				throw new HttpNotFoundException($@"No record was found with the id '{messageId}'");
+				throw new HttpNotFoundError();
 
 			if (record.ParentId > 0)
 				messageId = record.ParentId;
@@ -434,10 +434,10 @@ namespace Forum3.Repositories {
 			var messageRecord = DbContext.Messages.Find(input.MessageId);
 
 			if (messageRecord is null)
-				throw new HttpNotFoundException($@"No message was found with the id '{input.MessageId}'");
+				throw new HttpNotFoundError();
 
 			if (!BoardRepository.Any(r => r.Id == input.BoardId))
-				throw new HttpNotFoundException();
+				throw new HttpNotFoundError();
 
 			var messageId = input.MessageId;
 

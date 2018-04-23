@@ -1,4 +1,5 @@
 ﻿using Forum3.Contexts;
+using Microsoft.Extensions.Logging;
 using Microsoft.WindowsAzure.Storage.Blob;
 using System.Collections.Generic;
 using System.IO;
@@ -18,8 +19,9 @@ namespace Forum3.Repositories {
 
 		public SmileyRepository(
 			ApplicationDbContext dbContext,
-			CloudBlobClient cloudBlobClient
-		) {
+			CloudBlobClient cloudBlobClient,
+			ILogger<SmileyRepository> log
+		) : base(log) {
 			DbContext = dbContext;
 			CloudBlobClient = cloudBlobClient;
 
@@ -114,7 +116,7 @@ namespace Forum3.Repositories {
 				var smileyRecord = DbContext.Smileys.Find(smileyInput.Id);
 
 				if (smileyRecord is null) {
-					serviceResponse.Error(string.Empty, $@"No smiley was found with the id '{smileyInput.Id}'");
+					serviceResponse.Error($@"No smiley was found with the id '{smileyInput.Id}'");
 					break;
 				}
 
@@ -144,7 +146,7 @@ namespace Forum3.Repositories {
 			var smileyRecord = await DbContext.Smileys.FindAsync(id);
 
 			if (smileyRecord is null)
-				serviceResponse.Error(string.Empty, $@"No smiley was found with the id '{id}'");
+				serviceResponse.Error($@"No smiley was found with the id '{id}'");
 
 			if (!serviceResponse.Success)
 				return serviceResponse;

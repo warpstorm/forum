@@ -1,5 +1,6 @@
 ﻿using Forum3.Contexts;
 using Forum3.Controllers;
+using Forum3.Errors;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -185,7 +186,7 @@ namespace Forum3.Repositories {
 			var role = await RoleManager.FindByIdAsync(id);
 
 			if (role is null)
-				throw new Exception($"A record does not exist with ID '{id}'");
+				throw new HttpNotFoundError();
 
 			var usersInRole = await UserManager.GetUsersInRoleAsync(role.Name);
 
@@ -215,12 +216,12 @@ namespace Forum3.Repositories {
 			var roleRecord = await RoleManager.FindByIdAsync(roleId);
 
 			if (roleRecord is null)
-				serviceResponse.Error(string.Empty, $"A record does not exist with ID '{roleId}'");
+				serviceResponse.Error($"A record does not exist with ID '{roleId}'");
 
 			var userRecord = await UserManager.FindByIdAsync(userId);
 
 			if (userRecord is null)
-				serviceResponse.Error(string.Empty, $"A record does not exist with ID '{roleId}'");
+				serviceResponse.Error($"A record does not exist with ID '{roleId}'");
 
 			if (!serviceResponse.Success)
 				return serviceResponse;
@@ -243,12 +244,12 @@ namespace Forum3.Repositories {
 			var roleRecord = await RoleManager.FindByIdAsync(roleId);
 
 			if (roleRecord is null)
-				serviceResponse.Error(string.Empty, $"A record does not exist with ID '{roleId}'");
+				serviceResponse.Error($"A record does not exist with ID '{roleId}'");
 
 			var userRecord = await UserManager.FindByIdAsync(userId);
 
 			if (userRecord is null)
-				serviceResponse.Error(string.Empty, $"A record does not exist with ID '{roleId}'");
+				serviceResponse.Error($"A record does not exist with ID '{roleId}'");
 
 			if (!serviceResponse.Success)
 				return serviceResponse;

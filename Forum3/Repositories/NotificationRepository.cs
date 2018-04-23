@@ -86,6 +86,11 @@ namespace Forum3.Repositories {
 
 			var record = recordQuery.FirstOrDefault();
 
+			if (record is null) {
+				serviceResponse.RedirectPath = UrlHelper.Action(nameof(Notifications.Index), nameof(Notifications));
+				return serviceResponse;
+			}
+
 			if (record.Unread) {
 				record.Unread = false;
 				DbContext.Update(record);

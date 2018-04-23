@@ -2,10 +2,7 @@
 using Forum3.Interfaces.Services;
 using Forum3.Repositories;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Linq;
 using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 
 namespace Forum3.Controllers {
 	using ViewModels = Models.ViewModels.Profile;
@@ -36,12 +33,7 @@ namespace Forum3.Controllers {
 			if (string.IsNullOrEmpty(id))
 				id = UserContext.ApplicationUser.Id;
 
-			var userRecord = AccountRepository.FirstOrDefault(item => item.Id == id);
-
-			if (userRecord is null)
-				throw new Exception($"No record found with the id {id}");
-
-			// TODO check access rights i.e trim email
+			var userRecord = AccountRepository.First(item => item.Id == id);
 
 			var viewModel = new ViewModels.DetailsPage {
 				Id = userRecord.Email,

@@ -1,5 +1,6 @@
 ﻿using Forum3.Annotations;
 using Forum3.Contexts;
+using Forum3.Errors;
 using Forum3.Interfaces.Filters;
 using Forum3.Interfaces.Services;
 using Forum3.Middleware;
@@ -11,7 +12,6 @@ using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.WindowsAzure.Storage;
-using System;
 
 // REMINDER -
 // Transient: created each time they are requested. This lifetime works best for lightweight, stateless services.
@@ -70,7 +70,7 @@ namespace Forum3.Extensions {
 					storageConnectionString = configuration.GetConnectionString(Constants.Keys.StorageConnection);
 
 				if (string.IsNullOrEmpty(storageConnectionString))
-					throw new ApplicationException("No storage connection string found.");
+					throw new HttpInternalServerError("No storage connection string found.");
 
 				var storageAccount = CloudStorageAccount.Parse(storageConnectionString);
 

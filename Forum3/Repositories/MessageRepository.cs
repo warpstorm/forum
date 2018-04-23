@@ -1,6 +1,7 @@
 ﻿using CodeKicker.BBCode;
 using Forum3.Contexts;
 using Forum3.Controllers;
+using Forum3.Errors;
 using Forum3.Extensions;
 using Forum3.Interfaces.Services;
 using Forum3.Services;
@@ -76,18 +77,17 @@ namespace Forum3.Repositories {
 			foreach (var item in existingMessageBoards)
 				DbContext.Remove(item);
 
-			DbContext.SaveChanges();
+			foreach (var selectedBoard in input.SelectedBoards) {
+				var board = BoardRepository.FirstOrDefault(item => item.Id == selectedBoard);
 
-			if (!input.SelectedBoards.Any())
-				input.SelectedBoards.Add(1);
-
-			foreach (var item in input.SelectedBoards) {
-				DbContext.MessageBoards.Add(new DataModels.MessageBoard {
-					MessageId = record.Id,
-					BoardId = item,
-					TimeAdded = DateTime.Now,
-					UserId = UserContext.ApplicationUser.Id
-				});
+				if (board != null) {
+					DbContext.MessageBoards.Add(new DataModels.MessageBoard {
+						MessageId = record.Id,
+						BoardId = board.Id,
+						TimeAdded = DateTime.Now,
+						UserId = UserContext.ApplicationUser.Id
+					});
+				}
 			}
 
 			DbContext.SaveChanges();
@@ -100,13 +100,17 @@ namespace Forum3.Repositories {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			if (input.Id == 0)
-				throw new Exception($"No record ID specified.");
-
+				throw new HttpBadRequestError();
+			
 			var replyRecord = DbContext.Messages.FirstOrDefault(m => m.Id == input.Id);
-			var processedMessage = await ProcessMessageInput(serviceResponse, input.Body);
 
 			if (replyRecord is null)
-				serviceResponse.Error(string.Empty, $"A record does not exist with ID '{input.Id}'");
+				serviceResponse.Error($"A record does not exist with ID '{input.Id}'");
+
+			if (!serviceResponse.Success)
+				return serviceResponse;
+
+			var processedMessage = await ProcessMessageInput(serviceResponse, input.Body);
 
 			if (!serviceResponse.Success)
 				return serviceResponse;
@@ -121,9 +125,13 @@ namespace Forum3.Repositories {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			if (input.Id == 0)
-				throw new Exception($"No record ID specified.");
+				throw new HttpBadRequestError();
 
 			var record = DbContext.Messages.FirstOrDefault(m => m.Id == input.Id);
+
+			if (record is null)
+				serviceResponse.Error(nameof(input.Id), $"No record found with the ID '{input.Id}'.");
+
 			var processedMessage = await ProcessMessageInput(serviceResponse, input.Body);
 
 			if (serviceResponse.Success) {
@@ -140,7 +148,7 @@ namespace Forum3.Repositories {
 			var record = DbContext.Messages.FirstOrDefault(m => m.Id == messageId);
 
 			if (record is null)
-				serviceResponse.Error(string.Empty, $@"No record was found with the id '{messageId}'");
+				serviceResponse.Error($@"No record was found with the id '{messageId}'");
 
 			if (!serviceResponse.Success)
 				return serviceResponse;
@@ -209,12 +217,12 @@ namespace Forum3.Repositories {
 			var messageRecord = DbContext.Messages.Find(input.MessageId);
 
 			if (messageRecord is null)
-				serviceResponse.Error(string.Empty, $@"No message was found with the id '{input.MessageId}'");
+				serviceResponse.Error($@"No message was found with the id '{input.MessageId}'");
 
 			var smileyRecord = await DbContext.Smileys.FindAsync(input.SmileyId);
 
 			if (messageRecord is null)
-				serviceResponse.Error(string.Empty, $@"No smiley was found with the id '{input.SmileyId}'");
+				serviceResponse.Error($@"No smiley was found with the id '{input.SmileyId}'");
 
 			if (!serviceResponse.Success)
 				return serviceResponse;
@@ -257,13 +265,25 @@ namespace Forum3.Repositories {
 		}
 
 		public async Task<InputModels.ProcessedMessageInput> ProcessMessageInput(ServiceModels.ServiceResponse serviceResponse, string messageBody) {
-			var processedMessage = PreProcessMessageInput(messageBody);
-			PreProcessSmileys(processedMessage);
-			ParseBBC(processedMessage);
-			ProcessSmileys(processedMessage);
-			await ProcessMessageBodyUrls(processedMessage);
-			FindMentionedUsers(processedMessage);
-			PostProcessMessageInput(processedMessage);
+			InputModels.ProcessedMessageInput processedMessage = null;
+
+			try {
+				processedMessage = PreProcessMessageInput(messageBody);
+				PreProcessSmileys(processedMessage);
+				ParseBBC(processedMessage);
+				ProcessSmileys(processedMessage);
+				await ProcessMessageBodyUrls(processedMessage);
+				FindMentionedUsers(processedMessage);
+				PostProcessMessageInput(processedMessage);
+			}
+			catch (ArgumentException e) {
+				serviceResponse.Error(nameof(InputModels.MessageInput.Body), $"An error occurred while processing the message. {e.Message}");
+			}
+
+			if (processedMessage is null) {
+				serviceResponse.Error(nameof(InputModels.MessageInput.Body), $"An error occurred while processing the message.");
+				return processedMessage;
+			}
 
 			return processedMessage;
 		}
@@ -281,7 +301,7 @@ namespace Forum3.Repositories {
 			var displayBody = processedMessageInput.DisplayBody.Trim();
 
 			if (string.IsNullOrEmpty(displayBody))
-				throw new Exception("Message body cannot be empty.");
+				throw new ArgumentException("Message body is empty.");
 
 			// keep this as close to the smiley replacement as possible to prevent HTML-izing the bracket.
 			displayBody = displayBody.Replace("*heartsmiley*", "<3");
@@ -639,10 +659,7 @@ namespace Forum3.Repositories {
 					parentId = replyRecord.ParentId;
 					replyId = replyRecord.Id;
 
-					parentMessage = DbContext.Messages.Find(replyRecord.ParentId);
-
-					if (parentMessage is null)
-						throw new Exception($"Orphan message found with ID {replyRecord.Id}. Unable to load parent with ID {replyRecord.ParentId}.");
+					parentMessage = DbContext.Messages.First(item => item.Id == replyRecord.ParentId);
 				}
 			}
 
@@ -922,20 +939,21 @@ namespace Forum3.Repositories {
 
 			var messages = messageQuery.Skip(skip).Take(take).ToList();
 
-			// This is discarded.
-			var serviceResponse = new ServiceModels.ServiceResponse();
-
 			foreach (var message in messages) {
+				var serviceResponse = new ServiceModels.ServiceResponse();
+
 				var processedMessage = await ProcessMessageInput(serviceResponse, message.OriginalBody);
 
-				message.OriginalBody = processedMessage.OriginalBody;
-				message.DisplayBody = processedMessage.DisplayBody;
-				message.ShortPreview = processedMessage.ShortPreview;
-				message.LongPreview = processedMessage.LongPreview;
-				message.Cards = processedMessage.Cards;
-				message.Processed = true;
+				if (serviceResponse.Success) {
+					message.OriginalBody = processedMessage.OriginalBody;
+					message.DisplayBody = processedMessage.DisplayBody;
+					message.ShortPreview = processedMessage.ShortPreview;
+					message.LongPreview = processedMessage.LongPreview;
+					message.Cards = processedMessage.Cards;
+					message.Processed = true;
 
-				DbContext.Update(message);
+					DbContext.Update(message);
+				}
 			}
 
 			DbContext.SaveChanges();

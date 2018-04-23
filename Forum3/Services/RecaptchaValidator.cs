@@ -1,4 +1,5 @@
-﻿using Forum3.Interfaces.Filters;
+﻿using Forum3.Errors;
+using Forum3.Interfaces.Filters;
 using Forum3.Models.ServiceModels;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -45,7 +46,7 @@ namespace Forum3.Services {
 
 			if (!validatorResponse.Success) {
 				var exceptionMessage = $"There was a problem validating the recaptcha. Error code(s) were:\n{string.Join("\n", validatorResponse.ErrorCodes)}\n";
-				throw new Exception(validatorResponse.ErrorCodes.FirstOrDefault());
+				throw new HttpBadRequestError(validatorResponse.ErrorCodes.FirstOrDefault());
 			}
 		}
 	}

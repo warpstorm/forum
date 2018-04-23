@@ -1,13 +1,12 @@
 ﻿using Forum3.Annotations;
 using Forum3.Contexts;
-using Forum3.Exceptions;
+using Forum3.Errors;
 using Forum3.Extensions;
 using Forum3.Interfaces.Services;
 using Forum3.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
@@ -27,7 +26,7 @@ namespace Forum3.Controllers {
 
 		UserManager<DataModels.ApplicationUser> UserManager { get; }
 		IForumViewResult ForumViewResult { get; }
-		ILogger Logger { get; }
+		ILogger Log { get; }
 
 		public Account(
 			ApplicationDbContext dbContext,
@@ -36,7 +35,7 @@ namespace Forum3.Controllers {
 			SettingsRepository settingsRepository,
 			UserManager<DataModels.ApplicationUser> userManager,
 			IForumViewResult forumViewResult,
-			ILogger<Account> logger
+			ILogger<Account> log
 		) {
 			DbContext = dbContext;
 			UserContext = userContext;
@@ -46,7 +45,7 @@ namespace Forum3.Controllers {
 
 			UserManager = userManager;
 			ForumViewResult = forumViewResult;
-			Logger = logger;
+			Log = log;
 		}
 
 		[HttpGet]
@@ -112,13 +111,7 @@ namespace Forum3.Controllers {
 			return await FailureCallback();
 
 			async Task<IActionResult> FailureCallback() {
-				var userRecord = AccountRepository.FirstOrDefault(item => item.Id == input.Id);
-
-				if (userRecord is null) {
-					var message = $"No record found with the display name '{input.DisplayName}'";
-					Logger.LogWarning(message);
-					throw new ApplicationException("You hackin' bro?");
-				}
+				var userRecord = AccountRepository.First(item => item.Id == input.Id);
 
 				AccountRepository.CanEdit(userRecord.Id);
 
@@ -396,7 +389,7 @@ namespace Forum3.Controllers {
 		[HttpGet]
 		public async Task<IActionResult> ConfirmDelete(string userId) {
 			if (UserContext.ApplicationUser.Id != userId && !UserContext.IsAdmin)
-				throw new HttpForbiddenException();
+				throw new HttpForbiddenError();
 
 			var deletedAccount = AccountRepository.FirstOrDefault(item => item.DisplayName == "Deleted Account");
 
@@ -431,7 +424,7 @@ namespace Forum3.Controllers {
 
 			DbContext.SaveChanges();
 
-			var account = AccountRepository.FirstOrDefault(item => item.Id == userId);
+			var account = AccountRepository.First(item => item.Id == userId);
 			await UserManager.DeleteAsync(account);
 
 			DbContext.SaveChanges();

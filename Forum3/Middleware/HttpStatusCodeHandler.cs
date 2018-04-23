@@ -1,4 +1,4 @@
-﻿using Forum3.Exceptions;
+﻿using Forum3.Errors;
 using Forum3.Extensions;
 using Microsoft.AspNetCore.Http;
 using System;
@@ -19,18 +19,25 @@ namespace Forum3.Middleware {
 			try {
 				await _next(context);
 			}
-			catch (HttpStatusCodeException e) {
+			catch (Exception exception) {
 				if (context.Response.HasStarted)
-					throw new Exception($"{nameof(HttpStatusCodeException)} caught after response has already started.", e);
+					throw new Exception($"An exception was caught after the response started.", exception);
+
+				HttpException error;
+
+				if (exception is HttpException)
+					error = exception as HttpException;
+				else
+					error = new HttpInternalServerError(exception);
 
 				context.Response.Clear();
 
-				context.Response.StatusCode = e.StatusCode;
+				context.Response.StatusCode = error.StatusCode;
 				context.Response.Headers.Clear();
 
-				context.Response.ContentType = e.ContentType;
+				context.Response.ContentType = error.ContentType;
 
-				await context.Response.WriteAsync(e.Message);
+				await context.Response.WriteAsync(exception.Message);
 
 				return;
 			}

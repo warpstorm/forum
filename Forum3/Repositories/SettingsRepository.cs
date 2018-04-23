@@ -1,10 +1,10 @@
 ﻿using Forum3.Contexts;
+using Forum3.Errors;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Forum3.Repositories {
 	using DataModels = Models.DataModels;
@@ -21,8 +21,9 @@ namespace Forum3.Repositories {
 
 		public SettingsRepository(
 			ApplicationDbContext dbContext,
-			UserContext userContext
-		) {
+			UserContext userContext,
+			ILogger<SettingsRepository> log
+		) : base(log) {
 			DbContext = dbContext;
 			UserContext = userContext;
 
@@ -208,7 +209,7 @@ namespace Forum3.Repositories {
 					var baseSetting = BaseSettings.Get(siteSetting.Name);
 
 					if (baseSetting.Options != null && !baseSetting.Options.Contains(settingInput.Value))
-						throw new ArgumentException("You hackin' bro?");
+						throw new HttpBadRequestError();
 
 					var record = new DataModels.SiteSetting {
 						UserId = input.Id,
@@ -239,7 +240,7 @@ namespace Forum3.Repositories {
 				var baseSetting = BaseSettings.Get(settingInput.Key);
 
 				if (baseSetting.Options != null && !baseSetting.Options.Contains(settingInput.Value))
-					throw new ArgumentException("You hackin' bro?");
+					throw new HttpBadRequestError();
 
 				var record = new DataModels.SiteSetting {
 					Name = settingInput.Key,

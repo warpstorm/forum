@@ -1,6 +1,6 @@
 ﻿using Forum3.Annotations;
 using Forum3.Contexts;
-using Forum3.Exceptions;
+using Forum3.Errors;
 using Forum3.Interfaces.Services;
 using Forum3.Repositories;
 using Microsoft.AspNetCore.Authorization;
@@ -8,8 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Forum3.Controllers {
@@ -43,15 +41,10 @@ namespace Forum3.Controllers {
 
 		[HttpGet]
 		public async Task<IActionResult> Create(int id = 0) {
-			var board = BoardRepository.FirstOrDefault(record => record.Id == id);
+			var board = BoardRepository.First(item => item.Id == id);
 
-			if (board is null)
-				throw new HttpNotFoundException($"A record does not exist with ID '{id}'");
-
-			Request.Query.TryGetValue("source", out var source);
-
-			if (!string.IsNullOrEmpty(source))
-				return await Create(new InputModels.MessageInput { BoardId = board.Id, Body = source });
+			if (Request.Query.TryGetValue("source", out var source))
+				return await Create(new InputModels.MessageInput { BoardId = id, Body = source });
 
 			var viewModel = new ViewModels.Messages.CreateTopicPage {
 				BoardId = id
@@ -97,7 +90,7 @@ namespace Forum3.Controllers {
 			var record = await DbContext.Messages.SingleOrDefaultAsync(m => m.Id == id);
 
 			if (record is null)
-				throw new Exception($"A record does not exist with ID '{id}'");
+				throw new HttpNotFoundError();
 
 			var viewModel = new ViewModels.Messages.EditMessagePage {
 				Id = id,

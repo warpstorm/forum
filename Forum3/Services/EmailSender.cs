@@ -1,10 +1,10 @@
-﻿using Forum3.Interfaces.Services;
+﻿using Forum3.Errors;
+using Forum3.Interfaces.Services;
 using Forum3.Models.ServiceModels;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SendGrid;
 using SendGrid.Helpers.Mail;
-using System;
 using System.Net;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
@@ -44,7 +44,7 @@ namespace Forum3.Services {
 
 		public async Task Execute(string apiKey, string subject, string message, string email) {
 			if (!Ready)
-				throw new ApplicationException("EmailSender is not ready.");
+				throw new HttpInternalServerError("EmailSender is not ready.");
 
 			var client = new SendGridClient(apiKey);
 
