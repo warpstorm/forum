@@ -407,6 +407,29 @@ namespace Forum3.Repositories {
 			return new ServiceModels.ServiceResponse();
 		}
 
+		public ServiceModels.ServiceResponse MarkAllRead() {
+			var viewLogs = DbContext.ViewLogs.Where(item => item.UserId == UserContext.ApplicationUser.Id).ToList();
+
+			if (viewLogs.Any()) {
+				foreach (var viewLog in viewLogs)
+					DbContext.Remove(viewLog);
+
+				DbContext.SaveChanges();
+			}
+
+			DbContext.ViewLogs.Add(new DataModels.ViewLog {
+				UserId = UserContext.ApplicationUser.Id,
+				LogTime = DateTime.Now,
+				TargetType = EViewLogTargetType.All
+			});
+
+			DbContext.SaveChanges();
+
+			return new ServiceModels.ServiceResponse {
+				RedirectPath = "/"
+			};
+		}
+
 		public ServiceModels.ServiceResponse MarkUnread(int messageId) {
 			var record = DbContext.Messages.Find(messageId);
 
