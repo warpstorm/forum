@@ -50,7 +50,7 @@
 			<dd><span asp-validation-for="@Model.ConfirmPassword" class="error"></span></dd>
 		</dl>
 
-		<div class="g-recaptcha" data-sitekey="@Options.Value.RecaptchaSiteKey"></div>
+		@await Html.PartialAsync("_Recaptcha")
 
 		<ul>
 			<li><button>Register</button></li>
@@ -60,9 +60,3 @@
 
 @{ViewData["Title"] = "Register";}
 @section Header {@ViewData["Title"]}
-
-@section Head {
-<environment exclude="Development">
-	<script src='https://www.google.com/recaptcha/api.js'></script>
-</environment>
-}

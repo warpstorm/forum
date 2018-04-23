@@ -1,0 +1,56 @@
+﻿@model ViewModels.Sidebar
+
+<div id="side-bar" class="pad overflow-hidden float-right">
+	@if (Model.Birthdays.Any()) {
+		<p><img src="/images/birthday.gif" /></p>
+		<h4>Happy birthday!</h4>
+		<ul class="gap-bottom">
+			@foreach (var birthdayPerson in Model.Birthdays) {
+				<li>@birthdayPerson</li>
+			}
+		</ul>
+	}
+
+	<h4><a asp-controller="@nameof(Notifications)" asp-action="@nameof(Notifications.Index)">Notifications</a></h4>
+	<ul class="gap-bottom note">
+		@if (Model.Notifications.Any()) {
+			@foreach (var notification in Model.Notifications) {
+				<li class="hover-highlight highlight pointer small-gap-bottom small-pad" clickable-link-parent>
+					<p>
+						@if (notification.Recent) {
+							<span class="chiclet chiclet-gold"></span>
+						}
+						<a asp-controller="@nameof(Notifications)" asp-action="@nameof(Notifications.Open)" asp-route-id="@notification.Id">@notification.Text</a>
+					</p>
+					<p><time>@notification.Time</time></p>
+				</li>
+			}
+		}
+		else {
+			<li>None</li>
+		}
+	</ul>
+
+	<h4>Who's online <span class="note">(@Model.OnlineUsers.Count)</span></h4>
+	<ul id="whos-online">
+		<li class="note"><a asp-controller="@nameof(Account)" asp-action="@nameof(Account.Index)">View All Users</a></li>
+		@foreach (var onlineUser in Model.OnlineUsers) {
+			<li class="note nowrap small-pad-top">
+				@if (onlineUser.Online) {
+					<span class="chiclet chiclet-green"></span>
+				}
+				<span>@onlineUser.Name</span>
+				<time>@onlineUser.LastOnlineString</time>
+			</li>
+		}
+	</ul>
+</div>
+
+@section styles {
+	<environment include="Development">
+		<link rel="stylesheet" href="~/css/Pages/Sidebar.css" asp-append-version="true" />
+	</environment>
+	<environment exclude="Development">
+		<link rel="stylesheet" href="~/css/min/Sidebar.min.css" asp-append-version="true" />
+	</environment>
+}

@@ -24,7 +24,7 @@
 			<dt><input asp-for="@Model.RememberMe" /> Remember Me</dt>
 		</dl>
 
-		<div class="g-recaptcha" data-sitekey="@Options.Value.RecaptchaSiteKey"></div>
+		@await Html.PartialAsync("_Recaptcha")
 
 		<ul>
 			<li><button>Log in</button></li>
@@ -47,10 +47,4 @@
 </section>
 
 @{ViewData["Title"] = "Warpstorm";}
-@section Header {"Login"}
-
-@section Head {
-<environment exclude="Development">
-	<script src='https://www.google.com/recaptcha/api.js'></script>
-</environment>
-}
+@section Header {Login}

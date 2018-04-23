@@ -36,15 +36,15 @@ namespace Forum3.Controllers {
 
 		[HttpGet]
 		public IActionResult Index() {
-			var birthdays = AccountRepository.GetBirthdaysList();
-			var onlineUsers = AccountRepository.GetOnlineList();
-			var notifications = NotificationRepository.Index();
+			var sidebar = new Models.ViewModels.Sidebar {
+				Birthdays = AccountRepository.GetBirthdaysList().ToArray(),
+				OnlineUsers = AccountRepository.GetOnlineList(),
+				Notifications = NotificationRepository.Index()
+			};
 
 			var viewModel = new PageViewModels.IndexPage {
-				Birthdays = birthdays.ToArray(),
 				Categories = BoardRepository.CategoryIndex(true),
-				OnlineUsers = onlineUsers,
-				Notifications = notifications
+				Sidebar = sidebar
 			};
 
 			return ForumViewResult.ViewResult(this, viewModel);

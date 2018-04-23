@@ -4,13 +4,24 @@
 		"outputFileName": "wwwroot/css/min/Global.min.css",
 		"inputFiles": [
 			"wwwroot/css/GlobalElements.css",
-			"wwwroot/css/GlobalHelpers.css",
 			"wwwroot/css/Layout.css",
 			"wwwroot/css/Forms.css",
 			"wwwroot/css/Buttons.css",
 			"wwwroot/css/StandardClasses.css",
 			"wwwroot/css/BBC.css"
 		]
+	},
+	{
+		"outputFileName": "wwwroot/css/min/Recaptcha.min.css",
+		"inputFiles": [ "wwwroot/css/Pages/Recaptcha.css" ]
+	},
+	{
+		"outputFileName": "wwwroot/css/min/Sidebar.min.css",
+		"inputFiles": [ "wwwroot/css/Pages/Sidebar.css" ]
+	},
+	{
+		"outputFileName": "wwwroot/css/min/SmileySelector.min.css",
+		"inputFiles": [ "wwwroot/css/Pages/SmileySelector.css" ]
 	},
 	{
 		"outputFileName": "wwwroot/css/min/MessageCreate.min.css",

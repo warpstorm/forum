@@ -6,7 +6,7 @@
 		<li clickable-link-parent><a class="small-button" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)" asp-route-id="@Model.BoardId">All</a></li>
 		<li clickable-link-parent><a class="small-button" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)" asp-route-id="@Model.BoardId" asp-route-unread="1">Unread</a></li>
 		<li clickable-link-parent><a class="small-button" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)" asp-route-id="@Model.BoardId" asp-route-unread="2">Replies</a></li>
-		
+
 		@if (Model.UnreadFilter == 1) {
 			<li clickable-link-parent class="small-gap-left">
 				<a class="small-button" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.MarkAllRead)" onclick="return confirm('Are you sure you want to mark all topics read?');">Mark Read</a>
@@ -24,53 +24,7 @@
 
 <br class="clear" />
 
-<div id="side-bar" class="pad overflow-hidden float-right">
-	@if (Model.Birthdays.Any()) {
-		<p><img src="/images/birthday.gif" /></p>
-		<h4>Happy birthday!</h4>
-		<ul class="gap-bottom">
-			@foreach (var birthdayPerson in Model.Birthdays) {
-				<li>@birthdayPerson</li>
-			}
-		</ul>
-	}
-
-	<h4><a asp-controller="@nameof(Notifications)" asp-action="@nameof(Notifications.Index)">Notifications</a></h4>
-	<ul class="gap-bottom note">
-		@if (Model.Notifications.Any()) {
-			@foreach (var notification in Model.Notifications) {
-				<li class="hover-highlight pointer" clickable-link-parent>
-					<p>
-						@if (notification.Recent) {
-							<span class="chiclet chiclet-gold"></span>
-						}
-						<a asp-controller="@nameof(Notifications)" asp-action="@nameof(Notifications.Open)" asp-route-id="@notification.Id">@notification.Text</a>
-					</p>
-					<p><time>@notification.Time</time></p>
-				</li>
-			}
-		}
-		else {
-			<li>None</li>
-		}
-	</ul>
-
-	<h4>Who's online <span class="note">(@Model.OnlineUsers.Count)</span></h4>
-	<ul id="whos-online">
-		<li class="note"><a asp-controller="@nameof(Account)" asp-action="@nameof(Account.Index)">View All Users</a></li>
-		@foreach (var onlineUser in Model.OnlineUsers) {
-			<li class="note">
-				<p>
-					@if (onlineUser.Online) {
-						<span class="chiclet chiclet-green"></span>
-					}
-					<span>@onlineUser.Name</span>
-				</p>
-				<p><time>@onlineUser.LastOnlineString</time></p>
-			</li>
-		}
-	</ul>
-</div>
+@await Html.PartialAsync("_Sidebar", Model.Sidebar)
 
 <section id="topic-list">
 	@if (Model.Topics.Any()) {

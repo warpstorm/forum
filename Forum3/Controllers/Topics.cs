@@ -66,14 +66,16 @@ namespace Forum3.Controllers {
 
 		[HttpGet]
 		public IActionResult Index(int id = 0, int unread = 0) {
-			var birthdays = AccountRepository.GetBirthdaysList();
-			var onlineUsers = AccountRepository.GetOnlineList();
-			var notifications = NotificationRepository.Index();
-			
 			var boardRoles = RoleRepository.BoardRoles.Where(r => r.BoardId == id).Select(r => r.RoleId).ToList();
 
 			if (!UserContext.IsAdmin && boardRoles.Any() && !boardRoles.Intersect(UserContext.Roles).Any())
 				throw new HttpForbiddenError();
+
+			var sidebar = new ViewModels.Sidebar {
+				Birthdays = AccountRepository.GetBirthdaysList().ToArray(),
+				OnlineUsers = AccountRepository.GetOnlineList(),
+				Notifications = NotificationRepository.Index()
+			};
 
 			var page = 1;
 			var topicPreviews = TopicRepository.GetPreviews(id, page, unread);
@@ -86,9 +88,7 @@ namespace Forum3.Controllers {
 				Page = page,
 				Topics = topicPreviews,
 				UnreadFilter = unread,
-				Birthdays = birthdays.ToArray(),
-				OnlineUsers = onlineUsers,
-				Notifications = notifications
+				Sidebar = sidebar
 			};
 
 			return ForumViewResult.ViewResult(this, viewModel);
