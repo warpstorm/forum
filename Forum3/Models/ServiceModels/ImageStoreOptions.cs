@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 
 namespace Forum3.Models.ServiceModels {
 	public class ImageStoreOptions {

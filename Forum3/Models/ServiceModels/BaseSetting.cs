@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Forum3.Models.ServiceModels {
 	public class BaseSetting {

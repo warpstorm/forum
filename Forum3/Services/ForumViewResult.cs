@@ -1,6 +1,5 @@
 ﻿using Forum3.Controllers;
 using Forum3.Interfaces.Services;
-using Forum3.Middleware;
 using Forum3.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
