@@ -3,6 +3,12 @@
 namespace Forum3.Models.ViewModels.Topics.Items {
 	public class MessagePreview {
 		public int Id { get; set; }
+
+		/// <summary>
+		/// Used by the merge action
+		/// </summary>
+		public int SourceId { get; set; }
+
 		public string ShortPreview { get; set; }
 		public int Views { get; set; }
 		public int Replies { get; set; }

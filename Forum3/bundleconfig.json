@@ -72,8 +72,26 @@
 		"sourceMap": false
 	},
 	{
+		"outputFileName": "wwwroot/js/ManageBoards.min.js",
+		"inputFiles": [ "wwwroot/js/ManageBoards.js" ],
+		"minify": {
+			"enabled": true,
+			"renameLocals": true
+		},
+		"sourceMap": false
+	},
+	{
 		"outputFileName": "wwwroot/js/TopicIndex.min.js",
 		"inputFiles": [ "wwwroot/js/TopicIndex.js" ],
+		"minify": {
+			"enabled": true,
+			"renameLocals": true
+		},
+		"sourceMap": false
+	},
+	{
+		"outputFileName": "wwwroot/js/TopicMerge.min.js",
+		"inputFiles": [ "wwwroot/js/TopicMerge.js" ],
 		"minify": {
 			"enabled": true,
 			"renameLocals": true

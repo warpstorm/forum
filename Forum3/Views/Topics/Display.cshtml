@@ -4,11 +4,12 @@
 	@if (User.Identity.IsAuthenticated) {
 		<nav class="float-right">
 			<ul class="inline">
-				<li><a class="small-button" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Pin)" asp-route-id="@Model.Id">Pin Topic</a></li>
 				<li><a class="small-button" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.MarkUnread)" asp-route-id="@Model.Id">Mark as Unread</a></li>
+				<li><a class="small-button" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Pin)" asp-route-id="@Model.Id">Pin</a></li>
+				<li><a class="small-button" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Merge)" asp-route-id="@Model.Id">Merge</a></li>
 				@if (Model.CanManage) {
 					<li class="open-menu">
-						<span class="small-button">Manage Boards</span>
+						<span class="small-button">Boards</span>
 						<div class="menu-wrapper hidden">
 							<ul class="drop-down-menu content-box">
 								@foreach (var category in Model.Categories) {

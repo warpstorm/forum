@@ -886,39 +886,37 @@ namespace Forum3.Repositories {
 
 			var parents = parentMessageQuery.Skip(skip).Take(take).ToList();
 
-			foreach (var parent in parents) {
-				var messagesQuery = from message in DbContext.Messages
-									where message.ParentId == parent.Id
-									select message;
+			foreach (var parent in parents)
+				RebuildParticipantsForTopic(parent.Id);
+		}
 
-				var messages = messagesQuery.ToList();
-				messages.Add(parent);
+		public void RebuildParticipantsForTopic(int topicId) {
+			var messagesQuery = from message in DbContext.Messages
+								where message.Id == topicId || message.ParentId == topicId
+								select message;
 
-				RebuildParticipants(parent.Id, messages);
+			var messages = messagesQuery.ToList();
+
+			var newParticipants = new List<DataModels.Participant>();
+
+			foreach (var message in messages) {
+				if (!newParticipants.Any(item => item.UserId == message.PostedById)) {
+					newParticipants.Add(new DataModels.Participant {
+						MessageId = topicId,
+						UserId = message.PostedById,
+						Time = message.TimePosted
+					});
+				}
 			}
 
-			void RebuildParticipants(int topicId, List<DataModels.Message> messages) {
-				var newParticipants = new List<DataModels.Participant>();
+			var oldParticipants = DbContext.Participants.Where(r => r.MessageId == topicId).ToList();
 
-				foreach (var message in messages) {
-					if (!newParticipants.Any(item => item.UserId == message.PostedById)) {
-						newParticipants.Add(new DataModels.Participant {
-							MessageId = topicId,
-							UserId = message.PostedById,
-							Time = message.TimePosted
-						});
-					}
-				}
+			if (oldParticipants.Count() != newParticipants.Count()) {
+				DbContext.RemoveRange(oldParticipants);
+				DbContext.SaveChanges();
 
-				var oldParticipants = DbContext.Participants.Where(r => r.MessageId == topicId).ToList();
-
-				if (oldParticipants.Count() != newParticipants.Count()) {
-					DbContext.RemoveRange(oldParticipants);
-					DbContext.SaveChanges();
-
-					DbContext.Participants.AddRange(newParticipants);
-					DbContext.SaveChanges();
-				}
+				DbContext.Participants.AddRange(newParticipants);
+				DbContext.SaveChanges();
 			}
 		}
 

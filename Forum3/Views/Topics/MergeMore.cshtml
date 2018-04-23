@@ -1,0 +1,17 @@
+@model TopicIndexMorePage
+
+@{
+	// Removes the theme from the page because this result is intended to be embedded through script.
+	Layout = null;
+}
+
+@foreach (var item in Model.Topics) {
+	await Html.PartialAsync("_MergeItem", item);
+}
+
+<script>
+	window.page = @Model.Page;
+	window.moreTopics = @Model.More.ToString().ToLower();
+
+	window.BindLinks();
+</script>

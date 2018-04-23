@@ -1,0 +1,42 @@
+@model TopicIndexPage
+
+<section id="topic-list">
+	@if (Model.Topics.Any()) {
+		@foreach (var item in Model.Topics) {
+			@await Html.PartialAsync("_MergeItem", item)
+		}
+	}
+	else {
+		<text>No topics found that matched the specified criteria.</text>
+	}
+</section>
+
+<footer>
+	<span id="load-more-topics" class="hidden small-button">More Topics</span>
+</footer>
+
+@{ViewData["Title"] = Model.BoardName;}
+@section Header {@ViewData["Title"]}
+
+@section scripts {
+	<script>
+		window.page = @Model.Page;
+		window.id = @Model.SourceId;
+	</script>
+
+	<environment include="Development">
+		<script src="~/js/TopicMerge.js" asp-append-version="true"></script>
+	</environment>
+	<environment exclude="Development">
+		<script src="~/js/TopicMerge.min.js" asp-append-version="true"></script>
+	</environment>
+}
+
+@section styles {
+	<environment include="Development">
+		<link rel="stylesheet" href="~/css/Pages/TopicIndex.css" asp-append-version="true" />
+	</environment>
+	<environment exclude="Development">
+		<link rel="stylesheet" href="~/css/min/TopicIndex.min.css" asp-append-version="true" />
+	</environment>
+}

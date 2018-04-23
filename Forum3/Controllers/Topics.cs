@@ -3,6 +3,7 @@ using Forum3.Contexts;
 using Forum3.Errors;
 using Forum3.Interfaces.Services;
 using Forum3.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
@@ -113,6 +114,67 @@ namespace Forum3.Controllers {
 		}
 
 		[HttpGet]
+		[Authorize(Roles="Admin")]
+		public IActionResult Merge(int id) {
+			var record = DbContext.Messages.FirstOrDefault(item => item.Id == id);
+
+			if (record is null)
+				throw new HttpNotFoundError();
+
+			var topicPreviews = TopicRepository.GetPreviews(0, 1, 0);
+
+			foreach (var topicPreview in topicPreviews.ToList()) {
+				if (topicPreview.Id == id)
+					topicPreviews.Remove(topicPreview);
+				else
+					topicPreview.SourceId = id;
+			}
+
+			var viewModel = new PageModels.TopicIndexPage {
+				SourceId = id,
+				BoardName = "Pick a Destination Topic",
+				BoardId = 0,
+				Page = 1,
+				Topics = topicPreviews,
+			};
+
+			return ForumViewResult.ViewResult(this, viewModel);
+		}
+
+		[HttpGet]
+		[Authorize(Roles = "Admin")]
+		public IActionResult MergeMore(int id, int page = 0) {
+			var record = DbContext.Messages.FirstOrDefault(item => item.Id == id);
+
+			if (record is null)
+				throw new HttpNotFoundError();
+
+			var topicPreviews = TopicRepository.GetPreviews(0, page, 0);
+
+			foreach (var topicPreview in topicPreviews.ToList()) {
+				if (topicPreview.Id == id)
+					topicPreviews.Remove(topicPreview);
+				else
+					topicPreview.SourceId = id;
+			}
+
+			var viewModel = new PageModels.TopicIndexMorePage {
+				More = topicPreviews.Any(),
+				Page = page,
+				Topics = topicPreviews
+			};
+
+			return ForumViewResult.ViewResult(this, viewModel);
+		}
+
+		[HttpGet]
+		[Authorize(Roles="Admin")]
+		public async Task<IActionResult> FinishMerge(int sourceId, int targetId) {
+			var serviceResponse = TopicRepository.Merge(sourceId, targetId);
+			return await ForumViewResult.RedirectFromService(this, serviceResponse, FailToReferrer);
+		}
+
+		[HttpGet]
 		public IActionResult Display(int id, int pageId = 1, int target = 0) {
 			ViewData["Smileys"] = SmileyRepository.GetSelectorList();
 
@@ -142,42 +204,30 @@ namespace Forum3.Controllers {
 		public async Task<IActionResult> Pin(int id) {
 			if (ModelState.IsValid) {
 				var serviceResponse = TopicRepository.Pin(id);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailToReferrer);
 			}
 
-			return await FailureCallback();
-
-			async Task<IActionResult> FailureCallback() {
-				return await Task.Run(() => { return ForumViewResult.RedirectToReferrer(this); });
-			}
+			return await FailToReferrer();
 		}
 
 		[HttpGet]
 		public async Task<IActionResult> MarkAllRead() {
 			if (ModelState.IsValid) {
 				var serviceResponse = TopicRepository.MarkAllRead();
-				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailToReferrer);
 			}
 
-			return await FailureCallback();
-
-			async Task<IActionResult> FailureCallback() {
-				return await Task.Run(() => { return ForumViewResult.RedirectToReferrer(this); });
-			}
+			return await FailToReferrer();
 		}
 
 		[HttpGet]
 		public async Task<IActionResult> MarkUnread(int id) {
 			if (ModelState.IsValid) {
 				var serviceResponse = TopicRepository.MarkUnread(id);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailToReferrer);
 			}
 
-			return await FailureCallback();
-
-			async Task<IActionResult> FailureCallback() {
-				return await Task.Run(() => { return ForumViewResult.RedirectToReferrer(this); });
-			}
+			return await FailToReferrer();
 		}
 
 		[HttpGet]
@@ -317,6 +367,10 @@ namespace Forum3.Controllers {
 			TopicRepository.MarkRead(record.Id, latestMessageTime, pageMessageIds);
 
 			return viewModel;
+		}
+
+		async Task<IActionResult> FailToReferrer() {
+			return await Task.Run(() => { return ForumViewResult.RedirectToReferrer(this); });
 		}
 	}
 }

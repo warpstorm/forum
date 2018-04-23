@@ -529,5 +529,74 @@ namespace Forum3.Repositories {
 			// The user probably refreshed several times in a row.
 			//catch (DbUpdateConcurrencyException) { }
 		}
+
+		public ServiceModels.ServiceResponse Merge(int sourceId, int targetId) {
+			var serviceResponse = new ServiceModels.ServiceResponse();
+
+			var sourceRecord = DbContext.Messages.FirstOrDefault(item => item.Id == sourceId);
+
+			if (sourceRecord is null)
+				serviceResponse.Error("Source record not found");
+
+			var targetRecord = DbContext.Messages.FirstOrDefault(item => item.Id == targetId);
+
+			if (targetRecord is null)
+				serviceResponse.Error("Target record not found");
+
+			if (!serviceResponse.Success)
+				return serviceResponse;
+
+			if (sourceRecord.TimePosted > targetRecord.TimePosted)
+				Merge(sourceRecord, targetRecord);
+			else
+				Merge(targetRecord, sourceRecord);
+
+			return serviceResponse;
+		}
+
+		public void Merge(DataModels.Message sourceMessage, DataModels.Message targetMessage) {
+			UpdateMessagesParentId(sourceMessage, targetMessage);
+			MessageRepository.RecountRepliesForTopic(targetMessage);
+			RemoveTopicParticipants(sourceMessage, targetMessage);
+			MessageRepository.RebuildParticipantsForTopic(targetMessage.Id);
+			RemoveTopicViewlogs(sourceMessage, targetMessage);
+			RemoveTopicPins(sourceMessage);
+			RemoveTopicMessageBoards(sourceMessage);
+		}
+
+		public void UpdateMessagesParentId(DataModels.Message sourceMessage, DataModels.Message targetMessage) {
+			var sourceMessages = DbContext.Messages.Where(item => item.Id == sourceMessage.Id || item.ParentId == sourceMessage.Id).ToList();
+
+			foreach (var message in sourceMessages) {
+				message.ParentId = targetMessage.Id;
+				DbContext.Update(message);
+			}
+
+			DbContext.SaveChanges();
+		}
+
+		public void RemoveTopicParticipants(DataModels.Message sourceMessage, DataModels.Message targetMessage) {
+			var records = DbContext.Participants.Where(item => item.MessageId == sourceMessage.Id).ToList();
+			DbContext.RemoveRange(records);
+			DbContext.SaveChanges();
+		}
+
+		public void RemoveTopicViewlogs(DataModels.Message sourceMessage, DataModels.Message targetMessage) {
+			var records = DbContext.ViewLogs.Where(item => item.TargetType == EViewLogTargetType.Message && (item.TargetId == sourceMessage.Id || item.TargetId == targetMessage.Id)).ToList();
+			DbContext.RemoveRange(records);
+			DbContext.SaveChanges();
+		}
+
+		public void RemoveTopicPins(DataModels.Message sourceMessage) {
+			var records = DbContext.Pins.Where(item => item.MessageId == sourceMessage.Id);
+			DbContext.RemoveRange(records);
+			DbContext.SaveChanges();
+		}
+
+		public void RemoveTopicMessageBoards(DataModels.Message sourceMessage) {
+			var records = DbContext.MessageBoards.Where(item => item.MessageId == sourceMessage.Id);
+			DbContext.RemoveRange(records);
+			DbContext.SaveChanges();
+		}
 	}
 }
