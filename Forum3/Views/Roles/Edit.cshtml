@@ -23,6 +23,7 @@
 
 		<ul>
 			<li><button>Save Changes</button></li>
+			<li><cancel-button /></li>
 			<li><a asp-action="@nameof(Roles.UserList)" asp-route-id="@Model.Id" class="button">Manage Role Users</a></li>
 			<li><a asp-action="@nameof(Roles.Delete)" asp-route-id="@Model.Id" class="button">Delete Role</a></li>
 		</ul>

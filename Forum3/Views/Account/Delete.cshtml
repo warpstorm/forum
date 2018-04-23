@@ -23,6 +23,7 @@
 	<p>All of this can be verified by viewing the source for this site on GitHub.</p>
 
 	<p><a class="small-button" asp-action="@nameof(Account.ConfirmDelete)" asp-route-userId="@Model" onclick="return confirm('Seriously, are you really sure you want to delete your account? I can\'t undo this.');">Finalize Account Deletion</a></p>
+	<p class="gap-top"><cancel-button /></p>
 </section>
 
 @{ ViewData["Title"] = $"Delete Account"; }

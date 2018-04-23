@@ -43,9 +43,6 @@
 
 	<p>
 		<button>Save</button>
-
-		@if (!string.IsNullOrEmpty(ViewData["Referrer"] as string)) {
-			<a class="button" href="@ViewData["Referrer"]">Cancel</a>
-		}
+		<cancel-button />
 	</p>
 </form>
