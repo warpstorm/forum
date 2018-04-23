@@ -12,11 +12,9 @@
 	</div>
 </div>
 
-@section styles {
-	<environment include="Development">
-		<link rel="stylesheet" href="~/css/Pages/SmileySelector.css" asp-append-version="true" />
-	</environment>
-	<environment exclude="Development">
-		<link rel="stylesheet" href="~/css/min/SmileySelector.min.css" asp-append-version="true" />
-	</environment>
-}
+<environment include="Development">
+	<link rel="stylesheet" href="~/css/Pages/SmileySelector.css" asp-append-version="true" />
+</environment>
+<environment exclude="Development">
+	<link rel="stylesheet" href="~/css/min/SmileySelector.min.css" asp-append-version="true" />
+</environment>

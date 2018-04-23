@@ -46,11 +46,9 @@
 	</ul>
 </div>
 
-@section styles {
-	<environment include="Development">
-		<link rel="stylesheet" href="~/css/Pages/Sidebar.css" asp-append-version="true" />
-	</environment>
-	<environment exclude="Development">
-		<link rel="stylesheet" href="~/css/min/Sidebar.min.css" asp-append-version="true" />
-	</environment>
-}
+<environment include="Development">
+	<link rel="stylesheet" href="~/css/Pages/Sidebar.css" asp-append-version="true" />
+</environment>
+<environment exclude="Development">
+	<link rel="stylesheet" href="~/css/min/Sidebar.min.css" asp-append-version="true" />
+</environment>
