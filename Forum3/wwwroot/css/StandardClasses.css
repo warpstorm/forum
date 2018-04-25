@@ -153,9 +153,9 @@ a.borderless * {
 	line-height: 2em;
 }
 
-	.note, a.note, .note a, .note-large {
-		color: #92abba;
-	}
+.note, a.note, .note a, .note-large {
+	color: #92abba;
+}
 
 .font-small {
 	line-height: 12pt;
@@ -388,3 +388,23 @@ a.borderless * {
 		cursor: pointer;
 		white-space: nowrap;
 	}
+
+.glow-left {
+	border-left: 8px solid #7090c6;
+	border-radius: 4px;
+	background-image: linear-gradient(to right, rgba(42,57,81,1), rgba(42,57,81,0) 100%);
+}
+
+	.glow-left:hover {
+		border-left-color: #ffffff;
+		color: #ffffff;
+		background-image: linear-gradient(to right, rgba(112, 144, 198, .4), rgba(42,57,81,0) 100%);
+	}
+
+		.glow-left:hover a {
+			color: #ffffff;
+		}
+
+		.glow-left:hover time {
+			color: #171f2c;
+		}

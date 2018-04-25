@@ -15,7 +15,7 @@
 	<ul class="gap-bottom note">
 		@if (Model.Notifications.Any()) {
 			@foreach (var notification in Model.Notifications) {
-				<li class="hover-highlight highlight pointer small-gap-bottom small-pad" clickable-link-parent>
+				<li class="glow-left pointer small-gap-bottom small-pad" clickable-link-parent>
 					<p>
 						@if (notification.Recent) {
 							<span class="chiclet chiclet-gold"></span>
