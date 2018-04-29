@@ -45,8 +45,14 @@
 	},
 	// SCRIPTS
 	{
-		"outputFileName": "wwwroot/js/Global.min.js",
-		"inputFiles": [ "wwwroot/js/Global.js" ],
+		"outputFileName": "wwwroot/js/min/Global.min.js",
+		"inputFiles": [
+			"wwwroot/js/Compatibility.js",
+			"wwwroot/js/Helpers.js",
+			"wwwroot/js/Navigation.js",
+			"wwwroot/js/BBC.js",
+			"wwwroot/js/EasterEgg.js"
+		],
 		"minify": {
 			"enabled": true,
 			"renameLocals": true
@@ -54,8 +60,8 @@
 		"sourceMap": false
 	},
 	{
-		"outputFileName": "wwwroot/js/TopicDisplay.min.js",
-		"inputFiles": [ "wwwroot/js/TopicDisplay.js" ],
+		"outputFileName": "wwwroot/js/min/TopicDisplay.min.js",
+		"inputFiles": [ "wwwroot/js/Pages/TopicDisplay.js" ],
 		"minify": {
 			"enabled": true,
 			"renameLocals": true
@@ -63,8 +69,8 @@
 		"sourceMap": false
 	},
 	{
-		"outputFileName": "wwwroot/js/MessageCreate.min.js",
-		"inputFiles": [ "wwwroot/js/MessageCreate.js" ],
+		"outputFileName": "wwwroot/js/min/MessageCreate.min.js",
+		"inputFiles": [ "wwwroot/js/Pages/MessageCreate.js" ],
 		"minify": {
 			"enabled": true,
 			"renameLocals": true
@@ -72,8 +78,8 @@
 		"sourceMap": false
 	},
 	{
-		"outputFileName": "wwwroot/js/ManageBoards.min.js",
-		"inputFiles": [ "wwwroot/js/ManageBoards.js" ],
+		"outputFileName": "wwwroot/js/min/ManageBoards.min.js",
+		"inputFiles": [ "wwwroot/js/Pages/ManageBoards.js" ],
 		"minify": {
 			"enabled": true,
 			"renameLocals": true
@@ -81,8 +87,8 @@
 		"sourceMap": false
 	},
 	{
-		"outputFileName": "wwwroot/js/TopicIndex.min.js",
-		"inputFiles": [ "wwwroot/js/TopicIndex.js" ],
+		"outputFileName": "wwwroot/js/min/TopicIndex.min.js",
+		"inputFiles": [ "wwwroot/js/Pages/TopicIndex.js" ],
 		"minify": {
 			"enabled": true,
 			"renameLocals": true
@@ -90,8 +96,17 @@
 		"sourceMap": false
 	},
 	{
-		"outputFileName": "wwwroot/js/TopicMerge.min.js",
-		"inputFiles": [ "wwwroot/js/TopicMerge.js" ],
+		"outputFileName": "wwwroot/js/min/TopicMerge.min.js",
+		"inputFiles": [ "wwwroot/js/Pages/TopicMerge.js" ],
+		"minify": {
+			"enabled": true,
+			"renameLocals": true
+		},
+		"sourceMap": false
+	},
+	{
+		"outputFileName": "wwwroot/js/min/SmileySelector.min.js",
+		"inputFiles": [ "wwwroot/js/Pages/SmileySelector.js" ],
 		"minify": {
 			"enabled": true,
 			"renameLocals": true
