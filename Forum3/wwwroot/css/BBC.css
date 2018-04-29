@@ -70,3 +70,11 @@ ol.bbc-list > .bbc-list-item {
 .bbc-spoiler:hover {
 	color: #999;
 }
+
+.bbc-spoiler::before {
+	color: #666;
+	font-size: .8em;
+	vertical-align: top;
+	content: "spoiler: ";
+	padding-right: 5px;
+}
