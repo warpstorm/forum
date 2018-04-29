@@ -5,14 +5,15 @@ var BBCode = {
 	"italics": "[i]  [/i]",
 	"url": "[url=]  [/url]",
 	"quote": "[quote]\n\n\n[/quote]",
-	"img": "[img] [/img]",
+	"spoiler": "[spoiler]  [/spoiler]",
+	"img": "[img]  [/img]",
 	"underline": "[u]  [/u]",
 	"strike": "[s]  [/s]",
 	"color": "[color=#A335EE]  [/color]",
-	"list": "[ul]\n[li] [/li]\n[li] [/li]\n[li] [/li]\n[/ul]",
-	"numlist": "[ol]\n[li] [/li]\n[li] [/li]\n[li] [/li]\n[/ol]",
+	"list": "[ul]\n[li]  [/li]\n[li]  [/li]\n[li]  [/li]\n[/ul]",
+	"numlist": "[ol]\n[li]  [/li]\n[li]  [/li]\n[li]  [/li]\n[/ol]",
 	"code": "[code]\n\n\n[/code]",
-	"size": "[size=10]   [/size]",
+	"size": "[size=10]  [/size]",
 };
 
 $(function () {

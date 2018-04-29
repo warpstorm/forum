@@ -1,4 +1,5 @@
-﻿using Forum3.Annotations;
+﻿using CodeKicker.BBCode;
+using Forum3.Annotations;
 using Forum3.Contexts;
 using Forum3.Errors;
 using Forum3.Interfaces.Filters;
@@ -47,6 +48,10 @@ namespace Forum3.Extensions {
 			services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
 			services.AddSingleton<IUrlHelperFactory, UrlHelperFactory>();
 
+			services.AddSingleton((serviceProvider) => {
+				return BBCParserFactory.GetParser();
+			});
+
 			return services;
 		}
 
@@ -62,7 +67,6 @@ namespace Forum3.Extensions {
 		}
 
 		static void RegisterAzureStorage(IServiceCollection services, IConfiguration configuration) {
-			// Azure Storage
 			services.AddScoped((serviceProvider) => {
 				var storageConnectionString = configuration[Constants.Keys.StorageConnection];
 

@@ -32,6 +32,7 @@ namespace Forum3.Repositories {
 		AccountRepository AccountRepository { get; }
 		IImageStore ImageStore { get; }
 		IUrlHelper UrlHelper { get; }
+		BBCodeParser BBCParser { get; }
 
 		public MessageRepository(
 			ApplicationDbContext dbContext,
@@ -42,7 +43,8 @@ namespace Forum3.Repositories {
 			AccountRepository accountRepository,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory,
-			IImageStore imageStore
+			IImageStore imageStore,
+			BBCodeParser bbcParser
 		) {
 			DbContext = dbContext;
 			UserContext = userContext;
@@ -52,6 +54,7 @@ namespace Forum3.Repositories {
 			AccountRepository = accountRepository;
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 			ImageStore = imageStore;
+			BBCParser = bbcParser;
 		}
 
 		public int GetPageNumber(int messageId, List<int> messageIds) {
@@ -322,29 +325,12 @@ namespace Forum3.Repositories {
 			return processedMessageInput;
 		}
 
-		/// <summary>
-		/// A drop in replacement for the default CodeKicker BBC parser that handles strike and heart smileys
-		/// </summary>
 		public void ParseBBC(InputModels.ProcessedMessageInput processedMessageInput) {
-			var displayBody = processedMessageInput.DisplayBody;
+			
+			// NOTE: 
+			// If you do not want to encumber your software with the CodeKicker library, start with replacing this call.
 
-			var parser = new BBCodeParser(new[] {
-				new BBTag("b", @"<span class=""bbc-bold"">", "</span>"),
-				new BBTag("s", @"<span class=""bbc-strike"">", "</span>"),
-				new BBTag("i", @"<span class=""bbc-italic"">", "</span>"),
-				new BBTag("u", @"<span class=""bbc-underline"">", "</span>"),
-				new BBTag("code", @"<div class=""bbc-code"">", "</div>"),
-				new BBTag("img", @"<img class=""bbc-image"" src=""${content}"" />", "", false, true),
-				new BBTag("quote", @"<blockquote class=""bbc-quote"">", "</blockquote>"),
-				new BBTag("ul", @"<ul class=""bbc-list"">", "</ul>"),
-				new BBTag("ol", @"<ol class=""bbc-list"">", "</ul>"),
-				new BBTag("li", @"<li class=""bbc-list-item"">", "</li>"),
-				new BBTag("url", @"<a class=""bbc-anchor"" href=""${href}"" target=""_blank"">", "</a>", new BBAttribute("href", ""), new BBAttribute("href", "href")),
-				new BBTag("size", @"<span style=""font-size: ${size}pt"">", "</span>", new BBAttribute("size", ""), new BBAttribute("size", "size")),
-				new BBTag("color", @"<span style=""color: ${color};"">", "</span>", new BBAttribute("color", ""), new BBAttribute("color", "color")),
-			});
-
-			processedMessageInput.DisplayBody = parser.ToHtml(displayBody);
+			processedMessageInput.DisplayBody = BBCParser.ToHtml(processedMessageInput.DisplayBody);
 		}
 
 		/// <summary>
@@ -632,8 +618,13 @@ namespace Forum3.Repositories {
 		/// Gets a reduced version of the message without HTML
 		/// </summary>
 		public string GetMessagePreview(string messageBody, int previewLength, bool multiline = false) {
+			var preview = messageBody;
+
 			// strip out quotes
-			var preview = Regex.Replace(messageBody, @"(<blockquote.*?>.+?</blockquote>\n*?)", string.Empty, RegexOptions.Compiled);
+			preview = Regex.Replace(preview, @"(<blockquote.*?>.+?</blockquote>\n*?)", string.Empty, RegexOptions.Compiled);
+
+			// strip out spoilers
+			preview = Regex.Replace(preview, @"<.+?bbc-spoiler.+?>.+?</.+?>", string.Empty, RegexOptions.Compiled);
 
 			// strip out tags
 			preview = Regex.Replace(preview, @"(<.+?>|\[.+?\])", string.Empty, RegexOptions.Compiled);
