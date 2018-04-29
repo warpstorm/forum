@@ -428,6 +428,85 @@ namespace Forum3.Repositories {
 			return serviceResponse;
 		}
 
+		public async Task MergeAccounts(string sourceId, string targetId, bool eraseContent) {
+			var sourceAccount = First(item => item.Id == sourceId);
+			var targetAccount = First(item => item.Id == targetId);
+
+			var siteSettings = DbContext.SiteSettings.Where(item => item.UserId == sourceId).ToList();
+			DbContext.RemoveRange(siteSettings);
+
+			var notifications = DbContext.Notifications.Where(item => item.UserId == sourceId).ToList();
+			var participants = DbContext.Participants.Where(item => item.UserId == sourceId).ToList();
+			var pins = DbContext.Pins.Where(item => item.UserId == sourceId).ToList();
+			var viewLogs = DbContext.ViewLogs.Where(item => item.UserId == sourceId).ToList();
+
+			if (eraseContent) {
+				DbContext.RemoveRange(notifications);
+				DbContext.RemoveRange(participants);
+				DbContext.RemoveRange(pins);
+				DbContext.RemoveRange(viewLogs);
+
+				DbContext.SaveChanges();
+			}
+			else {
+				foreach (var item in notifications) {
+					item.UserId = targetId;
+					DbContext.Update(item);
+				}
+
+				foreach (var item in participants) {
+					item.UserId = targetId;
+					DbContext.Update(item);
+				}
+
+				foreach (var item in pins) {
+					item.UserId = targetId;
+					DbContext.Update(item);
+				}
+
+				foreach (var item in viewLogs) {
+					item.UserId = targetId;
+					DbContext.Update(item);
+				}
+			}
+
+			foreach (var item in DbContext.MessageBoards.Where(item => item.UserId == sourceId).ToList()) {
+				item.UserId = targetId;
+				DbContext.Update(item);
+			}
+
+			foreach (var item in DbContext.MessageThoughts.Where(item => item.UserId == sourceId).ToList()) {
+				item.UserId = targetId;
+				DbContext.Update(item);
+			}
+
+			foreach (var item in DbContext.Notifications.Where(item => item.TargetUserId == sourceId).ToList()) {
+				item.TargetUserId = targetId;
+				DbContext.Update(item);
+			}
+
+			DbContext.SaveChanges();
+
+			foreach (var item in DbContext.Messages.Where(item => item.PostedById == sourceId).ToList()) {
+				item.PostedById = targetId;
+				item.EditedById = targetId;
+
+				if (eraseContent) {
+					item.OriginalBody = string.Empty;
+					item.DisplayBody = "This account has been deleted.";
+					item.LongPreview = string.Empty;
+					item.ShortPreview = string.Empty;
+					item.Cards = string.Empty;
+				}
+			}
+
+			DbContext.SaveChanges();
+
+			await UserManager.DeleteAsync(sourceAccount);
+
+			DbContext.SaveChanges();
+		}
+
 		public void CanEdit(string userId) {
 			if (userId == UserContext.ApplicationUser.Id || UserContext.IsAdmin)
 				return;

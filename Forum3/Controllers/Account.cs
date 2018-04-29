@@ -57,13 +57,13 @@ namespace Forum3.Controllers {
 					continue;
 
 				var indexItem = new ViewModels.Account.IndexItem {
-					User = user,
+					Id = user.Id,
+					DisplayName = user.DisplayName,
+					Email = user.Email,
 					Registered = user.Registered.ToPassedTimeString(),
-					LastOnline = user.LastOnline.ToPassedTimeString()
+					LastOnline = user.LastOnline.ToPassedTimeString(),
+					CanManage = UserContext.IsAdmin || user.Id == UserContext.ApplicationUser.Id
 				};
-
-				if (UserContext.IsAdmin || user.Id == UserContext.ApplicationUser.Id)
-					indexItem.CanManage = true;
 
 				viewModel.IndexItems.Add(indexItem);
 			}
@@ -381,10 +381,10 @@ namespace Forum3.Controllers {
 
 		[HttpGet]
 		[AllowAnonymous]
-		public IActionResult ResetPasswordConfirmation() => View();
+		public IActionResult ResetPasswordConfirmation() => ForumViewResult.ViewResult(this);
 
 		[HttpGet]
-		public IActionResult Delete(string userId) => View("Delete", userId);
+		public IActionResult Delete(string userId) => ForumViewResult.ViewResult(this, "Delete", userId);
 
 		[HttpGet]
 		public async Task<IActionResult> ConfirmDelete(string userId) {
@@ -407,29 +407,40 @@ namespace Forum3.Controllers {
 				DbContext.SaveChanges();
 			}
 
-			foreach (var item in DbContext.MessageThoughts.Where(item => item.UserId == userId).ToList())
-				DbContext.Remove(item);
-
-			DbContext.SaveChanges();
-
-			foreach (var item in DbContext.Messages.Where(item => item.PostedById == userId).ToList()) {
-				item.PostedById = deletedAccount.Id;
-				item.EditedById = deletedAccount.Id;
-				item.OriginalBody = string.Empty;
-				item.DisplayBody = "This account has been deleted.";
-				item.LongPreview = string.Empty;
-				item.ShortPreview = string.Empty;
-				item.Cards = string.Empty;
-			}
-
-			DbContext.SaveChanges();
-
-			var account = AccountRepository.First(item => item.Id == userId);
-			await UserManager.DeleteAsync(account);
-
-			DbContext.SaveChanges();
+			await AccountRepository.MergeAccounts(userId, deletedAccount.Id, true);
 
 			return RedirectToAction(nameof(Home.FrontPage), nameof(Home));
+		}
+
+		[Authorize(Roles="Admin")]
+		[HttpGet]
+		public IActionResult Merge(string userId) {
+			var viewModel = new ViewModels.Account.MergePage {
+				SourceId = userId
+			};
+
+			foreach (var user in AccountRepository.Where(item => item.Id != userId)) {
+				var indexItem = new ViewModels.Account.IndexItem {
+					Id = user.Id,
+					DisplayName = user.DisplayName,
+					Email = user.Email,
+					Registered = user.Registered.ToPassedTimeString(),
+					LastOnline = user.LastOnline.ToPassedTimeString(),
+					CanManage = UserContext.IsAdmin || user.Id == UserContext.ApplicationUser.Id
+				};
+
+				viewModel.IndexItems.Add(indexItem);
+			}
+
+			return ForumViewResult.ViewResult(this, viewModel);
+		}
+
+		[Authorize(Roles="Admin")]
+		[HttpGet]
+		public async Task<IActionResult> ConfirmMerge(string sourceId, string targetId) {
+			await AccountRepository.MergeAccounts(sourceId, targetId, false);
+
+			return RedirectToAction(nameof(Account.Details), nameof(Account), new { id = targetId });
 		}
 	}
 }

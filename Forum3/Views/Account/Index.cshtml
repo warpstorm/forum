@@ -11,20 +11,20 @@
 		<tr>
 			@if (item.CanManage) {
 				<td class="pad">
-					<p><a asp-controller="@nameof(Account)" asp-action="@nameof(Account.Details)" asp-route-id="@item.User.Id">@item.User.DisplayName</a></p>
-					<p class="note">@item.User.Email</p>
+					<p><a asp-controller="@nameof(Account)" asp-action="@nameof(Account.Details)" asp-route-id="@item.Id">@item.DisplayName</a></p>
+					<p class="note">@item.Email</p>
 				</td>
 				<td class="pad">
 					<p>@item.Registered</p>
-					<p class="note">@item.User.Registered</p>
+					<p class="note">@item.Registered</p>
 				</td>
 				<td class="pad">
 					<p>@item.LastOnline</p>
-					<p class="note">@item.User.LastOnline</p>
+					<p class="note">@item.LastOnline</p>
 				</td>
 			}
 			else {
-				<td class="pad">@item.User.DisplayName</td>
+				<td class="pad">@item.DisplayName</td>
 				<td class="pad">@item.Registered</td>
 				<td class="pad">@item.LastOnline</td>
 			}
