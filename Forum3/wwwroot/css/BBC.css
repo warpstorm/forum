@@ -67,6 +67,7 @@ ol.bbc-list > .bbc-list-item {
 	padding-right: 5px;
 }
 
+.bbc-spoiler-hover,
 .bbc-spoiler:hover {
 	color: #999;
 }

@@ -16,6 +16,7 @@
 
 $(function () {
 	$(".add-bbcode").on("click.add-bbcode", AddBBCode);
+	$(".bbc-spoiler").on("click", ShowSpoiler);
 });
 
 function AddBBCode(event) {
