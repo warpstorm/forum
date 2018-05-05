@@ -286,6 +286,7 @@ namespace Forum3.Repositories {
 			var sortedMessageQuery = from message in messageQuery
 									 join pin in DbContext.Pins on message.Id equals pin.MessageId into pins
 									 from pin in pins.DefaultIfEmpty()
+									 where pin == null || pin.UserId == UserContext.ApplicationUser.Id
 									 let pinned = pin != null && pin.UserId == UserContext.ApplicationUser.Id
 									 orderby message.LastReplyPosted descending
 									 orderby (pinned ? pin.Id : 0) descending
