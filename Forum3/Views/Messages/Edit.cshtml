@@ -1,7 +1,7 @@
 @model ViewModels.Messages.EditMessagePage
 
 <div class="content-box pad">
-	@Html.Partial("_MessageForm", Model)
+	@await Html.PartialAsync("_MessageForm", Model)
 </div>
 
 @{ViewData["Title"] = "Edit";}

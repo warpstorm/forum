@@ -9,7 +9,7 @@
 @Html.ValidationSummary()
 
 @foreach (var category in Model.Categories) {
-    @Html.Partial("_ManageItem", category)
+    @await Html.PartialAsync("_ManageItem", category)
 }
 
 @section PageActions {

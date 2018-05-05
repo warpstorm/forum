@@ -80,7 +80,7 @@
 
 		<div class="hidden reply-form pad gap-top">
 			<p>Reply directly to this message:</p>
-			@Html.Partial("_MessageForm", Model.ReplyForm)
+			@await Html.PartialAsync("_MessageForm", Model.ReplyForm)
 		</div>
 
 		<section class="message-cards">@Html.Raw(Model.Cards)</section>
