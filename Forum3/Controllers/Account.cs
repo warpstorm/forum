@@ -7,8 +7,10 @@ using Forum3.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -86,9 +88,9 @@ namespace Forum3.Controllers {
 				DisplayName = userRecord.DisplayName,
 				NewEmail = userRecord.Email,
 				EmailConfirmed = userRecord.EmailConfirmed,
-				BirthdayDays = AccountRepository.DayPickList(userRecord.Birthday.Day),
-				BirthdayMonths = AccountRepository.MonthPickList(userRecord.Birthday.Month),
-				BirthdayYears = AccountRepository.YearPickList(userRecord.Birthday.Year),
+				BirthdayDays = DayPickList(userRecord.Birthday.Day),
+				BirthdayMonths = MonthPickList(userRecord.Birthday.Month),
+				BirthdayYears = YearPickList(userRecord.Birthday.Year),
 				BirthdayDay = userRecord.Birthday.Day.ToString(),
 				BirthdayMonth = userRecord.Birthday.Month.ToString(),
 				BirthdayYear = userRecord.Birthday.Year.ToString(),
@@ -121,9 +123,9 @@ namespace Forum3.Controllers {
 					AvatarPath = userRecord.AvatarPath,
 					Id = userRecord.Id,
 					EmailConfirmed = userRecord.EmailConfirmed,
-					BirthdayDays = AccountRepository.DayPickList(input.BirthdayDay),
-					BirthdayMonths = AccountRepository.MonthPickList(input.BirthdayMonth),
-					BirthdayYears = AccountRepository.YearPickList(input.BirthdayYear),
+					BirthdayDays = DayPickList(input.BirthdayDay),
+					BirthdayMonths = MonthPickList(input.BirthdayMonth),
+					BirthdayYears = YearPickList(input.BirthdayYear),
 					BirthdayDay = input.BirthdayDay.ToString(),
 					BirthdayMonth = input.BirthdayMonth.ToString(),
 					BirthdayYear = input.BirthdayYear.ToString(),
@@ -158,9 +160,9 @@ namespace Forum3.Controllers {
 					DisplayName = userRecord.DisplayName,
 					NewEmail = userRecord.Email,
 					EmailConfirmed = userRecord.EmailConfirmed,
-					BirthdayDays = AccountRepository.DayPickList(userRecord.Birthday.Day),
-					BirthdayMonths = AccountRepository.MonthPickList(userRecord.Birthday.Month),
-					BirthdayYears = AccountRepository.YearPickList(userRecord.Birthday.Year),
+					BirthdayDays = DayPickList(userRecord.Birthday.Day),
+					BirthdayMonths = MonthPickList(userRecord.Birthday.Month),
+					BirthdayYears = YearPickList(userRecord.Birthday.Year),
 					BirthdayDay = userRecord.Birthday.Day.ToString(),
 					BirthdayMonth = userRecord.Birthday.Month.ToString(),
 					BirthdayYear = userRecord.Birthday.Year.ToString(),
@@ -264,9 +266,9 @@ namespace Forum3.Controllers {
 			await AccountRepository.SignOut();
 
 			var viewModel = new ViewModels.Account.RegisterPage {
-				BirthdayDays = AccountRepository.DayPickList(),
-				BirthdayMonths = AccountRepository.MonthPickList(),
-				BirthdayYears = AccountRepository.YearPickList()
+				BirthdayDays = DayPickList(),
+				BirthdayMonths = MonthPickList(),
+				BirthdayYears = YearPickList()
 			};
 
 			return ForumViewResult.ViewResult(this, viewModel);
@@ -288,11 +290,11 @@ namespace Forum3.Controllers {
 				await AccountRepository.SignOut();
 
 				var viewModel = new ViewModels.Account.RegisterPage {
-					BirthdayDays = AccountRepository.DayPickList(),
+					BirthdayDays = DayPickList(),
 					BirthdayDay = input.BirthdayDay.ToString(),
-					BirthdayMonths = AccountRepository.MonthPickList(),
+					BirthdayMonths = MonthPickList(),
 					BirthdayMonth = input.BirthdayMonth.ToString(),
-					BirthdayYears = AccountRepository.YearPickList(),
+					BirthdayYears = YearPickList(),
 					BirthdayYear = input.BirthdayYear.ToString(),
 					DisplayName = input.DisplayName,
 					Email = input.Email,
@@ -441,6 +443,55 @@ namespace Forum3.Controllers {
 			await AccountRepository.MergeAccounts(sourceId, targetId, false);
 
 			return RedirectToAction(nameof(Account.Details), nameof(Account), new { id = targetId });
+		}
+
+		public IEnumerable<SelectListItem> YearPickList(int selected = -1) {
+			var years = from number in Enumerable.Range(1900, DateTime.Now.Year - 1900)
+						orderby number descending
+						select new SelectListItem {
+							Value = number.ToString(),
+							Text = number.ToString(),
+							Selected = selected > -1 && number == selected
+						};
+
+			years.Prepend(new SelectListItem {
+				Disabled = true,
+				Text = "Year"
+			});
+
+			return years;
+		}
+
+		public IEnumerable<SelectListItem> DayPickList(int selected = -1) {
+			var days = from number in Enumerable.Range(1, 31)
+					   select new SelectListItem {
+						   Value = number.ToString(),
+						   Text = number.ToString(),
+						   Selected = selected > -1 && number == selected
+					   };
+
+			days.Prepend(new SelectListItem {
+				Disabled = true,
+				Text = "Day"
+			});
+
+			return days;
+		}
+
+		public IEnumerable<SelectListItem> MonthPickList(int selected = -1) {
+			var months = from number in Enumerable.Range(1, 12)
+						 select new SelectListItem {
+							 Value = number.ToString(),
+							 Text = System.Globalization.CultureInfo.InvariantCulture.DateTimeFormat.GetMonthName(number),
+							 Selected = selected > -1 && number == selected
+						 };
+
+			months.Prepend(new SelectListItem {
+				Disabled = true,
+				Text = "Month"
+			});
+
+			return months;
 		}
 	}
 }
