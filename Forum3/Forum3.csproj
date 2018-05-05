@@ -10,23 +10,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<None Remove="Properties\PublishProfiles\warpstormdev - Web Deploy.pubxml" />
-		
-		<Compile Remove="Migrator\**" />
-		<Content Remove="Migrator\**" />
-		<EmbeddedResource Remove="Migrator\**" />
-		<None Remove="Migrator\**" />
-		<Compile Remove="wwwroot\js\min\**" />
-		<Content Remove="wwwroot\js\min\**" />
-		<EmbeddedResource Remove="wwwroot\js\min\**" />
-		<None Remove="wwwroot\js\min\**" />
-		<Compile Remove="wwwroot\css\min\**" />
-		<Content Remove="wwwroot\css\min\**" />
-		<EmbeddedResource Remove="wwwroot\css\min\**" />
-		<None Remove="wwwroot\css\min\**" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<PackageReference Include="CoreCompat.System.Drawing" Version="1.0.0-beta006" />
 		<PackageReference Include="HtmlAgilityPack" Version="1.8.1" />
 		<PackageReference Include="Microsoft.AspNetCore.All" Version="2.1.0-preview2-final" />
@@ -43,6 +26,17 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\CodeKicker.BBCode\CodeKicker.BBCode.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Remove="wwwroot\css\min\**" />
+	  <Compile Remove="wwwroot\js\min\**" />
+	  <Content Remove="wwwroot\css\min\**" />
+	  <Content Remove="wwwroot\js\min\**" />
+	  <EmbeddedResource Remove="wwwroot\css\min\**" />
+	  <EmbeddedResource Remove="wwwroot\js\min\**" />
+	  <None Remove="wwwroot\css\min\**" />
+	  <None Remove="wwwroot\js\min\**" />
 	</ItemGroup>
 
 </Project>
