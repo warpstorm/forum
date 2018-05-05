@@ -24,8 +24,6 @@ namespace Forum3.Repositories {
 		) : base(log) {
 			DbContext = dbContext;
 			CloudBlobClient = cloudBlobClient;
-
-			Records = DbContext.Smileys.Where(s => s.Code != null).OrderBy(s => s.SortOrder).ToList();
 		}
 
 		public List<List<ViewModels.IndexItem>> GetSelectorList() {
@@ -172,5 +170,7 @@ namespace Forum3.Repositories {
 			serviceResponse.Message = $"The smiley was deleted.";
 			return serviceResponse;
 		}
+
+		protected override List<DataModels.Smiley> GetRecords() => DbContext.Smileys.Where(s => s.Code != null).OrderBy(s => s.SortOrder).ToList();
 	}
 }

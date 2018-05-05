@@ -1,4 +1,5 @@
 ﻿using Forum3.Errors;
+using Forum3.Interfaces.Models;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections;
@@ -6,10 +7,11 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace Forum3.Repositories {
-	public partial class Repository<T> : IEnumerable<T> where T : class {
+	public abstract class Repository<T> : IRepository<T> where T : class {
 		public T this[int i] => Records[i];
 
-		protected List<T> Records { get; set; }
+		protected List<T> Records => _Records ?? (_Records = GetRecords());
+		List<T> _Records;
 
 		protected ILogger Log { get; }
 
@@ -32,5 +34,7 @@ namespace Forum3.Repositories {
 
 		public IEnumerator<T> GetEnumerator() => Records.GetEnumerator();
 		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+		protected abstract List<T> GetRecords();
 	}
 }

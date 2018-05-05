@@ -26,8 +26,6 @@ namespace Forum3.Repositories {
 		) : base(log) {
 			DbContext = dbContext;
 			UserContext = userContext;
-
-			Records = DbContext.SiteSettings.ToList();
 		}
 
 		public int AvatarSize(bool forceGlobal = false) {
@@ -256,5 +254,7 @@ namespace Forum3.Repositories {
 			serviceResponse.Message = $"Site settings were updated.";
 			return serviceResponse;
 		}
+
+		protected override List<DataModels.SiteSetting> GetRecords() => DbContext.SiteSettings.ToList();
 	}
 }

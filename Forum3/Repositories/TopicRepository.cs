@@ -18,13 +18,16 @@ namespace Forum3.Repositories {
 	public class TopicRepository {
 		ApplicationDbContext DbContext { get; }
 		UserContext UserContext { get; }
+
+		AccountRepository AccountRepository { get; }
 		BoardRepository BoardRepository { get; }
 		MessageRepository MessageRepository { get; }
 		NotificationRepository NotificationRepository { get; }
+		PinRepository PinRepository { get; }
 		RoleRepository RoleRepository { get; }
 		SettingsRepository SettingsRepository { get; }
 		SmileyRepository SmileyRepository { get; }
-		AccountRepository AccountRepository { get; }
+
 		IUrlHelper UrlHelper { get; }
 
 		public TopicRepository(
@@ -32,6 +35,7 @@ namespace Forum3.Repositories {
 			UserContext userContext,
 			BoardRepository boardRepository,
 			MessageRepository messageRepository,
+			PinRepository pinRepository,
 			NotificationRepository notificationRepository,
 			RoleRepository roleRepository,
 			SettingsRepository settingsRepository,
@@ -42,13 +46,16 @@ namespace Forum3.Repositories {
 		) {
 			DbContext = dbContext;
 			UserContext = userContext;
+
+			AccountRepository = accountRepository;
 			BoardRepository = boardRepository;
 			MessageRepository = messageRepository;
 			NotificationRepository = notificationRepository;
+			PinRepository = pinRepository;
 			RoleRepository = roleRepository;
 			SettingsRepository = settingsRepository;
 			SmileyRepository = smileyRepository;
-			AccountRepository = accountRepository;
+
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
@@ -215,18 +222,12 @@ namespace Forum3.Repositories {
 					Replies = message.ReplyCount,
 					Pages = Convert.ToInt32(Math.Ceiling(1.0 * message.ReplyCount / take)),
 					LastReplyId = message.Id,
-					Popular = message.ReplyCount > popularityLimit
+					Popular = message.ReplyCount > popularityLimit,
+					Pinned = PinRepository.Any(item => item.MessageId == message.Id)
 				};
 
 				messagePreviews.Add(messagePreview);
-
-				var pins = from pin in DbContext.Pins
-						   where pin.MessageId == message.Id
-						   where pin.UserId == UserContext.ApplicationUser.Id
-						   select pin.Id;
-
-				messagePreview.Pinned = pins.Any();
-
+				
 				var lastMessageTime = message.TimePosted;
 
 				if (message.LastReplyId != 0) {
@@ -260,11 +261,17 @@ namespace Forum3.Repositories {
 			var take = SettingsRepository.TopicsPerPage();
 			var skip = (page - 1) * take;
 
+			var forbiddenBoardIdsQuery = from role in RoleRepository.SiteRoles
+										 join board in RoleRepository.BoardRoles on role.Id equals board.RoleId
+										 where !UserContext.Roles.Contains(role.Id)
+										 select board.BoardId;
+
+			var forbiddenBoardIds = forbiddenBoardIdsQuery.ToList();
+
 			var messageQuery = from message in DbContext.Messages
 							   where message.ParentId == 0
 							   select new {
 								   message.Id,
-								   message.ParentId,
 								   message.LastReplyPosted
 							   };
 
@@ -275,7 +282,6 @@ namespace Forum3.Repositories {
 							   where messageBoard.BoardId == boardId
 							   select new {
 								   message.Id,
-								   message.ParentId,
 								   message.LastReplyPosted
 							   };
 			}
@@ -283,32 +289,16 @@ namespace Forum3.Repositories {
 			if (unreadFilter > 0)
 				messageQuery = messageQuery.Where(m => m.LastReplyPosted > historyTimeLimit);
 
+			var pinnedTopicIds = PinRepository.Select(item => item.MessageId).ToList();
+
 			var sortedMessageQuery = from message in messageQuery
-									 join pin in DbContext.Pins on message.Id equals pin.MessageId into pins
-									 from pin in pins.DefaultIfEmpty()
-									 where pin == null || pin.UserId == UserContext.ApplicationUser.Id
-									 let pinned = pin != null && pin.UserId == UserContext.ApplicationUser.Id
+									 let pinned = pinnedTopicIds.Contains(message.Id)
 									 orderby message.LastReplyPosted descending
-									 orderby (pinned ? pin.Id : 0) descending
+									 orderby pinned descending
 									 select new {
 										 message.Id,
 										 message.LastReplyPosted
 									 };
-
-			var messageBoardsQuery = from message in sortedMessageQuery
-									 join messageBoard in DbContext.MessageBoards on message.Id equals messageBoard.MessageId into boards
-									 from messageBoard in boards.DefaultIfEmpty()
-									 select new {
-										 MessageId = message.Id,
-										 BoardId = messageBoard == null ? -1 : messageBoard.BoardId
-									 };
-
-			var forbiddenBoardIdsQuery = from role in RoleRepository.SiteRoles
-										 join board in RoleRepository.BoardRoles on role.Id equals board.RoleId
-										 where !UserContext.Roles.Contains(role.Id)
-										 select board.BoardId;
-
-			var forbiddenBoardIds = forbiddenBoardIdsQuery.ToList();
 
 			var messageIds = new List<int>();
 			var attempts = 0;

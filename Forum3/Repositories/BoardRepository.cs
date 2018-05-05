@@ -16,7 +16,8 @@ namespace Forum3.Repositories {
 	using ServiceModels = Models.ServiceModels;
 
 	public class BoardRepository : Repository<DataModels.Board> {
-		public List<DataModels.Category> Categories { get; }
+		public List<DataModels.Category> Categories => _Categories ?? (_Categories = GetCategories());
+		List<DataModels.Category> _Categories;
 
 		ApplicationDbContext DbContext { get; }
 		UserContext UserContext { get; }
@@ -35,9 +36,6 @@ namespace Forum3.Repositories {
 			UserContext = userContext;
 			RoleRepository = roleRepository;
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
-
-			Records = DbContext.Boards.OrderBy(record => record.DisplayOrder).ToList();
-			Categories = DbContext.Categories.OrderBy(record => record.DisplayOrder).ToList();
 		}
 
 		public List<SelectListItem> CategoryPickList() {
@@ -455,5 +453,8 @@ namespace Forum3.Repositories {
 
 			return serviceResponse;
 		}
+
+		protected override List<DataModels.Board> GetRecords() => DbContext.Boards.OrderBy(record => record.DisplayOrder).ToList();
+		List<DataModels.Category> GetCategories() => DbContext.Categories.OrderBy(record => record.DisplayOrder).ToList();
 	}
 }

@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.Logging;
 using System;
@@ -19,8 +18,8 @@ using System.Threading.Tasks;
 namespace Forum3.Repositories {
 	using DataModels = Models.DataModels;
 	using InputModels = Models.InputModels;
-	using ServiceModels = Models.ServiceModels;
 	using ItemViewModels = Models.ViewModels.Boards.Items;
+	using ServiceModels = Models.ServiceModels;
 
 	public class AccountRepository : Repository<DataModels.ApplicationUser> {
 		public bool IsAuthenticated => UserContext.IsAuthenticated;
@@ -61,8 +60,6 @@ namespace Forum3.Repositories {
 
 			EmailSender = emailSender;
 			ImageStore = imageStore;
-
-			Records = DbContext.Users.OrderBy(u => u.DisplayName).ToList();
 		}
 
 		public List<string> GetBirthdaysList() {
@@ -525,56 +522,8 @@ namespace Forum3.Repositories {
 			});
 		}
 
-		public IEnumerable<SelectListItem> YearPickList(int selected = -1) {
-			var years = from number in Enumerable.Range(1900, DateTime.Now.Year - 1900)
-						orderby number descending
-						select new SelectListItem {
-							Value = number.ToString(),
-							Text = number.ToString(),
-							Selected = selected > -1 && number == selected
-						};
-
-			years.Prepend(new SelectListItem {
-				Disabled = true,
-				Text = "Year"
-			});
-
-			return years;
-		}
-
-		public IEnumerable<SelectListItem> DayPickList(int selected = -1) {
-			var days = from number in Enumerable.Range(1, 31)
-					   select new SelectListItem {
-						   Value = number.ToString(),
-						   Text = number.ToString(),
-						   Selected = selected > -1 && number == selected
-					   };
-
-			days.Prepend(new SelectListItem {
-				Disabled = true,
-				Text = "Day"
-			});
-
-			return days;
-		}
-
-		public IEnumerable<SelectListItem> MonthPickList(int selected = -1) {
-			var months = from number in Enumerable.Range(1, 12)
-						 select new SelectListItem {
-							 Value = number.ToString(),
-							 Text = System.Globalization.CultureInfo.InvariantCulture.DateTimeFormat.GetMonthName(number),
-							 Selected = selected > -1 && number == selected
-						 };
-
-			months.Prepend(new SelectListItem {
-				Disabled = true,
-				Text = "Month"
-			});
-
-			return months;
-		}
-
 		public string EmailConfirmationLink(string userId, string code) => UrlHelper.AbsoluteAction(nameof(Account.ConfirmEmail), nameof(Account), new { userId, code });
 		public string ResetPasswordCallbackLink(string userId, string code) => UrlHelper.AbsoluteAction(nameof(Account.ResetPassword), nameof(Account), new { userId, code });
+		protected override List<DataModels.ApplicationUser> GetRecords() => DbContext.Users.OrderBy(u => u.DisplayName).ToList();
 	}
 }
