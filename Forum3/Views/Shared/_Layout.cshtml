@@ -39,7 +39,7 @@
 			@await RenderSectionAsync("Breadcrumbs", required: false)
 		</nav>
 	</header>
-	
+
 	<br class="clear" />
 
 	<div role="main" class="margin-center">
@@ -88,10 +88,14 @@
 		<script src="https://cdn.jsdelivr.net/npm/jdenticon@1.8.0/dist/jdenticon.min.js"
 				asp-fallback-src="~/lib/jdenticon/dist/jdenticon.min.js"
 				asp-fallback-test="window.jdenticon"></script>
-		
+
 		<script src="~/js/min/Global.min.js" asp-append-version="true"></script>
 	</environment>
 
 	@await RenderSectionAsync("Scripts", required: false)
+
+	@if (ViewData["Smileys"] != null) {
+		@await Html.PartialAsync("_SmileySelector", ViewData["Smileys"]);
+	}
 </body>
 </html>

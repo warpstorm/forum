@@ -17,7 +17,3 @@
 		<img src="~/images/dangerSign.png" />
 	</div>
 </footer>
-
-@if (ViewData["Smileys"] != null) {
-	@await Html.PartialAsync("_SmileySelector", ViewData["Smileys"]);
-}
