@@ -439,8 +439,6 @@ namespace Forum3.Repositories {
 			var remoteUrlAuthority = uri.GetLeftPart(UriPartial.Authority);
 			var domain = uri.Host.Replace("/www.", "/").ToLower();
 
-			// /favicon.ico default doesn't work for fivethirtyeight
-			// <link rel="shortcut icon" href="https://s2.wp.com/wp-content/themes/vip/espn-fivethirtyeight/assets/images/favicon.ico?v=1.0.6">
 			var faviconPath = $"{remoteUrlAuthority}/favicon.ico";
 			var faviconStoragePath = await CacheFavicon(domain, uri.GetLeftPart(UriPartial.Path), faviconPath);
 
@@ -448,6 +446,7 @@ namespace Forum3.Repositories {
 				Title = remoteUrl,
 			};
 
+			// TODO - This is boring. Pull the topic titles. Maybe finally do OG tags?
 			if (domain == "warpstorm.com") {
 				returnResult.Title = "Warpstorm";
 				return returnResult;
@@ -531,6 +530,13 @@ namespace Forum3.Repositories {
 
 					returnResult.Card += "</div><br class='clear' /></blockquote>";
 				}
+			}
+
+			if (returnResult.Title.Contains(" - ")) {
+				
+				// One-off action. If there are more, replace this with a switch statement.
+				if (domain == "bulbapedia.bulbagarden.net")
+					returnResult.Title = returnResult.Title.Split(" - ")[0];
 			}
 
 			return returnResult;
