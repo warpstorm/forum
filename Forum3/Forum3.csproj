@@ -25,18 +25,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\CodeKicker.BBCode\CodeKicker.BBCode.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Compile Remove="wwwroot\css\min\**" />
-	  <Compile Remove="wwwroot\js\min\**" />
-	  <Content Remove="wwwroot\css\min\**" />
-	  <Content Remove="wwwroot\js\min\**" />
-	  <EmbeddedResource Remove="wwwroot\css\min\**" />
-	  <EmbeddedResource Remove="wwwroot\js\min\**" />
-	  <None Remove="wwwroot\css\min\**" />
-	  <None Remove="wwwroot\js\min\**" />
+		<ProjectReference Include="..\CodeKicker.BBCode\CodeKicker.BBCode.csproj" />
 	</ItemGroup>
 
 </Project>

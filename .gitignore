@@ -5,8 +5,8 @@
 **/node_modules/**
 
 **/wwwroot/lib/**
-**/wwwroot/css/**/*.min*
-**/wwwroot/js/**/*.min*
+**/wwwroot/css/min/**
+**/wwwroot/js/min/**
 
 **/Scripts/**/*.js
 **/Scripts/**/*.js.map
