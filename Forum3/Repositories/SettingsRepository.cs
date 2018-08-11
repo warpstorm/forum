@@ -84,6 +84,11 @@ namespace Forum3.Repositories {
 
 		public bool ShowFavicons(bool forceGlobal = false) =>  GetBool("ShowFavicons", forceGlobal);
 
+		public List<string> PoseyUsers(bool forceGlobal = false) {
+			var value = GetSetting("PoseyUsers", forceGlobal);
+			return value.Split("|").ToList();
+		}
+
 		public string FrontPage(bool forceGlobal = false) {
 			var setting = GetSetting("FrontPage", forceGlobal);
 

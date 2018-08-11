@@ -60,6 +60,8 @@ namespace Forum3.Repositories {
 		}
 
 		public List<ItemModels.Message> GetMessages(List<int> messageIds) {
+			var poseyUsers = SettingsRepository.PoseyUsers();
+
 			var thoughtQuery = from mt in DbContext.MessageThoughts
 							   join s in DbContext.Smileys on mt.SmileyId equals s.Id
 							   join u in DbContext.Users on mt.UserId equals u.Id
@@ -123,6 +125,8 @@ namespace Forum3.Repositories {
 				};
 
 				message.Thoughts = thoughts.Where(item => item.MessageId == message.Id).ToList();
+
+				message.Poseys = poseyUsers.Contains(postedBy.Id);
 			}
 
 			return messages;

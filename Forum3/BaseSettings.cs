@@ -55,6 +55,11 @@ namespace Forum3 {
 					"Unread Topics"
 				}
 			},
+			new BaseSetting {
+				Key = "PoseyUsers",
+				Display = "Posey'd Users",
+				Description = "Posey's the users. Separate IDs with a pipe."
+			},
 		};
 
 		public IEnumerator<BaseSetting> GetEnumerator() => Values.GetEnumerator();
