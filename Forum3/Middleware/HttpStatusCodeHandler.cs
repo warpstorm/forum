@@ -37,7 +37,7 @@ namespace Forum3.Middleware {
 
 				context.Response.ContentType = error.ContentType;
 
-				await context.Response.WriteAsync(exception.Message);
+				await context.Response.WriteAsync(exception.ToString());
 
 				return;
 			}
