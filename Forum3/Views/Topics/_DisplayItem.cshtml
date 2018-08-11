@@ -10,7 +10,15 @@
 		}
 	</aside>
 
-	<section class="message-container content-box pad">
+	@{ 
+		var messageClasses = "message-container content-box pad";
+
+		if (Model.Poseys) {
+			messageClasses += " poseys";
+		}
+	}
+
+	<section class="@messageClasses">
 		<span id="message@(Model.Id)"></span>
 		<!-- TODO - if unread target = this, then <span id="latest"></span> -->
 

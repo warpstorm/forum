@@ -4,6 +4,10 @@
 	max-width: 100%;
 }
 
+.poseys {
+	background-image: url("../../images/poseys.png")
+}
+
 .user-avatar {
 	padding: 12px 0;
 	width: 115px;
