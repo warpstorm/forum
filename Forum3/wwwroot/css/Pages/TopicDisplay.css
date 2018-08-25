@@ -80,6 +80,12 @@ main > header {
 		box-shadow: inset 0 -3px 0 #7090c6;
 	}
 
+	.message-body a img {
+		vertical-align: baseline;
+		max-width: 12px;
+		margin-left: 3px;
+	}
+
 blockquote.reply {
 	width: 98%;
 	padding: 15px 25px;
