@@ -533,10 +533,19 @@ namespace Forum3.Repositories {
 			}
 
 			if (returnResult.Title.Contains(" - ")) {
-				
-				// One-off action. If there are more, replace this with a switch statement.
-				if (domain == "bulbapedia.bulbagarden.net")
-					returnResult.Title = returnResult.Title.Split(" - ")[0];
+				var secondLevelDomainMatches = Regex.Match(domain, @"([^.]*)\.[^.]{2,3}(?:\.[^.]{2,3})?$", RegexOptions.IgnoreCase);
+
+				if (secondLevelDomainMatches.Success) {
+					switch (secondLevelDomainMatches.Groups[1].Value) {
+						case "bulbagarden":
+							returnResult.Title = returnResult.Title.Split(" - ")[0];
+							break;
+
+						case "wikipedia":
+							returnResult.Title = returnResult.Title.Split(" - ")[0];
+							break;
+					}
+				}
 			}
 
 			return returnResult;
