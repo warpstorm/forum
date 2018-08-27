@@ -24,7 +24,7 @@
 			<dt><input asp-for="@Model.RememberMe" /> Remember Me</dt>
 		</dl>
 
-		@await Html.PartialAsync("_Recaptcha")
+		<partial name="_Recaptcha" />
 
 		<ul>
 			<li><button>Log in</button></li>

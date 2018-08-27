@@ -60,6 +60,11 @@ namespace Forum3 {
 				Display = "Posey'd Users",
 				Description = "Posey's the users. Separate IDs with a pipe."
 			},
+			new BaseSetting {
+				Key = "StrippedUrls",
+				Display = "Site-Stripped URLs",
+				Description = "Strips the site name from these second level domains. Separate domains with a pipe. Do not include the TLD like .com or .org"
+			},
 		};
 
 		public IEnumerator<BaseSetting> GetEnumerator() => Values.GetEnumerator();

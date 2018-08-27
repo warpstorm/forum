@@ -10,7 +10,7 @@
 		}
 	</aside>
 
-	@{ 
+	@{
 		var messageClasses = "message-container content-box pad";
 
 		if (Model.Poseys) {
@@ -65,7 +65,7 @@
 				}
 			</aside>
 
-			@Model.PostedByName 
+			@Model.PostedByName
 			<time>
 				posted @Model.TimePosted
 				@if (Model.TimeEdited != Model.TimePosted) {
@@ -88,10 +88,8 @@
 
 		<div class="hidden reply-form pad gap-top">
 			<p>Reply directly to this message:</p>
-			@await Html.PartialAsync("_MessageForm", Model.ReplyForm)
+			<partial name="_MessageForm" for="@Model.ReplyForm" />
 		</div>
-
-		<section class="message-cards">@Html.Raw(Model.Cards)</section>
 
 		<div class="float-right note">
 			<a asp-action="@nameof(Topics.Display)" asp-route-id="@Model.Id">#@Model.Id</a>
@@ -107,4 +105,6 @@
 			}
 		</ol>
 	</section>
+
+	<section class="message-cards">@Html.Raw(Model.Cards)</section>
 </article>

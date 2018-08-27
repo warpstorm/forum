@@ -12,11 +12,11 @@
 
 <br class="clear" />
 
-@await Html.PartialAsync("_Sidebar", Model.Sidebar)
+<partial name="_Sidebar" for="@Model.Sidebar" />
 
 <div id="categories">
 	@foreach (var indexCategory in Model.Categories) {
-		@await Html.PartialAsync("_IndexCategory", indexCategory)
+		<partial name="_IndexCategory" for="@indexCategory" />
 	}
 </div>
 

@@ -50,7 +50,7 @@
 			<dd><span asp-validation-for="@Model.ConfirmPassword" class="error"></span></dd>
 		</dl>
 
-		@await Html.PartialAsync("_Recaptcha")
+		<partial name="_Recaptcha" />
 
 		<ul>
 			<li><button>Register</button></li>

@@ -1,10 +1,9 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="utf-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
 	<title>@Html.Raw(ViewData["Title"])</title>
+
+	<partial name="_Meta" />
 
 	<environment include="Development">
 		<link rel="stylesheet" href="~/css/StandardClasses.css" asp-append-version="true" />
@@ -27,7 +26,7 @@
 </head>
 <body>
 	<header id="page-header" class="margin-center pad">
-		@await Html.PartialAsync("_Header")
+		<partial name="_Header" />
 
 		<nav class="actions float-right pad-right">
 			<ul class="inline">
@@ -60,12 +59,12 @@
 		</main>
 	</div>
 
-	@await Html.PartialAsync("_Footer")
+	<partial name="_Footer" />
 
 	<environment include="Development">
 		<script src="~/lib/jquery/dist/jquery.js"></script>
 		<script src="~/lib/jquery-validation/dist/jquery.validate.js"></script>
-		<script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js"></script>
+		<script src="~/lib/jquery-validation-unobtrusive/src/jquery.validate.unobtrusive.js"></script>
 		<script src="~/lib/jdenticon/dist/jdenticon.js"></script>
 
 		<script src="~/js/Compatibility.js" asp-append-version="true"></script>
@@ -95,7 +94,7 @@
 	@await RenderSectionAsync("Scripts", required: false)
 
 	@if (ViewData["Smileys"] != null) {
-		@await Html.PartialAsync("_SmileySelector", ViewData["Smileys"]);
+		<partial name="_SmileySelector" for="@ViewData["Smileys"]" />
 	}
 </body>
 </html>

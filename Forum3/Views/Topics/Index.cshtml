@@ -24,16 +24,16 @@
 
 <br class="clear" />
 
-@await Html.PartialAsync("_Sidebar", Model.Sidebar)
+<partial name="_Sidebar" for="@Model.Sidebar" />
 
 <section id="topic-list">
 	@if (Model.Topics.Any()) {
 		@foreach (var item in Model.Topics) {
 			if (item.Pinned) {
-				@await Html.PartialAsync("_PinnedIndexItem", item)
+				<partial name="_PinnedIndexItem" for="@item" />
 			}
 			else {
-				@await Html.PartialAsync("_IndexItem", item)
+				<partial name="_IndexItem" for="@item" />
 			}
 		}
 	}

@@ -89,6 +89,11 @@ namespace Forum3.Repositories {
 			return value.Split("|").ToList();
 		}
 
+		public List<string> StrippedUrls(bool forceGlobal = false) {
+			var value = GetSetting("StrippedUrls", forceGlobal);
+			return value.Split("|").ToList();
+		}
+
 		public string FrontPage(bool forceGlobal = false) {
 			var setting = GetSetting("FrontPage", forceGlobal);
 

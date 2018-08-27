@@ -85,7 +85,7 @@
 
 <div>
 	@for (var i = 0; i < Model.Messages.Count(); i++) {
-		@await Html.PartialAsync("_DisplayItem", Model.Messages[i])
+		<partial name="_DisplayItem" for="@Model.Messages[i]" />
 	}
 </div>
 
@@ -107,10 +107,11 @@
 
 <p class="gap-top">Reply to Thread:</p>
 <div class="content-box pad">
-	@await Html.PartialAsync("_MessageForm", Model.ReplyForm)
+	<partial name="_MessageForm" for="@Model.ReplyForm" />
 </div>
 
-@{ ViewData["Title"] = @Html.Raw(Model.TopicHeader.Subject); }
+@{ViewData["Title"] = Html.Raw(Model.TopicHeader.Subject);}
+
 @section Header {@ViewData["Title"]}
 
 @section scripts {
