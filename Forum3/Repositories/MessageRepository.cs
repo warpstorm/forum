@@ -17,6 +17,7 @@ using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace Forum3.Repositories {
 	using DataModels = Models.DataModels;
@@ -342,6 +343,7 @@ namespace Forum3.Repositories {
 			var regexUrl = new Regex("(^| )((https?\\://){1}\\S+)", RegexOptions.Compiled | RegexOptions.Multiline);
 
 			var matches = 0;
+			var replacements = new Dictionary<string, string>();
 
 			foreach (Match regexMatch in regexUrl.Matches(displayBody)) {
 				matches++;
@@ -352,14 +354,19 @@ namespace Forum3.Repositories {
 
 				var siteUrl = regexMatch.Groups[2].Value;
 
-				if (!string.IsNullOrEmpty(siteUrl)) {
-					var remoteUrlReplacement = await GetRemoteUrlReplacement(siteUrl);
+				if (string.IsNullOrEmpty(siteUrl))
+					continue;
 
-					displayBody = remoteUrlReplacement.Regex.Replace(displayBody, remoteUrlReplacement.ReplacementText, 1);
+				var key = $"SITEURL_{matches}";
+				displayBody = displayBody.Replace(siteUrl, key);
 
-					processedMessageInput.Cards += remoteUrlReplacement.Card;
-				}
+				var remoteUrlReplacement = await GetRemoteUrlReplacement(siteUrl);
+				replacements.Add(key, remoteUrlReplacement.ReplacementText);
+				processedMessageInput.Cards += remoteUrlReplacement.Card;
 			}
+
+			foreach (var kvp in replacements)
+				displayBody = displayBody.Replace(kvp.Key, kvp.Value);
 
 			processedMessageInput.DisplayBody = displayBody;
 		}
@@ -392,21 +399,15 @@ namespace Forum3.Repositories {
 			if (!string.IsNullOrEmpty(remotePageDetails.Favicon))
 				favicon = $@"<img class=""link-favicon"" src=""{remotePageDetails.Favicon}"" /> ";
 
-			const string youtubePattern = @"(?:https?:\/\/)?(?:www\.)?(?:(?:(?:youtube.com\/watch\?[^?]*v=|youtu.be\/)([\w\-]+))(?:[^\s?]+)?)";
-			const string youtubeIframePartial = "<iframe type='text/html' title='YouTube video player' class='youtubePlayer' src='https://www.youtube.com/embed/{0}' frameborder='0' allowfullscreen='1'></iframe>";
-			const string embeddedVideoPartial = "<video autoplay loop><source src='{0}.webm' type='video/webm' /><source src='{0}.mp4' type='video/mp4' /></video>";
-
-			var regexYoutube = new Regex(youtubePattern);
+			var regexYoutube = new Regex(@"(?:https?:\/\/)?(?:www\.)?(?:(?:(?:youtube.com\/watch\?[^?]*v=|youtu.be\/)([\w\-]+))(?:[^\s?]+)?)", RegexOptions.Compiled | RegexOptions.Multiline);
 			var regexEmbeddedVideo = new Regex(@"(^| )((https?\://){1}\S+)(.gifv|.webm|.mp4)", RegexOptions.Compiled | RegexOptions.Multiline);
-			var regexUrl = new Regex(@"(^| )((https?\://){1}\S+)", RegexOptions.Compiled | RegexOptions.Multiline);
 
 			// check first if the link is a youtube vid
 			if (regexYoutube.Match(remoteUrl).Success) {
 				var youtubeVideoId = regexYoutube.Match(remoteUrl).Groups[1].Value;
-				var youtubeIframeClosed = string.Format(youtubeIframePartial, youtubeVideoId);
+				var youtubeIframeClosed = $"<iframe type='text/html' title='YouTube video player' class='youtubePlayer' src='https://www.youtube.com/embed/{youtubeVideoId}?rel=0' frameborder='0' allowfullscreen='1'></iframe>";
 
 				return new ServiceModels.RemoteUrlReplacement {
-					Regex = regexYoutube,
 					ReplacementText = $@"<a target=""_blank"" href=""{remoteUrl}"">{favicon}{remotePageDetails.Title}</a>",
 					Card = $@"<div class=""embedded-video"">{youtubeIframeClosed}</div>"
 				};
@@ -414,10 +415,9 @@ namespace Forum3.Repositories {
 			// or is it an embedded video link
 			else if (regexEmbeddedVideo.Match(remoteUrl).Success) {
 				var embeddedVideoId = regexEmbeddedVideo.Match(remoteUrl).Groups[2].Value;
-				var embeddedVideoTag = string.Format(embeddedVideoPartial, embeddedVideoId);
+				var embeddedVideoTag = $"<video autoplay loop><source src='{embeddedVideoId}.webm' type='video/webm' /><source src='{embeddedVideoId}.mp4' type='video/mp4' /></video>";
 
 				return new ServiceModels.RemoteUrlReplacement {
-					Regex = regexEmbeddedVideo,
 					ReplacementText = $@"<a target=""_blank"" href=""{remoteUrl}"">{favicon}{remotePageDetails.Title}</a>",
 					Card = $@"<div class=""embedded-video"">{embeddedVideoTag}</div>"
 				};
@@ -425,7 +425,6 @@ namespace Forum3.Repositories {
 
 			// replace the URL with the HTML
 			return new ServiceModels.RemoteUrlReplacement {
-				Regex = regexUrl,
 				ReplacementText = $@"$1<a target=""_blank"" href=""{remoteUrl}"">{favicon}{remotePageDetails.Title}</a>",
 				Card = remotePageDetails.Card ?? string.Empty
 			};
