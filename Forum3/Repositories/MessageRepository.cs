@@ -537,10 +537,8 @@ namespace Forum3.Repositories {
 
 				if (secondLevelDomainMatches.Success) {
 					switch (secondLevelDomainMatches.Groups[1].Value) {
+						case "youtube":
 						case "bulbagarden":
-							returnResult.Title = returnResult.Title.Split(" - ")[0];
-							break;
-
 						case "wikipedia":
 							returnResult.Title = returnResult.Title.Split(" - ")[0];
 							break;
