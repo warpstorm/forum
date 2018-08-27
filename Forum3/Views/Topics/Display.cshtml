@@ -110,7 +110,8 @@
 	<partial name="_MessageForm" for="@Model.ReplyForm" />
 </div>
 
-@{ ViewData["Title"] = @Html.Raw(Model.TopicHeader.Subject); }
+@{ViewData["Title"] = Html.Raw(Model.TopicHeader.Subject);}
+
 @section Header {@ViewData["Title"]}
 
 @section scripts {

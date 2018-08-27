@@ -425,7 +425,7 @@ namespace Forum3.Repositories {
 
 			// replace the URL with the HTML
 			return new ServiceModels.RemoteUrlReplacement {
-				ReplacementText = $@"$1<a target=""_blank"" href=""{remoteUrl}"">{favicon}{remotePageDetails.Title}</a>",
+				ReplacementText = $@"<a target=""_blank"" href=""{remoteUrl}"">{favicon}{remotePageDetails.Title}</a>",
 				Card = remotePageDetails.Card ?? string.Empty
 			};
 		}
@@ -445,7 +445,6 @@ namespace Forum3.Repositories {
 				Title = remoteUrl,
 			};
 
-			// TODO - This is boring. Pull the topic titles. Maybe finally do OG tags?
 			if (domain == "warpstorm.com") {
 				returnResult.Title = "Warpstorm";
 				return returnResult;

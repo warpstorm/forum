@@ -1,6 +1,7 @@
 ﻿using Forum3.Controllers;
 using Forum3.Interfaces.Services;
 using Forum3.Repositories;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
@@ -8,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Forum3.Services {
@@ -58,6 +60,17 @@ namespace Forum3.Services {
 		}
 
 		public IActionResult ViewResult(Controller controller, string viewName, object model = null) {
+			var requestUrl = controller.Request.GetEncodedUrl();
+			controller.ViewData["Url"] = requestUrl;
+
+			var baseUrlMatch = Regex.Match(requestUrl, @"(https?:\/\/.*?\/)");
+
+			if (baseUrlMatch.Success) {
+				var baseUrl = baseUrlMatch.Groups[1].Value;
+				controller.ViewData["Image"] = $"{baseUrl}images/logos/planet.png";
+				controller.ViewData["BaseUrl"] = baseUrl;
+			}
+
 			controller.ViewData["LogoPath"] = GetLogoPath();
 			controller.ViewData["Referrer"] = GetReferrer(controller);
 			controller.ViewData["Categories"] = BoardRepository.CategoryIndex();
