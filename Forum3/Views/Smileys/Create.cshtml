@@ -4,9 +4,9 @@
 	<div asp-validation-summary="ModelOnly"></div>
 
 	<form method="post" enctype="multipart/form-data"
-		asp-action="@nameof(Smileys.Create)"
-		asp-route-returnurl="@ViewData["Referrer"]">
-		
+		  asp-action="@nameof(Smileys.Create)"
+		  asp-route-returnurl="@ViewData["Referrer"]">
+
 		<dl>
 			<dt>Code</dt>
 			<dd><input asp-for="@Model.Code" /></dd>

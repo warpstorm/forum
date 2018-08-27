@@ -6,8 +6,14 @@ namespace Forum3.Models.InputModels {
 		public int Id { get; set; }
 
 		[Required]
+		public int Column { get; set; }
+
+		[Required]
+		public int Row { get; set; }
+
+		[Required]
 		[MinLength(2)]
-		[MaxLength(10)]
+		[MaxLength(16)]
 		public string Code { get; set; }
 
 		[MaxLength(200)]

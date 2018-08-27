@@ -34,7 +34,7 @@ namespace Forum3.Controllers {
 				var sortColumn = smiley.SortOrder / 1000;
 				var sortRow = smiley.SortOrder % 1000;
 
-				viewModel.Items.Add(new ViewModels.IndexItem {
+				viewModel.Smileys.Add(new ViewModels.IndexItem {
 					Id = smiley.Id,
 					Code = smiley.Code,
 					Path = smiley.Path,
@@ -86,7 +86,7 @@ namespace Forum3.Controllers {
 			return await FailureCallback();
 
 			async Task<IActionResult> FailureCallback() {
-				return await Task.Run(() => { return ForumViewResult.RedirectToReferrer(this); });
+				return await Task.Run(() => { return RedirectToAction(nameof(Index)); });
 			}
 		}
 

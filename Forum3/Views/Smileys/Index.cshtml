@@ -4,20 +4,42 @@
 	<div asp-validation-summary="All"></div>
 
 	<form method="post" asp-action="@nameof(Smileys.Edit)">
-		<ol>
-			@if(Model.Items.Any()) {
-				@for (int i = 0; i < Model.Items.Count; i++) {
-					<li>
-						<input hidden="hidden" asp-for="@Model.Items[i].Id" />
-						<a asp-action="@nameof(Smileys.Delete)" asp-route-id="@Model.Items[i].Id" class="borderless spaced"><img alt="Delete" src="~/images/delete.png" /></a>
-						<img src="@Model.Items[i].Path" />
-						<span asp-validation-for="@Model.Items[i].Code" class="error"></span>
-						<input asp-for="@Model.Items[i].Code" />
-						<input asp-for="@Model.Items[i].Thought" />
-					</li>
+		@if (Model.Smileys.Any()) {
+			<table>
+				<tr>
+					<th></th>
+					<th>Column</th>
+					<th>Row</th>
+					<th>Code</th>
+					<th>Thought</th>
+					<th></th>
+				</tr>
+				@for (int i = 0; i < Model.Smileys.Count; i++) {
+					<tr>
+						<td>
+							<input hidden="hidden" asp-for="@Model.Smileys[i].Id" />
+							<a asp-action="@nameof(Smileys.Delete)" asp-route-id="@Model.Smileys[i].Id" class="borderless spaced"><img alt="Delete" src="~/images/delete.png" /></a>
+						</td>
+						<td>
+							<input asp-for="@Model.Smileys[i].Column" class="small-input" />
+						</td>
+						<td>
+							<input asp-for="@Model.Smileys[i].Row" class="small-input" />
+						</td>
+						<td>
+							<input asp-for="@Model.Smileys[i].Code" />
+							<span asp-validation-for="@Model.Smileys[i].Code" class="error"></span>
+						</td>
+						<td>
+							<input asp-for="@Model.Smileys[i].Thought" class="long-input" />
+						</td>
+						<td>
+							<img src="@Model.Smileys[i].Path" />
+						</td>
+					</tr>
 				}
-			}
-		</ol>
+			</table>
+		}
 
 		<ul>
 			<li><button>Save Changes</button></li>
@@ -32,4 +54,13 @@
 	<p>
 		<a class="button" asp-action="@nameof(Smileys.Create)">Create a new Smiley</a>
 	</p>
+}
+
+@section styles {
+	<environment include="Development">
+		<link rel="stylesheet" href="~/css/Pages/SmileyIndex.css" asp-append-version="true" />
+	</environment>
+	<environment exclude="Development">
+		<link rel="stylesheet" href="~/css/min/SmileyIndex.min.css" asp-append-version="true" />
+	</environment>
 }

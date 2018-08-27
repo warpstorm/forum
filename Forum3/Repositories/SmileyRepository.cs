@@ -59,14 +59,14 @@ namespace Forum3.Repositories {
 		public async Task<ServiceModels.ServiceResponse> Create(InputModels.CreateSmileyInput input) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
-			var allowedExtensions = new[] { ".gif" };
-			var extension = Path.GetExtension(input.File.FileName);
+			var allowedExtensions = new[] { "gif", "png" };
+			var extension = Path.GetExtension(input.File.FileName).ToLower().Substring(1);
 
 			if (Regex.IsMatch(input.File.FileName, @"[^a-zA-Z 0-9_\-\.]"))
 				serviceResponse.Error("File", "Your filename contains invalid characters.");
 
 			if (!allowedExtensions.Contains(extension))
-				serviceResponse.Error("File", "Your file must be a gif.");
+				serviceResponse.Error("File", $"Your file must be: {string.Join(", ", allowedExtensions)}.");
 
 			if (DbContext.Smileys.Any(s => s.Code == input.Code))
 				serviceResponse.Error(nameof(input.Code), "Another smiley exists with that code.");
@@ -91,7 +91,7 @@ namespace Forum3.Repositories {
 
 			// Multiple smileys can point to the same image.
 			if (!await blobReference.ExistsAsync()) {
-				blobReference.Properties.ContentType = "image/gif";
+				blobReference.Properties.ContentType = $"{input.File.ContentType}";
 
 				using (var fileStream = input.File.OpenReadStream()) {
 					fileStream.Position = 0;
@@ -110,6 +110,8 @@ namespace Forum3.Repositories {
 		public ServiceModels.ServiceResponse Update(InputModels.EditSmileysInput input) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
+			var smileySortOrder = new Dictionary<int, int>();
+
 			foreach (var smileyInput in input.Smileys) {
 				var smileyRecord = DbContext.Smileys.Find(smileyInput.Id);
 
@@ -118,6 +120,23 @@ namespace Forum3.Repositories {
 					break;
 				}
 
+				smileySortOrder.Add(smileyRecord.Id, smileyRecord.SortOrder);
+			}
+
+			foreach (var smileyInput in input.Smileys) {
+				var newSortOrder = (smileyInput.Column * 1000) + smileyInput.Row;
+
+				if (smileySortOrder[smileyInput.Id] != newSortOrder) {
+					foreach (var kvp in smileySortOrder.Where(kvp => smileyInput.Column == kvp.Value / 1000 && kvp.Value >= newSortOrder).ToList())
+						smileySortOrder[kvp.Key]++;
+
+					smileySortOrder[smileyInput.Id] = newSortOrder;
+				}
+			}
+
+			foreach (var smileyInput in input.Smileys) {
+				var smileyRecord = DbContext.Smileys.Find(smileyInput.Id);
+
 				if (smileyRecord.Code != smileyInput.Code) {
 					smileyRecord.Code = smileyInput.Code;
 					DbContext.Update(smileyRecord);
@@ -125,6 +144,11 @@ namespace Forum3.Repositories {
 
 				if (smileyRecord.Thought != smileyInput.Thought) {
 					smileyRecord.Thought = smileyInput.Thought;
+					DbContext.Update(smileyRecord);
+				}
+
+				if (smileyRecord.SortOrder != smileySortOrder[smileyRecord.Id]) {
+					smileyRecord.SortOrder = smileySortOrder[smileyRecord.Id];
 					DbContext.Update(smileyRecord);
 				}
 			}

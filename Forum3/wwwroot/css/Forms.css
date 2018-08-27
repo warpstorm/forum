@@ -49,3 +49,11 @@ textarea {
 	input:disabled, textarea:disabled {
 		background-color: #121822;
 	}
+
+	.small-input {
+		width: 60px;
+	}
+
+	.long-input {
+		width: 300px;
+	}
