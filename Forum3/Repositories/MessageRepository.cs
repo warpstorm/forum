@@ -567,12 +567,8 @@ namespace Forum3.Repositories {
 
 			var titleNode = document.DocumentNode.SelectSingleNode(@"//meta[@property='og:title']");
 
-			if (titleNode != null && titleNode.Attributes["content"] != null) {
+			if (titleNode != null && titleNode.Attributes["content"] != null)
 				returnObject.Title = titleNode.Attributes["content"].Value.Trim();
-
-				if (string.IsNullOrEmpty(returnObject.Title))
-					return null;
-			}
 
 			var descriptionNode = document.DocumentNode.SelectSingleNode(@"//meta[@property='og:description']");
 
@@ -582,12 +578,15 @@ namespace Forum3.Repositories {
 			var siteNameNode = document.DocumentNode.SelectSingleNode(@"//meta[@property='og:site_name']");
 
 			if (siteNameNode != null && siteNameNode.Attributes["content"] != null)
-				returnObject.Description = siteNameNode.Attributes["content"].Value.Trim();
+				returnObject.SiteName = siteNameNode.Attributes["content"].Value.Trim();
 
 			var imageNode = document.DocumentNode.SelectSingleNode(@"//meta[@property='og:image']");
 
 			if (imageNode != null && imageNode.Attributes["content"] != null)
-				returnObject.Description = imageNode.Attributes["content"].Value.Trim();
+				returnObject.Image = imageNode.Attributes["content"].Value.Trim();
+
+			if (string.IsNullOrEmpty(returnObject.Title))
+				return null;
 
 			return returnObject;
 		}
@@ -596,13 +595,10 @@ namespace Forum3.Repositories {
 			var secondLevelDomainMatches = Regex.Match(domain, @"([^.]*)\.[^.]{2,3}(?:\.[^.]{2,3})?$", RegexOptions.IgnoreCase);
 
 			if (secondLevelDomainMatches.Success) {
-				switch (secondLevelDomainMatches.Groups[1].Value) {
-					case "youtube":
-					case "bulbagarden":
-					case "wikipedia":
-						returnResult.Title = returnResult.Title.Split(" - ")[0];
-						break;
-				}
+				var strippedUrls = SettingsRepository.StrippedUrls();
+
+				if (strippedUrls.Contains(secondLevelDomainMatches.Groups[1].Value))
+					returnResult.Title = returnResult.Title.Split(" - ")[0];
 			}
 		}
 
