@@ -17,7 +17,6 @@ using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Web;
 
 namespace Forum3.Repositories {
 	using DataModels = Models.DataModels;
@@ -59,7 +58,7 @@ namespace Forum3.Repositories {
 		}
 
 		public int GetPageNumber(int messageId, List<int> messageIds) {
-			var index = (double)messageIds.FindIndex(id => id == messageId);
+			var index = (double) messageIds.FindIndex(id => id == messageId);
 			index++;
 
 			var messagesPerPage = SettingsRepository.MessagesPerPage();
@@ -105,7 +104,7 @@ namespace Forum3.Repositories {
 
 			if (input.Id == 0)
 				throw new HttpBadRequestError();
-			
+
 			var replyRecord = DbContext.Messages.FirstOrDefault(m => m.Id == input.Id);
 
 			if (replyRecord is null)
@@ -327,7 +326,7 @@ namespace Forum3.Repositories {
 		}
 
 		public void ParseBBC(InputModels.ProcessedMessageInput processedMessageInput) {
-			
+
 			// NOTE: 
 			// If you do not want to encumber your software with the CodeKicker library, start with replacing this call.
 
@@ -444,12 +443,7 @@ namespace Forum3.Repositories {
 			var returnResult = new ServiceModels.RemotePageDetails {
 				Title = remoteUrl,
 			};
-
-			if (domain == "warpstorm.com") {
-				returnResult.Title = "Warpstorm";
-				return returnResult;
-			}
-
+			
 			var siteWithoutHash = remoteUrl.Split('#')[0];
 
 			var document = new HtmlDocument();
@@ -475,7 +469,7 @@ namespace Forum3.Repositories {
 
 			if (string.IsNullOrEmpty(faviconStoragePath)) {
 				var element = document.DocumentNode.SelectSingleNode(@"//link[@rel='shortcut icon']");
-				
+
 				if (element != null) {
 					faviconPath = element.Attributes["href"].Value.Trim();
 					faviconStoragePath = await CacheFavicon(domain, uri.GetLeftPart(UriPartial.Path), faviconPath);
@@ -493,58 +487,123 @@ namespace Forum3.Repositories {
 
 			returnResult.Favicon = faviconStoragePath;
 
-			// try to find the opengraph title
-			var ogTitle = document.DocumentNode.SelectSingleNode(@"//meta[@property='og:title']");
-			var ogSiteName = document.DocumentNode.SelectSingleNode(@"//meta[@property='og:site_name']");
-			var ogImage = document.DocumentNode.SelectSingleNode(@"//meta[@property='og:image']");
-			var ogDescription = document.DocumentNode.SelectSingleNode(@"//meta[@property='og:description']");
+			ServiceModels.OgDetails ogDetails = null;
 
-			if (ogTitle != null && ogTitle.Attributes["content"] != null && !string.IsNullOrEmpty(ogTitle.Attributes["content"].Value.Trim())) {
-				returnResult.Title = ogTitle.Attributes["content"].Value.Trim();
+			if (domain == "warpstorm.com" || domain == "localhost")
+				ogDetails = GetWarpstormOgDetails(remoteUrl);
+			else
+				ogDetails = GetOgDetails(document);
 
-				if (ogDescription != null && ogDescription.Attributes["content"] != null && !string.IsNullOrEmpty(ogDescription.Attributes["content"].Value.Trim())) {
+			if (ogDetails != null) {
+				returnResult.Title = ogDetails.Title;
+
+				if (!string.IsNullOrEmpty(ogDetails.Description)) {
 					returnResult.Card += "<blockquote class='card pointer hover-highlight' clickable-link-parent>";
 
-					if (ogImage != null && ogImage.Attributes["content"] != null && !string.IsNullOrEmpty(ogImage.Attributes["content"].Value.Trim())) {
-						var imagePath = ogImage.Attributes["content"].Value.Trim();
+					if (!string.IsNullOrEmpty(ogDetails.Image)) {
+						if (ogDetails.Image.StartsWith("/"))
+							ogDetails.Image = $"{remoteUrlAuthority}{ogDetails.Image}";
 
-						if (imagePath.StartsWith("/"))
-							imagePath = $"{remoteUrlAuthority}{imagePath}";
-
-						returnResult.Card += $"<div class='card-image'><img src='{imagePath}' /></div>";
+						returnResult.Card += $"<div class='card-image'><img src='{ogDetails.Image}' /></div>";
 					}
 
 					returnResult.Card += "<div>";
-					returnResult.Card += "<p class='card-title'><a target='_blank' href='" + remoteUrl + "'>" + returnResult.Title + "</a></p>";
+					returnResult.Card += $"<p class='card-title'><a target='_blank' href='{remoteUrl}'>{returnResult.Title}</a></p>";
 
-					var decodedDescription = WebUtility.HtmlDecode(ogDescription.Attributes["content"].Value.Trim());
+					var decodedDescription = WebUtility.HtmlDecode(ogDetails.Description);
 
-					returnResult.Card += "<p class='card-description'>" + decodedDescription + "</p>";
+					returnResult.Card += $"<p class='card-description'>{decodedDescription}</p>";
 
-					if (ogSiteName != null && ogSiteName.Attributes["content"] != null && !string.IsNullOrEmpty(ogSiteName.Attributes["content"].Value.Trim()))
-						returnResult.Card += "<p class='card-link'><a target='_blank' href='" + remoteUrl + "'>[" + ogSiteName.Attributes["content"].Value.Trim() + "]</a></p>";
+					if (string.IsNullOrEmpty(ogDetails.SiteName))
+						returnResult.Card += $"<p class='card-link'><a target='_blank' href='{remoteUrl}'>[Direct Link]</a></p>";
 					else
-						returnResult.Card += "<p class='card-link'><a target='_blank' href='" + remoteUrl + "'>[Direct Link]</a></p>";
+						returnResult.Card += $"<p class='card-link'><a target='_blank' href='{remoteUrl}'>[{ogDetails.SiteName}]</a></p>";
 
 					returnResult.Card += "</div><br class='clear' /></blockquote>";
 				}
 			}
 
-			if (returnResult.Title.Contains(" - ")) {
-				var secondLevelDomainMatches = Regex.Match(domain, @"([^.]*)\.[^.]{2,3}(?:\.[^.]{2,3})?$", RegexOptions.IgnoreCase);
-
-				if (secondLevelDomainMatches.Success) {
-					switch (secondLevelDomainMatches.Groups[1].Value) {
-						case "youtube":
-						case "bulbagarden":
-						case "wikipedia":
-							returnResult.Title = returnResult.Title.Split(" - ")[0];
-							break;
-					}
-				}
-			}
+			if (returnResult.Title.Contains(" - "))
+				StripTitleSiteName(domain, returnResult);
 
 			return returnResult;
+		}
+
+		ServiceModels.OgDetails GetWarpstormOgDetails(string remoteUrl) {
+			var topicIdMatch = Regex.Match(remoteUrl, @"Topics\/(Display|Latest)\/(\d+)\/?(\d+|)\/?(\d+|)(#message(\d+))?");
+
+			if (!topicIdMatch.Success)
+				return null;
+
+			var messageId = 0;
+
+			if (string.IsNullOrEmpty(topicIdMatch.Groups[6].Value))
+				messageId = Convert.ToInt32(topicIdMatch.Groups[2].Value);
+			else
+				messageId = Convert.ToInt32(topicIdMatch.Groups[6].Value);
+
+			var messageRecordQuery = from message in DbContext.Messages
+									 where message.Id == messageId
+									 select new {
+										 message.ShortPreview,
+										 message.LongPreview
+									 };
+
+			var messageRecord = messageRecordQuery.FirstOrDefault();
+
+			if (messageRecord is null)
+				return null;
+
+			return new ServiceModels.OgDetails {
+				Title = messageRecord.ShortPreview,
+				Description = messageRecord.LongPreview,
+				Image = "/images/logos/planet.png",
+				SiteName = "Warpstorm"
+			};
+		}
+
+		ServiceModels.OgDetails GetOgDetails(HtmlDocument document) {
+			var returnObject = new ServiceModels.OgDetails();
+
+			var titleNode = document.DocumentNode.SelectSingleNode(@"//meta[@property='og:title']");
+
+			if (titleNode != null && titleNode.Attributes["content"] != null) {
+				returnObject.Title = titleNode.Attributes["content"].Value.Trim();
+
+				if (string.IsNullOrEmpty(returnObject.Title))
+					return null;
+			}
+
+			var descriptionNode = document.DocumentNode.SelectSingleNode(@"//meta[@property='og:description']");
+
+			if (descriptionNode != null && descriptionNode.Attributes["content"] != null)
+				returnObject.Description = descriptionNode.Attributes["content"].Value.Trim();
+
+			var siteNameNode = document.DocumentNode.SelectSingleNode(@"//meta[@property='og:site_name']");
+
+			if (siteNameNode != null && siteNameNode.Attributes["content"] != null)
+				returnObject.Description = siteNameNode.Attributes["content"].Value.Trim();
+
+			var imageNode = document.DocumentNode.SelectSingleNode(@"//meta[@property='og:image']");
+
+			if (imageNode != null && imageNode.Attributes["content"] != null)
+				returnObject.Description = imageNode.Attributes["content"].Value.Trim();
+
+			return returnObject;
+		}
+
+		void StripTitleSiteName(string domain, ServiceModels.RemotePageDetails returnResult) {
+			var secondLevelDomainMatches = Regex.Match(domain, @"([^.]*)\.[^.]{2,3}(?:\.[^.]{2,3})?$", RegexOptions.IgnoreCase);
+
+			if (secondLevelDomainMatches.Success) {
+				switch (secondLevelDomainMatches.Groups[1].Value) {
+					case "youtube":
+					case "bulbagarden":
+					case "wikipedia":
+						returnResult.Title = returnResult.Title.Split(" - ")[0];
+						break;
+				}
+			}
 		}
 
 		/// <summary>
@@ -809,7 +868,7 @@ namespace Forum3.Repositories {
 			var recordCount = query.Count();
 
 			var take = SettingsRepository.TopicsPerPage(true);
-			var totalSteps = (int)Math.Ceiling(1D * recordCount / take);
+			var totalSteps = (int) Math.Ceiling(1D * recordCount / take);
 
 			return totalSteps;
 		}
@@ -870,7 +929,7 @@ namespace Forum3.Repositories {
 			var recordCount = query.Count();
 
 			var take = SettingsRepository.TopicsPerPage(true);
-			var totalSteps = (int)Math.Ceiling(1D * recordCount / take);
+			var totalSteps = (int) Math.Ceiling(1D * recordCount / take);
 
 			return totalSteps;
 		}
@@ -931,7 +990,7 @@ namespace Forum3.Repositories {
 			var recordCount = records.Count();
 
 			var take = SettingsRepository.MessagesPerPage(true);
-			var totalSteps = (int)Math.Ceiling(1D * recordCount / take);
+			var totalSteps = (int) Math.Ceiling(1D * recordCount / take);
 
 			return totalSteps;
 		}
