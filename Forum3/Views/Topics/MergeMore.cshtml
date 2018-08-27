@@ -6,7 +6,7 @@
 }
 
 @foreach (var item in Model.Topics) {
-	await Html.PartialAsync("_MergeItem", item);
+	<partial name="_MergeItem" for="@item" />
 }
 
 <script>

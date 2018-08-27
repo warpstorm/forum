@@ -1,7 +1,7 @@
 ﻿@model IndexPage
 
 @{
-    ViewData["Title"] = "Board Management";
+	ViewData["Title"] = "Board Management";
 }
 
 <h1 class="pad-left">@ViewData["Title"]</h1>
@@ -9,7 +9,7 @@
 @Html.ValidationSummary()
 
 @foreach (var category in Model.Categories) {
-    @await Html.PartialAsync("_ManageItem", category)
+	<partial name="_ManageItem" for="@category" />
 }
 
 @section PageActions {

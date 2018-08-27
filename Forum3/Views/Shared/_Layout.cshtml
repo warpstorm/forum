@@ -6,6 +6,8 @@
 
 	<title>@Html.Raw(ViewData["Title"])</title>
 
+	<partial name="_OpenGraph" />
+
 	<environment include="Development">
 		<link rel="stylesheet" href="~/css/StandardClasses.css" asp-append-version="true" />
 		<link rel="stylesheet" href="~/css/GlobalElements.css" asp-append-version="true" />
@@ -27,7 +29,7 @@
 </head>
 <body>
 	<header id="page-header" class="margin-center pad">
-		@await Html.PartialAsync("_Header")
+		<partial name="_Header" />
 
 		<nav class="actions float-right pad-right">
 			<ul class="inline">
@@ -60,7 +62,7 @@
 		</main>
 	</div>
 
-	@await Html.PartialAsync("_Footer")
+	<partial name="_Footer" />
 
 	<environment include="Development">
 		<script src="~/lib/jquery/dist/jquery.js"></script>
@@ -95,7 +97,7 @@
 	@await RenderSectionAsync("Scripts", required: false)
 
 	@if (ViewData["Smileys"] != null) {
-		@await Html.PartialAsync("_SmileySelector", ViewData["Smileys"]);
+		<partial name="_SmileySelector" for="@ViewData["Smileys"]" />
 	}
 </body>
 </html>

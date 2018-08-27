@@ -4,7 +4,7 @@
 	<div class="content-box pad">
 		<ul>
 			@foreach (var item in Model.Roles) {
-				@await Html.PartialAsync("_IndexItem", item)
+				<partial name="_IndexItem" for="@item" />
 			}
 		</ul>
 

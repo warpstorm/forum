@@ -25,7 +25,7 @@
 </div>
 
 <div id="message-form" class="content-box pad">
-	@await Html.PartialAsync("_MessageForm", Model)
+	<partial name="_MessageForm" for="@Model" />
 </div>
 
 @{ViewData["Title"] = "Create a Topic";}
