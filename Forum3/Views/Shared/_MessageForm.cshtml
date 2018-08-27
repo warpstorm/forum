@@ -3,9 +3,9 @@
 <div asp-validation-summary="ModelOnly"></div>
 
 <form method="post"
-		asp-action="@Model.FormAction"
-		asp-controller="@Model.FormController"
-		asp-route-returnurl="@ViewData["Referrer"]">
+	  asp-action="@Model.FormAction"
+	  asp-controller="@Model.FormController"
+	  asp-route-returnurl="@ViewData["Referrer"]">
 
 	<input type="hidden" name="Id" value="@Model.Id" />
 
@@ -16,7 +16,7 @@
 			}
 		}
 	}
-	
+
 	<div>
 		<p class="pad-top">
 			<button class="add-bbcode small-button" bbcode="quote">Quote</button>
@@ -38,8 +38,8 @@
 			<img class="add-smiley pointer align-middle pad-left" src="~/images/smiley.png" alt="Smiley" title="Smiley" />
 		</p>
 
-		<p class="pad-top"><textarea asp-for="@Model.Body"></textarea></p>
-		<p class="pad-top"><span asp-validation-for="@Model.Body" /></p>
+		<p class="pad-top"><span class="error field-validation-valid" data-valmsg-for="body" data-valmsg-replace="true"></span></p>
+		<p class="pad-top"><textarea asp-for="@Model.Body" name="body"></textarea></p>
 	</div>
 
 	<p>
