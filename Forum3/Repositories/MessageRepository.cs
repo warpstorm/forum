@@ -181,15 +181,24 @@ namespace Forum3.Repositories {
 
 			var topicReplies = await DbContext.Messages.Where(m => m.ParentId == messageId).ToListAsync();
 
-			foreach (var reply in topicReplies) {
-				var replyThoughts = await DbContext.MessageThoughts.Where(mt => mt.MessageId == reply.Id).ToListAsync();
+			foreach (var reply in topicReplies)
+				await RemoveMessageArtifacts(reply);
 
-				foreach (var replyThought in replyThoughts)
-					DbContext.MessageThoughts.Remove(replyThought);
+			await RemoveMessageArtifacts(record);
 
-				DbContext.Messages.Remove(reply);
+			DbContext.SaveChanges();
+
+			if (parentId > 0) {
+				var parent = DbContext.Messages.FirstOrDefault(item => item.Id == parentId);
+
+				if (parent != null)
+					RecountRepliesForTopic(parent);
 			}
 
+			return serviceResponse;
+		}
+
+		async Task RemoveMessageArtifacts(DataModels.Message record) {
 			var messageBoards = await DbContext.MessageBoards.Where(m => m.MessageId == record.Id).ToListAsync();
 
 			foreach (var messageBoard in messageBoards)
@@ -206,17 +215,6 @@ namespace Forum3.Repositories {
 				DbContext.Notifications.Remove(notification);
 
 			DbContext.Messages.Remove(record);
-
-			DbContext.SaveChanges();
-
-			if (parentId > 0) {
-				var parent = DbContext.Messages.FirstOrDefault(item => item.Id == parentId);
-
-				if (parent != null)
-					RecountRepliesForTopic(parent);
-			}
-
-			return serviceResponse;
 		}
 
 		public async Task<ServiceModels.ServiceResponse> AddThought(InputModels.ThoughtInput input) {
