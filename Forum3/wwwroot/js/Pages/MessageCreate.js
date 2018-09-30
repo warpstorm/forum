@@ -1,18 +1,19 @@
-﻿$(function () {
+﻿if (!window.assignedBoards) {
 	window.assignedBoards = [];
+}
+
+$(function () {
 	$("[toggle-board]").on("click", ToggleBoard);
 });
 
 function ToggleBoard(event) {
 	event.stopPropagation();
 
-	if (this.toggleLock)
+	if (this.toggleLock) {
 		return;
+	}
 
 	this.toggleLock = true;
-
-	if (window.assignedBoards === undefined)
-		return;
 
 	let boardId = parseInt($(this).attr("board-id"));
 

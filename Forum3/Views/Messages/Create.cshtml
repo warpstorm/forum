@@ -38,6 +38,9 @@
 	<environment exclude="Development">
 		<script src="~/js/min/MessageCreate.min.js" asp-append-version="true"></script>
 	</environment>
+	<script>
+		window.assignedBoards = [@Model.BoardId];
+	</script>
 }
 
 @section styles {
