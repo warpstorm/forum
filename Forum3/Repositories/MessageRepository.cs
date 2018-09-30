@@ -904,7 +904,13 @@ namespace Forum3.Repositories {
 
 			var lastReply = messages.LastOrDefault();
 
-			if (lastReply != null && parentMessage.LastReplyId != lastReply.Id) {
+			if (lastReply is null) {
+				parentMessage.LastReplyId = 0;
+				parentMessage.LastReplyPosted = parentMessage.TimePosted;
+				parentMessage.LastReplyById = parentMessage.PostedById;
+				updated = true;
+			}
+			else if (parentMessage.LastReplyId != lastReply.Id) {
 				parentMessage.LastReplyId = lastReply.Id;
 				parentMessage.LastReplyPosted = lastReply.TimePosted;
 				parentMessage.LastReplyById = lastReply.PostedById;
