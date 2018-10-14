@@ -2,7 +2,6 @@
 using Forum3.Contexts;
 using Forum3.Controllers;
 using Forum3.Extensions;
-using Forum3.Models.DataModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -14,6 +13,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Forum3 {
+	using DataModels = Models.DataModels;
+
 	public class Startup {
 		public IConfiguration Configuration { get; }
 
@@ -31,12 +32,11 @@ namespace Forum3 {
 			if (string.IsNullOrEmpty(dbConnectionString))
 				dbConnectionString = Configuration.GetConnectionString("DefaultConnection");
 
-			// TODO Look into AddDbContextPool limitations
 			services.AddDbContextPool<ApplicationDbContext>(options =>
 				options.UseSqlServer(dbConnectionString)
 			);
 
-			services.AddIdentity<ApplicationUser, ApplicationRole>(options => {
+			services.AddIdentity<DataModels.ApplicationUser, DataModels.ApplicationRole>(options => {
 				options.Password.RequireDigit = false;
 				options.Password.RequireLowercase = false;
 				options.Password.RequireUppercase = false;
@@ -65,7 +65,7 @@ namespace Forum3 {
 								 .Build();
 
 				config.Filters.Add(new AuthorizeFilter(policy));
-			});
+			}).SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 		}
 
 		public void Configure(IApplicationBuilder app, IHostingEnvironment env) {
