@@ -10,8 +10,8 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Compile Remove="Migrations\20180902162410_netcore21.cs" />
-	  <Compile Remove="Migrations\20180902162410_netcore21.Designer.cs" />
+	  <None Remove="appsettings.Development.json-example" />
+	  <Content Include="appsettings.Development.json-example" />
 	</ItemGroup>
 
 	<ItemGroup>
