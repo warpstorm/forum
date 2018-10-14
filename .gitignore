@@ -16,9 +16,10 @@ Reference
 **/Scripts/build/**
 **/Scripts/def/**
 
-**/PublishProfiles/**
-Migrations/
+PublishProfiles
+Migrations
 
+appsettings.Development.json
 launchSettings.json
 debugSettings.json
 project.lock.json
