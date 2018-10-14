@@ -19,7 +19,7 @@ Reference
 PublishProfiles
 Migrations
 
-appsettings.Development.json
+appsettings.Secret.json
 launchSettings.json
 debugSettings.json
 project.lock.json
