@@ -444,23 +444,11 @@ namespace Forum3.Repositories {
 			var returnResult = new ServiceModels.RemotePageDetails {
 				Title = remoteUrl,
 			};
-			
-			var siteWithoutHash = remoteUrl.Split('#')[0];
 
-			var document = new HtmlDocument();
+			var document = WebClient.DownloadDocument(remoteUrl);
 
-			try {
-				var data = WebClient.DownloadString(siteWithoutHash);
-
-				if (string.IsNullOrEmpty(data))
-					return returnResult;
-
-				document.LoadHtml(data);
-			}
-			catch (UriFormatException) { }
-			catch (AggregateException) { }
-			catch (ArgumentException) { }
-			catch (WebException) { }
+			if (document is null)
+				return returnResult;
 
 			var titleTag = document.DocumentNode.SelectSingleNode(@"//title");
 

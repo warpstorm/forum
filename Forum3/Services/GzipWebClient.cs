@@ -1,8 +1,30 @@
-﻿using System;
+﻿using HtmlAgilityPack;
+using System;
 using System.Net;
 
 namespace Forum3.Services {
 	public class GzipWebClient : WebClient {
+		public HtmlDocument DownloadDocument(string remoteUrl) {
+			var siteWithoutHash = remoteUrl.Split('#')[0];
+
+			var document = new HtmlDocument();
+
+			try {
+				var data = DownloadString(siteWithoutHash);
+
+				if (string.IsNullOrEmpty(data))
+					return null;
+
+				document.LoadHtml(data);
+			}
+			catch (UriFormatException) { }
+			catch (AggregateException) { }
+			catch (ArgumentException) { }
+			catch (WebException) { }
+
+			return document;
+		}
+
 		protected override WebRequest GetWebRequest(Uri address) {
 			ServicePointManager.SecurityProtocol = SecurityProtocolType.SystemDefault | SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
 
