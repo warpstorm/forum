@@ -27,17 +27,23 @@ namespace Forum3.Services {
 		}
 
 		public bool TryGetReplacement(string remoteUrl, string pageTitle, string favicon, out ServiceModels.RemoteUrlReplacement replacement) {
-			var albumMatches = Regex.Match(remoteUrl, @"imgur.com\/a\/([a-zA-Z0-9]+)?", RegexOptions.Compiled | RegexOptions.Multiline);
-			var galleryMatches = Regex.Match(remoteUrl, @"imgur.com\/gallery\/([a-zA-Z0-9]+)?", RegexOptions.Compiled | RegexOptions.Multiline);
+			var imageMatch = Regex.Match(remoteUrl, @"imgur.com\/([a-zA-Z0-9]+)?", RegexOptions.Compiled | RegexOptions.Multiline);
+			var albumMatch = Regex.Match(remoteUrl, @"imgur.com\/a\/([a-zA-Z0-9]+)?", RegexOptions.Compiled | RegexOptions.Multiline);
+			var galleryMatch = Regex.Match(remoteUrl, @"imgur.com\/gallery\/([a-zA-Z0-9]+)?", RegexOptions.Compiled | RegexOptions.Multiline);
 
-			if (albumMatches.Success) {
-				var hash = albumMatches.Groups[1].Value;
+			if (imageMatch.Success) {
+				var hash = imageMatch.Groups[1].Value;
+				replacement = GetReplacementForImage(hash, favicon);
+				return true;
+			}
+			else if (albumMatch.Success) {
+				var hash = albumMatch.Groups[1].Value;
 				replacement = GetReplacementForAlbum(hash, favicon);
 				return true;
 			}
-			else if (galleryMatches.Success) {
+			else if (galleryMatch.Success) {
 				var topLevelGalleries = new List<string> { "hot", "top", "user" };
-				var hash = galleryMatches.Groups[1].Value;
+				var hash = galleryMatch.Groups[1].Value;
 
 				// We can't process top level galleries yet.
 				if (!topLevelGalleries.Contains(hash)) {
@@ -50,11 +56,29 @@ namespace Forum3.Services {
 			return false;
 		}
 
+		public ServiceModels.RemoteUrlReplacement GetReplacementForImage(string hash, string favicon) {
+			var image = GetImage(hash);
+
+			if (image is null)
+				return null;
+
+			if (string.IsNullOrEmpty(image.Title))
+				image.Title = "(No Title)";
+
+			return new ServiceModels.RemoteUrlReplacement {
+				ReplacementText = $"<a target='_blank' href='{image.Link}'>{favicon}{image.Title}</a>",
+				Card = GetCardForImages(new List<ImgurClientModels.Image> { image })
+			};
+		}
+
 		public ServiceModels.RemoteUrlReplacement GetReplacementForAlbum(string hash, string favicon) {
 			var album = GetAlbum(hash);
 
 			if (album is null)
 				return null;
+
+			if (string.IsNullOrEmpty(album.Title))
+				album.Title = "(No Title)";
 
 			return new ServiceModels.RemoteUrlReplacement {
 				ReplacementText = $"<a target='_blank' href='{album.Link}'>{favicon}{album.Title}</a>",
@@ -68,10 +92,19 @@ namespace Forum3.Services {
 			if (album is null)
 				return null;
 
+			if (string.IsNullOrEmpty(album.Title))
+				album.Title = "(No Title)";
+
 			return new ServiceModels.RemoteUrlReplacement {
 				ReplacementText = $"<a target='_blank' href='{album.Link}'>{favicon}{album.Title}</a>",
 				Card = GetCardForImages(album.Images)
 			};
+		}
+
+		public ImgurClientModels.Image GetImage(string hash) {
+			var requestUrl = $"{ENDPOINT}/image/{hash}";
+			var response = WebClient.DownloadJSObject<ImgurClientModels.ImageResponse>(requestUrl, Headers);
+			return response.Data;
 		}
 
 		public ImgurClientModels.Album GetAlbum(string hash) {
