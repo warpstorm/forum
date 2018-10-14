@@ -367,8 +367,11 @@ namespace Forum3.Repositories {
 				displayBody = displayBody.Replace(siteUrl, key);
 
 				var remoteUrlReplacement = await GetRemoteUrlReplacement(siteUrl);
-				replacements.Add(key, remoteUrlReplacement.ReplacementText);
-				processedMessageInput.Cards += remoteUrlReplacement.Card;
+
+				if (remoteUrlReplacement != null) {
+					replacements.Add(key, remoteUrlReplacement.ReplacementText);
+					processedMessageInput.Cards += remoteUrlReplacement.Card;
+				}
 			}
 
 			foreach (var kvp in replacements)
