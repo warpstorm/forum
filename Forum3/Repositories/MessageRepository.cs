@@ -33,6 +33,7 @@ namespace Forum3.Repositories {
 		IImageStore ImageStore { get; }
 		IUrlHelper UrlHelper { get; }
 		BBCodeParser BBCParser { get; }
+		GzipWebClient WebClient { get; }
 
 		public MessageRepository(
 			ApplicationDbContext dbContext,
@@ -44,7 +45,8 @@ namespace Forum3.Repositories {
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory,
 			IImageStore imageStore,
-			BBCodeParser bbcParser
+			BBCodeParser bbcParser,
+			GzipWebClient webClient
 		) {
 			DbContext = dbContext;
 			UserContext = userContext;
@@ -55,6 +57,7 @@ namespace Forum3.Repositories {
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 			ImageStore = imageStore;
 			BBCParser = bbcParser;
+			WebClient = webClient;
 		}
 
 		public int GetPageNumber(int messageId, List<int> messageIds) {
@@ -447,8 +450,7 @@ namespace Forum3.Repositories {
 			var document = new HtmlDocument();
 
 			try {
-				var client = new GzipWebClient();
-				var data = client.DownloadString(siteWithoutHash);
+				var data = WebClient.DownloadString(siteWithoutHash);
 
 				if (string.IsNullOrEmpty(data))
 					return returnResult;

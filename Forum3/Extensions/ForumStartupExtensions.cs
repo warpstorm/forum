@@ -43,6 +43,8 @@ namespace Forum3.Extensions {
 			services.AddTransient<IImageStore, ImageStore>();
 			services.AddTransient<IForumViewResult, ForumViewResult>();
 
+			services.AddTransient<GzipWebClient>();
+
 			services.AddScoped<UserContext>();
 
 			services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
