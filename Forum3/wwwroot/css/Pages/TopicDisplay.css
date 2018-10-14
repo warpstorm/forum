@@ -134,10 +134,21 @@ blockquote.card {
 		background-color: #2a3951;
 	}
 
-.embedded-video {
-	text-align: center;
-	padding: 5px;
+.embedded-video, .imgur-image {
+	padding: 10px;
+	margin: 20px 0 10px 10px;
+	background-color: #253248;
+	border-radius: 2px;
+	border: 1px solid #2a3951;
+	box-shadow: 0 3px 12px 1px #0c0f14;
+	font-size: .8em;
+	display: inline-block;
+	vertical-align: top;
 }
+
+	.imgur-image img {
+		max-width: 728px;
+	}
 
 .card-image {
 	margin: 0 15px 0 0;

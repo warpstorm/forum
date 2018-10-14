@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net;
 
 namespace Forum3.Services {
@@ -48,8 +49,13 @@ namespace Forum3.Services {
 			catch (ArgumentException) { }
 			catch (WebException) { }
 
-			if (!string.IsNullOrEmpty(data))
-				returnObject = JsonConvert.DeserializeObject<T>(data);
+			if (!string.IsNullOrEmpty(data)) {
+				try {
+					returnObject = JsonConvert.DeserializeObject<T>(data);
+				}
+				catch (JsonSerializationException) { }
+				catch (JsonReaderException) { }
+			}
 
 			return returnObject;
 		}

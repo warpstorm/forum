@@ -34,6 +34,8 @@ namespace Forum3.Repositories {
 		IUrlHelper UrlHelper { get; }
 		BBCodeParser BBCParser { get; }
 		GzipWebClient WebClient { get; }
+		ImgurClient ImgurClient { get; }
+		YouTubeClient YouTubeClient { get; }
 
 		public MessageRepository(
 			ApplicationDbContext dbContext,
@@ -46,7 +48,9 @@ namespace Forum3.Repositories {
 			IUrlHelperFactory urlHelperFactory,
 			IImageStore imageStore,
 			BBCodeParser bbcParser,
-			GzipWebClient webClient
+			GzipWebClient webClient,
+			ImgurClient imgurClient,
+			YouTubeClient youTubeClient
 		) {
 			DbContext = dbContext;
 			UserContext = userContext;
@@ -58,6 +62,8 @@ namespace Forum3.Repositories {
 			ImageStore = imageStore;
 			BBCParser = bbcParser;
 			WebClient = webClient;
+			ImgurClient = imgurClient;
+			YouTubeClient = youTubeClient;
 		}
 
 		public int GetPageNumber(int messageId, List<int> messageIds) {
@@ -397,35 +403,19 @@ namespace Forum3.Repositories {
 			var favicon = string.Empty;
 
 			if (!string.IsNullOrEmpty(remotePageDetails.Favicon))
-				favicon = $@"<img class=""link-favicon"" src=""{remotePageDetails.Favicon}"" /> ";
+				favicon = $"<img class='link-favicon' src='{remotePageDetails.Favicon}' /> ";
 
-			var regexYoutube = new Regex(@"(?:https?:\/\/)?(?:www\.)?(?:(?:(?:youtube.com\/watch\?[^?]*v=|youtu.be\/)([\w\-]+))(?:[^\s?]+)?)", RegexOptions.Compiled | RegexOptions.Multiline);
-			var regexEmbeddedVideo = new Regex(@"(^| )((https?\://){1}\S+)(.gifv|.webm|.mp4)", RegexOptions.Compiled | RegexOptions.Multiline);
+			ServiceModels.RemoteUrlReplacement replacement;
 
-			// check first if the link is a youtube vid
-			if (regexYoutube.Match(remoteUrl).Success) {
-				var youtubeVideoId = regexYoutube.Match(remoteUrl).Groups[1].Value;
-				var youtubeIframeClosed = $"<iframe type='text/html' title='YouTube video player' class='youtubePlayer' src='https://www.youtube.com/embed/{youtubeVideoId}?rel=0' frameborder='0' allowfullscreen='1'></iframe>";
+			if (YouTubeClient.TryGetReplacement(remoteUrl, remotePageDetails.Title, favicon, out replacement))
+				return replacement;
 
-				return new ServiceModels.RemoteUrlReplacement {
-					ReplacementText = $@"<a target=""_blank"" href=""{remoteUrl}"">{favicon}{remotePageDetails.Title}</a>",
-					Card = $@"<div class=""embedded-video"">{youtubeIframeClosed}</div>"
-				};
-			}
-			// or is it an embedded video link
-			else if (regexEmbeddedVideo.Match(remoteUrl).Success) {
-				var embeddedVideoId = regexEmbeddedVideo.Match(remoteUrl).Groups[2].Value;
-				var embeddedVideoTag = $"<video autoplay loop><source src='{embeddedVideoId}.webm' type='video/webm' /><source src='{embeddedVideoId}.mp4' type='video/mp4' /></video>";
-
-				return new ServiceModels.RemoteUrlReplacement {
-					ReplacementText = $@"<a target=""_blank"" href=""{remoteUrl}"">{favicon}{remotePageDetails.Title}</a>",
-					Card = $@"<div class=""embedded-video"">{embeddedVideoTag}</div>"
-				};
-			}
+			if (ImgurClient.TryGetReplacement(remoteUrl, remotePageDetails.Title, favicon, out replacement))
+				return replacement;
 
 			// replace the URL with the HTML
 			return new ServiceModels.RemoteUrlReplacement {
-				ReplacementText = $@"<a target=""_blank"" href=""{remoteUrl}"">{favicon}{remotePageDetails.Title}</a>",
+				ReplacementText = $"<a target='_blank' href='{remoteUrl}'>{favicon}{remotePageDetails.Title}</a>",
 				Card = remotePageDetails.Card ?? string.Empty
 			};
 		}

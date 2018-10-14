@@ -18,6 +18,7 @@ using Microsoft.WindowsAzure.Storage;
 // Singleton: created the first time they are requested (or when ConfigureServices is run if you specify an instance there) and then every subsequent request will use the same instance.
 
 namespace Forum3.Extensions {
+	using ImgurClientModels = Models.ImgurClientModels;
 	using ServiceModels = Models.ServiceModels;
 
 	public static class ForumStartupExtensions {
@@ -45,6 +46,10 @@ namespace Forum3.Extensions {
 
 			services.AddTransient<GzipWebClient>();
 
+			services.Configure<ImgurClientModels.Options>(configuration.GetSection("Imgur"));
+			services.AddTransient<ImgurClient>();
+			services.AddTransient<YouTubeClient>();
+
 			services.AddScoped<UserContext>();
 
 			services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
@@ -71,6 +76,7 @@ namespace Forum3.Extensions {
 
 		static void RegisterAzureStorage(IServiceCollection services, IConfiguration configuration) {
 			services.AddScoped((serviceProvider) => {
+				// Try to pull from the environment first
 				var storageConnectionString = configuration[Constants.Keys.StorageConnection];
 
 				if (string.IsNullOrEmpty(storageConnectionString))
