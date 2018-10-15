@@ -27,37 +27,33 @@ namespace Forum3.Services {
 		}
 
 		public bool TryGetReplacement(string remoteUrl, string pageTitle, string favicon, out ServiceModels.RemoteUrlReplacement replacement) {
+			replacement = null;
+
 			var albumMatch = Regex.Match(remoteUrl, @"imgur.com\/a\/([a-zA-Z0-9]+)?", RegexOptions.Compiled | RegexOptions.Multiline);
+			var galleryMatch = Regex.Match(remoteUrl, @"imgur.com\/gallery\/([a-zA-Z0-9]+)?", RegexOptions.Compiled | RegexOptions.Multiline);
+			var imageMatch = Regex.Match(remoteUrl, @"imgur.com\/([a-zA-Z0-9]+)?", RegexOptions.Compiled | RegexOptions.Multiline);
 
 			if (albumMatch.Success) {
 				var hash = albumMatch.Groups[1].Value;
 				replacement = GetReplacementForAlbum(hash, favicon);
-				return true;
 			}
-
-			var galleryMatch = Regex.Match(remoteUrl, @"imgur.com\/gallery\/([a-zA-Z0-9]+)?", RegexOptions.Compiled | RegexOptions.Multiline);
-
-			if (galleryMatch.Success) {
+			else if (galleryMatch.Success) {
 				var topLevelGalleries = new List<string> { "hot", "top", "user" };
 				var hash = galleryMatch.Groups[1].Value;
-
+				
 				// We can't process top level galleries yet.
-				if (!topLevelGalleries.Contains(hash)) {
+				if (!topLevelGalleries.Contains(hash))
 					replacement = GetReplacementForGalleryAlbum(hash, favicon);
-					return true;
-				}
 			}
-
-			var imageMatch = Regex.Match(remoteUrl, @"imgur.com\/([a-zA-Z0-9]+)?", RegexOptions.Compiled | RegexOptions.Multiline);
-
-			if (imageMatch.Success) {
+			else if (imageMatch.Success) {
 				var hash = imageMatch.Groups[1].Value;
 				replacement = GetReplacementForImage(hash, favicon);
-				return true;
 			}
+			
+			if (replacement is null)
+				return false;
 
-			replacement = null;
-			return false;
+			return true;
 		}
 
 		public ServiceModels.RemoteUrlReplacement GetReplacementForImage(string hash, string favicon) {

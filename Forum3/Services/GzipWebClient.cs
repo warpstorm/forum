@@ -1,15 +1,11 @@
 ﻿using Forum3.Extensions;
 using HtmlAgilityPack;
-using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Net;
 
 namespace Forum3.Services {
-	using ServiceModels = Models.ServiceModels;
-
 	public class GzipWebClient : WebClient {
 		public HtmlDocument DownloadDocument(string remoteUrl) {
 			var data = GetRemoteData(remoteUrl);
@@ -40,7 +36,7 @@ namespace Forum3.Services {
 
 			var returnObject = default(T);
 			var data = string.Empty;
-			
+
 			try {
 				data = DownloadString(remoteUrl);
 			}
