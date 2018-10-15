@@ -11,100 +11,102 @@
 	</aside>
 
 	@{
-		var messageClasses = "message-container content-box pad";
+		var messageClasses = "content-box pad";
 
 		if (Model.Poseys) {
 			messageClasses += " poseys";
 		}
 	}
 
-	<section class="@messageClasses">
-		<span id="message@(Model.Id)"></span>
-		<!-- TODO - if unread target = this, then <span id="latest"></span> -->
+	<div class="message-container">
+		<section class="@messageClasses">
+			<span id="message@(Model.Id)"></span>
+			<!-- TODO - if unread target = this, then <span id="latest"></span> -->
 
-		<aside class="float-right pad-bottom">
-			@if (Model.CanThought) {
-				<span class="thought-button pad-right pointer note" message-id="@Model.Id">
-					<img class="align-middle" src="~/images/smiley.png" alt="Thought" title="Thought" />
-				</span>
-			}
+			<aside class="float-right pad-bottom">
+				@if (Model.CanThought) {
+					<span class="thought-button pad-right pointer note" message-id="@Model.Id">
+						<img class="align-middle" src="~/images/smiley.png" alt="Thought" title="Thought" />
+					</span>
+				}
 
-			@if (Model.CanReply) {
-				<span class="reply-button pad-right pointer note">
-					<img class="align-middle" src="~/images/reply.png" alt="Reply" title="Reply" />
-				</span>
-			}
+				@if (Model.CanReply) {
+					<span class="reply-button pad-right pointer note">
+						<img class="align-middle" src="~/images/reply.png" alt="Reply" title="Reply" />
+					</span>
+				}
 
-			@if (Model.CanEdit) {
-				<a class="pad-right note" asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.Edit)" asp-route-id="@Model.Id">
-					<img class="align-middle" src="~/images/edit.png" alt="Edit" title="Edit" />
-				</a>
-			}
-
-			@if (Model.CanDelete) {
-				@if (Model.ParentId == 0) {
-					<a class="pad-right note" asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.Delete)" asp-route-id="@Model.Id" onclick="return confirm('Are you sure you want to remove this ENTIRE topic?');">
-						<img class="align-middle" src="~/images/delete.png" alt="Delete" title="Delete" />
+				@if (Model.CanEdit) {
+					<a class="pad-right note" asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.Edit)" asp-route-id="@Model.Id">
+						<img class="align-middle" src="~/images/edit.png" alt="Edit" title="Edit" />
 					</a>
 				}
-				else {
-					<a class="pad-right note" asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.Delete)" asp-route-id="@Model.Id" onclick="return confirm('Are you sure you want to remove this reply?');">
-						<img class="align-middle" src="~/images/delete.png" alt="Delete" title="Delete" />
-					</a>
-				}
-			}
-		</aside>
 
-		<header class="message-header note">
-			<aside class="user-avatar align-center float-left mobile-show">
-				@if (string.IsNullOrEmpty(Model.PostedByAvatarPath)) {
-					<canvas width="100" height="100" data-jdenticon-value="@Model.PostedById"></canvas>
-				}
-				else {
-					<img src="@Model.PostedByAvatarPath" />
+				@if (Model.CanDelete) {
+					@if (Model.ParentId == 0) {
+						<a class="pad-right note" asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.Delete)" asp-route-id="@Model.Id" onclick="return confirm('Are you sure you want to remove this ENTIRE topic?');">
+							<img class="align-middle" src="~/images/delete.png" alt="Delete" title="Delete" />
+						</a>
+					}
+					else {
+						<a class="pad-right note" asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.Delete)" asp-route-id="@Model.Id" onclick="return confirm('Are you sure you want to remove this reply?');">
+							<img class="align-middle" src="~/images/delete.png" alt="Delete" title="Delete" />
+						</a>
+					}
 				}
 			</aside>
 
-			@Model.PostedByName
-			<time>
-				posted @Model.TimePosted
-				@if (Model.TimeEdited != Model.TimePosted) {
-					<span>| edited @Model.TimeEdited</span>
-				}
-			</time>
-		</header>
+			<header class="message-header note">
+				<aside class="user-avatar align-center float-left mobile-show">
+					@if (string.IsNullOrEmpty(Model.PostedByAvatarPath)) {
+						<canvas width="100" height="100" data-jdenticon-value="@Model.PostedById"></canvas>
+					}
+					else {
+						<img src="@Model.PostedByAvatarPath" />
+					}
+				</aside>
 
-		<br class="clear mobile-show" />
+				@Model.PostedByName
+				<time>
+					posted @Model.TimePosted
+					@if (Model.TimeEdited != Model.TimePosted) {
+						<span>| edited @Model.TimeEdited</span>
+					}
+				</time>
+			</header>
 
-		@if (Model.ReplyId > 0) {
-			<p class="pad-left note"><a asp-action="@nameof(Topics.Display)" asp-route-id="@Model.ReplyId">In reply to this post by @Model.ReplyPostedBy:</a></p>
-			<blockquote class="reply pointer">
-				<div class="reply-preview note">@Html.Raw(Model.ReplyPreview)</div>
-				<div class="reply-body hidden">@Html.Raw(Model.ReplyBody)</div>
-			</blockquote>
-		}
+			<br class="clear mobile-show" />
 
-		<div class="message-body">@Html.Raw(Model.Body)</div>
-
-		<div class="hidden reply-form pad gap-top">
-			<p>Reply directly to this message:</p>
-			<partial name="_MessageForm" for="@Model.ReplyForm" />
-		</div>
-
-		<div class="float-right note">
-			<a asp-action="@nameof(Topics.Display)" asp-route-id="@Model.Id">#@Model.Id</a>
-		</div>
-
-		<br class="clear" />
-	</section>
-
-	<section class="message-thoughts pad-left">
-		<ol>
-			@foreach (var messageThought in Model.Thoughts) {
-				<li class="note small-pad"><img src="@messageThought.Path" /> @messageThought.Thought</li>
+			@if (Model.ReplyId > 0) {
+				<p class="pad-left note"><a asp-action="@nameof(Topics.Display)" asp-route-id="@Model.ReplyId">In reply to this post by @Model.ReplyPostedBy:</a></p>
+				<blockquote class="reply pointer">
+					<div class="reply-preview note">@Html.Raw(Model.ReplyPreview)</div>
+					<div class="reply-body hidden">@Html.Raw(Model.ReplyBody)</div>
+				</blockquote>
 			}
-		</ol>
-	</section>
 
-	<section class="message-cards">@Html.Raw(Model.Cards)</section>
+			<div class="message-body">@Html.Raw(Model.Body)</div>
+
+			<div class="hidden reply-form pad gap-top">
+				<p>Reply directly to this message:</p>
+				<partial name="_MessageForm" for="@Model.ReplyForm" />
+			</div>
+
+			<div class="float-right note">
+				<a asp-action="@nameof(Topics.Display)" asp-route-id="@Model.Id">#@Model.Id</a>
+			</div>
+
+			<br class="clear" />
+		</section>
+
+		<section class="pad-left">
+			<ol>
+				@foreach (var messageThought in Model.Thoughts) {
+					<li class="note small-pad"><img src="@messageThought.Path" /> @messageThought.Thought</li>
+				}
+			</ol>
+		</section>
+
+		<section class="message-cards">@Html.Raw(Model.Cards)</section>
+	</div>
 </article>

@@ -37,7 +37,7 @@ main > header {
 	margin-left: 115px;
 }
 
-.message-container, .message-thoughts {
+.message-container {
 	margin-left: 115px;
 }
 
@@ -47,7 +47,6 @@ main > header {
 	}
 
 	.message-container,
-	.message-thoughts,
 	main > header,
 	#topic-header {
 		margin-left: 0;
@@ -85,16 +84,6 @@ main > header {
 			max-width: 12px;
 			margin-left: 3px;
 		}
-
-.message-cards {
-	margin-left: 115px;
-}
-
-@media only screen and (max-width: 480px) {
-	.message-cards {
-		margin-left: 0;
-	}
-}
 
 blockquote.reply {
 	width: 98%;
@@ -136,7 +125,7 @@ blockquote.card {
 
 .embedded-video, .imgur-image {
 	padding: 10px;
-	margin: 20px 0 10px 10px;
+	margin: 15px 10px;
 	background-color: #253248;
 	border-radius: 2px;
 	border: 1px solid #2a3951;
@@ -147,8 +136,16 @@ blockquote.card {
 }
 
 	.imgur-image img {
-		max-width: 728px;
+		max-width: 100%;
+		max-height: 728px;
 	}
+
+@media only screen and (max-width: 480px) {
+	.embedded-video, .imgur-image {
+		padding: 5px;
+		margin: 15px 0;
+	}
+}
 
 .card-image {
 	margin: 0 15px 0 0;
