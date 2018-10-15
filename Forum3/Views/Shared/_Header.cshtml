@@ -7,33 +7,33 @@
 	}
 }
 
-	<div id="page-title" class="align-center"><a href="/"><img src="@ViewData["LogoPath"]" alt="Warpstorm" asp-append-version="true" /></a></div>
+	<div id='page-title' class='align-center'><a href='/'><img src='@ViewData["LogoPath"]' alt='Warpstorm' asp-append-version='true' /></a></div>
 
 	<nav>
-		<ul class="float-right inline">
+		<ul class='float-right inline'>
 			@if (UserContext.IsAuthenticated) {
-				<li class="open-menu">
-					<span class="small-button pointer">@UserContext.ApplicationUser.DisplayName</span>
-					<div class="menu-wrapper hidden">
-						<ul class="drop-down-menu content-box">
-							<li class="hover-highlight" clickable-link-parent><a asp-controller="@nameof(Profile)" asp-action="@nameof(Profile.Details)">Profile</a></li>
-							<li class="hover-highlight" clickable-link-parent><a asp-controller="@nameof(Account)" asp-action="@nameof(Account.Details)">Account Settings</a></li>
-							<li class="hover-highlight"><a href="javascript:document.getElementById('logoutForm').submit()" onclick="return confirm('Are you sure you want to logout?');">Log off</a></li>
+				<li class='open-menu'>
+					<span class='small-button pointer'>@UserContext.ApplicationUser.DisplayName</span>
+					<div class='menu-wrapper hidden'>
+						<ul class='drop-down-menu content-box'>
+							<li class='hover-highlight' clickable-link-parent><a asp-controller='@nameof(Profile)' asp-action='@nameof(Profile.Details)'>Profile</a></li>
+							<li class='hover-highlight' clickable-link-parent><a asp-controller='@nameof(Account)' asp-action='@nameof(Account.Details)'>Account Settings</a></li>
+							<li class='hover-highlight'><a href='javascript:document.getElementById("logoutForm").submit()' onclick='return confirm("Are you sure you want to logout?");'>Log off</a></li>
 						</ul>
 					</div>
 				</li>
 
-				<li class="open-menu">
-					<span class="small-button pointer">Boards</span>					
-					<div class="menu-wrapper hidden">
-						<ul class="drop-down-menu content-box">
-							<li class="hover-highlight" clickable-link-parent><a asp-controller="@nameof(Boards)" asp-action="@nameof(Boards.Index)">Board Index</a></li>
+				<li class='open-menu'>
+					<span class='small-button pointer'>Boards</span>					
+					<div class='menu-wrapper hidden'>
+						<ul class='drop-down-menu content-box'>
+							<li class='hover-highlight' clickable-link-parent><a asp-controller='@nameof(Boards)' asp-action='@nameof(Boards.Index)'>Board Index</a></li>
 							@foreach (BoardItemViewModels.IndexCategory category in ViewData["Categories"] as List<BoardItemViewModels.IndexCategory>) {
 								<li>
 									@category.Name
 									<ul>
 										@foreach (var board in category.Boards) {
-											<li class="hover-highlight" clickable-link-parent><a asp-action="@nameof(Topics.Index)" asp-controller="@nameof(Topics)" asp-route-id="@board.Id">@board.Name</a></li>
+											<li class='hover-highlight' clickable-link-parent><a asp-action='@nameof(Topics.Index)' asp-controller='@nameof(Topics)' asp-route-id='@board.Id'>@board.Name</a></li>
 										}
 									</ul>
 								</li>
@@ -42,41 +42,42 @@
 					</div>
 				</li>
 
-				<li class="open-menu">
-					<span class="small-button pointer">Topics</span>
-					<div class="menu-wrapper hidden">
-						<ul class="drop-down-menu content-box">
-							<li class="hover-highlight" clickable-link-parent><a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)" asp-route-id="0">All</a></li>
-							<li class="hover-highlight" clickable-link-parent><a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)" asp-route-id="0" asp-route-unread="1">Unread</a></li>
-							<li class="hover-highlight" clickable-link-parent><a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)" asp-route-id="0" asp-route-unread="2">Replies</a></li>
-							<li class="hover-highlight" clickable-link-parent><a asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.Create)" asp-route-id="1">Create</a></li>
+				<li class='open-menu'>
+					<span class='small-button pointer'>Topics</span>
+					<div class='menu-wrapper hidden'>
+						<ul class='drop-down-menu content-box'>
+							<li class='hover-highlight' clickable-link-parent><a asp-controller='@nameof(Topics)' asp-action='@nameof(Topics.Index)' asp-route-id='0'>All</a></li>
+							<li class='hover-highlight' clickable-link-parent><a asp-controller='@nameof(Topics)' asp-action='@nameof(Topics.Index)' asp-route-id='0' asp-route-unread='1'>Unread</a></li>
+							<li class='hover-highlight' clickable-link-parent><a asp-controller='@nameof(Topics)' asp-action='@nameof(Topics.Index)' asp-route-id='0' asp-route-unread='2'>Replies</a></li>
+							<li class='hover-highlight' clickable-link-parent><a asp-controller='@nameof(Messages)' asp-action='@nameof(Messages.Create)' asp-route-id='1'>Create</a></li>
 						</ul>
 					</div>
 				</li>
 
 				@if (UserContext.IsAdmin) {
-					<li class="open-menu">
-						<span class="small-button pointer">Admin</span>
-						<div class="menu-wrapper hidden">
-							<ul class="drop-down-menu content-box">
-								<li class="hover-highlight" clickable-link-parent><a asp-controller="@nameof(Boards)" asp-action="@nameof(Boards.Manage)">Boards</a></li>
-								<li class="hover-highlight" clickable-link-parent><a asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.Admin)">Messages</a></li>
-								<li class="hover-highlight" clickable-link-parent><a asp-controller="@nameof(Roles)" asp-action="@nameof(Roles.Index)">Roles</a></li>
-								<li class="hover-highlight" clickable-link-parent><a asp-controller="@nameof(Smileys)" asp-action="@nameof(Smileys.Index)">Smileys</a></li>
-								<li class="hover-highlight" clickable-link-parent><a asp-controller="@nameof(SiteSettings)" asp-action="@nameof(SiteSettings.Index)">Settings</a></li>
-								<li class="hover-highlight" clickable-link-parent><a asp-controller="@nameof(Account)" asp-action="@nameof(Account.Index)">Users</a></li>
+					<li class='open-menu'>
+						<span class='small-button pointer'>Admin</span>
+						<div class='menu-wrapper hidden'>
+							<ul class='drop-down-menu content-box'>
+								<li class='hover-highlight' clickable-link-parent><a asp-controller='@nameof(Boards)' asp-action='@nameof(Boards.Manage)'>Boards</a></li>
+								<li class='hover-highlight' clickable-link-parent><a asp-controller='@nameof(Messages)' asp-action='@nameof(Messages.Admin)'>Messages</a></li>
+								<li class='hover-highlight' clickable-link-parent><a asp-controller='@nameof(Roles)' asp-action='@nameof(Roles.Index)'>Roles</a></li>
+								<li class='hover-highlight' clickable-link-parent><a asp-controller='@nameof(Smileys)' asp-action='@nameof(Smileys.Index)'>Smileys</a></li>
+								<li class='hover-highlight' clickable-link-parent><a asp-controller='@nameof(SiteSettings)' asp-action='@nameof(SiteSettings.Index)'>Settings</a></li>
+								<li class='hover-highlight' clickable-link-parent><a asp-controller='@nameof(Account)' asp-action='@nameof(Account.Index)'>Users</a></li>
 							</ul>
 						</div>
 					</li>
 				}
 			}
 			else {
-				<li><a class="small-button" asp-action="@nameof(Account.Register)" asp-controller="@nameof(Account)">Register</a></li>
-				<li><a class="small-button" asp-action="@nameof(Account.Login)" asp-controller="@nameof(Account)">Log in</a></li>
+				<li><a class='small-button' asp-action='@nameof(Account.Register)' asp-controller='@nameof(Account)'>Register</a></li>
+				<li><a class='small-button' asp-action='@nameof(Account.Login)' asp-controller='@nameof(Account)'>Log in</a></li>
 			}
+			<li><a class='small-button' target='_blank' href='https://github.com/jyarbro/forum/wiki'>Wiki</a></li>
 		</ul>
 		
-		<br class="clear" />
+		<br class='clear' />
 	</nav>
 
-<form asp-area="" asp-controller="@nameof(Account)" asp-action="@nameof(Account.Logout)" method="post" id="logoutForm" class="navbar-right"></form>
+<form asp-controller='@nameof(Account)' asp-action='@nameof(Account.Logout)' method='post' id='logoutForm' class='navbar-right'></form>
