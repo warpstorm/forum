@@ -135,7 +135,7 @@ blockquote.card {
 	vertical-align: top;
 }
 
-	.imgur-image img {
+	.embedded-video video, .imgur-image img {
 		max-width: 100%;
 		max-height: 728px;
 	}
