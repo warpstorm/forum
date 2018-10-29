@@ -1,26 +1,6 @@
 @model TopicIndexPage
 
-@if (User.Identity.IsAuthenticated) {
-	<ul class="inline gap-top">
-		<li class="note"></li>
-		<li clickable-link-parent><a class="small-button" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)" asp-route-id="@Model.BoardId">All</a></li>
-		<li clickable-link-parent><a class="small-button" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)" asp-route-id="@Model.BoardId" asp-route-unread="1">Unread</a></li>
-		<li clickable-link-parent><a class="small-button" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)" asp-route-id="@Model.BoardId" asp-route-unread="2">Replies</a></li>
-
-		@if (Model.UnreadFilter == 1) {
-			<li clickable-link-parent class="small-gap-left">
-				<a class="small-button" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.MarkAllRead)" onclick="return confirm('Are you sure you want to mark all topics read?');">Mark Read</a>
-			</li>
-		}
-
-		@if (Model.BoardId > 0) {
-			<li clickable-link-parent class="small-gap-left"><a class="small-button highlight" asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.Create)" asp-route-id="@Model.BoardId">Create</a></li>
-		}
-		else {
-			<li clickable-link-parent class="small-gap-left"><a class="small-button highlight" asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.Create)" asp-route-id="1">Create</a></li>
-		}
-	</ul>
-}
+<partial name="_TopicNav" model="@Model.BoardId" />
 
 <br class="clear" />
 
@@ -38,7 +18,7 @@
 		}
 	}
 	else {
-		<text>No topics found that matched the specified criteria.</text>
+		<text><span class="small-pad-top">No topics found that matched the specified criteria.</span></text>
 	}
 </section>
 
@@ -48,6 +28,10 @@
 
 @{ViewData["Title"] = Model.BoardName;}
 @section Header {@ViewData["Title"]}
+
+@section PageActions {
+	<li clickable-link-parent><a class="small-button" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.MarkAllRead)" onclick="return confirm('Are you sure you want to mark all topics read?');">Mark All Read</a></li>
+}
 
 @section scripts {
 	<script>

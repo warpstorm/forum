@@ -1,8 +1,16 @@
-﻿#side-bar {
+﻿nav.actions {
+	margin-right: 20%;
+}
+
+#side-bar {
 	width: 20%;
 }
 
 @media only screen and (max-width: 900px) {
+	nav.actions {
+		margin-right: 0;
+	}
+
 	#side-bar {
 		display: none;
 	}

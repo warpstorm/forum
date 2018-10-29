@@ -28,12 +28,6 @@
 	<header id="page-header" class="margin-center pad">
 		<partial name="_Header" />
 
-		<nav class="actions float-right pad-right">
-			<ul class="inline">
-				@await RenderSectionAsync("PageActions", required: false)
-			</ul>
-		</nav>
-
 		<nav class="breadcrumbs">
 			@await RenderSectionAsync("Breadcrumbs", required: false)
 		</nav>
@@ -46,6 +40,13 @@
 			<header>
 				@await RenderSectionAsync("Header", required: false)
 			</header>
+			
+			<nav class="actions float-right">
+				<ul class="inline">
+					@await RenderSectionAsync("PageActions", required: false)
+				</ul>
+			</nav>
+			
 			<div class="align-left">
 				@if (!string.IsNullOrEmpty(TempData[Constants.InternalKeys.StatusMessage]?.ToString())) {
 					<div class="content-box pad gap error">@TempData[Constants.InternalKeys.StatusMessage]</div>

@@ -152,7 +152,7 @@ namespace Forum3.Controllers {
 
 		[Authorize(Roles = "Admin")]
 		[HttpGet]
-		public IActionResult Admin(InputModels.Continue input = null) => View();
+		public IActionResult Admin(InputModels.Continue input = null) => ForumViewResult.ViewResult(this);
 
 		[Authorize(Roles = "Admin")]
 		[HttpGet]
