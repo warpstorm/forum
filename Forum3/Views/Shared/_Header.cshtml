@@ -9,8 +9,8 @@
 
 	<div id='page-title' class='align-center'><a href='/'><img src='@ViewData["LogoPath"]' alt='Warpstorm' asp-append-version='true' /></a></div>
 
-	<nav>
-		<ul class='float-right inline'>
+	<nav class='align-center'>
+		<ul class='inline'>
 			@if (UserContext.IsAuthenticated) {
 				<li class='open-menu'>
 					<span class='small-button pointer'>@UserContext.ApplicationUser.DisplayName</span>
