@@ -30,3 +30,8 @@
 		width: 100%;
 		height: 200px;
 	}
+
+#qotm {
+	max-height: 178px;
+	overflow: hidden;
+}
