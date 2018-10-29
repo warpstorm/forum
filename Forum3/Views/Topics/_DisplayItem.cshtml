@@ -36,12 +36,6 @@
 					</span>
 				}
 
-				@if (Model.CanQuote) {
-					<a class="pad-right note" asp-controller="@nameof(Quotes)" asp-action="@nameof(Quotes.Create)" asp-route-id="@Model.Id">
-						<img class="align-middle" src="~/images/quote.png" alt="QOTM" title="QOTM" />
-					</a>
-				}
-
 				@if (Model.CanEdit) {
 					<a class="pad-right note" asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.Edit)" asp-route-id="@Model.Id">
 						<img class="align-middle" src="~/images/edit.png" alt="Edit" title="Edit" />
@@ -99,6 +93,12 @@
 			</div>
 
 			<div class="float-right note">
+				@if (Model.CanQuote) {
+					<a class="pad-right note" asp-controller="@nameof(Quotes)" asp-action="@nameof(Quotes.Create)" asp-route-id="@Model.Id">
+						QOTM
+					</a>
+				}
+
 				<a asp-action="@nameof(Topics.Display)" asp-route-id="@Model.Id">#@Model.Id</a>
 			</div>
 
