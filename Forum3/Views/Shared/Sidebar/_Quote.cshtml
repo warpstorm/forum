@@ -6,7 +6,7 @@
 		<div class="content-box small-pad note pointer" clickable-link-parent>
 			<p id="qotm">
 				@Html.Raw(Model.DisplayBody)
-				<a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Latest)" asp-route-id="@Model.Id"></a>
+				<a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Display)" asp-route-id="@Model.Id"></a>
 			</p>
 		</div>
 		<p class="note align-right">- @Model.PostedBy</p>
