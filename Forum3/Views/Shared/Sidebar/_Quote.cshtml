@@ -1,24 +1,14 @@
-﻿<h4>Quote of the Moment:</h4>
-<div class="gap-bottom">
-	<div class="content-box small-pad note">
-		<p id="qotm">
-			Lorem ipsum dolor sit amet, 
-			consectetur adipiscing elit. 
-			Donec facilisis eleifend 
-			rutrum. Integer scelerisque 
-			eros bibendum risus aliquet 
-			dignissim. Mauris consectetur 
-			faucibus neque. Nullam justo 
-			mauris, commodo vel feugiat 
-			ut, pulvinar quis leo. Etiam 
-			sem augue, tristique eu 
-			commodo eu, pulvinar id 
-			justo. Cras pharetra libero 
-			sit amet facilisis lacinia. 
-			Mauris magna risus, sodales 
-			a bibendum at, aliquam vitae 
-			leo.
-		</p>
+﻿@model ViewModels.Sidebar.Quote
+
+@if (Model is ViewModels.Sidebar.Quote) {
+	<h4>Quote of the Moment:</h4>
+	<div class="gap-bottom">
+		<div class="content-box small-pad note" clickable-link-parent>
+			<p id="qotm">
+				@Model.Body
+				<a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Latest)" asp-route-id="@Model.Id"></a>
+			</p>
+		</div>
+		<p class="note align-right">- @Model.PostedBy</p>
 	</div>
-	<p class="note align-right">- Cheschire</p>
-</div>
+}

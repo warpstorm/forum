@@ -14,6 +14,6 @@ namespace Forum3.Models.ViewModels.Topics.Pages {
 		public string BoardName { get; set; }
 		public List<MessagePreview> Topics { get; set; }
 
-		public Sidebar Sidebar { get; set; }
+		public Sidebar.Sidebar Sidebar { get; set; }
 	}
 }

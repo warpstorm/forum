@@ -13,6 +13,7 @@ namespace Forum3.Contexts {
 		public DbSet<Notification> Notifications { get; set; }
 		public DbSet<Participant> Participants { get; set; }
 		public DbSet<Pin> Pins { get; set; }
+		public DbSet<Quote> Quotes { get; set; }
 		public DbSet<SiteSetting> SiteSettings { get; set; }
 		public DbSet<Smiley> Smileys { get; set; }
 		public DbSet<ViewLog> ViewLogs { get; set; }

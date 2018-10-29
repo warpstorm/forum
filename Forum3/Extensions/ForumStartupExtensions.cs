@@ -70,6 +70,7 @@ namespace Forum3.Extensions {
 			services.AddScoped<Repositories.MessageRepository>();
 			services.AddScoped<Repositories.NotificationRepository>();
 			services.AddScoped<Repositories.PinRepository>();
+			services.AddScoped<Repositories.QuoteRepository>();
 			services.AddScoped<Repositories.RoleRepository>();
 			services.AddScoped<Repositories.SettingsRepository>();
 			services.AddScoped<Repositories.SmileyRepository>();

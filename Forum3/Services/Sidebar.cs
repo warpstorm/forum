@@ -6,17 +6,21 @@ namespace Forum3.Services {
 	public class Sidebar {
 		AccountRepository AccountRepository { get; }
 		NotificationRepository NotificationRepository { get; }
+		QuoteRepository QuoteRepository { get; }
 
 		public Sidebar(
 			AccountRepository accountRepository,
-			NotificationRepository notificationRepository
+			NotificationRepository notificationRepository,
+			QuoteRepository quoteRepository
 		) {
 			AccountRepository = accountRepository;
 			NotificationRepository = notificationRepository;
+			QuoteRepository = quoteRepository;
 		}
 
-		public ViewModels.Sidebar Generate() {
-			var sidebar = new ViewModels.Sidebar {
+		public ViewModels.Sidebar.Sidebar Generate() {
+			var sidebar = new ViewModels.Sidebar.Sidebar {
+				Quote = QuoteRepository.Get(),
 				Birthdays = AccountRepository.GetBirthdaysList().ToArray(),
 				OnlineUsers = AccountRepository.GetOnlineList(),
 				Notifications = NotificationRepository.Index()
