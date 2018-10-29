@@ -1,0 +1,55 @@
+@model ViewModels.Quotes.EditQuotes
+
+<div class="content-box pad">
+	<div asp-validation-summary="All"></div>
+
+	<form method="post" asp-action="@nameof(Quotes.Edit)">
+		@if (Model.Quotes.Any()) {
+			<table>
+				<tr>
+					<th class="small"></th>
+					<th class="small"></th>
+					<th>Body</th>
+					<th>Preview</th>
+					<th>Details</th>
+				</tr>
+				@for (int i = 0; i < Model.Quotes.Count; i++) {
+				<tr>
+					<td class="align-center align-top">
+						<input hidden="hidden" asp-for="@Model.Quotes[i].Id" />
+						<a asp-action="@nameof(Quotes.Delete)" asp-route-id="@Model.Quotes[i].Id" class="borderless spaced"><img alt="Delete" src="~/images/delete.png" /></a>
+					</td>
+					<td class="align-center align-top">
+						<input asp-for="@Model.Quotes[i].Approved" class="small-input" />
+					</td>
+					<td class="pad-left"><textarea asp-for="@Model.Quotes[i].OriginalBody"></textarea></td>
+					<td class="pad-left align-top note">
+						@Html.Raw(Model.Quotes[i].DisplayBody)
+					</td>
+					<td class="pad-left align-top">
+						<p><a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Display)" asp-route-id="@Model.Quotes[i].MessageId">Link to Message</a></p>
+						<p class="note">Posted @Model.Quotes[i].PostedTime by @Model.Quotes[i].PostedBy</p>
+						<p class="note">Submitted @Model.Quotes[i].SubmittedTime by @Model.Quotes[i].SubmittedBy</p>
+					</td>
+				</tr>
+				}
+			</table>
+		}
+
+		<ul>
+			<li><button>Save Changes</button></li>
+			<li><cancel-button /></li>
+		</ul>
+	</form>
+</div>
+
+@{ViewData["Title"] = "Quotes";}
+
+@section styles {
+	<environment include="Development">
+		<link rel="stylesheet" href="~/css/Pages/QuoteIndex.css" asp-append-version="true" />
+	</environment>
+	<environment exclude="Development">
+		<link rel="stylesheet" href="~/css/min/QuoteIndex.min.css" asp-append-version="true" />
+	</environment>
+}

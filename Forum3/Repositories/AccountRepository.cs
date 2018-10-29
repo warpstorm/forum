@@ -483,6 +483,16 @@ namespace Forum3.Repositories {
 				DbContext.Update(item);
 			}
 
+			foreach (var item in DbContext.Quotes.Where(item => item.PostedById == sourceId).ToList()) {
+				item.PostedById = targetId;
+				DbContext.Update(item);
+			}
+
+			foreach (var item in DbContext.Quotes.Where(item => item.SubmittedById == sourceId).ToList()) {
+				item.SubmittedById = targetId;
+				DbContext.Update(item);
+			}
+
 			DbContext.SaveChanges();
 
 			foreach (var item in DbContext.Messages.Where(item => item.PostedById == sourceId).ToList()) {

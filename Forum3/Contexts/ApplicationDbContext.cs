@@ -47,6 +47,9 @@ namespace Forum3.Contexts {
 			modelBuilder.Entity<Pin>()
 				.HasIndex(r => r.UserId);
 
+			modelBuilder.Entity<Quote>()
+				.HasIndex(r => r.Approved);
+
 			modelBuilder.Entity<SiteSetting>()
 				.HasIndex(r => new { r.Name, r.UserId });
 		}

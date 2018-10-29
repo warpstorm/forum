@@ -1,11 +1,11 @@
-﻿@model ViewModels.Sidebar.Quote
+﻿@model ViewModels.Quotes.DisplayQuote
 
-@if (Model is ViewModels.Sidebar.Quote) {
+@if (Model is ViewModels.Quotes.DisplayQuote) {
 	<h4>Quote of the Moment:</h4>
 	<div class="gap-bottom">
-		<div class="content-box small-pad note" clickable-link-parent>
+		<div class="content-box small-pad note pointer" clickable-link-parent>
 			<p id="qotm">
-				@Model.Body
+				@Html.Raw(Model.DisplayBody)
 				<a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Latest)" asp-route-id="@Model.Id"></a>
 			</p>
 		</div>

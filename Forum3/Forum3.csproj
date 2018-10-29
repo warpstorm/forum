@@ -35,4 +35,10 @@
 		<ProjectReference Include="..\CodeKicker.BBCode\CodeKicker.BBCode.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Content Update="Views\Quotes\Index.cshtml">
+	    <Pack>$(IncludeRazorContentInPack)</Pack>
+	  </Content>
+	</ItemGroup>
+
 </Project>

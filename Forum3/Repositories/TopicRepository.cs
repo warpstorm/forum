@@ -119,6 +119,7 @@ namespace Forum3.Repositories {
 				message.CanDelete = UserContext.IsAdmin || (UserContext.IsAuthenticated && UserContext.ApplicationUser.Id == message.PostedById);
 				message.CanReply = UserContext.IsAuthenticated;
 				message.CanThought = UserContext.IsAuthenticated;
+				message.CanQuote = UserContext.IsAuthenticated;
 
 				message.ReplyForm = new ItemModels.ReplyForm {
 					Id = message.Id,

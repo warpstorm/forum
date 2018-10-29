@@ -10,6 +10,7 @@ namespace Forum3.Models.ViewModels.Topics.Items {
 		public bool CanThought { get; set; }
 		public bool CanEdit { get; set; }
 		public bool CanReply { get; set; }
+		public bool CanQuote { get; set; }
 		public bool CanDelete { get; set; }
 		public bool Processed { get; set; }
 		public bool Poseys { get; set; }
