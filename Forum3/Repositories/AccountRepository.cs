@@ -20,6 +20,7 @@ namespace Forum3.Repositories {
 	using InputModels = Models.InputModels;
 	using ItemViewModels = Models.ViewModels.Boards.Items;
 	using ServiceModels = Models.ServiceModels;
+	using ViewModels = Models.ViewModels;
 
 	public class AccountRepository : Repository<DataModels.ApplicationUser> {
 		public bool IsAuthenticated => UserContext.IsAuthenticated;
@@ -87,7 +88,7 @@ namespace Forum3.Repositories {
 			return todayBirthdayNames;
 		}
 
-		public List<ItemViewModels.OnlineUser> GetOnlineList() {
+		public List<ViewModels.Profile.OnlineUser> GetOnlineList() {
 			var onlineTimeLimitSetting = SettingsRepository.OnlineTimeLimit();
 			onlineTimeLimitSetting *= -1;
 
@@ -97,7 +98,7 @@ namespace Forum3.Repositories {
 			var onlineUsersQuery = from user in Records
 								   where user.LastOnline >= onlineTodayTimeLimit
 								   orderby user.LastOnline descending
-								   select new ItemViewModels.OnlineUser {
+								   select new ViewModels.Profile.OnlineUser {
 									   Id = user.Id,
 									   Name = user.DisplayName,
 									   Online = user.LastOnline >= onlineTimeLimit,
@@ -514,7 +515,7 @@ namespace Forum3.Repositories {
 		}
 
 		public async Task SignOut() {
-			HttpContextAccessor.HttpContext.Session.Remove(Constants.Keys.UserId);
+			HttpContextAccessor.HttpContext.Session.Remove(Constants.InternalKeys.UserId);
 
 			await Task.WhenAll(new[] {
 				HttpContextAccessor.HttpContext.Session.CommitAsync(),

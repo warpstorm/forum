@@ -1,12 +1,17 @@
 ﻿namespace Forum3 {
 	public class Constants {
-		public class Keys {
-			public const string User = nameof(User);
-			public const string UserId = nameof(UserId);
-			public const string LastPostTimestamp = nameof(LastPostTimestamp);
-			public const string LastProcessedToken = nameof(LastProcessedToken);
-			public const string StatusMessage = nameof(StatusMessage);
-			public const string StorageConnection = nameof(StorageConnection);
+		public class Versions {
+			public const string Theme = "12";
+			public const string Code = "3.11.0";
+		}
+
+		public class InternalKeys {
+			public const string User = "User";
+			public const string UserId = "UserId";
+			public const string LastPostTimestamp = "LastPostTimestamp";
+			public const string LastProcessedToken = "LastProcessedToken";
+			public const string StatusMessage = "StatusMessage";
+			public const string StorageConnection = "StorageConnection";
 		}
 	}
 }

@@ -13,17 +13,17 @@ namespace Forum3.Annotations {
 			await context.HttpContext.Session.LoadAsync();
 
 			var currentToken = context.HttpContext.Request.Form["__RequestVerificationToken"].ToString();
-			var lastToken = context.HttpContext.Session.GetString(Constants.Keys.LastProcessedToken);
+			var lastToken = context.HttpContext.Session.GetString(Constants.InternalKeys.LastProcessedToken);
 
 			if (lastToken == currentToken) {
 				context.ModelState.AddModelError(string.Empty, "Looks like you accidentally submitted the same form twice.");
 				return;
 			}
 
-			context.HttpContext.Session.SetString(Constants.Keys.LastProcessedToken, currentToken);
+			context.HttpContext.Session.SetString(Constants.InternalKeys.LastProcessedToken, currentToken);
 
 			var currentTime = DateTime.Now;
-			var lastPostTimeStamp = context.HttpContext.Session.GetString(Constants.Keys.LastPostTimestamp);
+			var lastPostTimeStamp = context.HttpContext.Session.GetString(Constants.InternalKeys.LastPostTimestamp);
 
 			if (!string.IsNullOrEmpty(lastPostTimeStamp)) {
 				var lastPostTime = Convert.ToDateTime(lastPostTimeStamp);
@@ -34,7 +34,7 @@ namespace Forum3.Annotations {
 				}
 			}
 
-			context.HttpContext.Session.SetString(Constants.Keys.LastPostTimestamp, currentTime.ToString());
+			context.HttpContext.Session.SetString(Constants.InternalKeys.LastPostTimestamp, currentTime.ToString());
 
 			await context.HttpContext.Session.CommitAsync();
 			await next();

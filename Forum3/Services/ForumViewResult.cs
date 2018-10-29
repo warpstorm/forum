@@ -35,7 +35,7 @@ namespace Forum3.Services {
 
 		public async Task<IActionResult> RedirectFromService(Controller controller, ServiceModels.ServiceResponse serviceResponse, Func<Task<IActionResult>> failureCallback) {
 			if (!string.IsNullOrEmpty(serviceResponse.Message))
-				controller.TempData[Constants.Keys.StatusMessage] = serviceResponse.Message;
+				controller.TempData[Constants.InternalKeys.StatusMessage] = serviceResponse.Message;
 
 			foreach (var kvp in serviceResponse.Errors)
 				controller.ModelState.AddModelError(kvp.Key, kvp.Value);

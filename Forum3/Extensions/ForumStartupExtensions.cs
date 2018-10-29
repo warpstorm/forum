@@ -77,10 +77,10 @@ namespace Forum3.Extensions {
 		static void RegisterAzureStorage(IServiceCollection services, IConfiguration configuration) {
 			services.AddScoped((serviceProvider) => {
 				// Try to pull from the environment first
-				var storageConnectionString = configuration[Constants.Keys.StorageConnection];
+				var storageConnectionString = configuration[Constants.InternalKeys.StorageConnection];
 
 				if (string.IsNullOrEmpty(storageConnectionString))
-					storageConnectionString = configuration.GetConnectionString(Constants.Keys.StorageConnection);
+					storageConnectionString = configuration.GetConnectionString(Constants.InternalKeys.StorageConnection);
 
 				if (string.IsNullOrEmpty(storageConnectionString))
 					throw new HttpInternalServerError("No storage connection string found.");
