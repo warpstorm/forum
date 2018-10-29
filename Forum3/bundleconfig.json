@@ -40,6 +40,10 @@
 		"inputFiles": [ "wwwroot/css/Pages/BoardIndex.css" ]
 	},
 	{
+		"outputFileName": "wwwroot/css/min/QuoteIndex.min.css",
+		"inputFiles": [ "wwwroot/css/Pages/QuoteIndex.css" ]
+	},
+	{
 		"outputFileName": "wwwroot/css/min/ManageBoards.min.css",
 		"inputFiles": [ "wwwroot/css/Pages/ManageBoards.css" ]
 	},
