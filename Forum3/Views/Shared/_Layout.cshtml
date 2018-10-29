@@ -47,8 +47,8 @@
 				@await RenderSectionAsync("Header", required: false)
 			</header>
 			<div class="align-left">
-				@if (!string.IsNullOrEmpty(TempData[Constants.Keys.StatusMessage]?.ToString())) {
-					<div class="content-box pad gap error">@TempData[Constants.Keys.StatusMessage]</div>
+				@if (!string.IsNullOrEmpty(TempData[Constants.InternalKeys.StatusMessage]?.ToString())) {
+					<div class="content-box pad gap error">@TempData[Constants.InternalKeys.StatusMessage]</div>
 				}
 
 				@RenderBody()
