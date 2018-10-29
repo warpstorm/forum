@@ -52,6 +52,8 @@ namespace Forum3.Extensions {
 
 			services.AddScoped<UserContext>();
 
+			services.AddTransient<Sidebar>();
+
 			services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
 			services.AddSingleton<IUrlHelperFactory, UrlHelperFactory>();
 

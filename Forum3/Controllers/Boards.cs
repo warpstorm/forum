@@ -1,6 +1,6 @@
-﻿using Forum3.Contexts;
-using Forum3.Interfaces.Services;
+﻿using Forum3.Interfaces.Services;
 using Forum3.Repositories;
+using Forum3.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
@@ -11,36 +11,26 @@ namespace Forum3.Controllers {
 	using PageViewModels = Models.ViewModels.Boards.Pages;
 
 	public class Boards : Controller {
-		ApplicationDbContext DbContext { get; }
+		Sidebar Sidebar { get; }
 		BoardRepository BoardRepository { get; }
 		RoleRepository RoleRepository { get; }
-		AccountRepository AccountRepository { get; }
-		NotificationRepository NotificationRepository { get; }
 		IForumViewResult ForumViewResult { get; }
 
 		public Boards(
-			ApplicationDbContext dbContext,
+			Sidebar sidebar,
 			BoardRepository boardRepository,
 			RoleRepository roleRepository,
-			AccountRepository accountRepository,
-			NotificationRepository notificationRepository,
 			IForumViewResult forumViewResult
 		) {
-			DbContext = dbContext;
+			Sidebar = sidebar;
 			BoardRepository = boardRepository;
 			RoleRepository = roleRepository;
-			AccountRepository = accountRepository;
-			NotificationRepository = notificationRepository;
 			ForumViewResult = forumViewResult;
 		}
 
 		[HttpGet]
 		public IActionResult Index() {
-			var sidebar = new Models.ViewModels.Sidebar {
-				Birthdays = AccountRepository.GetBirthdaysList().ToArray(),
-				OnlineUsers = AccountRepository.GetOnlineList(),
-				Notifications = NotificationRepository.Index()
-			};
+			var sidebar = Sidebar.Generate();
 
 			var viewModel = new PageViewModels.IndexPage {
 				Categories = BoardRepository.CategoryIndex(true),

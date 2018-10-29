@@ -3,6 +3,7 @@ using Forum3.Contexts;
 using Forum3.Errors;
 using Forum3.Interfaces.Services;
 using Forum3.Repositories;
+using Forum3.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -21,12 +22,11 @@ namespace Forum3.Controllers {
 	public class Topics : Controller {
 		ApplicationDbContext DbContext { get; }
 		UserContext UserContext { get; }
+		Sidebar Sidebar { get; }
 
-		AccountRepository AccountRepository { get; }
 		BoardRepository BoardRepository { get; }
 		MessageRepository MessageRepository { get; }
 		RoleRepository RoleRepository { get; }
-		NotificationRepository NotificationRepository { get; }
 		SettingsRepository SettingsRepository { get; }
 		SmileyRepository SmileyRepository { get; }
 		TopicRepository TopicRepository { get; }
@@ -37,10 +37,9 @@ namespace Forum3.Controllers {
 		public Topics(
 			ApplicationDbContext applicationDbContext,
 			UserContext userContext,
-			AccountRepository accountRepository,
+			Sidebar sidebar,
 			BoardRepository boardRepository,
 			MessageRepository messageRepository,
-			NotificationRepository notificationRepository,
 			RoleRepository roleRepository,
 			SettingsRepository settingsRepository,
 			SmileyRepository smileyRepository,
@@ -51,11 +50,10 @@ namespace Forum3.Controllers {
 		) {
 			DbContext = applicationDbContext;
 			UserContext = userContext;
+			Sidebar = sidebar;
 
-			AccountRepository = accountRepository;
 			BoardRepository = boardRepository;
 			MessageRepository = messageRepository;
-			NotificationRepository = notificationRepository;
 			RoleRepository = roleRepository;
 			SettingsRepository = settingsRepository;
 			SmileyRepository = smileyRepository;
@@ -72,11 +70,7 @@ namespace Forum3.Controllers {
 			if (!UserContext.IsAdmin && boardRoles.Any() && !boardRoles.Intersect(UserContext.Roles).Any())
 				throw new HttpForbiddenError();
 
-			var sidebar = new ViewModels.Sidebar {
-				Birthdays = AccountRepository.GetBirthdaysList().ToArray(),
-				OnlineUsers = AccountRepository.GetOnlineList(),
-				Notifications = NotificationRepository.Index()
-			};
+			var sidebar = Sidebar.Generate();
 
 			var page = 1;
 			var topicPreviews = TopicRepository.GetPreviews(id, page, unread);
