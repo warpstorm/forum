@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Jdenticon.AspNetCore;
 
 namespace Forum3 {
 	using DataModels = Models.DataModels;
@@ -77,12 +78,10 @@ namespace Forum3 {
 			else
 				app.UseExceptionHandler("/Home/Error");
 
+			app.UseJdenticon();
 			app.UseStaticFiles();
-
 			app.UseAuthentication();
-
 			app.UseSession();
-
 			app.UseForum();
 
 			app.UseMvc(routes => {

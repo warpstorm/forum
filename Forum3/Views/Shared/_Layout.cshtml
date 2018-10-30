@@ -63,10 +63,9 @@
 	<partial name="_Footer" />
 
 	<environment include="Development">
-		<script src="~/lib/jquery/dist/jquery.js"></script>
-		<script src="~/lib/jquery-validation/dist/jquery.validate.js"></script>
-		<script src="~/lib/jquery-validation-unobtrusive/src/jquery.validate.unobtrusive.js"></script>
-		<script src="~/lib/jdenticon/dist/jdenticon.js"></script>
+		<script src="~/lib/jquery/jquery.js"></script>
+		<script src="~/lib/jquery-validate/jquery.validate.js"></script>
+		<script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js"></script>
 
 		<script src="~/js/Compatibility.js" asp-append-version="true"></script>
 		<script src="~/js/Helpers.js" asp-append-version="true"></script>
@@ -76,18 +75,15 @@
 	</environment>
 	<environment exclude="Development">
 		<script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.3.1.min.js"
-				asp-fallback-src="~/lib/jquery/dist/jquery.min.js"
+				asp-fallback-src="~/lib/jquery/jquery.min.js"
 				asp-fallback-test="window.jQuery">
 		</script>
 		<script src="https://ajax.aspnetcdn.com/ajax/jquery.validate/1.17.0/jquery.validate.min.js"
-				asp-fallback-src="~/lib/jquery-validation/dist/jquery.validate.js"
+				asp-fallback-src="~/lib/jquery-validate/jquery.validate.min.js"
 				asp-fallback-test="window.jQuery && window.jQuery.validator"></script>
 		<script src="https://ajax.aspnetcdn.com/ajax/jquery.validation.unobtrusive/3.2.6/jquery.validate.unobtrusive.min.js"
-				asp-fallback-src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js"
+				asp-fallback-src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"
 				asp-fallback-test="window.jQuery && window.jQuery.validator && window.jQuery.validator.unobtrusive"></script>
-		<script src="https://cdn.jsdelivr.net/npm/jdenticon@1.8.0/dist/jdenticon.min.js"
-				asp-fallback-src="~/lib/jdenticon/dist/jdenticon.min.js"
-				asp-fallback-test="window.jdenticon"></script>
 
 		<script src="~/js/min/Global.min.js" asp-append-version="true"></script>
 	</environment>

@@ -17,6 +17,7 @@
 	<ItemGroup>
 		<PackageReference Include="CoreCompat.System.Drawing" Version="1.0.0-beta006" />
 		<PackageReference Include="HtmlAgilityPack" Version="1.8.9" />
+		<PackageReference Include="Jdenticon.AspNetCore" Version="2.2.0" />
 		<PackageReference Include="Microsoft.AspNetCore.All" Version="2.1.5" />
 		<PackageReference Include="Microsoft.AspNetCore.Session" Version="2.1.1" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.1.4" PrivateAssets="all">
@@ -39,6 +40,10 @@
 	  <Content Update="Views\Quotes\Index.cshtml">
 	    <Pack>$(IncludeRazorContentInPack)</Pack>
 	  </Content>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="wwwroot\lib\" />
 	</ItemGroup>
 
 </Project>

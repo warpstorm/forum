@@ -5,6 +5,8 @@ using Forum3.Interfaces.Filters;
 using Forum3.Interfaces.Services;
 using Forum3.Middleware;
 using Forum3.Services;
+using Jdenticon;
+using Jdenticon.Rendering;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
@@ -23,6 +25,10 @@ namespace Forum3.Extensions {
 
 	public static class ForumStartupExtensions {
 		public static IApplicationBuilder UseForum(this IApplicationBuilder builder) {
+			Identicon.DefaultStyle = new IdenticonStyle {
+				BackColor = Color.Transparent,
+			};
+
 			builder.UseMiddleware<HttpStatusCodeHandler>();
 			builder.UseMiddleware<PageTimer>();
 
