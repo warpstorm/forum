@@ -7,7 +7,7 @@ A light-weight and mobile-friendly message board solution intended for small com
 * Standard forum functionality such as boards, topics, messages, and user accounts.
 * Double posting and rapid posting spam prevention.
 * Notifications for events that happened while users were away.
-* Avatar and smiley image support using Azure Storage.
+* Avatar and smiley image support using Azure Storage, with identicon fallback.
 * Thoughts simplify the user experience by allowing one-touch simple responses to messages.
 * Personal message pinning and marking topics as unread allows users to revisit topics later.
 * Imgur and YouTube integration enable simplified mobile usage and image sharing.
