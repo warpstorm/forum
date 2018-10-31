@@ -1,6 +1,6 @@
 @model TopicIndexPage
 
-<partial name="_TopicNav" model="@Model.BoardId" />
+<partial name="_TopicNav" model="@{(Model.BoardId > 0 ? Model.BoardId : 1)}" />
 
 <br class="clear" />
 

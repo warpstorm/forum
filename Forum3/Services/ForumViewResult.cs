@@ -153,6 +153,9 @@ namespace Forum3.Services {
 			// TALK LIKE A PIRATE DAY
 			var pirateDay = new DateTime(year, 9, 19).Date;
 
+			// HALLOWEEN
+			var halloween = new DateTime(year, 10, 31);
+
 			//THANKSGIVING DAY - 4th Thursday in November 
 			var thanksgiving = (from day in Enumerable.Range(1, 30)
 								where new DateTime(year, 11, day).DayOfWeek == DayOfWeek.Thursday
@@ -170,6 +173,7 @@ namespace Forum3.Services {
 			holidays.Add(independenceDay, "Logo_Independence.png");
 			//holidays.Add(laborDay.Date, "Logo.png");
 			holidays.Add(pirateDay, "Logo_Pirate.png");
+			holidays.Add(halloween.Date, "Logo_Halloween.png");
 			holidays.Add(thanksgivingDay.Date, "Logo_Thanksgiving.png");
 			holidays.Add(christmasEve, "Logo_Christmas.png");
 			holidays.Add(christmasDay, "Logo_Christmas.png");
