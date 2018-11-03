@@ -520,7 +520,7 @@ namespace Forum3.Repositories {
 
 			//try {
 			DbContext.SaveChanges();
-			// TODO - uncomment if this problem occurs again.
+			// Uncomment if this problem occurs again.
 			// see - https://docs.microsoft.com/en-us/ef/core/saving/concurrency
 			// The user probably refreshed several times in a row.
 			//catch (DbUpdateConcurrencyException) { }

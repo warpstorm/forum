@@ -22,7 +22,7 @@ namespace CodeKicker.BBCode.SyntaxTree {
 		//equality members
 		public bool Equals(SyntaxTreeNode other) => this == other;
 		public override bool Equals(object obj) => Equals(obj as SyntaxTreeNode);
-		public override int GetHashCode() => base.GetHashCode(); //TODO
+		public override int GetHashCode() => base.GetHashCode();
 
 		public static bool operator ==(SyntaxTreeNode a, SyntaxTreeNode b) {
 			if (ReferenceEquals(a, b))
