@@ -7,12 +7,9 @@
 		<Company>Warpstorm.com</Company>
 		<AssemblyName>Forum3</AssemblyName>
 		<RootNamespace>Forum3</RootNamespace>
+		<TypeScriptToolsVersion>3.1</TypeScriptToolsVersion>
+		<TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
 	</PropertyGroup>
-
-	<ItemGroup>
-	  <None Remove="appsettings.Development.json-example" />
-	  <Content Include="appsettings.Development.json-example" />
-	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="CoreCompat.System.Drawing" Version="1.0.0-beta006" />
@@ -21,13 +18,13 @@
 		<PackageReference Include="Microsoft.AspNetCore.All" Version="2.1.5" />
 		<PackageReference Include="Microsoft.AspNetCore.Session" Version="2.1.1" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.1.4" PrivateAssets="all">
-		  <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.5" PrivateAssets="All" />
 		<PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
 		<PackageReference Include="Sendgrid" Version="9.10.0" />
 	</ItemGroup>
-
+	
 	<ItemGroup>
 		<DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.0" />
 	</ItemGroup>
@@ -37,13 +34,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Content Update="Views\Quotes\Index.cshtml">
-	    <Pack>$(IncludeRazorContentInPack)</Pack>
-	  </Content>
+		<Content Include="**\*.ts" Exclude="$(GlobalExclude)" />
 	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="wwwroot\lib\" />
-	</ItemGroup>
-
 </Project>
