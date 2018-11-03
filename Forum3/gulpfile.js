@@ -4,7 +4,6 @@ var gulp = require('gulp');
 var concat = require('gulp-concat');
 var browserify = require("browserify");
 var source = require('vinyl-source-stream');
-var watchify = require("watchify");
 var tsify = require("tsify");
 var gutil = require("gulp-util");
 var uglify = require('gulp-uglify');
@@ -32,16 +31,17 @@ gulp.task('page-styles', function () {
 		.pipe(gulp.dest('wwwroot/styles'));
 });
 
-var watchedBrowserify = watchify(browserify({
+var browserifySettings = {
 	basedir: '.',
 	debug: true,
 	entries: ['client/scripts/app.ts'],
 	cache: {},
 	packageCache: {}
-}).plugin(tsify));
+};
 
 function bundleApp() {
-	return watchedBrowserify
+	return browserify(browserifySettings)
+		.plugin(tsify)
 		.bundle()
 		.pipe(source('app.js'))
 		.pipe(buffer())
@@ -52,6 +52,3 @@ function bundleApp() {
 }
 
 gulp.task('scripts', bundleApp);
-
-watchedBrowserify.on('update', bundleApp);
-watchedBrowserify.on('log', gutil.log);
