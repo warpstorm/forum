@@ -1,12 +1,12 @@
 ﻿@using Microsoft.Extensions.Options
 @inject IOptions<Forum3.Models.ServiceModels.RecaptchaOptions> Options
 
+<link rel="stylesheet" href="~/styles/recaptcha.css" asp-append-version="true" />
+
 <environment include="Development">
-	<link rel="stylesheet" href="~/css/Pages/Recaptcha.css" asp-append-version="true" />
 	<div class="g-recaptcha"><img src="~/images/recaptcha.png" title="Recaptcha placeholder" /></div>
 </environment>
 <environment exclude="Development">
-	<link rel="stylesheet" href="~/css/min/Recaptcha.min.css" asp-append-version="true" />
 	<div class="g-recaptcha" data-sitekey="@Options.Value.RecaptchaSiteKey"></div>
 	<script src='https://www.google.com/recaptcha/api.js'></script>
 </environment>
