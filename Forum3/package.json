@@ -8,7 +8,6 @@
 		"gulp-sourcemaps": "^2.6.4",
 		"gulp-typescript": "^5.0.0-alpha.3",
 		"gulp-uglify": "^3.0.1",
-		"gulp-util": "^3.0.8",
 		"tsify": "^4.0.0",
 		"typescript": "^3.1.6",
 		"vinyl-buffer": "^1.0.1",

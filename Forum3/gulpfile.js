@@ -5,7 +5,6 @@ var concat = require('gulp-concat');
 var browserify = require("browserify");
 var source = require('vinyl-source-stream');
 var tsify = require("tsify");
-var gutil = require("gulp-util");
 var uglify = require('gulp-uglify');
 var sourcemaps = require('gulp-sourcemaps');
 var buffer = require('vinyl-buffer');
