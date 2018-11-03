@@ -15,10 +15,5 @@
 @{ViewData["Title"] = "Warpstorm";}
 
 @section styles {
-	<environment include="Development">
-		<link rel="stylesheet" href="~/css/Pages/BoardIndex.css" asp-append-version="true" />
-	</environment>
-	<environment exclude="Development">
-		<link rel="stylesheet" href="~/css/min/BoardIndex.min.css" asp-append-version="true" />
-	</environment>
+	<link rel="stylesheet" href="~/styles/pages/board-index.css" asp-append-version="true" />
 }
