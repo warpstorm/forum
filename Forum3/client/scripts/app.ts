@@ -1,5 +1,5 @@
-﻿function hello(compiler: string) {
-	console.log('Hello from ${compiler}');
-}
+﻿import initBBCode from "./bbc"
 
-hello("TypeScript");
+window.onload = function () {
+	initBBCode();
+};

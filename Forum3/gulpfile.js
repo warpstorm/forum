@@ -6,6 +6,7 @@ var browserify = require("browserify");
 var source = require('vinyl-source-stream');
 var tsify = require("tsify");
 var uglify = require('gulp-uglify');
+var uglifyCss = require('gulp-uglifycss');
 var sourcemaps = require('gulp-sourcemaps');
 var buffer = require('vinyl-buffer');
 
@@ -19,21 +20,21 @@ gulp.task('global-styles', function () {
 			"client/styles/standard-classes.css",
 			"client/styles/bbc.css"
 		])
-		.pipe(uglify())
+		.pipe(uglifyCss())
 		.pipe(concat('global.css'))
 		.pipe(gulp.dest('wwwroot/styles'));
 });
 
 gulp.task('page-styles', function () {
 	return gulp.src('client/styles/pages/*.css')
-		.pipe(uglify())
+		.pipe(uglifyCss())
 		.pipe(gulp.dest('wwwroot/styles'));
 });
 
 var browserifySettings = {
-	basedir: '.',
+	basedir: 'client/scripts',
 	debug: true,
-	entries: ['client/scripts/app.ts'],
+	entries: ['app.ts'],
 	cache: {},
 	packageCache: {}
 };
