@@ -1,0 +1,174 @@
+﻿.youtubePlayer {
+	height: 360px;
+	max-width: 100%;
+	width: 640px;
+}
+
+.poseys {
+	background-image: url("../../images/poseys.png")
+}
+
+.user-avatar {
+	padding: 12px 0;
+	width: 115px;
+}
+
+	.user-avatar img {
+		max-width: 100%;
+	}
+
+	.user-avatar canvas {
+		max-width: 70%;
+	}
+
+@media only screen and (max-width: 480px) {
+	.user-avatar {
+		padding: 0;
+		width: 25px;
+	}
+}
+
+#topic-header {
+	margin-left: 115px;
+	border: 2px solid #2a3951;
+}
+
+main > header {
+	margin-left: 115px;
+}
+
+.message-container {
+	margin-left: 115px;
+}
+
+@media only screen and (max-width: 480px) {
+	.message-container {
+		border-top-color: #7090c6;
+	}
+
+	.message-container,
+	main > header,
+	#topic-header {
+		margin-left: 0;
+	}
+}
+
+.message-header {
+	margin-bottom: 13px;
+}
+
+.message-body {
+	white-space: pre-line;
+	padding-left: 5px;
+	font-size: 0.95em;
+	font-weight: normal;
+}
+
+	.message-body img {
+		max-width: 100%;
+	}
+
+	.message-body a {
+		text-decoration: none;
+		border-bottom: 1px solid #2a3951;
+		box-shadow: inset 0 -3px 0 #2a3951;
+	}
+
+		.message-body a:hover {
+			border-color: #7090c6;
+			box-shadow: inset 0 -3px 0 #7090c6;
+		}
+
+		.message-body a img {
+			vertical-align: baseline;
+			max-width: 12px;
+			margin-left: 3px;
+		}
+
+blockquote.reply {
+	width: 98%;
+	padding: 15px 25px;
+	margin: 5px auto 25px auto;
+	border-left: 5px solid #1d2737;
+	border-top-left-radius: 20px;
+	border-bottom-left-radius: 20px;
+	background-color: #0c0f14;
+}
+
+	blockquote.reply:hover {
+		background-color: #1d2737;
+		border-left-color: #2a3951;
+	}
+
+	blockquote.reply div {
+		white-space: pre-line;
+	}
+
+
+blockquote.card {
+	width: 95%;
+	max-width: 465px;
+	padding: 10px;
+	margin: 20px 0 10px 10px;
+	background-color: #253248;
+	border-radius: 2px;
+	border: 1px solid #2a3951;
+	box-shadow: 0 3px 12px 1px #0c0f14;
+	font-size: .8em;
+	display: inline-block;
+	vertical-align: top;
+}
+
+	blockquote.card:hover {
+		background-color: #2a3951;
+	}
+
+.embedded-video, .imgur-image {
+	padding: 10px;
+	margin: 15px 10px;
+	background-color: #253248;
+	border-radius: 2px;
+	border: 1px solid #2a3951;
+	box-shadow: 0 3px 12px 1px #0c0f14;
+	font-size: .8em;
+	display: inline-block;
+	vertical-align: top;
+}
+
+	.embedded-video video, .imgur-image img {
+		max-width: 100%;
+		max-height: 728px;
+	}
+
+@media only screen and (max-width: 480px) {
+	.embedded-video, .imgur-image {
+		padding: 5px;
+		margin: 15px 0;
+	}
+}
+
+.card-image {
+	margin: 0 15px 0 0;
+	max-width: 150px;
+	min-height: 150px;
+	float: left;
+}
+
+	.card-image img {
+		max-width: 100%;
+	}
+
+.card-title {
+	font-size: 1.2em;
+	font-weight: bold;
+	margin-bottom: 10px;
+}
+
+	.card-title a {
+		border: 0;
+	}
+
+.link-favicon {
+	display: none;
+	vertical-align: middle;
+}

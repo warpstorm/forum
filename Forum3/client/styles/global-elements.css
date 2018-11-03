@@ -1,0 +1,95 @@
+﻿* {
+	box-sizing: border-box;
+}
+
+html, body {
+	min-width: 320px;
+	margin: 0;
+	padding: 0;
+	background: url("../images/aurora.png") #1d2737 repeat-x;
+}
+
+body {
+	font: 1em/1.4em "Segoe UI", "Segoe UI Web Regular", "Segoe UI Symbol", "Helvetica Neue", Arial, "sans-serif";
+	color: #e1edf3;
+}
+
+table {
+	empty-cells: show;
+	border-spacing: 0;
+	border-collapse: collapse;
+}
+
+a {
+	text-decoration: none;
+	color: #e1edf3;
+}
+
+	a:hover {
+		color: #ffffff;
+	}
+
+hr {
+	color: #253248;
+	background-color: #253248;
+	border-color: #253248;
+}
+
+h1,
+h2,
+h3,
+h4 {
+	margin: 0;
+	padding: 0;
+	line-height: 1.5em;
+}
+
+dl,
+dt,
+dd,
+ul,
+ol,
+li {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+p, blockquote {
+	margin: 0;
+	padding: 0;
+}
+
+br.clear {
+	clear: both;
+	font-size: 1px;
+	line-height: 1px;
+	margin: 0;
+	padding: 0;
+}
+
+fieldset {
+	border: 0;
+	margin: 0 0 20px 0;
+}
+
+	fieldset ol {
+		margin: 0 0 20px 0;
+		padding: 0;
+	}
+
+img {
+	border: 0;
+}
+
+video {
+	max-width: 100%;
+	height: auto;
+}
+
+time {
+	color: #516169;
+	font-size: .85em;
+	line-height: 1em;
+	font-weight: bold;
+}
