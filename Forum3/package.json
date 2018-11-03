@@ -1,20 +1,22 @@
 {
-	"scripts": {},
+	"scripts": {
+		"test": "mocha -r ts-node/register client/spec/*.spec.ts"
+	},
 	"dependencies": {},
 	"devDependencies": {
-		"@types/chai": "4.1.7",
-		"@types/mocha": "5.2.5",
+		"@types/chai": "^4.1.7",
+		"@types/mocha": "^5.2.5",
 		"browserify": "^16.2.3",
-		"chai": "4.2.0",
+		"chai": "^4.2.0",
 		"gulp": "^3.9.1",
 		"gulp-concat": "^2.6.1",
 		"gulp-sourcemaps": "^2.6.4",
 		"gulp-typescript": "^5.0.0-alpha.3",
 		"gulp-uglify": "^3.0.1",
 		"gulp-uglifycss": "1.1.0",
-		"mocha": "5.2.0",
+		"mocha": "^5.2.0",
+		"ts-node": "^7.0.1",
 		"tsify": "^4.0.0",
-		"ts-node": "7.0.1",
 		"typescript": "^3.1.6",
 		"vinyl-buffer": "^1.0.1",
 		"vinyl-source-stream": "^2.0.0"

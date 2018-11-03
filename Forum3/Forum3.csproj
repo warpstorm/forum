@@ -36,22 +36,4 @@
 	<ItemGroup>
 		<Content Include="**\*.ts" Exclude="$(GlobalExclude)" />
 	</ItemGroup>
-
-	<ItemGroup>
-	  <Content Remove="client\scripts\easter-egg.ts" />
-	  <Content Remove="client\scripts\navigation.ts" />
-	  <Content Remove="client\tests\bbc.tests.ts" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <None Remove="client\scripts\easter-egg.ts" />
-	  <None Remove="client\scripts\navigation.ts" />
-	  <None Remove="client\tests\bbc.tests.ts" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <TypeScriptCompile Include="client\scripts\easter-egg.ts" />
-	  <TypeScriptCompile Include="client\scripts\navigation.ts" />
-	  <TypeScriptCompile Include="client\tests\bbc.tests.ts" />
-	</ItemGroup>
 </Project>
