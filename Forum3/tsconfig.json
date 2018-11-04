@@ -1,16 +1,10 @@
 {
-  "compileOnSave": false,
 	"compilerOptions": {
-		"alwaysStrict": true,
-		"sourceMap": false,
 		"declaration": false,
-		"moduleResolution": "node",
-		"emitDecoratorMetadata": true,
-		"experimentalDecorators": true,
-		"target": "es6",
-		"typeRoots": [
-			"node_modules/@types"
-		]
+		"sourceMap": false,
+		"module": "commonjs"
 	},
-	"exclude": ["node_modules"]
+	"include": [
+		"client/**/*.ts"
+	]
 }

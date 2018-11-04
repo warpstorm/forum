@@ -13,7 +13,7 @@ let bbCodes = {
 	'list': '[ul]\n[li]  [/li]\n[li]  [/li]\n[li]  [/li]\n[/ul]',
 	'numlist': '[ol]\n[li]  [/li]\n[li]  [/li]\n[li]  [/li]\n[/ol]',
 	'code': '[code]\n\n\n[/code]',
-	'size': '[size=10]  [/size]',
+	'size': '[size=10]  [/size]'
 };
 
 export default function () {
@@ -47,14 +47,15 @@ export class BBCode {
 		event.preventDefault();
 
 		let target = <HTMLElement>event.currentTarget;
+		let targetCode = target.getAttribute('bbcode');	
 
-		let targetTextArea = target.closest('form').getElementsByTagName('textarea')[0];
+		let form = target.closest('form');
 
-		console.log(targetTextArea);
+		if (form) {
+			let targetTextArea = form.getElementsByTagName('textarea')[0];
 
-		let targetCode = target.getAttribute('bbcode');
-
-		insertAtCaret(targetTextArea, bbCodes[targetCode]);
+			insertAtCaret(targetTextArea, bbCodes[targetCode]);
+		}
 	}
 
 	showSpoiler(event: Event): void {
