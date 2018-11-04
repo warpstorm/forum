@@ -2,9 +2,9 @@
 import { HtmlHelper } from './html-helper';
 import * as chai from 'chai';
 
-let bbCode = new BBCode();
 let html = new HtmlHelper();
 let document = html.document();
+let bbCode = new BBCode(document);
 
 describe('BBCode', () => {
 	it('should contain hover style', () => {

@@ -17,38 +17,29 @@ let bbCodes = {
 };
 
 export default function () {
-	var bbCode = new BBCode();
-
 	// expects document to be defined at the global scope.
-	bbCode.addListeners(document);
+	var bbCode = new BBCode(document);
+	bbCode.addListeners();
 }
 
 export class BBCode {
-	addListeners(htmlDocument: Document): void {
-		throwIfNull(htmlDocument, 'htmlDocument');
+	constructor(private htmlDocument: Document) {}
 
-		this.addBBCodeListener(htmlDocument);
-		this.addSpoilerListener(htmlDocument);
+	addListeners(): void {
+		this.addBBCodeListener();
+		this.addSpoilerListener();
 	}
 
-	addBBCodeListener(htmlDocument: Document): void {
-		throwIfNull(htmlDocument, 'htmlDocument');
-
-		let elements = htmlDocument.getElementsByClassName('add-bbcode');
-
-		for (let i = 0; i < elements.length; i++) {
-			elements[i].addEventListener('click', this.insertBBCode);
-		}
+	addBBCodeListener(): void {
+		this.htmlDocument.querySelectorAll('add-bbcode').forEach(element => {
+			element.addEventListener('click', this.insertBBCode);
+		});
 	}
 
-	addSpoilerListener(htmlDocument: Document): void {
-		throwIfNull(htmlDocument, 'htmlDocument');
-
-		let elements = htmlDocument.getElementsByClassName('bbc-spoiler');
-
-		for (let i = 0; i < elements.length; i++) {
-			elements[i].addEventListener('click', this.showSpoiler);
-		}
+	addSpoilerListener(): void {
+		this.htmlDocument.querySelectorAll('bbc-spoiler').forEach(element => {
+			element.addEventListener('click', this.showSpoiler);
+		});
 	}
 
 	insertBBCode(event: Event): void {

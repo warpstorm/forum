@@ -2,9 +2,9 @@
 import { HtmlHelper } from './html-helper';
 import * as chai from 'chai';
 
-let easterEgg = new EasterEgg();
 let html = new HtmlHelper();
 let document = html.document();
+let easterEgg = new EasterEgg(document);
 
 describe('EasterEgg', () => {
 	it('should remove hidden on mouseenter', () => {
@@ -15,7 +15,7 @@ describe('EasterEgg', () => {
 		targetElement.setAttribute('id', 'danger-sign');
 		targetElement.classList.add('hidden');
 
-		easterEgg.addEasterEggListener(document);
+		easterEgg.addEasterEggListener();
 
 		eventElement.dispatchEvent(html.event('mouseenter'));
 
@@ -30,7 +30,7 @@ describe('EasterEgg', () => {
 		targetElement.setAttribute('id', 'danger-sign');
 		targetElement.classList.add('hidden');
 
-		easterEgg.addEasterEggListener(document);
+		easterEgg.addEasterEggListener();
 
 		eventElement.dispatchEvent(html.event('mouseenter'));
 		eventElement.dispatchEvent(html.event('mouseleave'));

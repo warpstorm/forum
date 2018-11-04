@@ -85,3 +85,12 @@ export function throwIfNull(value: any, name: string): void {
 		}
 	}
 }
+
+export function isFirefox() {
+	// https://stackoverflow.com/a/26358856/2621693
+	if (navigator && navigator.userAgent && navigator.userAgent.indexOf("Firefox") != -1) {
+		return true;
+	}
+
+	return false;
+}
