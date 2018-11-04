@@ -1,6 +1,6 @@
 {
 	"scripts": {
-		"test": "gulp clean && gulp scripts && mocha --compilers ts:ts-node/register client/spec/*.spec.ts"
+		"test": "mocha --compilers ts:ts-node/register client/spec/*.spec.ts"
 	},
 	"dependencies": {},
 	"devDependencies": {

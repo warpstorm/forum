@@ -15,14 +15,12 @@ describe('BBCode', () => {
 	});
 
 	it('should remove hover style', () => {
+		let event = document.createEvent('HTMLEvents');
+		event.initEvent('test', false, true);
+
 		let span = document.createElement('span');
 		span.classList.add('bbc-spoiler-hover');
-
-		span.addEventListener('click', bbCode.showSpoiler);
-
-		let event = document.createEvent('HTMLEvents');
-		event.initEvent('click', false, true);
-
+		span.addEventListener('test', bbCode.showSpoiler);
 		span.dispatchEvent(event);
 
 		chai.expect(span.classList.contains('bbc-spoiler-hover')).to.equal(false);
