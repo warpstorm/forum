@@ -1,4 +1,4 @@
-﻿import { insertAtCaret } from './helpers'
+﻿import { insertAtCaret, throwIfNull } from './helpers'
 
 let bbCodes = {
 	'bold': '[b]  [/b]',
@@ -18,25 +18,33 @@ let bbCodes = {
 
 export default function () {
 	var bbCode = new BBCode();
-	bbCode.addListeners();
+
+	// expects document to be defined at the global scope.
+	bbCode.addListeners(document);
 }
 
 export class BBCode {
-	addListeners(): void {
-		this.addBBCodeListener();
-		this.addSpoilerListener();
+	addListeners(htmlDocument: Document): void {
+		throwIfNull(htmlDocument, 'htmlDocument');
+
+		this.addBBCodeListener(htmlDocument);
+		this.addSpoilerListener(htmlDocument);
 	}
 
-	addBBCodeListener(): void {
-		let elements = document.getElementsByClassName('add-bbcode');
+	addBBCodeListener(htmlDocument: Document): void {
+		throwIfNull(htmlDocument, 'htmlDocument');
+
+		let elements = htmlDocument.getElementsByClassName('add-bbcode');
 
 		for (let i = 0; i < elements.length; i++) {
 			elements[i].addEventListener('click', this.insertBBCode);
 		}
 	}
 
-	addSpoilerListener(): void {
-		let elements = document.getElementsByClassName('bbc-spoiler');
+	addSpoilerListener(htmlDocument: Document): void {
+		throwIfNull(htmlDocument, 'htmlDocument');
+
+		let elements = htmlDocument.getElementsByClassName('bbc-spoiler');
 
 		for (let i = 0; i < elements.length; i++) {
 			elements[i].addEventListener('click', this.showSpoiler);
@@ -44,6 +52,8 @@ export class BBCode {
 	}
 
 	insertBBCode(event: Event): void {
+		throwIfNull(event, 'event');
+
 		event.preventDefault();
 
 		let target = <HTMLElement>event.currentTarget;
@@ -51,14 +61,18 @@ export class BBCode {
 
 		let form = target.closest('form');
 
-		if (form) {
-			let targetTextArea = form.getElementsByTagName('textarea')[0];
-
-			insertAtCaret(targetTextArea, bbCodes[targetCode]);
+		if (!form) {
+			throw new Error('Element is not defined');
 		}
+
+		let targetTextArea = form.getElementsByTagName('textarea')[0];
+
+		insertAtCaret(targetTextArea, bbCodes[targetCode]);
 	}
 
 	showSpoiler(event: Event): void {
+		throwIfNull(event, 'event');
+
 		// in case they click a link in a spoiler when revealing the spoiler.
 		event.preventDefault();
 
@@ -66,6 +80,8 @@ export class BBCode {
 		event.stopPropagation();
 
 		let target = <HTMLElement>event.target;
+
+		throwIfNull(target, 'target');
 
 		if (target.classList.contains('bbc-spoiler-hover')) {
 			target.classList.remove('bbc-spoiler-hover');

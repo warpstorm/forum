@@ -1,6 +1,11 @@
-﻿type Parameter = { [key: string]: string };
+﻿import { isString } from "util";
 
-export function postToPath(path, parameters: Parameter[]) {
+type Parameter = { [key: string]: string };
+
+export function postToPath(path: string, parameters: Parameter[]): void {
+	throwIfNull(path, 'path');
+	throwIfNull(parameters, 'parameters');
+
 	let antiForgeryTokenElements = document.querySelectorAll('input[name=__RequestVerificationToken]');
 
 	let antiForgeryTokenValue: string;
@@ -39,16 +44,9 @@ export function postToPath(path, parameters: Parameter[]) {
 }
 
 // for inserting text into textareas at the cursor location
-export function insertAtCaret(areaElement: HTMLTextAreaElement, text: string) {
-	if (!areaElement) {
-		console.log("Undefined element");
-		return;
-	}
-
-	if (!text || text.length == 0) {
-		console.log("No text specified");
-		return;
-	}
+export function insertAtCaret(areaElement: HTMLTextAreaElement, text: string): void {
+	throwIfNull(areaElement, 'areaElement');
+	throwIfNull(text, 'text');
 
 	let compatible = areaElement.selectionStart || areaElement.selectionStart == 0;
 
@@ -71,4 +69,19 @@ export function insertAtCaret(areaElement: HTMLTextAreaElement, text: string) {
 	areaElement.focus();
 
 	areaElement.scrollTop = endPos;
+}
+
+export function throwIfNull(value: any, name: string): void {
+	if (!value) {
+		throw new Error(`value of "${name}" is invalid`);
+	}
+
+	// I prefer to treat empty strings as null due to my time with C#
+	if (isString(value)) {
+		value = value.trim();
+
+		if (value.length == 0) {
+			throw new Error(`value of "${name}" is invalid`);
+		}
+	}
 }

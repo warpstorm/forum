@@ -1,18 +1,28 @@
-﻿export default function () {
+﻿import { throwIfNull } from "./helpers";
+
+export default function () {
 	var easterEgg = new EasterEgg();
-	easterEgg.addEasterEggListener();
+
+	// expects document to be defined at the global scope.
+	easterEgg.addEasterEggListener(document);
 }
 
 export class EasterEgg {
-	addEasterEggListener(): void {
-		let element = document.getElementById('easter-egg');
+	addEasterEggListener(htmlDocument: Document): void {
+		throwIfNull(htmlDocument, 'htmlDocument');
 
-		element.addEventListener("mouseenter", function () {
-			document.getElementById("danger-sign").classList.remove("hidden");
+		let element = htmlDocument.getElementById('easter-egg');
+
+		if (!element) {
+			throw new Error('Element is not defined');
+		}
+
+		element.addEventListener('mouseenter', function () {
+			htmlDocument.getElementById('danger-sign').classList.remove('hidden');
 		});
 
-		element.addEventListener("mouseleave", function () {
-			document.getElementById("danger-sign").classList.add("hidden");
+		element.addEventListener('mouseleave', function () {
+			htmlDocument.getElementById('danger-sign').classList.add('hidden');
 		});
 	}
 }
