@@ -7,7 +7,6 @@
 		"@types/chai": "^4.1.7",
 		"@types/jsdom": "^12.2.0",
 		"@types/mocha": "^5.2.5",
-		"@types/sinon": "5.0.5",
 		"browserify": "^16.2.3",
 		"chai": "^4.2.0",
 		"del": "^3.0.0",
