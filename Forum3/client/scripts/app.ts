@@ -1,4 +1,4 @@
-﻿import initBBCode from "./bbc";
+﻿import initBBCode from "./bbcode";
 import initEasterEgg from "./easter-egg";
 import initNavigation from "./navigation";
 
