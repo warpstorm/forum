@@ -1,4 +1,5 @@
 ﻿import { insertAtCaret, throwIfNull } from './helpers'
+import { error } from 'util';
 
 let bbCodes = {
 	'bold': '[b]  [/b]',
@@ -48,6 +49,11 @@ export class BBCode {
 		event.preventDefault();
 
 		let target = <HTMLElement>event.currentTarget;
+
+		if (!target) {
+			throw new Error('Event target not found');
+		}
+
 		let targetCode = target.getAttribute('bbcode');	
 
 		let form = target.closest('form');

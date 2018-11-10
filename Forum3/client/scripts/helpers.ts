@@ -51,7 +51,7 @@ export function insertAtCaret(areaElement: HTMLTextAreaElement, text: string): v
 	let compatible = areaElement.selectionStart || areaElement.selectionStart == 0;
 
 	if (!compatible) {
-		areaElement.value += text;
+		areaElement.textContent += text;
 		return;
 	}
 

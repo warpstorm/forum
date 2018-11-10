@@ -29,14 +29,14 @@ describe('BBCode', () => {
 	});
 
 	it('adds bbcode to textarea', () => {
-		let textareaElement = html.get('textarea');
-		let originalTextLength = textareaElement.textContent.length;
+		let textareaElement = <HTMLTextAreaElement>html.get('textarea');
+		let originalTextLength = textareaElement.value.length;
 
 		bbCode.addBBCodeListener();
 
 		let clickElement = html.get('[bbcode="img"]');
 		html.click(clickElement);
 
-		chai.expect(textareaElement.textContent.length).to.be.greaterThan(originalTextLength);
+		chai.expect(textareaElement.value.length).to.be.greaterThan(originalTextLength);
 	});
 });
