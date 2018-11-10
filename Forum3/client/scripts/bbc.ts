@@ -31,13 +31,13 @@ export class BBCode {
 	}
 
 	addBBCodeListener(): void {
-		this.htmlDocument.querySelectorAll('add-bbcode').forEach(element => {
+		this.htmlDocument.querySelectorAll('.add-bbcode').forEach(element => {
 			element.addEventListener('click', this.insertBBCode);
 		});
 	}
 
 	addSpoilerListener(): void {
-		this.htmlDocument.querySelectorAll('bbc-spoiler').forEach(element => {
+		this.htmlDocument.querySelectorAll('.bbc-spoiler').forEach(element => {
 			element.addEventListener('click', this.showSpoiler);
 		});
 	}
@@ -53,10 +53,14 @@ export class BBCode {
 		let form = target.closest('form');
 
 		if (!form) {
-			throw new Error('Element is not defined');
+			throw new Error('Form element not found');
 		}
 
-		let targetTextArea = form.getElementsByTagName('textarea')[0];
+		let targetTextArea = form.querySelector('textarea');
+
+		if (!targetTextArea) {
+			throw new Error('Textarea element not found');
+		}
 
 		insertAtCaret(targetTextArea, bbCodes[targetCode]);
 	}

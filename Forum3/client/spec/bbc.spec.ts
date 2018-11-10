@@ -3,23 +3,40 @@ import { HtmlHelper } from './html-helper';
 import * as chai from 'chai';
 
 let html = new HtmlHelper();
-let document = html.document();
-let bbCode = new BBCode(document);
+html.loadDocumentFromPath('client/spec/bbc.spec.html');
+
+let bbCode = new BBCode(html.window().document);
 
 describe('BBCode', () => {
-	it('should contain hover style', () => {
-		let element = document.createElement('span');
-		element.classList.add('bbc-spoiler-hover');
+	it('should toggle bbc-spoiler-hover style on click', () => {
+		bbCode.addSpoilerListener();
 
-		chai.expect(element.classList.contains('bbc-spoiler-hover')).to.equal(true);
+		chai.expect(hasClassAfterClick()).to.be.true;
+		chai.expect(hasClassAfterClick()).to.be.false;
+
+		function hasClassAfterClick() {
+			let clickElement = html.get('.bbc-spoiler');
+			html.click(clickElement);
+			return clickElement.classList.contains('bbc-spoiler-hover');
+		}
 	});
 
-	it('should remove hover style', () => {
-		let element = document.createElement('span');
-		element.classList.add('bbc-spoiler-hover');
-		element.addEventListener('click', bbCode.showSpoiler);
-		element.dispatchEvent(html.event('click'));
+	it('find textarea content', () => {
+		let textareaElement = html.get('textarea');
+		let textLength = textareaElement.textContent.length;
 
-		chai.expect(element.classList.contains('bbc-spoiler-hover')).to.equal(false);
+		chai.expect(textLength).to.be.greaterThan(0);
+	});
+
+	it('adds bbcode to textarea', () => {
+		let textareaElement = html.get('textarea');
+		let originalTextLength = textareaElement.textContent.length;
+
+		bbCode.addBBCodeListener();
+
+		let clickElement = html.get('[bbcode="img"]');
+		html.click(clickElement);
+
+		chai.expect(textareaElement.textContent.length).to.be.greaterThan(originalTextLength);
 	});
 });
