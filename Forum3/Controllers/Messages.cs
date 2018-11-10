@@ -19,6 +19,7 @@ namespace Forum3.Controllers {
 		BoardRepository BoardRepository { get; }
 		MessageRepository MessageRepository { get; }
 		SettingsRepository SettingsRepository { get; }
+		SmileyRepository SmileyRepository { get; }
 		IForumViewResult ForumViewResult { get; }
 		IUrlHelper UrlHelper { get; }
 
@@ -27,6 +28,7 @@ namespace Forum3.Controllers {
 			BoardRepository boardRepository,
 			MessageRepository messageRepository,
 			SettingsRepository settingsRepository,
+			SmileyRepository smileyRepository,
 			IActionContextAccessor actionContextAccessor,
 			IForumViewResult forumViewResult,
 			IUrlHelperFactory urlHelperFactory
@@ -35,12 +37,15 @@ namespace Forum3.Controllers {
 			BoardRepository = boardRepository;
 			MessageRepository = messageRepository;
 			SettingsRepository = settingsRepository;
+			SmileyRepository = smileyRepository;
 			ForumViewResult = forumViewResult;
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
 		[HttpGet]
 		public async Task<IActionResult> Create(int id = 0) {
+			ViewData["Smileys"] = SmileyRepository.GetSelectorList();
+
 			var board = BoardRepository.First(item => item.Id == id);
 
 			if (Request.Query.TryGetValue("source", out var source))
@@ -87,6 +92,8 @@ namespace Forum3.Controllers {
 
 		[HttpGet]
 		public async Task<IActionResult> Edit(int id) {
+			ViewData["Smileys"] = SmileyRepository.GetSelectorList();
+
 			var record = await DbContext.Messages.SingleOrDefaultAsync(m => m.Id == id);
 
 			if (record is null)
