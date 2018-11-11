@@ -2,9 +2,12 @@
 	"compilerOptions": {
 		"declaration": false,
 		"sourceMap": false,
-		"module": "commonjs"
+		"module": "commonjs",
+		"target": "es6"
 	},
 	"include": [
+		"client/definitions",
+		"client/models",
 		"client/**/*.ts"
 	]
 }

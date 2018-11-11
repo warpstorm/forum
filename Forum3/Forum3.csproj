@@ -38,17 +38,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Content Remove="client\spec\easter-egg.spec.ts" />
-	  <Content Remove="client\spec\html-helper.ts" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <None Remove="client\spec\easter-egg.spec.ts" />
-	  <None Remove="client\spec\html-helper.ts" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <TypeScriptCompile Include="client\spec\easter-egg.spec.ts" />
-	  <TypeScriptCompile Include="client\spec\html-helper.ts" />
+	  <None Remove="client\definitions\object.d.ts" />
+	  <None Remove="client\models\topic-index-options.ts" />
 	</ItemGroup>
 </Project>
