@@ -40,18 +40,15 @@
 	<ItemGroup>
 	  <Content Remove="client\spec\easter-egg.spec.ts" />
 	  <Content Remove="client\spec\html-helper.ts" />
-	  <Content Remove="client\spec\navigation.spec.ts" />
 	</ItemGroup>
 
 	<ItemGroup>
 	  <None Remove="client\spec\easter-egg.spec.ts" />
 	  <None Remove="client\spec\html-helper.ts" />
-	  <None Remove="client\spec\navigation.spec.ts" />
 	</ItemGroup>
 
 	<ItemGroup>
 	  <TypeScriptCompile Include="client\spec\easter-egg.spec.ts" />
 	  <TypeScriptCompile Include="client\spec\html-helper.ts" />
-	  <TypeScriptCompile Include="client\spec\navigation.spec.ts" />
 	</ItemGroup>
 </Project>
