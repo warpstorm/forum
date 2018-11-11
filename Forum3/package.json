@@ -1,6 +1,6 @@
 {
 	"scripts": {
-		"test": "mocha client/spec/*.spec.ts"
+		"test": "mocha --require ts-node/register client/spec/*.spec.ts"
 	},
 	"dependencies": {},
 	"devDependencies": {

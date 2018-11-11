@@ -3,7 +3,7 @@ import { HtmlHelper } from './html-helper';
 import * as chai from 'chai';
 
 let html = new HtmlHelper();
-html.loadDocumentFromPath('client/spec/bbc.spec.html');
+html.loadDocumentFromPath('client/spec/bbcode.spec.html');
 
 let bbCode = new BBCode(html.window().document);
 
