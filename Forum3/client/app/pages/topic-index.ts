@@ -1,7 +1,7 @@
 import { XhrOptions } from "../models/xhr-options";
 import { Xhr } from "../services/xhr";
 import { HttpMethod } from "../definitions/http-method";
-import navigation, { Navigation } from "../navigation";
+import { Navigation } from "../navigation";
 
 // expects `window` and `document` to be defined at the global scope.
 export default function () {
@@ -29,7 +29,7 @@ export class TopicIndex {
 
 		let request = Xhr.request(new XhrOptions({
 			method: HttpMethod.Get,
-			url: `/topics/indexmore/${(<any>window).boardId}/?page=${(<any>window).page + 1}`,
+			url: `/topics/${(<any>window).moreAction}/${(<any>window).boardId}/?page=${(<any>window).page + 1}`,
 			responseType: 'document'
 		}));
 
