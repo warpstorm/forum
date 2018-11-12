@@ -1,5 +1,4 @@
 ﻿import { insertAtCaret, throwIfNull } from './helpers'
-import { error } from 'util';
 
 let bbCodes = {
 	'bold': '[b]  [/b]',

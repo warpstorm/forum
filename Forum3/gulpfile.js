@@ -1,37 +1,15 @@
 /// <binding AfterBuild='global-styles, page-styles, scripts' />
 
 var gulp = require('gulp');
-var log = require('fancy-log');
 var del = require('del');
-var exec = require('gulp-exec');
 var concat = require('gulp-concat');
 var browserify = require("browserify");
 var source = require('vinyl-source-stream');
 var tsify = require("tsify");
-var uglify = require('gulp-uglify');
+var uglify = require('gulp-uglify-es').default;
 var uglifyCss = require('gulp-uglifycss');
 var sourcemaps = require('gulp-sourcemaps');
 var buffer = require('vinyl-buffer');
-
-var browserifySettings = {
-	basedir: 'client/scripts',
-	debug: true,
-	entries: ['app.ts'],
-	cache: {},
-	packageCache: {}
-};
-
-function bundleApp() {
-	return browserify(browserifySettings)
-		.plugin(tsify)
-		.bundle()
-		.pipe(source('app.js'))
-		.pipe(buffer())
-		.pipe(sourcemaps.init({ loadMaps: true }))
-		.pipe(uglify())
-		.pipe(sourcemaps.write('./'))
-		.pipe(gulp.dest("wwwroot/scripts"));
-}
 
 gulp.task('clean', function () {
 	return del.sync(['client/scripts/**/*.js', 'client/spec/**/*.js']);
@@ -58,4 +36,35 @@ gulp.task('page-styles', function () {
 		.pipe(gulp.dest('wwwroot/styles'));
 });
 
-gulp.task('scripts', bundleApp);
+var browserifySettings = {
+	basedir: 'client/scripts',
+	debug: true,
+	entries: ['app.ts'],
+	cache: {},
+	packageCache: {}
+};
+
+gulp.task('scripts', function () {
+	return browserify(browserifySettings)
+		.plugin(tsify)
+		.bundle()
+		.pipe(source('app.js'))
+		.pipe(buffer())
+		.pipe(sourcemaps.init({ loadMaps: true }))
+		.pipe(uglify().on('error', function (e) {
+			console.log(e); // https://stackoverflow.com/a/33006210/2621693
+		}))
+		.pipe(sourcemaps.write('./'))
+		.pipe(gulp.dest("wwwroot/scripts"));
+});
+
+gulp.task('scriptsUncompressed', function () {
+	return browserify(browserifySettings)
+		.plugin(tsify)
+		.bundle()
+		.pipe(source('app.js'))
+		.pipe(buffer())
+		.pipe(sourcemaps.init({ loadMaps: true }))
+		.pipe(sourcemaps.write('./'))
+		.pipe(gulp.dest("client"));
+});

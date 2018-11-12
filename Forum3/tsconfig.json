@@ -1,13 +1,6 @@
-{
+﻿{
 	"compilerOptions": {
-		"declaration": false,
-		"sourceMap": false,
-		"module": "commonjs",
-		"target": "es6"
-	},
-	"include": [
-		"client/definitions",
-		"client/models",
-		"client/**/*.ts"
-	]
+		"target": "es2016",
+		"lib": [ "dom", "es2016" ]
+	}
 }
