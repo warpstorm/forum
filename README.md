@@ -17,10 +17,6 @@ A light-weight and mobile-friendly message board solution intended for small com
 * Modular design allowing much of the code to be easily replaced or customized.
 * Static theme simplifies the development experience. No theme engine complexity here!
 
-## Setup
-
-I use Visual Studio Enterprise on a Windows 10 machine with Azure Storage Emulator running in the background. As this is an ASP.NET Core project, I have also successfully managed to get this running in an Ubuntu Linux virtual machine before. I won't hold your hand through figuring out how to set any of this up because I feel like that would create unrealistic support expectations if it didn't work.
-
 ## Unlicensing and Usage
 
 Anything in this project which is originally written by me is open and free, so you're welcome to use it however you want. If you do, you would help me feel better about all my time spent by simply emailing<sup>[0]</sup> me to let me know you found some value.
