@@ -29,6 +29,9 @@ export module Xhr {
 
 	export function createXhr(options: XhrOptions) {
         let xhr = new XMLHttpRequest();
+		xhr.open(options.method, options.url);
+		xhr.timeout = options.timeout;
+		xhr.responseType = options.responseType;
 
 		if (isFormMethod(options.method)) {
             options.headers['Content-Type'] = 'application/json';
@@ -36,18 +39,25 @@ export module Xhr {
 
 		Object.keys(options.headers).forEach(key => xhr.setRequestHeader(key, options.headers[key]));
 
-		xhr.timeout = options.timeout;
-		xhr.open(options.method, options.url);
-
         return xhr;
 	}
 
 	export function createXhrResult(xhr: XMLHttpRequest): XhrResult {
-		return new XhrResult({
-			status: xhr.status,
-			statusText: xhr.statusText,
-			data: xhr.responseText
-		});
+		switch (xhr.responseType) {
+			case 'document':
+				return new XhrResult({
+					status: xhr.status,
+					statusText: xhr.statusText,
+					response: xhr.response
+				});
+
+			case 'text':
+				return new XhrResult({
+					status: xhr.status,
+					statusText: xhr.statusText,
+					responseText: xhr.responseText
+				});
+		}
 	}
 
 	export function isFormMethod(method: HttpMethod): boolean { return [HttpMethod.Post, HttpMethod.Post].includes(method); }

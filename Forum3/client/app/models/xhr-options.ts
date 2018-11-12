@@ -8,6 +8,7 @@ export class XhrOptions {
 	headers: { [key: string]: string } = {
 		'Cache-Control': 'no-cache'
 	};
+	responseType: XMLHttpRequestResponseType = 'text';
 	body: any = null;
 
 	public constructor(init?: Partial<XhrOptions>) {

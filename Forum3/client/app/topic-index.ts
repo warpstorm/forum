@@ -1,50 +1,57 @@
-import { TopicIndexOptions } from "./models/topic-index-options";
 import { XhrOptions } from "./models/xhr-options";
 import { Xhr } from "./services/xhr";
 import { HttpMethod } from "./definitions/http-method";
+import navigation, { Navigation } from "./navigation";
 
 // expects `window` and `document` to be defined at the global scope.
 export default function () {
-	let global = (<any>window);
-
-	let options = new TopicIndexOptions({
-		boardId: global.boardId,
-		page: global.page,
-		unreadFilter: global.unreadFilter,
-		moreTopics: global.moreTopics
-	});
-
-	let topicIndex = new TopicIndex(document, options);
+	let topicIndex = new TopicIndex(document);
 	topicIndex.setupPage();
 }
 
 export class TopicIndex {
-	constructor(private htmlDocument: Document, private options: TopicIndexOptions) { }
+	constructor(private htmlDocument: Document) { }
 
 	setupPage(): void {
-		if (this.options.unreadFilter == 0) {
+		if ((<any>window).unreadFilter == 0) {
 			this.htmlDocument.querySelector("#load-more-topics").show();
-			this.htmlDocument.querySelector("#load-more-topics").onClick(this.eventLoadMoreTopics);
+			this.htmlDocument.querySelector("#load-more-topics").off('click', this.eventLoadMoreTopics);
+			this.htmlDocument.querySelector("#load-more-topics").on('click', this.eventLoadMoreTopics);
 		}
 	}
 
 	eventLoadMoreTopics = () => {
-		var originalText = this.htmlDocument.querySelector("#load-more-topics").textContent;
+		let self = this;
 
-		this.htmlDocument.querySelector("#load-more-topics").textContent = "Loading...";
+		let originalText = self.htmlDocument.querySelector("#load-more-topics").textContent;
+
+		self.htmlDocument.querySelector("#load-more-topics").textContent = "Loading...";
 
 		let request = Xhr.request(new XhrOptions({
 			method: HttpMethod.Get,
-			url: `/topics/indexmore/${this.options.boardId}/?page=${this.options.page + 1}`
+			url: `/topics/indexmore/${(<any>window).boardId}/?page=${(<any>window).page + 1}`,
+			responseType: 'document'
 		}));
 
 		request.then((xhrResult) => {
-			this.htmlDocument.querySelector("#topic-list").append(xhrResult.data);
+			let resultDocument = (<Document>xhrResult.response).documentElement.querySelector('body').childNodes;
 
-			if (this.options.moreTopics)
-				this.htmlDocument.querySelector("#load-more-topics").textContent = originalText;
+			resultDocument.forEach(node => {
+				let element = <Element>node;
+
+				if (element.tagName.toLowerCase() == 'script') {
+					eval(element.textContent);
+					new Navigation(self.htmlDocument).addListenerClickableLinkParent();
+				}
+				else {
+					self.htmlDocument.querySelector("#topic-list").insertAdjacentElement('beforeend', element);
+				}
+			});
+
+			if ((<any>window).moreTopics)
+				self.htmlDocument.querySelector("#load-more-topics").textContent = originalText;
 			else
-				this.htmlDocument.querySelector("#load-more-topics").hide();
+				self.htmlDocument.querySelector("#load-more-topics").hide();
 		});
 	}
 }

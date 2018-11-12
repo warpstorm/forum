@@ -17,22 +17,14 @@ export class Navigation {
 
 	addListenerOpenMenu(): void {
 		this.htmlDocument.querySelectorAll('.open-menu').forEach(element => {
-			element.addEventListener('click', this.eventOpenMenu);
+			element.on('click', this.eventOpenMenu);
 		});
 	}
 
     addListenerUnhidePages(pageNavigatorElement: Element): void {
         pageNavigatorElement.querySelectorAll('.unhide-pages').forEach(element => {
-			element.addEventListener('click', function (event: Event) {
-				let target = <Element>event.currentTarget;
-
-				target.parentElement.querySelectorAll('.page').forEach(element => {
-                    element.classList.remove('hidden');
-				});
-
-				target.parentElement.querySelector('.more-pages-before').classList.add('hidden');
-				target.parentElement.querySelector('.more-pages-after').classList.add('hidden');
-            });
+			element.off('click', this.eventUnhidePages);
+			element.on('click', this.eventUnhidePages);
         });
 	}
 
@@ -42,15 +34,16 @@ export class Navigation {
 		for (var i = 0; i < linkParents.length; i++) {
 			let linkParent = linkParents[i];
 
-			linkParent.querySelector('a').addEventListener('click', this.eventPreventDefault);
+			linkParent.querySelector('a').off('click', this.eventPreventDefault);
+			linkParent.querySelector('a').on('click', this.eventPreventDefault);
 
 			if (isFirefox()) {
-				linkParent.removeEventListener('click', this.eventOpenLink);
-				linkParent.addEventListener('click', this.eventOpenLink);
+				linkParent.off('click', this.eventOpenLink);
+				linkParent.on('click', this.eventOpenLink);
 			}
 			else {
-				linkParent.removeEventListener('mousedown', this.eventOpenLink);
-				linkParent.addEventListener('mousedown', this.eventOpenLink);
+				linkParent.off('mousedown', this.eventOpenLink);
+				linkParent.on('mousedown', this.eventOpenLink);
 			}
 		}
 	}
@@ -74,14 +67,14 @@ export class Navigation {
 			if (i < 0)
 				continue;
 
-			pageElements[i - 1].classList.remove('hidden');
+			pageElements[i - 1].show();
 		}
 
 		for (let i = currentPage; i <= currentPage + 2; i++) {
 			if (i - 1 > pageElements.length)
 				continue;
 
-			pageElements[i - 1].classList.remove('hidden');
+			pageElements[i - 1].show();
 		}
 	}
 
@@ -90,15 +83,26 @@ export class Navigation {
 
 		if (currentPage - 2 > 1) {
 			pageNavigatorElement.querySelectorAll('.more-pages-before').forEach(element => {
-				element.classList.remove('hidden');
+				element.show();
 			});
 		}
 
 		if (currentPage + 2 < totalPages) {
 			pageNavigatorElement.querySelectorAll('.more-pages-after').forEach(element => {
-				element.classList.add('hidden');
+				element.hide();
 			});
 		}
+	}
+
+	eventUnhidePages = (event: Event) => {
+		let target = <Element>event.currentTarget;
+
+		target.parentElement.querySelectorAll('.page').forEach(element => {
+			element.show();
+		});
+
+		target.parentElement.querySelector('.more-pages-before').hide();
+		target.parentElement.querySelector('.more-pages-after').hide();
 	}
 
 	eventOpenLink = (event: Event) => {
@@ -137,17 +141,17 @@ export class Navigation {
 
 		let targetElement = <HTMLElement>event.currentTarget;
 
-		targetElement.removeEventListener('click', this.eventOpenMenu);
-		targetElement.addEventListener('click', this.eventCloseMenu);
+		targetElement.off('click', this.eventOpenMenu);
+		targetElement.on('click', this.eventCloseMenu);
 
 		targetElement.querySelectorAll('.menu-wrapper').forEach(element => {
-			element.classList.remove("hidden");
+			element.show();
 		});
 
 		let body = this.htmlDocument.getElementsByTagName('body')[0];
 
 		setTimeout(() => {
-			body.addEventListener('click', this.eventCloseMenu);
+			body.on('click', this.eventCloseMenu);
 		}, 50);
 	}
 
@@ -155,19 +159,17 @@ export class Navigation {
 		var dropDownMenuElements = this.htmlDocument.querySelectorAll('.menu-wrapper');
 
 		for (var i = 0; i < dropDownMenuElements.length; i++) {
-			var dropDownMenuElement = dropDownMenuElements[i];
-
-			if (!dropDownMenuElement.classList.contains('hidden'))
-				dropDownMenuElement.classList.add('hidden');
+			dropDownMenuElements[i].hide();
 		}
 
 		this.htmlDocument.querySelectorAll('.open-menu').forEach(element => {
-			element.removeEventListener('click', this.eventCloseMenu);
-			element.removeEventListener('click', this.eventOpenMenu);
-			element.addEventListener('click', this.eventOpenMenu);
+			element.off('click', this.eventCloseMenu);
+
+			element.off('click', this.eventOpenMenu);
+			element.on('click', this.eventOpenMenu);
 		});
 
-		this.htmlDocument.getElementsByTagName('body')[0].removeEventListener('click', this.eventCloseMenu);
+		this.htmlDocument.getElementsByTagName('body')[0].off('click', this.eventCloseMenu);
 	}
 
 	eventPreventDefault = (event: Event) => {

@@ -1,7 +1,8 @@
 export class XhrResult {
 	status: number;
 	statusText: string;
-	data: string;
+	response: any = null;
+	responseText: string;
 
 	public constructor(init?: Partial<XhrResult>) {
 		Object.assign(this, init);

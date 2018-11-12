@@ -1,17 +1,28 @@
-﻿interface Element {
+﻿type MouseEventType = "click" | "mouseenter" | "mouseleave" | "mousedown" | "mouseup";
+
+interface Element {
 	hide(): void;
 	show(): void;
-	onClick(action: EventListenerOrEventListenerObject): void;
+	on(eventName: MouseEventType, callback: EventListenerOrEventListenerObject): void;
+	off(eventName: MouseEventType, callback: EventListenerOrEventListenerObject): void;
 }
 
 Element.prototype.hide = function (): void {
-	(<Element>this).classList.add('hidden');
-};
-
-Element.prototype.onClick = function (action: EventListenerOrEventListenerObject): void {
-	(<Element>this).addEventListener("click", action);
+	if (!(<Element>this).classList.contains('hidden')) {
+		(<Element>this).classList.add('hidden');
+	}
 };
 
 Element.prototype.show = function (): void {
-	(<Element>this).classList.remove('hidden');
+	if ((<Element>this).classList.contains('hidden')) {
+		(<Element>this).classList.remove('hidden');
+	}
 };
+
+Element.prototype.on = function (eventName: MouseEventType, callback: EventListenerOrEventListenerObject): void {
+	(<Element>this).addEventListener(eventName, callback);
+}
+
+Element.prototype.off = function (eventName: MouseEventType, callback: EventListenerOrEventListenerObject): void {
+	(<Element>this).removeEventListener(eventName, callback);
+} 
