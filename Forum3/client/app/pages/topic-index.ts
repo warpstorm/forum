@@ -1,7 +1,7 @@
-import { XhrOptions } from "./models/xhr-options";
-import { Xhr } from "./services/xhr";
-import { HttpMethod } from "./definitions/http-method";
-import navigation, { Navigation } from "./navigation";
+import { XhrOptions } from "../models/xhr-options";
+import { Xhr } from "../services/xhr";
+import { HttpMethod } from "../definitions/http-method";
+import navigation, { Navigation } from "../navigation";
 
 // expects `window` and `document` to be defined at the global scope.
 export default function () {
