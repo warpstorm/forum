@@ -1,6 +1,6 @@
 import { XhrOptions } from "../models/xhr-options";
 import { XhrResult } from "../models/xhr-result";
-import { throwIfNull } from "../app/helpers";
+import { throwIfNull } from "../helpers";
 import { HttpMethod } from "../definitions/http-method";
 
 export module Xhr {

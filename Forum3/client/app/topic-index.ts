@@ -1,7 +1,7 @@
-import { TopicIndexOptions } from "../models/topic-index-options";
-import { Xhr } from "../services/xhr";
-import { XhrOptions } from "../models/xhr-options";
-import { HttpMethod } from "../definitions/http-method";
+import { TopicIndexOptions } from "./models/topic-index-options";
+import { XhrOptions } from "./models/xhr-options";
+import { Xhr } from "./services/xhr";
+import { HttpMethod } from "./definitions/http-method";
 
 // expects `window` and `document` to be defined at the global scope.
 export default function () {

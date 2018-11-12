@@ -1,11 +1,13 @@
-﻿import initBBCode from './bbcode';
-import initEasterEgg from './easter-egg';
-import initNavigation from './navigation';
+﻿require('./extensions/element');
+
+import bbCode from './bbcode';
+import easterEgg from './easter-egg';
+import navigation from './navigation';
 import pageActions from './page-actions';
 
 window.onload = function () {
-	initBBCode();
-	initEasterEgg();
-	initNavigation();
+	bbCode();
+	easterEgg();
+	navigation();
 	pageActions();
 };
