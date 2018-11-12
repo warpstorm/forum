@@ -94,3 +94,10 @@ export function isFirefox() {
 
 	return false;
 }
+
+export function queryify(parameters: any = {}): string {
+	return Object
+		.keys(parameters)
+		.map(key => `${encodeURIComponent(key)}=${encodeURIComponent(parameters[key])}`)
+		.join('&');
+}

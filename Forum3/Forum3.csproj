@@ -24,7 +24,7 @@
 		<PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
 		<PackageReference Include="Sendgrid" Version="9.10.0" />
 	</ItemGroup>
-	
+
 	<ItemGroup>
 		<DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.0" />
 	</ItemGroup>
@@ -34,17 +34,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<None Remove="client\**\*.ts" />
 		<Content Include="**\*.ts" Exclude="$(GlobalExclude)" />
+		<Content Remove="node_modules\**" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Remove="client\models\topic-index-options.ts" />
-	  <None Remove="client\models\xhr-options.ts" />
-	  <None Remove="client\models\xhr-result.ts" />
-	  <None Remove="client\scripts\xhr.ts" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="wwwroot\scripts\" />
+		<Folder Include="wwwroot\scripts\" />
 	</ItemGroup>
 </Project>
