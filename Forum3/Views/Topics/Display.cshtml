@@ -116,22 +116,13 @@
 
 @section scripts {
 	<script>
-		var currentPage = @Model.CurrentPage;
-		var totalPages = @Model.TotalPages;
-		var showFavicons = @Model.ShowFavicons.ToString().ToLower();
-
-		var togglePath = "@Url.Action(nameof(Topics.ToggleBoard), nameof(Topics), new { MessageId = Model.Id })";
-
-		@{ var assignedBoards = String.Join(", ", Model.AssignedBoards.Select(b => b.Id)); }
-		var assignedBoards = [@assignedBoards];
+		window.pageActions = 'topicDisplay';
+		window.currentPage = @Model.CurrentPage;
+		window.totalPages = @Model.TotalPages;
+		window.showFavicons = @Model.ShowFavicons.ToString().ToLower();
+		window.togglePath = "@Url.Action(nameof(Topics.ToggleBoard), nameof(Topics), new { MessageId = Model.Id })";
+		window.assignedBoards = [@(String.Join(", ", Model.AssignedBoards.Select(b => b.Id)))];
 	</script>
-
-	<environment include="Development">
-		<script src="~/js/Pages/TopicDisplay.js" asp-append-version="true"></script>
-	</environment>
-	<environment exclude="Development">
-		<script src="~/js/min/TopicDisplay.min.js" asp-append-version="true"></script>
-	</environment>
 }
 
 @section styles {
