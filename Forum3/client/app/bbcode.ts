@@ -23,7 +23,7 @@ export default function () {
 }
 
 export class BBCode {
-	constructor(private htmlDocument: Document) {}
+	constructor(private html: Document) {}
 
 	addListeners(): void {
 		this.addBBCodeListener();
@@ -31,14 +31,14 @@ export class BBCode {
 	}
 
 	addBBCodeListener(): void {
-		this.htmlDocument.querySelectorAll('.add-bbcode').forEach(element => {
-			element.addEventListener('click', this.insertBBCode);
+		this.html.querySelectorAll('.add-bbcode').forEach(element => {
+			element.on('click', this.insertBBCode);
 		});
 	}
 
 	addSpoilerListener(): void {
-		this.htmlDocument.querySelectorAll('.bbc-spoiler').forEach(element => {
-			element.addEventListener('click', this.showSpoiler);
+		this.html.querySelectorAll('.bbc-spoiler').forEach(element => {
+			element.on('click', this.showSpoiler);
 		});
 	}
 

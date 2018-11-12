@@ -3,29 +3,29 @@ import { Xhr } from "../services/xhr";
 import { HttpMethod } from "../definitions/http-method";
 import { Navigation } from "../navigation";
 
-// expects `window` and `document` to be defined at the global scope.
+// expects `document` to be defined at the global scope.
 export default function () {
 	let topicIndex = new TopicIndex(document);
 	topicIndex.setupPage();
 }
 
 export class TopicIndex {
-	constructor(private htmlDocument: Document) { }
+	constructor(private html: Document) { }
 
 	setupPage(): void {
 		if ((<any>window).unreadFilter == 0) {
-			this.htmlDocument.querySelector("#load-more-topics").show();
-			this.htmlDocument.querySelector("#load-more-topics").off('click', this.eventLoadMoreTopics);
-			this.htmlDocument.querySelector("#load-more-topics").on('click', this.eventLoadMoreTopics);
+			this.html.querySelector("#load-more-topics").show();
+			this.html.querySelector("#load-more-topics").off('click', this.eventLoadMoreTopics);
+			this.html.querySelector("#load-more-topics").on('click', this.eventLoadMoreTopics);
 		}
 	}
 
 	eventLoadMoreTopics = () => {
 		let self = this;
 
-		let originalText = self.htmlDocument.querySelector("#load-more-topics").textContent;
+		let originalText = self.html.querySelector("#load-more-topics").textContent;
 
-		self.htmlDocument.querySelector("#load-more-topics").textContent = "Loading...";
+		self.html.querySelector("#load-more-topics").textContent = "Loading...";
 
 		let request = Xhr.request(new XhrOptions({
 			method: HttpMethod.Get,
@@ -41,17 +41,17 @@ export class TopicIndex {
 
 				if (element.tagName.toLowerCase() == 'script') {
 					eval(element.textContent);
-					new Navigation(self.htmlDocument).addListenerClickableLinkParent();
+					new Navigation(self.html).addListenerClickableLinkParent();
 				}
 				else {
-					self.htmlDocument.querySelector("#topic-list").insertAdjacentElement('beforeend', element);
+					self.html.querySelector("#topic-list").insertAdjacentElement('beforeend', element);
 				}
 			});
 
 			if ((<any>window).moreTopics)
-				self.htmlDocument.querySelector("#load-more-topics").textContent = originalText;
+				self.html.querySelector("#load-more-topics").textContent = originalText;
 			else
-				self.htmlDocument.querySelector("#load-more-topics").hide();
+				self.html.querySelector("#load-more-topics").hide();
 		});
 	}
 }

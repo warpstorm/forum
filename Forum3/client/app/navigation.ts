@@ -7,7 +7,7 @@ export default function (): void {
 }
 
 export class Navigation {
-	constructor(private htmlDocument: Document) {}
+	constructor(private html: Document) {}
 
 	addListeners(): void {
 		this.addListenerOpenMenu();
@@ -16,7 +16,7 @@ export class Navigation {
 	}
 
 	addListenerOpenMenu(): void {
-		this.htmlDocument.querySelectorAll('.open-menu').forEach(element => {
+		this.html.querySelectorAll('.open-menu').forEach(element => {
 			element.on('click', this.eventOpenMenu);
 		});
 	}
@@ -49,12 +49,12 @@ export class Navigation {
 	}
 
 	setupPageNavigators(): void {
-		if ((<any>this.htmlDocument).currentPage === undefined || (<any>this.htmlDocument).totalPages === undefined)
+		if ((<any>this.html).currentPage === undefined || (<any>this.html).totalPages === undefined)
 			return;
 
-		this.htmlDocument.querySelectorAll('.pages').forEach(pageNavigatorElement => {
+		this.html.querySelectorAll('.pages').forEach(pageNavigatorElement => {
 			this.addListenerUnhidePages(pageNavigatorElement);
-			let currentPage = (<any>this.htmlDocument).currentPage;
+			let currentPage = (<any>this.html).currentPage;
 			this.updateMorePageBeforeAfterControlsVisibility(pageNavigatorElement, currentPage);
 			this.updatePageControlsVisibility(pageNavigatorElement, currentPage);
 		});
@@ -79,7 +79,7 @@ export class Navigation {
 	}
 
 	updateMorePageBeforeAfterControlsVisibility(pageNavigatorElement: Element, currentPage: number): void {
-		let totalPages = (<any>this.htmlDocument).totalPages;
+		let totalPages = (<any>this.html).totalPages;
 
 		if (currentPage - 2 > 1) {
 			pageNavigatorElement.querySelectorAll('.more-pages-before').forEach(element => {
@@ -148,7 +148,7 @@ export class Navigation {
 			element.show();
 		});
 
-		let body = this.htmlDocument.getElementsByTagName('body')[0];
+		let body = this.html.getElementsByTagName('body')[0];
 
 		setTimeout(() => {
 			body.on('click', this.eventCloseMenu);
@@ -156,20 +156,20 @@ export class Navigation {
 	}
 
 	eventCloseMenu = (event: Event) => {
-		var dropDownMenuElements = this.htmlDocument.querySelectorAll('.menu-wrapper');
+		var dropDownMenuElements = this.html.querySelectorAll('.menu-wrapper');
 
 		for (var i = 0; i < dropDownMenuElements.length; i++) {
 			dropDownMenuElements[i].hide();
 		}
 
-		this.htmlDocument.querySelectorAll('.open-menu').forEach(element => {
+		this.html.querySelectorAll('.open-menu').forEach(element => {
 			element.off('click', this.eventCloseMenu);
 
 			element.off('click', this.eventOpenMenu);
 			element.on('click', this.eventOpenMenu);
 		});
 
-		this.htmlDocument.getElementsByTagName('body')[0].off('click', this.eventCloseMenu);
+		this.html.getElementsByTagName('body')[0].off('click', this.eventCloseMenu);
 	}
 
 	eventPreventDefault = (event: Event) => {
