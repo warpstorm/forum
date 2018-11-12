@@ -1,5 +1,7 @@
 import { TopicIndexOptions } from "../models/topic-index-options";
-import { throwIfNull } from "./helpers";
+import { Xhr } from "../services/xhr";
+import { XhrOptions } from "../models/xhr-options";
+import { HttpMethod } from "../definitions/http-method";
 
 export default function () {
 	if ((<any>window).pageActions == "topicIndex") {
@@ -21,8 +23,8 @@ export class TopicIndex {
 
 	setupPage(): void {
 		if (this.options.unreadFilter == 0) {
-			this.htmlDocument.querySelector("#load-more-topics").classList.remove("hidden");
-			this.htmlDocument.querySelector("#load-more-topics").addEventListener("click", this.eventLoadMoreTopics);
+			this.htmlDocument.querySelector("#load-more-topics").show();
+			this.htmlDocument.querySelector("#load-more-topics").onClick(this.eventLoadMoreTopics);
 		}
 	}
 
@@ -31,17 +33,18 @@ export class TopicIndex {
 
 		this.htmlDocument.querySelector("#load-more-topics").textContent = "Loading...";
 
-		$.ajax({
-			dataType: "html",
-			url: "/topics/indexmore/" + this.options.boardId + "/?page=" + (this.options.page + 1),
-			success: function (data) {
-				this.htmlDocument.querySelector("#topic-list").append(data);
+		let request = Xhr.request(new XhrOptions({
+			method: HttpMethod.Get,
+			url: `/topics/indexmore/${this.options.boardId}/?page=${this.options.page + 1}`
+		}));
 
-				if (this.options.moreTopics)
-					this.htmlDocument.querySelector("#load-more-topics").text(originalText);
-				else
-					this.htmlDocument.querySelector("#load-more-topics").hide();
-			}
+		request.then((xhrResult) => {
+			this.htmlDocument.querySelector("#topic-list").append(xhrResult.data);
+
+			if (this.options.moreTopics)
+				this.htmlDocument.querySelector("#load-more-topics").textContent = originalText;
+			else
+				this.htmlDocument.querySelector("#load-more-topics").hide();
 		});
 	}
 }

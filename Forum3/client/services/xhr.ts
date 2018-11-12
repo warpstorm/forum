@@ -1,26 +1,24 @@
 import { XhrOptions } from "../models/xhr-options";
 import { XhrResult } from "../models/xhr-result";
-import { throwIfNull } from "../scripts/helpers";
+import { throwIfNull } from "../app/helpers";
 import { HttpMethod } from "../definitions/http-method";
 
-export class Xhr {
-	request(options: XhrOptions) {
+export module Xhr {
+	export function request(options: XhrOptions) {
 		throwIfNull(options, "options");
 
-		let self = this;
-
-		if (this.isFormMethod(options.method) && options.body) {
+		if (isFormMethod(options.method) && options.body) {
 			throw new Error("Provided XhrOptions contained a body with a method of POST/PUT. This was probably not intentional.");
 		}
 
 		return new Promise<XhrResult>((resolve, reject) => {
-			let xhr = self.createXhr(options);
+			let xhr = createXhr(options);
 
 			xhr.ontimeout = () => reject('Request timed out.');
 			xhr.onerror = () => reject(xhr.statusText);
-			xhr.onload = () => resolve(self.createXhrResult(xhr));
+			xhr.onload = () => resolve(createXhrResult(xhr));
 
-			if (self.isFormMethod(options.method)) {
+			if (isFormMethod(options.method)) {
 				xhr.send(JSON.stringify(options.body));
 			}
 			else {
@@ -29,10 +27,10 @@ export class Xhr {
 		});
 	}
 
-    createXhr(options: XhrOptions) {
+	export function createXhr(options: XhrOptions) {
         let xhr = new XMLHttpRequest();
 
-		if (this.isFormMethod(options.method)) {
+		if (isFormMethod(options.method)) {
             options.headers['Content-Type'] = 'application/json';
 		}
 
@@ -44,7 +42,7 @@ export class Xhr {
         return xhr;
 	}
 
-	createXhrResult(xhr: XMLHttpRequest): XhrResult {
+	export function createXhrResult(xhr: XMLHttpRequest): XhrResult {
 		return new XhrResult({
 			status: xhr.status,
 			statusText: xhr.statusText,
@@ -52,5 +50,5 @@ export class Xhr {
 		});
 	}
 
-	isFormMethod(method: HttpMethod): boolean { return [HttpMethod.Post, HttpMethod.Post].includes(method); }
+	export function isFormMethod(method: HttpMethod): boolean { return [HttpMethod.Post, HttpMethod.Post].includes(method); }
 }

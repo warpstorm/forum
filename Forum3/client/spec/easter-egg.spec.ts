@@ -1,4 +1,4 @@
-﻿import { EasterEgg } from '../scripts/easter-egg';
+﻿import { EasterEgg } from '../app/easter-egg';
 import { HtmlHelper } from './html-helper';
 import * as chai from 'chai';
 

@@ -12,7 +12,7 @@ var sourcemaps = require('gulp-sourcemaps');
 var buffer = require('vinyl-buffer');
 
 gulp.task('clean', function () {
-	return del.sync(['client/scripts/**/*.js', 'client/spec/**/*.js']);
+	return del.sync(['client/app/**/*.js', 'client/spec/**/*.js']);
 });
 
 gulp.task('global-styles', function () {
@@ -37,7 +37,7 @@ gulp.task('page-styles', function () {
 });
 
 var browserifySettings = {
-	basedir: 'client/scripts',
+	basedir: 'client/app',
 	debug: true,
 	entries: ['app.ts'],
 	cache: {},

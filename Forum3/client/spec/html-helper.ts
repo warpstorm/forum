@@ -1,4 +1,4 @@
-﻿import { throwIfNull } from '../scripts/helpers';
+﻿import { throwIfNull } from '../app/helpers';
 import { JSDOM } from 'jsdom';
 import * as fs from 'fs';
 
