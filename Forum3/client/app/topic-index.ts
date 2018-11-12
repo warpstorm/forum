@@ -3,19 +3,19 @@ import { Xhr } from "../services/xhr";
 import { XhrOptions } from "../models/xhr-options";
 import { HttpMethod } from "../definitions/http-method";
 
+// expects `window` and `document` to be defined at the global scope.
 export default function () {
-	if ((<any>window).pageActions == "topicIndex") {
-		let options = new TopicIndexOptions({
-			boardId: (<any>window).boardId,
-			page: (<any>window).page,
-			unreadFilter: (<any>window).unreadFilter,
-			moreTopics: (<any>window).moreTopics
-		});
+	let global = (<any>window);
 
-		// expects document to be defined at the global scope.
-		let topicIndex = new TopicIndex(document, options);
-		topicIndex.setupPage();
-	}
+	let options = new TopicIndexOptions({
+		boardId: global.boardId,
+		page: global.page,
+		unreadFilter: global.unreadFilter,
+		moreTopics: global.moreTopics
+	});
+
+	let topicIndex = new TopicIndex(document, options);
+	topicIndex.setupPage();
 }
 
 export class TopicIndex {
