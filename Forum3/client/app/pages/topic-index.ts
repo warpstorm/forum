@@ -10,22 +10,22 @@ export default function () {
 }
 
 export class TopicIndex {
-	constructor(private html: Document) { }
+	constructor(private doc: Document) { }
 
 	setupPage(): void {
 		if ((<any>window).unreadFilter == 0) {
-			this.html.querySelector("#load-more-topics").show();
-			this.html.querySelector("#load-more-topics").off('click', this.eventLoadMoreTopics);
-			this.html.querySelector("#load-more-topics").on('click', this.eventLoadMoreTopics);
+			this.doc.querySelector("#load-more-topics").show();
+			this.doc.querySelector("#load-more-topics").off('click', this.eventLoadMoreTopics);
+			this.doc.querySelector("#load-more-topics").on('click', this.eventLoadMoreTopics);
 		}
 	}
 
 	eventLoadMoreTopics = () => {
 		let self = this;
 
-		let originalText = self.html.querySelector("#load-more-topics").textContent;
+		let originalText = self.doc.querySelector("#load-more-topics").textContent;
 
-		self.html.querySelector("#load-more-topics").textContent = "Loading...";
+		self.doc.querySelector("#load-more-topics").textContent = "Loading...";
 
 		let request = Xhr.request(new XhrOptions({
 			method: HttpMethod.Get,
@@ -41,17 +41,17 @@ export class TopicIndex {
 
 				if (element.tagName.toLowerCase() == 'script') {
 					eval(element.textContent);
-					new Navigation(self.html).addListenerClickableLinkParent();
+					new Navigation(self.doc).addListenerClickableLinkParent();
 				}
 				else {
-					self.html.querySelector("#topic-list").insertAdjacentElement('beforeend', element);
+					self.doc.querySelector("#topic-list").insertAdjacentElement('beforeend', element);
 				}
 			});
 
 			if ((<any>window).moreTopics)
-				self.html.querySelector("#load-more-topics").textContent = originalText;
+				self.doc.querySelector("#load-more-topics").textContent = originalText;
 			else
-				self.html.querySelector("#load-more-topics").hide();
+				self.doc.querySelector("#load-more-topics").hide();
 		});
 	}
 }

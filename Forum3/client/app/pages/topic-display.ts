@@ -9,27 +9,27 @@ export default function () {
 }
 
 export class TopicDisplay {
-	constructor(private html: Document) { }
+	constructor(private doc: Document) { }
 
 	setupPage() {
-		this.html.querySelectorAll('.reply-button').forEach(element => {
+		this.doc.querySelectorAll('.reply-button').forEach(element => {
 			element.on('click', this.eventShowReplyForm)
 		});
 
-		this.html.querySelectorAll('.thought-button').forEach(element => {
+		this.doc.querySelectorAll('.thought-button').forEach(element => {
 			element.on('click', this.eventShowSmileySelector);
 		});
 
-		this.html.querySelectorAll('blockquote.reply').forEach(element => {
+		this.doc.querySelectorAll('blockquote.reply').forEach(element => {
 			element.on('click', this.eventShowFullReply);
 		});
 
-		this.html.querySelectorAll('[toggle-board]').forEach(element => {
+		this.doc.querySelectorAll('[toggle-board]').forEach(element => {
 			element.on('click', this.eventToggleBoard);
 		});
 
 		if ((<any>window).showFavicons) {
-			this.html.querySelectorAll('.link-favicon').forEach(element => {
+			this.doc.querySelectorAll('.link-favicon').forEach(element => {
 				element.show();
 			});
 		}
@@ -38,16 +38,16 @@ export class TopicDisplay {
 	eventShowReplyForm = (event: Event) => {
 		let target = <Element>event.currentTarget;
 
-		this.html.querySelectorAll('.reply-form').forEach(element => {
+		this.doc.querySelectorAll('.reply-form').forEach(element => {
 			element.hide();
 		});
 
-		this.html.querySelectorAll('.reply-button').forEach(element => {
+		this.doc.querySelectorAll('.reply-button').forEach(element => {
 			element.off('click', this.eventShowReplyForm);
 			element.on('click', this.eventShowReplyForm);
 		});
 
-		this.html.querySelectorAll('.reply-button').forEach(element => {
+		this.doc.querySelectorAll('.reply-button').forEach(element => {
 			element.off('click', this.eventHideReplyForm);
 		});
 
@@ -117,7 +117,7 @@ export class TopicDisplay {
 
 		let boardId = parseInt((<Element>event.currentTarget).getAttribute('board-id'));
 
-		let imgSrc = this.html.querySelector(`[board-flag=${boardId}]`).getAttribute('src');
+		let imgSrc = this.doc.querySelector(`[board-flag=${boardId}]`).getAttribute('src');
 
 		if (assignedBoards.includes(boardId)) {
 			assignedBoards.remove(boardId);
@@ -128,7 +128,7 @@ export class TopicDisplay {
 			imgSrc = imgSrc.replace('unchecked', 'checked');
 		}
 
-		this.html.querySelector(`[board-flag=${boardId}]`).setAttribute('src', imgSrc);
+		this.doc.querySelector(`[board-flag=${boardId}]`).setAttribute('src', imgSrc);
 
 		let request = Xhr.request(new XhrOptions({
 			url: `${(<any>window).togglePath}&BoardId=${boardId}`			

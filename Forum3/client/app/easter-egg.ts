@@ -7,21 +7,21 @@ export default function () {
 }
 
 export class EasterEgg {
-	constructor(private html: Document) {}
+	constructor(private doc: Document) {}
 
 	addEasterEggListener(): void {
-		let element = this.html.querySelector('#easter-egg');
+		let element = this.doc.querySelector('#easter-egg');
 
 		throwIfNull(element, 'element');
 
 		let self = this;
 
 		element.addEventListener('mouseenter', function () {
-			self.html.getElementById('danger-sign').classList.remove('hidden');
+			self.doc.getElementById('danger-sign').classList.remove('hidden');
 		});
 
 		element.addEventListener('mouseleave', function () {
-			self.html.getElementById('danger-sign').classList.add('hidden');
+			self.doc.getElementById('danger-sign').classList.add('hidden');
 		});
 	}
 }
