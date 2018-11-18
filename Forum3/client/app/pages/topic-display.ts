@@ -1,92 +1,141 @@
-﻿//$(function () {
-//	$(".reply-button").on("click.show-reply-form", ShowReplyForm);
+﻿import { postToPath } from "../helpers";
+import { Xhr } from "../services/xhr";
+import { XhrOptions } from "../models/xhr-options";
 
-//	$(".thought-button").on("click.show-smiley-selector", function (e) {
-//		e.preventDefault();
+// expects `document` to be defined at the global scope.
+export default function () {
+	let topicDisplay = new TopicDisplay(document);
+	topicDisplay.setupPage();
+}
 
-//		var messageId = $(this).attr("message-id");
+export class TopicDisplay {
+	constructor(private html: Document) { }
 
-//		ShowSmileySelector(this, function (smileyImg) {
-//			var smileyId = $(smileyImg).attr("smiley-id");
+	setupPage() {
+		this.html.querySelectorAll('.reply-button').forEach(element => {
+			element.on('click', this.eventShowReplyForm)
+		});
 
-//			PostToPath("/Messages/AddThought", {
-//				MessageId: messageId,
-//				SmileyId: smileyId
-//			});
+		this.html.querySelectorAll('.thought-button').forEach(element => {
+			element.on('click', this.eventShowSmileySelector);
+		});
 
-//			CloseSmileySelector();
-//		});
-//	});
+		this.html.querySelectorAll('blockquote.reply').forEach(element => {
+			element.on('click', this.eventShowFullReply);
+		});
 
-//	$("blockquote.reply").on("click.show-full-reply", ShowFullReply);
+		this.html.querySelectorAll('[toggle-board]').forEach(element => {
+			element.on('click', this.eventToggleBoard);
+		});
 
-//	$("[toggle-board]").on("click", ToggleBoard);
+		if ((<any>window).showFavicons) {
+			this.html.querySelectorAll('.link-favicon').forEach(element => {
+				element.show();
+			});
+		}
+	}
 
-//	if (window.showFavicons)
-//		$(".link-favicon").show();
-//});
+	eventShowReplyForm = (event: Event) => {
+		let target = <Element>event.currentTarget;
 
-//function ToggleBoard(event) {
-//	event.stopPropagation();
+		this.html.querySelectorAll('.reply-form').forEach(element => {
+			element.hide();
+		});
 
-//	let self = this;
+		this.html.querySelectorAll('.reply-button').forEach(element => {
+			element.off('click', this.eventShowReplyForm);
+			element.on('click', this.eventShowReplyForm);
+		});
 
-//	if (self.toggling)
-//		return;
+		this.html.querySelectorAll('.reply-button').forEach(element => {
+			element.off('click', this.eventHideReplyForm);
+		});
 
-//	self.toggling = true;
+		target.off('click', this.eventShowReplyForm);
+		target.closest('section').querySelectorAll('.reply-form').forEach(element => { element.show(); });
+		target.on('click', this.eventHideReplyForm);
+	}
 
-//	if (window.assignedBoards === undefined || window.togglePath === undefined)
-//		return;
+	eventHideReplyForm = (event: Event) => {
+		let target = <Element>event.currentTarget;
 
-//	let boardId = parseInt($(this).attr("board-id"));
+		target.off('click', this.eventHideReplyForm);
+		target.closest('section').querySelectorAll('.reply-form').forEach(element => { element.hide(); });
+		target.on('click', this.eventShowReplyForm);
+	}
 
-//	let imgSrc = $("[board-flag=" + boardId + "]").attr("src");
+	eventShowSmileySelector = (event: Event) => {
+		event.preventDefault();
+		let target = <Element>event.currentTarget;
 
-//	if (assignedBoards.includes(boardId)) {
-//		assignedBoards.remove(boardId);
-//		imgSrc = imgSrc.replace("checked", "unchecked");
-//	}
-//	else {
-//		assignedBoards.push(boardId);
-//		imgSrc = imgSrc.replace("unchecked", "checked");
-//	}
+		var messageId = target.getAttribute('message-id');
 
-//	$("[board-flag=" + boardId + "]").attr("src", imgSrc);
+		ShowSmileySelector(event, function (smileyImg: Element) {
+			var smileyId = smileyImg.getAttribute('smiley-id');
 
-//	$.get(togglePath + "&BoardId=" + boardId, function () {
-//		self.toggling = false;
-//	});
-//}
+			postToPath('/Messages/AddThought', [
+				{ 'MessageId': messageId },
+				{ 'SmileyId': smileyId }
+			]);
 
-//function ShowFullReply() {
-//	$(this).off("click.show-full-reply");
-//	$(this).on("click.close-full-reply", CloseFullReply);
+			this.eventCloseSmileySelector();
+		});
+	}
 
-//	$(this).find(".reply-preview").addClass("hidden");
-//	$(this).find(".reply-body").removeClass("hidden");
-//}
+	eventShowFullReply = (event: Event) => {
+		let target = <Element>event.currentTarget;
 
-//function CloseFullReply() {
-//	$(this).find(".reply-body").addClass("hidden");
-//	$(this).find(".reply-preview").removeClass("hidden");
+		target.off('click', this.eventCloseFullReply);
+		target.on('click', this.eventCloseFullReply);
 
-//	$(this).off("click.show-full-reply");
-//	$(this).on("click.show-full-reply", ShowFullReply);
-//}
+		target.querySelectorAll('.reply-preview').forEach(element => { element.hide() });
+		target.querySelectorAll('.reply-body').forEach(element => { element.show() });
+	}
 
-//function ShowReplyForm() {
-//	$(".reply-form").not(".hidden").addClass("hidden");
-//	$(".reply-button").off("click.show-reply-form");
-//	$(".reply-button").off("click.hide-reply-form");
-//	$(".reply-button").on("click.show-reply-form", ShowReplyForm);
-//	$(this).off("click.show-reply-form");
-//	$(this).parents("section").find(".reply-form").removeClass("hidden");
-//	$(this).on("click.hide-reply-form", HideReplyForm);
-//}
+	eventCloseFullReply = (event: Event) => {
+		let target = <Element>event.currentTarget;
 
-//function HideReplyForm() {
-//	$(this).off("click.hide-reply-form");
-//	$(this).parents("section").find(".reply-form").addClass("hidden");
-//	$(this).on("click.show-reply-form", ShowReplyForm);
-//}
+		target.querySelectorAll('.reply-body').forEach(element => { element.hide() });
+		target.querySelectorAll('.reply-preview').forEach(element => { element.show() });
+
+		target.off('click', this.eventShowFullReply);
+		target.on('click', this.eventShowFullReply);
+	}
+
+	eventToggleBoard = (event: Event) => {
+		event.stopPropagation();
+
+		if ((<any>event.currentTarget).toggling)
+			return;
+
+		(<any>event.currentTarget).toggling = true;
+
+		if ((<any>window).assignedBoards === undefined || (<any>window).togglePath === undefined)
+			return;
+
+		let assignedBoards = (<any>window).assignedBoards;
+
+		let boardId = parseInt((<Element>event.currentTarget).getAttribute('board-id'));
+
+		let imgSrc = this.html.querySelector(`[board-flag=${boardId}]`).getAttribute('src');
+
+		if (assignedBoards.includes(boardId)) {
+			assignedBoards.remove(boardId);
+			imgSrc = imgSrc.replace('checked', 'unchecked');
+		}
+		else {
+			assignedBoards.push(boardId);
+			imgSrc = imgSrc.replace('unchecked', 'checked');
+		}
+
+		this.html.querySelector(`[board-flag=${boardId}]`).setAttribute('src', imgSrc);
+
+		let request = Xhr.request(new XhrOptions({
+			url: `${(<any>window).togglePath}&BoardId=${boardId}`			
+		}));
+
+		request.then(() => {
+			(<any>event.currentTarget).toggling = false;
+		});
+	}
+}
