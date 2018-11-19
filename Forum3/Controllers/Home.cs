@@ -9,16 +9,13 @@ namespace Forum3.Controllers {
 	using ViewModels = Models.ViewModels;
 
 	public class Home : Controller {
-		UserContext UserContext { get; }
 		SettingsRepository SettingsRepository { get; }
 		IForumViewResult ForumViewResult { get; }
 
 		public Home(
-			UserContext userContext,
 			IForumViewResult forumViewResult,
 			SettingsRepository settingsRepository
 		) {
-			UserContext = userContext;
 			ForumViewResult = forumViewResult;
 			SettingsRepository = settingsRepository;
 		}
