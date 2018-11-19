@@ -68,7 +68,7 @@ export class TopicDisplay {
 		event.preventDefault();
 		let target = <HTMLElement>event.currentTarget;
 
-		var messageId = target.getAttribute('message-id');
+		let messageId = target.getAttribute('message-id');
 
 		this.app.smileySelector.showSmileySelectorNearElement(target, function (event: Event): void {
 			let smileyImg = <HTMLElement>event.currentTarget;
@@ -106,13 +106,15 @@ export class TopicDisplay {
 	eventToggleBoard = (event: Event) => {
 		event.stopPropagation();
 
-		if ((<any>event.currentTarget).toggling)
+		if ((<any>event.currentTarget).toggling) {
 			return;
+		}
 
 		(<any>event.currentTarget).toggling = true;
 
-		if ((<any>window).assignedBoards === undefined || (<any>window).togglePath === undefined)
+		if ((<any>window).assignedBoards === undefined || (<any>window).togglePath === undefined) {
 			return;
+		}
 
 		let assignedBoards = (<any>window).assignedBoards;
 
