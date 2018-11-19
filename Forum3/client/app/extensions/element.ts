@@ -1,10 +1,10 @@
-﻿type MouseEventType = "click" | "mouseenter" | "mouseleave" | "mousedown" | "mouseup";
+﻿type EventType = "click" | "mouseenter" | "mouseleave" | "mousedown" | "mouseup";
 
 interface Element {
 	hide(): void;
 	show(): void;
-	on(eventName: MouseEventType, callback: EventListenerOrEventListenerObject): void;
-	off(eventName: MouseEventType, callback: EventListenerOrEventListenerObject): void;
+	on(eventName: EventType, callback: EventListenerOrEventListenerObject): void;
+	off(eventName: EventType, callback: EventListenerOrEventListenerObject): void;
 }
 
 Element.prototype.hide = function (): void {
@@ -19,10 +19,12 @@ Element.prototype.show = function (): void {
 	}
 };
 
-Element.prototype.on = function (eventName: MouseEventType, callback: EventListenerOrEventListenerObject): void {
+// Using this prototype instead of addEventListener directly ensures that the eventName is always compliant.
+Element.prototype.on = function (eventName: EventType, callback: EventListenerOrEventListenerObject): void {
 	(<Element>this).addEventListener(eventName, callback);
 }
 
-Element.prototype.off = function (eventName: MouseEventType, callback: EventListenerOrEventListenerObject): void {
+// Using this prototype instead of addEventListener directly ensures that the eventName is always compliant.
+Element.prototype.off = function (eventName: EventType, callback: EventListenerOrEventListenerObject): void {
 	(<Element>this).removeEventListener(eventName, callback);
 } 
