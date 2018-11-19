@@ -1,8 +1,6 @@
 ﻿import { isString } from "util";
 
-type Parameter = { [key: string]: string };
-
-export function postToPath(path: string, parameters: Parameter[]): void {
+export function postToPath(path: string, parameters: Object): void {
 	throwIfNull(path, 'path');
 	throwIfNull(parameters, 'parameters');
 
@@ -18,27 +16,27 @@ export function postToPath(path: string, parameters: Parameter[]): void {
 		return;
 	}
 
-	let form = new HTMLFormElement();
+	let form = <HTMLFormElement>document.createElement('FORM');
 	form.method = "post";
 	form.action = path;
 
-	let antiForgeryToken = new HTMLInputElement();
+	let antiForgeryToken = <HTMLInputElement>document.createElement('INPUT');
 	antiForgeryToken.type = "hidden";
 	antiForgeryToken.name = "__RequestVerificationToken";
 	antiForgeryToken.value = antiForgeryTokenValue;
 
-	form.append(antiForgeryToken);
+	form.appendChild(antiForgeryToken);
 
-	for (let parameter of parameters) {
-		let field = new HTMLInputElement();
+	Object.keys(parameters).forEach(key => {
+		let field = <HTMLInputElement>document.createElement('INPUT');
 		field.type = "hidden";
-		field.name = parameter.key;
-		field.value = parameters[parameter.key];
+		field.name = key;
+		field.value = parameters[key];
 
-		form.append(field);
-	}
+		form.appendChild(field);
+	});
 
-	document.body.append(form);
+	document.body.appendChild(form);
 
 	form.submit();
 }
