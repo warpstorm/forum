@@ -1,4 +1,6 @@
-﻿import { BBCode } from './bbcode';
+﻿require('./extensions/element');
+
+import { BBCode } from './bbcode';
 import { EasterEgg } from './easter-egg';
 import { Navigation } from './navigation';
 import { SmileySelector } from './smiley-selector';
