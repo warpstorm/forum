@@ -8,23 +8,35 @@ interface Element {
 }
 
 Element.prototype.hide = function (): void {
-	if (!(<Element>this).classList.contains('hidden')) {
-		(<Element>this).classList.add('hidden');
+	let classList = (<Element>this).classList;
+
+	if (!classList) {
+		throw new Error('Element does not contain a class list.');
+	}
+
+	if (!classList.contains('hidden')) {
+		classList.add('hidden');
 	}
 };
 
 Element.prototype.show = function (): void {
-	if ((<Element>this).classList.contains('hidden')) {
-		(<Element>this).classList.remove('hidden');
+	let classList = (<Element>this).classList;
+
+	if (!classList) {
+		throw new Error('Element does not contain a class list.');
+	}
+
+	if (classList.contains('hidden')) {
+		classList.remove('hidden');
 	}
 };
 
 // Using this prototype instead of addEventListener directly ensures that the eventName is always compliant.
 Element.prototype.on = function (eventName: EventType, callback: EventListenerOrEventListenerObject): void {
-	(<Element>this).addEventListener(eventName, callback);
+	this.addEventListener(eventName, callback);
 }
 
 // Using this prototype instead of addEventListener directly ensures that the eventName is always compliant.
 Element.prototype.off = function (eventName: EventType, callback: EventListenerOrEventListenerObject): void {
-	(<Element>this).removeEventListener(eventName, callback);
+	this.removeEventListener(eventName, callback);
 } 
