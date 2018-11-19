@@ -1,17 +1,21 @@
-﻿import { insertAtCaret, throwIfNull } from './helpers';
+﻿import { insertAtCaret } from './helpers';
 
 export class SmileySelector {
 	private win: Window;
 	private body: HTMLBodyElement;
 	private smileySelector: HTMLElement;
 	private smileySelectorImageHandler: (event: Event) => void;
+	private smileySelectorTargetTextArea: HTMLTextAreaElement;
 
 	constructor(private doc: Document) {
 		this.win = doc.defaultView;
 		this.body = doc.getElementsByTagName('body')[0];
 
 		let selectorElement = doc.querySelector('#smiley-selector') as HTMLElement;
-		throwIfNull(selectorElement, 'selectorElement');
+
+		if (!selectorElement) {
+			return;
+		}
 
 		this.smileySelector = selectorElement;
 	}
@@ -22,14 +26,18 @@ export class SmileySelector {
 
 		self.doc.querySelectorAll('.add-smiley').forEach(element => {
 			element.on('click', (event: Event): void => {
-				this.showSmileySelectorNearElement(<HTMLElement>event.currentTarget, this.eventInsertSmileyCode);
+				let target = <HTMLElement>event.currentTarget;
+
+				self.smileySelectorTargetTextArea = target.closest('form').querySelector('textarea');
+				self.showSmileySelectorNearElement(target, self.eventInsertSmileyCode);
 			});
 		});
 	}
 
 	showSmileySelectorNearElement(target: HTMLElement, imageHandler: (event: Event) => void): void {
-		let self = this;
+		event.stopPropagation();
 
+		let self = this;
 		self.eventCloseSmileySelector();
 		self.smileySelectorImageHandler = imageHandler;
 
@@ -54,7 +62,7 @@ export class SmileySelector {
 
 		setTimeout(function () {
 			self.body.on('click', self.eventCloseSmileySelector);
-		}, 20);
+		}, 50);
 	}
 
 	eventCloseSmileySelector = (): void => {
@@ -64,27 +72,31 @@ export class SmileySelector {
 		self.smileySelector.style.left = '0';
 		self.smileySelector.hide();
 
-		setTimeout(function () {
-			self.body.off('click', self.eventCloseSmileySelector);
-			self.smileySelector.off('click', self.eventStopPropagation);
+		self.body.off('click', self.eventCloseSmileySelector);
+		self.smileySelector.off('click', self.eventStopPropagation);
+
+		if (self.smileySelectorImageHandler) {
 			self.smileySelector.querySelectorAll('img').forEach(element => {
 				element.off('click', self.smileySelectorImageHandler);
 			});
-		}, 50);
+
+			self.smileySelectorImageHandler = null;
+		}
 	}
 
 	eventInsertSmileyCode = (event: Event): void => {
+		let self = this;
+
 		let eventTarget = <Element>event.currentTarget
 		let smileyCode = eventTarget.getAttribute('code');
-		let targetTextArea = eventTarget.closest('form').querySelector('textarea');
-
-		if (targetTextArea.textContent !== '') {
+			   
+		if (self.smileySelectorTargetTextArea.textContent !== '') {
 			smileyCode = ` ${smileyCode} `;
 		}
 
-		insertAtCaret(targetTextArea, smileyCode);
+		insertAtCaret(self.smileySelectorTargetTextArea, smileyCode);
 
-		this.eventCloseSmileySelector();
+		self.eventCloseSmileySelector();
 	}
 
 	private eventStopPropagation = (event: Event) => {
