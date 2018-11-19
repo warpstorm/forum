@@ -17,7 +17,7 @@ export class TopicDisplay {
 		});
 
 		this.doc.querySelectorAll('.thought-button').forEach(element => {
-			element.on('click', this.eventShowSmileySelector);
+			element.on('click', this.eventShowThoughtSelector);
 		});
 
 		this.doc.querySelectorAll('blockquote.reply').forEach(element => {
@@ -28,9 +28,9 @@ export class TopicDisplay {
 			element.on('click', this.eventToggleBoard);
 		});
 
-		if ((<any>window).showFavicons) {
+		if (!(<any>window).showFavicons) {
 			this.doc.querySelectorAll('.link-favicon').forEach(element => {
-				element.show();
+				element.hide();
 			});
 		}
 	}
@@ -64,7 +64,7 @@ export class TopicDisplay {
 		target.on('click', this.eventShowReplyForm);
 	}
 
-	eventShowSmileySelector = (event: Event) => {
+	eventShowThoughtSelector = (event: Event) => {
 		event.preventDefault();
 		let target = <HTMLElement>event.currentTarget;
 
@@ -74,12 +74,10 @@ export class TopicDisplay {
 			let smileyImg = <HTMLElement>event.currentTarget;
 			let smileyId = smileyImg.getAttribute('smiley-id');
 
-			postToPath('/Messages/AddThought', [
-				{ 'MessageId': messageId },
-				{ 'SmileyId': smileyId }
-			]);
-
-			this.eventCloseSmileySelector();
+			postToPath('/Messages/AddThought', {
+				'MessageId': messageId,
+				'SmileyId': smileyId
+			});
 		});
 	}
 
