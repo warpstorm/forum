@@ -1,31 +1,33 @@
-import { XhrOptions } from "../models/xhr-options";
-import { Xhr } from "../services/xhr";
-import { HttpMethod } from "../definitions/http-method";
-import { Navigation } from "../navigation";
+import { App } from '../app';
+import { Navigation } from '../navigation';
 
-// expects `document` to be defined at the global scope.
-export default function () {
-	let topicIndex = new TopicIndex(document);
-	topicIndex.setupPage();
-}
+import { Xhr } from '../services/xhr';
+import { XhrOptions } from '../models/xhr-options';
+import { HttpMethod } from '../definitions/http-method';
+import { throwIfNull } from '../helpers';
 
 export class TopicIndex {
-	constructor(private doc: Document) { }
+	private moreTopicsButton: HTMLElement;
+
+	constructor(private doc: Document, private app: App = null) {
+		throwIfNull(doc, 'doc');
+		this.moreTopicsButton = doc.querySelector('#load-more-topics');
+	}
 
 	setupPage(): void {
-		if ((<any>window).unreadFilter == 0) {
-			this.doc.querySelector("#load-more-topics").show();
-			this.doc.querySelector("#load-more-topics").off('click', this.eventLoadMoreTopics);
-			this.doc.querySelector("#load-more-topics").on('click', this.eventLoadMoreTopics);
+		if ((<any>this.doc.defaultView).unreadFilter == 0) {
+			this.moreTopicsButton.show();
+			this.moreTopicsButton.off('click', this.eventLoadMoreTopics);
+			this.moreTopicsButton.on('click', this.eventLoadMoreTopics);
 		}
 	}
 
 	eventLoadMoreTopics = () => {
 		let self = this;
 
-		let originalText = self.doc.querySelector("#load-more-topics").textContent;
+		let originalText = this.moreTopicsButton.textContent;
 
-		self.doc.querySelector("#load-more-topics").textContent = "Loading...";
+		this.moreTopicsButton.textContent = 'Loading...';
 
 		let request = Xhr.request(new XhrOptions({
 			method: HttpMethod.Get,
@@ -44,14 +46,14 @@ export class TopicIndex {
 					new Navigation(self.doc).addListenerClickableLinkParent();
 				}
 				else {
-					self.doc.querySelector("#topic-list").insertAdjacentElement('beforeend', element);
+					self.doc.querySelector('#topic-list').insertAdjacentElement('beforeend', element);
 				}
 			});
 
 			if ((<any>window).moreTopics)
-				self.doc.querySelector("#load-more-topics").textContent = originalText;
+				this.moreTopicsButton.textContent = originalText;
 			else
-				self.doc.querySelector("#load-more-topics").hide();
+				this.moreTopicsButton.hide();
 		});
 	}
 }

@@ -9,14 +9,14 @@ let easterEgg = new EasterEgg(html.window().document);
 
 describe('EasterEgg', () => {
 	it('should find a hidden danger-sign', () => {
-		easterEgg.addEasterEggListener();
+		easterEgg.init();
 
 		let targetElement = html.get('#danger-sign');
 		chai.expect(targetElement.classList.contains('hidden')).to.equal(true);
 	});
 
 	it('should remove hidden on mouseenter', () => {
-		easterEgg.addEasterEggListener();
+		easterEgg.init();
 
 		let eventElement = html.get('#easter-egg');
 		html.mouseEnter(eventElement);
@@ -26,7 +26,7 @@ describe('EasterEgg', () => {
 	});
 
 	it('should replace hidden on mouseleave', () => {
-		easterEgg.addEasterEggListener();
+		easterEgg.init();
 
 		let eventElement = html.get('#easter-egg');
 		html.mouseEnter(eventElement);

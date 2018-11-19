@@ -1,11 +1,5 @@
 ﻿import { isFirefox } from './helpers';
 
-export default function (): void {
-	// expects document to be defined at the global scope.
-	let navigation = new Navigation(document);
-	navigation.addListeners();
-}
-
 export class Navigation {
 	constructor(private doc: Document) {}
 

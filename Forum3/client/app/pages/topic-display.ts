@@ -1,17 +1,17 @@
-﻿import { postToPath } from "../helpers";
+﻿import { App } from "../app";
+
 import { Xhr } from "../services/xhr";
 import { XhrOptions } from "../models/xhr-options";
-
-// expects `document` to be defined at the global scope.
-export default function () {
-	let topicDisplay = new TopicDisplay(document);
-	topicDisplay.setupPage();
-}
+import { postToPath, throwIfNull } from "../helpers";
 
 export class TopicDisplay {
-	constructor(private doc: Document) { }
+	constructor(private doc: Document, private app: App) {
+		throwIfNull(doc, 'doc');
+		throwIfNull(app, 'app');
+		throwIfNull(app.smileySelector, 'app.smileySelector');
+	}
 
-	setupPage() {
+	init() {
 		this.doc.querySelectorAll('.reply-button').forEach(element => {
 			element.on('click', this.eventShowReplyForm)
 		});
@@ -66,12 +66,13 @@ export class TopicDisplay {
 
 	eventShowSmileySelector = (event: Event) => {
 		event.preventDefault();
-		let target = <Element>event.currentTarget;
+		let target = <HTMLElement>event.currentTarget;
 
 		var messageId = target.getAttribute('message-id');
 
-		ShowSmileySelector(event, function (smileyImg: Element) {
-			var smileyId = smileyImg.getAttribute('smiley-id');
+		this.app.smileySelector.showSmileySelectorNearElement(target, function (event: Event): void {
+			let smileyImg = <HTMLElement>event.currentTarget;
+			let smileyId = smileyImg.getAttribute('smiley-id');
 
 			postToPath('/Messages/AddThought', [
 				{ 'MessageId': messageId },

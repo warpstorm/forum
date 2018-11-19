@@ -16,16 +16,10 @@ let bbCodes = {
 	'size': '[size=10]  [/size]'
 };
 
-export default function () {
-	// expects document to be defined at the global scope.
-	var bbCode = new BBCode(document);
-	bbCode.addListeners();
-}
-
 export class BBCode {
 	constructor(private doc: Document) {}
 
-	addListeners(): void {
+	init(): void {
 		this.addBBCodeListener();
 		this.addSpoilerListener();
 	}

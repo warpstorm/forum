@@ -1,15 +1,9 @@
 ﻿import { throwIfNull } from "./helpers";
 
-export default function () {
-	// expects document to be defined at the global scope.
-	var easterEgg = new EasterEgg(document);
-	easterEgg.addEasterEggListener();
-}
-
 export class EasterEgg {
 	constructor(private doc: Document) {}
 
-	addEasterEggListener(): void {
+	init(): void {
 		let element = this.doc.querySelector('#easter-egg');
 
 		throwIfNull(element, 'element');
