@@ -3,6 +3,8 @@
 
 # temporary while working on v4
 Reference
+**/client
+**/wwwroot/styles
 
 **/bower_components/**
 **/node_modules/**
