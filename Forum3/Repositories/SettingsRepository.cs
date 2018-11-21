@@ -28,6 +28,8 @@ namespace Forum3.Repositories {
 			UserContext = userContext;
 		}
 
+		public bool Installed() => GetBool("Installed", true);
+
 		public int AvatarSize(bool forceGlobal = false) {
 			var setting = GetInt("AvatarSize", forceGlobal);
 

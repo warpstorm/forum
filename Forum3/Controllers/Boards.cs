@@ -37,6 +37,10 @@ namespace Forum3.Controllers {
 				Sidebar = sidebar
 			};
 
+			if (!viewModel.Categories.Any()) {
+				return RedirectToAction(nameof(Setup.Initialize), nameof(Setup));
+			}
+
 			return ForumViewResult.ViewResult(this, viewModel);
 		}
 
