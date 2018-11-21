@@ -74,13 +74,7 @@ namespace Forum3.Filters {
 			var adminRole = RoleRepository.SiteRoles.FirstOrDefault(r => r.Name == "Admin");
 			var anyAdminUsers = adminUsersQuery.Any();
 
-			// Occurs when there is no admin role created yet.
-			if (adminRole is null)
-				UserContext.IsAdmin = true;
-			// Occurs when there is an admin role, but no admin users yet.
-			else if (!anyAdminUsers)
-				UserContext.IsAdmin = true;
-			else if (UserContext.Roles.Contains(adminRole.Id)) {
+			if (UserContext.Roles.Contains(adminRole.Id)) {
 				// Force logout if the user was removed from Admin, but their session still says they're in Admin.
 				if (!adminUsersQuery.Any(uid => uid == UserContext.ApplicationUser.Id)) {
 					await SignInManager.SignOutAsync();
