@@ -67,6 +67,8 @@ namespace Forum3.Extensions {
 				return BBCParserFactory.GetParser();
 			});
 
+			services.AddTransient<SetupService>();
+
 			return services;
 		}
 

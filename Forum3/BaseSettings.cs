@@ -7,6 +7,11 @@ namespace Forum3 {
 	public class BaseSettings : IEnumerable<BaseSetting> {
 		static List<BaseSetting> Values { get; } = new List<BaseSetting> {
 			new BaseSetting {
+				Key = "Installed",
+				Display = "Installed",
+				Description = "Is the forum installed?"
+			},
+			new BaseSetting {
 				Key = "AvatarSize",
 				Display = "Avatar Size",
 				Description = "Alters the size of the avatars"
