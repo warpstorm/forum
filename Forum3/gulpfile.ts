@@ -1,15 +1,15 @@
-/// <binding AfterBuild='global-styles, page-styles, scripts' />
+﻿/// <binding AfterBuild='global-styles, page-styles, scripts' />
 
-var gulp = require('gulp');
-var del = require('del');
-var concat = require('gulp-concat');
-var browserify = require("browserify");
-var source = require('vinyl-source-stream');
-var tsify = require("tsify");
-var uglify = require('gulp-uglify-es').default;
-var uglifyCss = require('gulp-uglifycss');
-var sourcemaps = require('gulp-sourcemaps');
-var buffer = require('vinyl-buffer');
+import * as gulp from "gulp";
+import * as del from "del";
+import * as concat from "gulp-concat";
+import * as browserify from "browserify";
+import * as source from "vinyl-source-stream";
+import * as tsify from "tsify";
+import uglify from "gulp-uglify-es";
+import * as uglifyCss from "gulp-uglifycss";
+import * as sourcemaps from "gulp-sourcemaps";
+import * as buffer from "vinyl-buffer";
 
 gulp.task('clean', function () {
 	return del.sync([
