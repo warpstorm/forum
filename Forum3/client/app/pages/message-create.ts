@@ -35,8 +35,9 @@ export class MessageCreate {
 		let target = <Element>event.currentTarget
 
 		let boardId = target.getAttribute('board-id');
+		let boardFlagElement = this.doc.querySelector(`[board-flag="${boardId}"]`);
 
-		let imgSrc = this.doc.querySelector(`[board-flag=${boardId}]`).getAttribute('src');
+		let imgSrc = boardFlagElement.getAttribute('src');
 
 		let assignedBoardIndex: number = this.assignedBoards.indexOf(boardId, 0);
 		let checkbox = <HTMLInputElement>this.doc.querySelector(`input[name="Selected_${boardId}"]`);
@@ -44,15 +45,15 @@ export class MessageCreate {
 		if (assignedBoardIndex > -1) {
 			this.assignedBoards.splice(assignedBoardIndex, 1);
 			imgSrc = imgSrc.replace('checked', 'unchecked');
-			checkbox.checked = false;
+			checkbox.value = "False";
 		}
 		else {
 			this.assignedBoards.push(boardId);
 			imgSrc = imgSrc.replace('unchecked', 'checked');
-			checkbox.checked = true;
+			checkbox.value = "True";
 		}
 
-		this.doc.querySelector(`[board-flag=${boardId}]`).setAttribute('src', imgSrc);
+		boardFlagElement.setAttribute('src', imgSrc);
 
 		this.toggleLock = false;
 	};

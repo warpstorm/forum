@@ -44,7 +44,7 @@ export class App {
 
 			case 'message-create':
 				let messageCreate = new MessageCreate(document, this);
-				manageBoards.init();
+				messageCreate.init();
 				break;
 
 			case 'topic-display':
