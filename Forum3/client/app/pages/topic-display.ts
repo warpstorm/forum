@@ -6,6 +6,7 @@ import { postToPath, throwIfNull } from "../helpers";
 
 export class TopicDisplay {
 	private thoughtSelectorMessageId: string;
+	private assignedBoards: string[];
 
 	constructor(private doc: Document, private app: App) {
 		throwIfNull(doc, 'doc');
@@ -14,6 +15,12 @@ export class TopicDisplay {
 	}
 
 	init() {
+		let incomingBoards: string[] = (<any>window).assignedBoards;
+
+		if (incomingBoards && incomingBoards.length > 0) {
+			this.assignedBoards = incomingBoards;
+		}
+
 		this.doc.querySelectorAll('.reply-button').forEach(element => {
 			element.on('click', this.eventShowReplyForm)
 		});
@@ -97,39 +104,41 @@ export class TopicDisplay {
 	eventToggleBoard = (event: Event) => {
 		event.stopPropagation();
 
-		if ((<any>event.currentTarget).toggling) {
+		let target = <Element>event.currentTarget;
+		let toggling = target.getAttribute('toggling');
+
+		if (toggling) {
 			return;
 		}
 
-		(<any>event.currentTarget).toggling = true;
+		target.setAttribute('toggling', 'true');
 
 		if ((<any>window).assignedBoards === undefined || (<any>window).togglePath === undefined) {
 			return;
 		}
 
-		let assignedBoards = (<any>window).assignedBoards;
+		let boardId = target.getAttribute('board-id');
+		let assignedBoardIndex: number = this.assignedBoards.indexOf(boardId, 0);
 
-		let boardId = parseInt((<Element>event.currentTarget).getAttribute('board-id'));
+		let imgSrc = this.doc.querySelector(`[board-flag="${boardId}"]`).getAttribute('src');
 
-		let imgSrc = this.doc.querySelector(`[board-flag=${boardId}]`).getAttribute('src');
-
-		if (assignedBoards.includes(boardId)) {
-			assignedBoards.remove(boardId);
+		if (assignedBoardIndex > -1) {
+			this.assignedBoards.splice(assignedBoardIndex, 1);
 			imgSrc = imgSrc.replace('checked', 'unchecked');
 		}
 		else {
-			assignedBoards.push(boardId);
+			this.assignedBoards.push(boardId);
 			imgSrc = imgSrc.replace('unchecked', 'checked');
 		}
 
-		this.doc.querySelector(`[board-flag=${boardId}]`).setAttribute('src', imgSrc);
+		this.doc.querySelector(`[board-flag="${boardId}"]`).setAttribute('src', imgSrc);
 
 		let request = Xhr.request(new XhrOptions({
 			url: `${(<any>window).togglePath}&BoardId=${boardId}`			
 		}));
 
 		request.then(() => {
-			(<any>event.currentTarget).toggling = false;
+			target.removeAttribute('toggling');
 		});
 	}
 
