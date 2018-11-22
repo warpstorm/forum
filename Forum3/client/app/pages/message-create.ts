@@ -1,0 +1,59 @@
+﻿import { App } from '../app';
+
+import { throwIfNull } from '../helpers';
+
+export class MessageCreate {
+	private toggleLock: boolean;
+	private assignedBoards: string[];
+
+	constructor(private doc: Document, private app: App) {
+		throwIfNull(doc, 'doc');
+		throwIfNull(app, 'app');
+	}
+
+	init() {
+		let incomingBoards: string[] = (<any>window).assignedBoards;
+
+		if (incomingBoards && incomingBoards.length > 0) {
+			this.assignedBoards = incomingBoards;
+		}
+
+		this.doc.querySelectorAll('[toggle-board]').forEach(element => {
+			element.on('click', this.eventToggleBoard);
+		});
+	}
+
+	eventToggleBoard = (event: Event): void => {
+		event.stopPropagation();
+
+		if (this.toggleLock) {
+			return;
+		}
+
+		this.toggleLock = true;
+
+		let target = <Element>event.currentTarget
+
+		let boardId = target.getAttribute('board-id');
+
+		let imgSrc = this.doc.querySelector(`[board-flag=${boardId}]`).getAttribute('src');
+
+		let assignedBoardIndex: number = this.assignedBoards.indexOf(boardId, 0);
+		let checkbox = <HTMLInputElement>this.doc.querySelector(`input[name="Selected_${boardId}"]`);
+
+		if (assignedBoardIndex > -1) {
+			this.assignedBoards.splice(assignedBoardIndex, 1);
+			imgSrc = imgSrc.replace('checked', 'unchecked');
+			checkbox.checked = false;
+		}
+		else {
+			this.assignedBoards.push(boardId);
+			imgSrc = imgSrc.replace('unchecked', 'checked');
+			checkbox.checked = true;
+		}
+
+		this.doc.querySelector(`[board-flag=${boardId}]`).setAttribute('src', imgSrc);
+
+		this.toggleLock = false;
+	};
+}

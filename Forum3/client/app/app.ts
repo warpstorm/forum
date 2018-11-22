@@ -8,6 +8,7 @@ import { SmileySelector } from './smiley-selector';
 import { TopicIndex } from './pages/topic-index';
 import { TopicDisplay } from './pages/topic-display';
 import { ManageBoards } from './pages/manage-boards';
+import { MessageCreate } from './pages/message-create';
 
 window.onload = function () {
 	let app = new App();
@@ -38,6 +39,11 @@ export class App {
 		switch (pageActions) {
 			case 'manage-boards':
 				let manageBoards = new ManageBoards(document, this);
+				manageBoards.init();
+				break;
+
+			case 'message-create':
+				let messageCreate = new MessageCreate(document, this);
 				manageBoards.init();
 				break;
 
