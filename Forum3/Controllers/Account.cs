@@ -55,8 +55,9 @@ namespace Forum3.Controllers {
 			var viewModel = new ViewModels.Account.IndexPage();
 
 			foreach (var user in AccountRepository) {
-				if (user.DisplayName == "Deleted Account")
+				if (user.DisplayName == "Deleted Account") {
 					continue;
+				}
 
 				var indexItem = new ViewModels.Account.IndexItem {
 					Id = user.Id,
@@ -77,8 +78,9 @@ namespace Forum3.Controllers {
 		public async Task<IActionResult> Details(string id) {
 			var userRecord = id is null ? UserContext.ApplicationUser : await UserManager.FindByIdAsync(id);
 
-			if (userRecord is null)
+			if (userRecord is null) {
 				userRecord = UserContext.ApplicationUser;
+			}
 
 			AccountRepository.CanEdit(userRecord.Id);
 
@@ -149,8 +151,9 @@ namespace Forum3.Controllers {
 			async Task<IActionResult> FailureCallback() {
 				var userRecord = input.Id is null ? UserContext.ApplicationUser : await UserManager.FindByIdAsync(input.Id);
 
-				if (userRecord is null)
+				if (userRecord is null) {
 					userRecord = UserContext.ApplicationUser;
+				}
 
 				AccountRepository.CanEdit(userRecord.Id);
 
@@ -166,6 +169,7 @@ namespace Forum3.Controllers {
 					BirthdayDay = userRecord.Birthday.Day.ToString(),
 					BirthdayMonth = userRecord.Birthday.Month.ToString(),
 					BirthdayYear = userRecord.Birthday.Year.ToString(),
+					Settings = SettingsRepository.GetUserSettingsList(userRecord.Id)
 				};
 
 				return ForumViewResult.ViewResult(this, nameof(Details), viewModel);
@@ -206,8 +210,9 @@ namespace Forum3.Controllers {
 		[HttpGet]
 		[AllowAnonymous]
 		public async Task<IActionResult> Login() {
-			if (AccountRepository.IsAuthenticated)
+			if (AccountRepository.IsAuthenticated) {
 				return RedirectToAction(nameof(Home.FrontPage), nameof(Home));
+			}
 
 			await AccountRepository.SignOut();
 
@@ -228,8 +233,9 @@ namespace Forum3.Controllers {
 			return await FailureCallback();
 
 			async Task<IActionResult> FailureCallback() {
-				if (AccountRepository.IsAuthenticated)
+				if (AccountRepository.IsAuthenticated) {
 					return RedirectToAction(nameof(Home.FrontPage), nameof(Home));
+				}
 
 				await AccountRepository.SignOut();
 
@@ -390,8 +396,9 @@ namespace Forum3.Controllers {
 
 		[HttpGet]
 		public async Task<IActionResult> ConfirmDelete(string userId) {
-			if (UserContext.ApplicationUser.Id != userId && !UserContext.IsAdmin)
+			if (UserContext.ApplicationUser.Id != userId && !UserContext.IsAdmin) {
 				throw new HttpForbiddenError();
+			}
 
 			var deletedAccount = AccountRepository.FirstOrDefault(item => item.DisplayName == "Deleted Account");
 
