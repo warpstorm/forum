@@ -41,6 +41,10 @@ export class SmileySelector {
 		self.eventCloseSmileySelector();
 		self.smileySelectorImageHandler = imageHandler;
 
+		self.smileySelector.querySelectorAll('img').forEach(element => {
+			element.on('click', self.smileySelectorImageHandler);
+		});
+
 		var rect = target.getBoundingClientRect();
 		var targetTop = rect.top + self.win.pageYOffset - self.doc.documentElement.clientTop;
 		var targetLeft = rect.left + self.win.pageXOffset - self.doc.documentElement.clientLeft;

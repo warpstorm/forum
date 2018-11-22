@@ -5,6 +5,8 @@ import { XhrOptions } from "../models/xhr-options";
 import { postToPath, throwIfNull } from "../helpers";
 
 export class TopicDisplay {
+	private thoughtSelectorMessageId: string;
+
 	constructor(private doc: Document, private app: App) {
 		throwIfNull(doc, 'doc');
 		throwIfNull(app, 'app');
@@ -67,18 +69,9 @@ export class TopicDisplay {
 	eventShowThoughtSelector = (event: Event) => {
 		event.preventDefault();
 		let target = <HTMLElement>event.currentTarget;
+		this.thoughtSelectorMessageId = target.getAttribute('message-id');
 
-		let messageId = target.getAttribute('message-id');
-
-		this.app.smileySelector.showSmileySelectorNearElement(target, function (event: Event): void {
-			let smileyImg = <HTMLElement>event.currentTarget;
-			let smileyId = smileyImg.getAttribute('smiley-id');
-
-			postToPath('/Messages/AddThought', {
-				'MessageId': messageId,
-				'SmileyId': smileyId
-			});
-		});
+		this.app.smileySelector.showSmileySelectorNearElement(target, this.eventAddThought);
 	}
 
 	eventShowFullReply = (event: Event) => {
@@ -137,6 +130,16 @@ export class TopicDisplay {
 
 		request.then(() => {
 			(<any>event.currentTarget).toggling = false;
+		});
+	}
+
+	eventAddThought = (event: Event): void => {
+		let smileyImg = <HTMLElement>event.currentTarget;
+		let smileyId = smileyImg.getAttribute('smiley-id');
+
+		postToPath('/Messages/AddThought', {
+			'MessageId': this.thoughtSelectorMessageId,
+			'SmileyId': smileyId
 		});
 	}
 }
