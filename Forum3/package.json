@@ -23,6 +23,9 @@
 		"tsify": "^4.0.0",
 		"typescript": "^3.1.6",
 		"vinyl-buffer": "^1.0.1",
-		"vinyl-source-stream": "^2.0.0"
+		"vinyl-source-stream": "^2.0.0",
+		"cached-path-relative": "1.0.2",
+		"lodash": "^4.17.11",
+		"minimatch": "^3.0.4"
 	}
 }
