@@ -1,11 +1,11 @@
-﻿.boardInfo {
+﻿.board-info {
 	width: 20px;
 }
 
-.category .board:hover .boardInfo {
+.category .board:hover .board-info {
 	background-color: #0f2831;
 }
 
-.category .board:hover .boardName span {
+.category .board:hover .board-name span {
 	border-bottom: 3px solid #283a41;
 }

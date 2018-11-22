@@ -14,7 +14,7 @@ export class TopicIndex {
 		this.moreTopicsButton = doc.querySelector('#load-more-topics');
 	}
 
-	setupPage(): void {
+	init(): void {
 		if ((<any>this.doc.defaultView).unreadFilter == 0) {
 			this.moreTopicsButton.show();
 			this.moreTopicsButton.off('click', this.eventLoadMoreTopics);
