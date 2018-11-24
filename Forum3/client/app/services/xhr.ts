@@ -51,6 +51,7 @@ export module Xhr {
 					response: xhr.response
 				});
 
+			default:
 			case 'text':
 				return new XhrResult({
 					status: xhr.status,
