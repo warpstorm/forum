@@ -1,7 +1,7 @@
 import { HttpMethod } from "../definitions/http-method";
 
 export class XhrOptions {
-	url: string;
+	url: string = "";
 	timeout: number = 3000;
 	method: HttpMethod = HttpMethod.Get;
 	query: any = {};
