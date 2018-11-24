@@ -1,4 +1,4 @@
-﻿namespace Forum3.Models.ServiceModels {
+﻿namespace Forum.Models.ServiceModels {
 	public class EmailSenderOptions {
 		public string SendGridUser { get; set; }
 		public string SendGridKey { get; set; }

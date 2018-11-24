@@ -1,4 +1,4 @@
-﻿namespace Forum3.Models.ViewModels.Roles.Items {
+﻿namespace Forum.Models.ViewModels.Roles.Items {
 	public class IndexRole {
 		public string Id { get; set; }
 		public string Name { get; set; }

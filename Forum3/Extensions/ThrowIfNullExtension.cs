@@ -1,8 +1,8 @@
-﻿using Forum3.Errors;
+﻿using Forum.Errors;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Forum3.Extensions {
+namespace Forum.Extensions {
 	/// Source: https://stackoverflow.com/questions/11522104
 	public static class ThrowIfNullExtension {
 		public static void ThrowIfNull<T>(this T o, string paramName) where T : class {

@@ -1,10 +1,10 @@
-﻿using Forum3.Contexts;
-using Forum3.Interfaces.Services;
-using Forum3.Repositories;
+﻿using Forum.Contexts;
+using Forum.Interfaces.Services;
+using Forum.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Encodings.Web;
 
-namespace Forum3.Controllers {
+namespace Forum.Controllers {
 	using ViewModels = Models.ViewModels.Profile;
 
 	public class Profile : Controller {

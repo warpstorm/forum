@@ -1,6 +1,6 @@
-﻿using Forum3.Contexts;
-using Forum3.Controllers;
-using Forum3.Errors;
+﻿using Forum.Contexts;
+using Forum.Controllers;
+using Forum.Errors;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -12,7 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Forum3.Repositories {
+namespace Forum.Repositories {
 	using DataModels = Models.DataModels;
 	using InputModels = Models.InputModels;
 	using ItemViewModels = Models.ViewModels.Roles.Items;

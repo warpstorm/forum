@@ -1,8 +1,8 @@
-﻿using Forum3.Enums;
+﻿using Forum.Enums;
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Forum3.Models.DataModels {
+namespace Forum.Models.DataModels {
 	public class Notification {
 		public int Id { get; set; }
 

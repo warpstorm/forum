@@ -1,4 +1,4 @@
-﻿using Forum3.Contexts;
+﻿using Forum.Contexts;
 using Microsoft.Extensions.Logging;
 using Microsoft.WindowsAzure.Storage.Blob;
 using System.Collections.Generic;
@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace Forum3.Repositories {
+namespace Forum.Repositories {
 	using DataModels = Models.DataModels;
 	using InputModels = Models.InputModels;
 	using ServiceModels = Models.ServiceModels;

@@ -1,6 +1,6 @@
-﻿using Forum3.Repositories;
+﻿using Forum.Repositories;
 
-namespace Forum3.Services {
+namespace Forum.Services {
 	using ViewModels = Models.ViewModels;
 
 	public class Sidebar {

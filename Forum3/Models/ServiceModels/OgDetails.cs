@@ -1,4 +1,4 @@
-﻿namespace Forum3.Models.ServiceModels {
+﻿namespace Forum.Models.ServiceModels {
 	public class OgDetails {
 		public string Title { get; set; }
 		public string SiteName { get; set; }

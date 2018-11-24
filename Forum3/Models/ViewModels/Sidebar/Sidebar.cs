@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Forum3.Models.ViewModels.Sidebar {
+namespace Forum.Models.ViewModels.Sidebar {
 	public class Sidebar {
 		public Quotes.DisplayQuote Quote { get; set; }
 		public string[] Birthdays { get; set; }

@@ -1,4 +1,4 @@
-﻿namespace Forum3.Models.DataModels {
+﻿namespace Forum.Models.DataModels {
 	public class Board {
 		public int Id { get; set; }
 		public int LegacyId { get; set; }

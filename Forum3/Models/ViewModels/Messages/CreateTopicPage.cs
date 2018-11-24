@@ -1,6 +1,6 @@
-﻿using Forum3.Interfaces.Models.ViewModels;
+﻿using Forum.Interfaces.Models.ViewModels;
 
-namespace Forum3.Models.ViewModels.Messages {
+namespace Forum.Models.ViewModels.Messages {
 	public class CreateTopicPage : IMessageViewModel {
 		public int Id { get; set; }
 		public int? BoardId { get; set; }

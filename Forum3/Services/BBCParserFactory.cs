@@ -1,6 +1,6 @@
 ﻿using CodeKicker.BBCode;
 
-namespace Forum3.Services {
+namespace Forum.Services {
 	public class BBCParserFactory {
 		public static BBCodeParser GetParser() {
 			return new BBCodeParser(new[] {

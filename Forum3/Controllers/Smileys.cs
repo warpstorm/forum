@@ -1,13 +1,13 @@
-﻿using Forum3.Annotations;
-using Forum3.Contexts;
-using Forum3.Interfaces.Services;
-using Forum3.Models.InputModels;
-using Forum3.Repositories;
+﻿using Forum.Annotations;
+using Forum.Contexts;
+using Forum.Interfaces.Services;
+using Forum.Models.InputModels;
+using Forum.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
-namespace Forum3.Controllers {
+namespace Forum.Controllers {
 	using ViewModels = Models.ViewModels.Smileys;
 
 	[Authorize(Roles="Admin")]

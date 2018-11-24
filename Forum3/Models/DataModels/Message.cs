@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Forum3.Models.DataModels {
+namespace Forum.Models.DataModels {
 	public class Message {
 		public int Id { get; set; }
 

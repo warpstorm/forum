@@ -1,12 +1,12 @@
-﻿using Forum3.Interfaces.Services;
-using Forum3.Repositories;
-using Forum3.Services;
+﻿using Forum.Interfaces.Services;
+using Forum.Repositories;
+using Forum.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Forum3.Controllers {
+namespace Forum.Controllers {
 	using InputModels = Models.InputModels;
 	using PageViewModels = Models.ViewModels.Boards.Pages;
 

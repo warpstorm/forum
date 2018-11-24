@@ -1,8 +1,8 @@
-﻿namespace Forum3 {
+﻿namespace Forum {
 	public class Constants {
 		public class Versions {
 			public const string Theme = "12";
-			public const string Code = "4.0.2";
+			public const string Code = "4.1.0";
 		}
 
 		public class InternalKeys {

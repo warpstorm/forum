@@ -1,5 +1,5 @@
-﻿using Forum3.Contexts;
-using Forum3.Extensions;
+﻿using Forum.Contexts;
+using Forum.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -9,7 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Forum3.Repositories {
+namespace Forum.Repositories {
 	using DataModels = Models.DataModels;
 	using InputModels = Models.InputModels;
 	using ItemViewModels = Models.ViewModels.Boards.Items;

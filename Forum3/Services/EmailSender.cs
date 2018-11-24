@@ -1,6 +1,6 @@
-﻿using Forum3.Errors;
-using Forum3.Interfaces.Services;
-using Forum3.Models.ServiceModels;
+﻿using Forum.Errors;
+using Forum.Interfaces.Services;
+using Forum.Models.ServiceModels;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SendGrid;
@@ -9,7 +9,7 @@ using System.Net;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 
-namespace Forum3.Services {
+namespace Forum.Services {
 	public class EmailSender : IEmailSender {
 		public bool Ready { get; }
 

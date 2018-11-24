@@ -1,9 +1,9 @@
-﻿using Forum3.Extensions;
+﻿using Forum.Extensions;
 using Microsoft.AspNetCore.Http;
 using System.Diagnostics;
 using System.Threading.Tasks;
 
-namespace Forum3.Middleware {
+namespace Forum.Middleware {
 	public class PageTimer {
 		RequestDelegate _next { get; }
 

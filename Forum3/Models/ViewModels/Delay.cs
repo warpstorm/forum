@@ -1,4 +1,4 @@
-﻿namespace Forum3.Models.ViewModels {
+﻿namespace Forum.Models.ViewModels {
 	public class Delay {
 		public string ActionName { get; set; }
 		public string ActionNote { get; set; }

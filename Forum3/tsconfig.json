@@ -1,5 +1,6 @@
 ﻿{
 	"compilerOptions": {
+        "baseUrl": ".",
 		"target": "es2016",
 		"lib": [ "dom", "es2016" ],
 		"moduleResolution": "node",

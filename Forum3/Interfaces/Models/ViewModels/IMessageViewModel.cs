@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Forum3.Interfaces.Models.ViewModels {
+namespace Forum.Interfaces.Models.ViewModels {
 	public interface IMessageViewModel {
 		int Id { get; }
 

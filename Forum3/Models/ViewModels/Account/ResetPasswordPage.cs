@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Forum3.Models.ViewModels.Account {
+namespace Forum.Models.ViewModels.Account {
 	public class ResetPasswordPage {
 		[Required]
 		[EmailAddress]

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Forum3.Models.DataModels {
+namespace Forum.Models.DataModels {
 	public class Quote {
 		public int Id { get; set; }
 		public int MessageId { get; set; }

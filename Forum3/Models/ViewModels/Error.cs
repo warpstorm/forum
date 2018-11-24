@@ -1,4 +1,4 @@
-namespace Forum3.Models.ViewModels {
+namespace Forum.Models.ViewModels {
 	public class Error {
 		public string RequestId { get; set; }
 

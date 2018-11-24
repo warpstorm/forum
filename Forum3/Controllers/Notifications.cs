@@ -1,9 +1,9 @@
-﻿using Forum3.Interfaces.Services;
-using Forum3.Repositories;
+﻿using Forum.Interfaces.Services;
+using Forum.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
-namespace Forum3.Controllers {
+namespace Forum.Controllers {
 	using ViewModels = Models.ViewModels.Notifications;
 
 	public class Notifications : Controller {

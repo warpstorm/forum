@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Forum3.Errors {
+namespace Forum.Errors {
 	public class HttpInternalServerError : HttpException {
 		public override int StatusCode => 500;
 

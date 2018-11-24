@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Collections.Generic;
 
-namespace Forum3.Models.ViewModels.SiteSettings {
+namespace Forum.Models.ViewModels.SiteSettings {
 	public class IndexItem {
 		public bool AdminOnly { get; set; }
 		public string Key { get; set; }

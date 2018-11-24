@@ -1,6 +1,6 @@
-﻿using Forum3.Contexts;
-using Forum3.Enums;
-using Forum3.Repositories;
+﻿using Forum.Contexts;
+using Forum.Enums;
+using Forum.Repositories;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Forum3.Filters {
+namespace Forum.Filters {
 	using DataModels = Models.DataModels;
 
 	public class UserContextActionFilter : IAsyncActionFilter {
@@ -74,7 +74,7 @@ namespace Forum3.Filters {
 			var adminRole = RoleRepository.SiteRoles.FirstOrDefault(r => r.Name == "Admin");
 			var anyAdminUsers = adminUsersQuery.Any();
 
-			if (UserContext.Roles.Contains(adminRole.Id)) {
+			if (adminRole != null && UserContext.Roles.Contains(adminRole.Id)) {
 				// Force logout if the user was removed from Admin, but their session still says they're in Admin.
 				if (!adminUsersQuery.Any(uid => uid == UserContext.ApplicationUser.Id)) {
 					await SignInManager.SignOutAsync();

@@ -1,4 +1,4 @@
-﻿namespace Forum3.Models.InputModels {
+﻿namespace Forum.Models.InputModels {
 	public class EditSettingsInput {
 		public EditSettingInput[] Settings { get; set; }
 	}

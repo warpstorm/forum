@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace Forum3.Services {
+namespace Forum.Services {
 	using ServiceModels = Models.ServiceModels;
 
 	public class YouTubeClient {

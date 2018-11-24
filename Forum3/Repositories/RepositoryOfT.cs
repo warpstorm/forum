@@ -1,12 +1,12 @@
-﻿using Forum3.Errors;
-using Forum3.Interfaces.Models;
+﻿using Forum.Errors;
+using Forum.Interfaces.Models;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Forum3.Repositories {
+namespace Forum.Repositories {
 	public abstract class Repository<T> : IRepository<T> where T : class {
 		public T this[int i] => Records[i];
 

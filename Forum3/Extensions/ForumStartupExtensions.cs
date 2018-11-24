@@ -1,10 +1,10 @@
-﻿using Forum3.Annotations;
-using Forum3.Contexts;
-using Forum3.Errors;
-using Forum3.Interfaces.Filters;
-using Forum3.Interfaces.Services;
-using Forum3.Middleware;
-using Forum3.Services;
+﻿using Forum.Annotations;
+using Forum.Contexts;
+using Forum.Errors;
+using Forum.Interfaces.Filters;
+using Forum.Interfaces.Services;
+using Forum.Middleware;
+using Forum.Services;
 using Jdenticon;
 using Jdenticon.Rendering;
 using Microsoft.AspNetCore.Builder;
@@ -19,7 +19,7 @@ using Microsoft.WindowsAzure.Storage;
 // Scoped: created once per request.
 // Singleton: created the first time they are requested (or when ConfigureServices is run if you specify an instance there) and then every subsequent request will use the same instance.
 
-namespace Forum3.Extensions {
+namespace Forum.Extensions {
 	using ImgurClientModels = Models.ImgurClientModels;
 	using ServiceModels = Models.ServiceModels;
 

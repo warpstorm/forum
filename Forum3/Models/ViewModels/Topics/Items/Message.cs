@@ -1,8 +1,8 @@
-﻿using Forum3.Interfaces.Models.ViewModels;
+﻿using Forum.Interfaces.Models.ViewModels;
 using System;
 using System.Collections.Generic;
 
-namespace Forum3.Models.ViewModels.Topics.Items {
+namespace Forum.Models.ViewModels.Topics.Items {
 	public class Message {
 		public string Body { get; set; }
 		public string Cards { get; set; }

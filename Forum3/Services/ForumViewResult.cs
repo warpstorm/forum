@@ -1,6 +1,6 @@
-﻿using Forum3.Controllers;
-using Forum3.Interfaces.Services;
-using Forum3.Repositories;
+﻿using Forum.Controllers;
+using Forum.Interfaces.Services;
+using Forum.Repositories;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -12,7 +12,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace Forum3.Services {
+namespace Forum.Services {
 	using ServiceModels = Models.ServiceModels;
 
 	public class ForumViewResult : IForumViewResult {

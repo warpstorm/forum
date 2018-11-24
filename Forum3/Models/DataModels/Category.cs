@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Forum3.Models.DataModels {
+namespace Forum.Models.DataModels {
 	public class Category {
 		public int Id { get; set; }
 

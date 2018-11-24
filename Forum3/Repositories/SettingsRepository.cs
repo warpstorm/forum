@@ -1,12 +1,12 @@
-﻿using Forum3.Contexts;
-using Forum3.Errors;
+﻿using Forum.Contexts;
+using Forum.Errors;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Forum3.Repositories {
+namespace Forum.Repositories {
 	using DataModels = Models.DataModels;
 	using InputModels = Models.InputModels;
 	using ServiceModels = Models.ServiceModels;

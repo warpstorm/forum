@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace Forum3.Models.ServiceModels {
+namespace Forum.Models.ServiceModels {
 	public class ImageStoreOptions {
 		public string ContainerName { get; set; }
 		public Stream InputStream { get; set; }

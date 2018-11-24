@@ -1,9 +1,9 @@
-﻿using Forum3.Contexts;
+﻿using Forum.Contexts;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Forum3.Repositories {
+namespace Forum.Repositories {
 	using DataModels = Models.DataModels;
 
 	public class PinRepository : Repository<DataModels.Pin> {

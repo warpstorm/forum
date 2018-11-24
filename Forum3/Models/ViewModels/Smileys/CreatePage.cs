@@ -1,8 +1,8 @@
-﻿using Forum3.Annotations;
+﻿using Forum.Annotations;
 using Microsoft.AspNetCore.Http;
 using System.ComponentModel.DataAnnotations;
 
-namespace Forum3.Models.ViewModels.Smileys {
+namespace Forum.Models.ViewModels.Smileys {
 	public class CreatePage {
 		[Required]
 		[MinLength(2)]

@@ -1,4 +1,4 @@
-﻿namespace Forum3.Errors {
+﻿namespace Forum.Errors {
 	public class HttpNotFoundError : HttpException {
 		public override int StatusCode => 404;
 

@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace Forum3.Interfaces.Services {
+namespace Forum.Interfaces.Services {
 	public interface IEmailSender {
 		bool Ready { get; }
 

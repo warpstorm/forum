@@ -1,8 +1,8 @@
-﻿using Forum3.Models.DataModels;
+﻿using Forum.Models.DataModels;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace Forum3.Contexts {
+namespace Forum.Contexts {
 	public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, string> {
 		public DbSet<Board> Boards { get; set; }
 		public DbSet<BoardRole> BoardRoles { get; set; }

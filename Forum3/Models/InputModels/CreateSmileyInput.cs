@@ -1,8 +1,8 @@
-﻿using Forum3.Annotations;
+﻿using Forum.Annotations;
 using Microsoft.AspNetCore.Http;
 using System.ComponentModel.DataAnnotations;
 
-namespace Forum3.Models.InputModels {
+namespace Forum.Models.InputModels {
 	public class CreateSmileyInput {
 		[Required]
 		[MinLength(2)]

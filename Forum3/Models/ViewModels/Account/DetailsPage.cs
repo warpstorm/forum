@@ -1,10 +1,10 @@
-﻿using Forum3.Annotations;
+﻿using Forum.Annotations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace Forum3.Models.ViewModels.Account {
+namespace Forum.Models.ViewModels.Account {
 	public class DetailsPage {
 		public string Id { get; set; }
 

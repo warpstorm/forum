@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
 
-namespace Forum3.Models.ImgurClientModels {
+namespace Forum.Models.ImgurClientModels {
 	public class GalleryAlbum {
 		[JsonProperty("id")] public string Id { get; set; }
 		[JsonProperty("title")] public string Title { get; set; }

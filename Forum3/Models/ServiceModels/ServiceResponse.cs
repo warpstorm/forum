@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace Forum3.Models.ServiceModels {
+namespace Forum.Models.ServiceModels {
 	public class ServiceResponse {
 		public string Message { get; set; }
 		public string RedirectPath { get; set; }

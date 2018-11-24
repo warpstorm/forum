@@ -1,7 +1,7 @@
-﻿using Forum3.Filters;
-using Forum3.Contexts;
-using Forum3.Controllers;
-using Forum3.Extensions;
+﻿using Forum.Filters;
+using Forum.Contexts;
+using Forum.Controllers;
+using Forum.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -13,7 +13,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Jdenticon.AspNetCore;
 
-namespace Forum3 {
+namespace Forum {
 	using DataModels = Models.DataModels;
 
 	public class Startup {

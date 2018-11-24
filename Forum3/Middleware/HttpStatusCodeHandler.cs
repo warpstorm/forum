@@ -1,10 +1,10 @@
-﻿using Forum3.Errors;
-using Forum3.Extensions;
+﻿using Forum.Errors;
+using Forum.Extensions;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Threading.Tasks;
 
-namespace Forum3.Middleware {
+namespace Forum.Middleware {
 	public class HttpStatusCodeHandler {
 		RequestDelegate _next { get; }
 

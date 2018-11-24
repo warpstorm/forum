@@ -1,6 +1,6 @@
-﻿using Forum3.Enums;
+﻿using Forum.Enums;
 
-namespace Forum3.Models.ViewModels.Notifications.Items {
+namespace Forum.Models.ViewModels.Notifications.Items {
 	public class IndexItem {
 		public int Id { get; set; }
 		public string TargetUser { get; set; }

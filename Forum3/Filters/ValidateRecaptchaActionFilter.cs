@@ -1,10 +1,10 @@
-﻿using Forum3.Extensions;
-using Forum3.Interfaces.Filters;
+﻿using Forum.Extensions;
+using Forum.Interfaces.Filters;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System;
 using System.Threading.Tasks;
 
-namespace Forum3.Annotations {
+namespace Forum.Annotations {
 	public class ValidateRecaptchaActionFilter : IAsyncAuthorizationFilter {
 		IRecaptchaValidator RecaptchaValidator { get; }
 

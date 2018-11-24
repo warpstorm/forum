@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Forum3.Models.InputModels {
+namespace Forum.Models.InputModels {
 	public class ForgotPasswordInput {
 		[Required]
 		[EmailAddress]

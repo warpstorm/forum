@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace Forum3.Models.ViewModels.Boards.Pages {
+namespace Forum.Models.ViewModels.Boards.Pages {
 	public class EditPage {
 		[Required]
 		public int Id { get; set; }

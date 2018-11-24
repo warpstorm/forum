@@ -1,10 +1,10 @@
 ﻿using CodeKicker.BBCode;
-using Forum3.Contexts;
-using Forum3.Controllers;
-using Forum3.Errors;
-using Forum3.Extensions;
-using Forum3.Interfaces.Services;
-using Forum3.Services;
+using Forum.Contexts;
+using Forum.Controllers;
+using Forum.Errors;
+using Forum.Extensions;
+using Forum.Interfaces.Services;
+using Forum.Services;
 using HtmlAgilityPack;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -18,7 +18,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace Forum3.Repositories {
+namespace Forum.Repositories {
 	using DataModels = Models.DataModels;
 	using InputModels = Models.InputModels;
 	using ServiceModels = Models.ServiceModels;

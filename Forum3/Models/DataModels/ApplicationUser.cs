@@ -2,7 +2,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Forum3.Models.DataModels {
+namespace Forum.Models.DataModels {
 	public class ApplicationUser : IdentityUser {
 		[Required]
 		[StringLength(64)]

@@ -5,8 +5,8 @@
 		<UserSecretsId>aspnet-Forum3.Netcore2-D5ED8B40-B6D7-4B31-ABC2-9390741510C9</UserSecretsId>
 		<Authors>Jim Yarbro</Authors>
 		<Company>Warpstorm.com</Company>
-		<AssemblyName>Forum3</AssemblyName>
-		<RootNamespace>Forum3</RootNamespace>
+		<AssemblyName>Forum</AssemblyName>
+		<RootNamespace>Forum</RootNamespace>
 	</PropertyGroup>
 
 	<PropertyGroup>

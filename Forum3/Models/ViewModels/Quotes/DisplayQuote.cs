@@ -1,4 +1,4 @@
-﻿namespace Forum3.Models.ViewModels.Quotes {
+﻿namespace Forum.Models.ViewModels.Quotes {
 	public class DisplayQuote {
 		public int Id { get; set; }
 		public string DisplayBody { get; set; }

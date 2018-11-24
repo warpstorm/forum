@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace Forum3.Models.InputModels {
+namespace Forum.Models.InputModels {
 	public class MessageInput {
 		public int Id { get; set; }
 

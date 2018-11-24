@@ -1,9 +1,9 @@
-﻿using Forum3.Interfaces.Models.ViewModels;
-using Forum3.Models.ViewModels.Boards.Items;
-using Forum3.Models.ViewModels.Topics.Items;
+﻿using Forum.Interfaces.Models.ViewModels;
+using Forum.Models.ViewModels.Boards.Items;
+using Forum.Models.ViewModels.Topics.Items;
 using System.Collections.Generic;
 
-namespace Forum3.Models.ViewModels.Topics.Pages {
+namespace Forum.Models.ViewModels.Topics.Pages {
 	public class TopicDisplayPage {
 		public int Id { get; internal set; }
 		public TopicHeader TopicHeader { get; internal set; }

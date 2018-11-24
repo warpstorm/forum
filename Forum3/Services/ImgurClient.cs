@@ -1,10 +1,10 @@
-﻿using Forum3.Interfaces.Services;
+﻿using Forum.Interfaces.Services;
 using Microsoft.Extensions.Options;
 using System.Collections.Generic;
 using System.Net;
 using System.Text.RegularExpressions;
 
-namespace Forum3.Services {
+namespace Forum.Services {
 	using ImgurClientModels = Models.ImgurClientModels;
 	using ServiceModels = Models.ServiceModels;
 

@@ -1,9 +1,9 @@
-﻿using Forum3.Annotations;
-using Forum3.Contexts;
-using Forum3.Errors;
-using Forum3.Interfaces.Services;
-using Forum3.Repositories;
-using Forum3.Services;
+﻿using Forum.Annotations;
+using Forum.Contexts;
+using Forum.Errors;
+using Forum.Interfaces.Services;
+using Forum.Repositories;
+using Forum.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -13,7 +13,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Forum3.Controllers {
+namespace Forum.Controllers {
 	using InputModels = Models.InputModels;
 	using ItemModels = Models.ViewModels.Topics.Items;
 	using PageModels = Models.ViewModels.Topics.Pages;

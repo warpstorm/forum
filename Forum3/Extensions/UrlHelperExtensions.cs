@@ -1,7 +1,7 @@
-﻿using Forum3.Controllers;
+﻿using Forum.Controllers;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Forum3.Extensions {
+namespace Forum.Extensions {
 	public static class UrlHelperExtensions {
 		public static string AbsoluteAction(this IUrlHelper url, string actionName, string controllerName, object routeValues = null) {
 			var scheme = url.ActionContext.HttpContext.Request.Scheme;

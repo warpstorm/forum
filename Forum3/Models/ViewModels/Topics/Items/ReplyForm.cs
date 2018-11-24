@@ -1,6 +1,6 @@
-﻿using Forum3.Interfaces.Models.ViewModels;
+﻿using Forum.Interfaces.Models.ViewModels;
 
-namespace Forum3.Models.ViewModels.Topics.Items {
+namespace Forum.Models.ViewModels.Topics.Items {
 	public class ReplyForm : IMessageViewModel {
 		public int Id { get; set; }
 		public int? BoardId { get; set; }

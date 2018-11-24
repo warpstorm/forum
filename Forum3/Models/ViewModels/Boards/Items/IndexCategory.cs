@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Forum3.Models.ViewModels.Boards.Items {
+namespace Forum.Models.ViewModels.Boards.Items {
 	public class IndexCategory {
 		public int Id { get; set; }
 		public string Name { get; set; }

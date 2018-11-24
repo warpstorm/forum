@@ -1,15 +1,15 @@
-﻿using Forum3.Contexts;
-using Forum3.Errors;
-using Forum3.Interfaces.Services;
-using Forum3.Repositories;
-using Forum3.Services;
+﻿using Forum.Contexts;
+using Forum.Errors;
+using Forum.Interfaces.Services;
+using Forum.Repositories;
+using Forum.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Forum3.Controllers {
+namespace Forum.Controllers {
 	using InputModels = Models.InputModels;
 	using ViewModels = Models.ViewModels;
 
@@ -95,7 +95,7 @@ namespace Forum3.Controllers {
 				NextAction = UrlHelper.Action(nameof(Setup.Process), nameof(Setup), input)
 			};
 
-			if (input.CurrentStep == input.TotalSteps) {
+			if (input.CurrentStep > input.TotalSteps) {
 				viewModel.NextAction = "/";
 			}
 

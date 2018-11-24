@@ -1,4 +1,4 @@
-﻿namespace Forum3.Models.ViewModels.Smileys {
+﻿namespace Forum.Models.ViewModels.Smileys {
 	public class IndexItem {
 		public int Id { get; set; }
 		public string Code { get; set; }

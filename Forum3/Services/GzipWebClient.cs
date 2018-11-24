@@ -1,11 +1,11 @@
-﻿using Forum3.Extensions;
+﻿using Forum.Extensions;
 using HtmlAgilityPack;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net;
 
-namespace Forum3.Services {
+namespace Forum.Services {
 	public class GzipWebClient : WebClient {
 		public HtmlDocument DownloadDocument(string remoteUrl) {
 			var data = GetRemoteData(remoteUrl);

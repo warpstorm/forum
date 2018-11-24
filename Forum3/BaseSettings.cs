@@ -1,9 +1,9 @@
-﻿using Forum3.Models.ServiceModels;
+﻿using Forum.Models.ServiceModels;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Forum3 {
+namespace Forum {
 	public class BaseSettings : IEnumerable<BaseSetting> {
 		static List<BaseSetting> Values { get; } = new List<BaseSetting> {
 			new BaseSetting {

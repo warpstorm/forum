@@ -1,4 +1,4 @@
-﻿namespace Forum3.Enums {
+﻿namespace Forum.Enums {
 	public enum EManageMessageId {
 		AddPhoneSuccess,
 		AddLoginSuccess,

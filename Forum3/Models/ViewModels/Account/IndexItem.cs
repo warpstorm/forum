@@ -1,6 +1,6 @@
-﻿using Forum3.Models.DataModels;
+﻿using Forum.Models.DataModels;
 
-namespace Forum3.Models.ViewModels.Account {
+namespace Forum.Models.ViewModels.Account {
 	public class IndexItem {
 		public bool CanManage { get; set; }
 

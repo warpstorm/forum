@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Forum3.Models.ServiceModels {
+namespace Forum.Models.ServiceModels {
 	public class RecaptchaValidatorResponse {
 		[JsonProperty("hostname")]
 		public string Hostname { get; set; }

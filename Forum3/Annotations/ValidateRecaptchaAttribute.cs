@@ -2,7 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using System;
 
-namespace Forum3.Annotations {
+namespace Forum.Annotations {
 	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
 	public class ValidateRecaptchaAttribute : Attribute, IFilterFactory, IOrderedFilter {
 		public int Order { get; set; }

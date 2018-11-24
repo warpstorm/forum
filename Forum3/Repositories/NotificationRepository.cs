@@ -1,7 +1,7 @@
-﻿using Forum3.Contexts;
-using Forum3.Controllers;
-using Forum3.Enums;
-using Forum3.Extensions;
+﻿using Forum.Contexts;
+using Forum.Controllers;
+using Forum.Enums;
+using Forum.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
@@ -9,7 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Forum3.Repositories {
+namespace Forum.Repositories {
 	using DataModels = Models.DataModels;
 	using ServiceModels = Models.ServiceModels;
 	using ViewModels = Models.ViewModels.Notifications;

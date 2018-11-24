@@ -1,6 +1,6 @@
-﻿using Forum3.Contexts;
-using Forum3.Interfaces.Services;
-using Forum3.Repositories;
+﻿using Forum.Contexts;
+using Forum.Interfaces.Services;
+using Forum.Repositories;
 using Microsoft.WindowsAzure.Storage.Blob;
 using System;
 using System.Drawing;
@@ -9,7 +9,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace Forum3.Services {
+namespace Forum.Services {
 	using ServiceModels = Models.ServiceModels;
 
 	public class ImageStore : IImageStore {

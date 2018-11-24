@@ -1,4 +1,4 @@
-﻿namespace Forum3.Models.ViewModels.Messages {
+﻿namespace Forum.Models.ViewModels.Messages {
 	public class MigrateMessagePage {
 		public int Id { get; set; }
 		public int Page { get; set; }

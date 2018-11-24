@@ -1,4 +1,4 @@
-﻿namespace Forum3.Models.ViewModels.Topics.Items {
+﻿namespace Forum.Models.ViewModels.Topics.Items {
 	public class MessageThought {
 		public int MessageId { get; set; }
 		public string Path { get; set; }
