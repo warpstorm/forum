@@ -1,17 +1,15 @@
 ﻿/// <binding AfterBuild='global-styles, page-styles, scripts' />
 
-import * as gulp from 'gulp';
-import * as del from 'del';
-import * as concat from 'gulp-concat';
-import * as browserify from 'browserify';
-import * as source from 'vinyl-source-stream';
-import * as sourcemaps from 'gulp-sourcemaps';
-import * as buffer from 'vinyl-buffer';
-import uglify from 'gulp-uglify-es';
-
-// no @types available:
-const tsify = require('tsify');
-const uglifyCss = require('gulp-uglifycss');
+let gulp = require('gulp');
+let del = require('del');
+let concat = require('gulp-concat');
+let browserify = require('browserify');
+let sourcemaps = require('gulp-sourcemaps');
+let source = require('vinyl-source-stream');
+let buffer = require('vinyl-buffer');
+let uglify = require('gulp-uglify-es').default;
+let tsify = require('tsify');
+let uglifyCss = require('gulp-uglifycss');
 
 gulp.task('clean', function () {
 	return del.sync([
@@ -58,7 +56,7 @@ gulp.task('scripts', function () {
 		.pipe(source('app.js'))
 		.pipe(buffer())
 		.pipe(sourcemaps.init({ loadMaps: true }))
-		.pipe(uglify().on('error', function (e) {
+		.pipe(uglify().on('error', function (e: any) {
 			console.log(e); // https://stackoverflow.com/a/33006210/2621693
 		}))
 		.pipe(sourcemaps.write('./'))

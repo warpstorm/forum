@@ -11,6 +11,7 @@
 
 	<PropertyGroup>
 		<TypeScriptToolsVersion>3.1</TypeScriptToolsVersion>
+		<TypeScriptCompileBlocked>True</TypeScriptCompileBlocked>
 	</PropertyGroup>
 
 	<ItemGroup>
