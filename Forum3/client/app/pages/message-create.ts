@@ -3,8 +3,8 @@
 import { throwIfNull } from '../helpers';
 
 export class MessageCreate {
-	private toggleLock: boolean;
-	private assignedBoards: string[];
+	private toggleLock: boolean = false;
+	private assignedBoards: string[] = [];
 
 	constructor(private doc: Document, private app: App) {
 		throwIfNull(doc, 'doc');
@@ -34,10 +34,9 @@ export class MessageCreate {
 
 		let target = <Element>event.currentTarget
 
-		let boardId = target.getAttribute('board-id');
-		let boardFlagElement = this.doc.querySelector(`[board-flag="${boardId}"]`);
-
-		let imgSrc = boardFlagElement.getAttribute('src');
+		let boardId = <string>target.getAttribute('board-id');
+		let boardFlagElement = <Element>this.doc.querySelector(`[board-flag="${boardId}"]`);
+		let imgSrc = <string>boardFlagElement.getAttribute('src');
 
 		let assignedBoardIndex: number = this.assignedBoards.indexOf(boardId, 0);
 		let checkbox = <HTMLInputElement>this.doc.querySelector(`input[name="Selected_${boardId}"]`);

@@ -1,10 +1,10 @@
 ﻿import { App } from "../app";
 
-import { postToPath, throwIfNull } from "../helpers";
+import { postToPath, throwIfNull, isEmpty } from "../helpers";
 
 export class ManageBoards {
-	private mergeFromBoardId: string;
-	private mergeFromCategoryId: string;
+	private mergeFromBoardId: string = "";
+	private mergeFromCategoryId: string = "";
 
 	constructor(private doc: Document, private app: App) {
 		throwIfNull(doc, 'doc');
@@ -23,11 +23,11 @@ export class ManageBoards {
 	
 	eventMergeBoard = (event: Event): void => {
 		let target = <Element>event.currentTarget
+		
+		if (isEmpty(this.mergeFromBoardId)) {
+			this.mergeFromBoardId = target.getAttribute('board-id') || "";
 
-		if (!this.mergeFromBoardId || this.mergeFromBoardId == "") {
-			this.mergeFromBoardId = target.getAttribute('board-id');
-
-			target.closest('.table-row').querySelectorAll('.table-cell').forEach(element => {
+			(<Element>target.closest('.table-row')).querySelectorAll('.table-cell').forEach(element => {
 				(<HTMLElement>element).style.backgroundColor = "#ACD";
 			});
 		} else {
@@ -47,8 +47,8 @@ export class ManageBoards {
 	eventMergeCategory = (event: Event): void => {
 		let target = <Element>event.currentTarget
 
-		if (!this.mergeFromCategoryId || this.mergeFromCategoryId == "") {
-			this.mergeFromCategoryId = target.getAttribute('category-id');
+		if (isEmpty(this.mergeFromCategoryId)) {
+			this.mergeFromCategoryId = target.getAttribute('category-id') || '';
 
 			(<HTMLElement>target.closest('h3')).style.backgroundColor = "#ACD";
 		} else {

@@ -2,11 +2,11 @@
 
 import { Xhr } from "../services/xhr";
 import { XhrOptions } from "../models/xhr-options";
-import { postToPath, throwIfNull } from "../helpers";
+import { postToPath, throwIfNull, hide, show } from "../helpers";
 
 export class TopicDisplay {
-	private thoughtSelectorMessageId: string;
-	private assignedBoards: string[];
+	private thoughtSelectorMessageId: string = "";
+	private assignedBoards: string[] = [];
 
 	constructor(private doc: Document, private app: App) {
 		throwIfNull(doc, 'doc');
@@ -39,16 +39,14 @@ export class TopicDisplay {
 
 		if (!(<any>window).showFavicons) {
 			this.doc.querySelectorAll('.link-favicon').forEach(element => {
-				element.hide();
+				hide(element);
 			});
 		}
 	}
 
 	eventShowReplyForm = (event: Event) => {
-		let target = <Element>event.currentTarget;
-
 		this.doc.querySelectorAll('.reply-form').forEach(element => {
-			element.hide();
+			hide(element);
 		});
 
 		this.doc.querySelectorAll('.reply-button').forEach(element => {
@@ -60,24 +58,23 @@ export class TopicDisplay {
 			element.off('click', this.eventHideReplyForm);
 		});
 
+		let target = <Element>event.currentTarget;
 		target.off('click', this.eventShowReplyForm);
-		target.closest('section').querySelectorAll('.reply-form').forEach(element => { element.show(); });
+		(<Element>target.closest('section')).querySelectorAll('.reply-form').forEach(element => { show(element); });
 		target.on('click', this.eventHideReplyForm);
 	}
 
 	eventHideReplyForm = (event: Event) => {
 		let target = <Element>event.currentTarget;
-
 		target.off('click', this.eventHideReplyForm);
-		target.closest('section').querySelectorAll('.reply-form').forEach(element => { element.hide(); });
+		(<Element>target.closest('section')).querySelectorAll('.reply-form').forEach(element => { hide(element); });
 		target.on('click', this.eventShowReplyForm);
 	}
 
 	eventShowThoughtSelector = (event: Event) => {
 		event.preventDefault();
 		let target = <HTMLElement>event.currentTarget;
-		this.thoughtSelectorMessageId = target.getAttribute('message-id');
-
+		this.thoughtSelectorMessageId = target.getAttribute('message-id') || '';
 		this.app.smileySelector.showSmileySelectorNearElement(target, this.eventAddThought);
 	}
 
@@ -87,15 +84,15 @@ export class TopicDisplay {
 		target.off('click', this.eventCloseFullReply);
 		target.on('click', this.eventCloseFullReply);
 
-		target.querySelectorAll('.reply-preview').forEach(element => { element.hide() });
-		target.querySelectorAll('.reply-body').forEach(element => { element.show() });
+		target.querySelectorAll('.reply-preview').forEach(element => { hide(element) });
+		target.querySelectorAll('.reply-body').forEach(element => { show(element) });
 	}
 
 	eventCloseFullReply = (event: Event) => {
 		let target = <Element>event.currentTarget;
 
-		target.querySelectorAll('.reply-body').forEach(element => { element.hide() });
-		target.querySelectorAll('.reply-preview').forEach(element => { element.show() });
+		target.querySelectorAll('.reply-body').forEach(element => { hide(element) });
+		target.querySelectorAll('.reply-preview').forEach(element => { show(element) });
 
 		target.off('click', this.eventShowFullReply);
 		target.on('click', this.eventShowFullReply);
@@ -118,9 +115,20 @@ export class TopicDisplay {
 		}
 
 		let boardId = target.getAttribute('board-id');
+
+		if (!boardId) {
+			return;
+		}
+
+		let boardFlag = this.doc.querySelector(`[board-flag="${boardId}"]`);
+
+		if (!boardFlag) {
+			return;
+		}
+
 		let assignedBoardIndex: number = this.assignedBoards.indexOf(boardId, 0);
 
-		let imgSrc = this.doc.querySelector(`[board-flag="${boardId}"]`).getAttribute('src');
+		let imgSrc = boardFlag.getAttribute('src') || '';
 
 		if (assignedBoardIndex > -1) {
 			this.assignedBoards.splice(assignedBoardIndex, 1);
@@ -131,7 +139,7 @@ export class TopicDisplay {
 			imgSrc = imgSrc.replace('unchecked', 'checked');
 		}
 
-		this.doc.querySelector(`[board-flag="${boardId}"]`).setAttribute('src', imgSrc);
+		boardFlag.setAttribute('src', imgSrc);
 
 		let request = Xhr.request(new XhrOptions({
 			url: `${(<any>window).togglePath}&BoardId=${boardId}`			

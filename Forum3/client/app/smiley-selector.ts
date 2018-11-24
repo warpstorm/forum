@@ -1,23 +1,16 @@
-﻿import { insertAtCaret } from './helpers';
+﻿import { insertAtCaret, show, hide } from './helpers';
 
 export class SmileySelector {
 	private win: Window;
 	private body: HTMLBodyElement;
 	private smileySelector: HTMLElement;
-	private smileySelectorImageHandler: (event: Event) => void;
-	private smileySelectorTargetTextArea: HTMLTextAreaElement;
+	private smileySelectorImageHandler: ((event: Event) => void) = () => {};
+	private smileySelectorTargetTextArea: HTMLTextAreaElement | null = null;
 
 	constructor(private doc: Document) {
-		this.win = doc.defaultView;
+		this.win = <Window>doc.defaultView;
 		this.body = doc.getElementsByTagName('body')[0];
-
-		let selectorElement = doc.querySelector('#smiley-selector') as HTMLElement;
-
-		if (!selectorElement) {
-			return;
-		}
-
-		this.smileySelector = selectorElement;
+		this.smileySelector = <HTMLElement>doc.querySelector('#smiley-selector');
 	}
 
 	// Used in message forms to insert smileys into textareas.
@@ -28,28 +21,32 @@ export class SmileySelector {
 			element.on('click', (event: Event): void => {
 				let target = <HTMLElement>event.currentTarget;
 
-				self.smileySelectorTargetTextArea = target.closest('form').querySelector('textarea');
+				self.smileySelectorTargetTextArea = (<HTMLFormElement>target.closest('form')).querySelector('textarea');
 				self.showSmileySelectorNearElement(target, self.eventInsertSmileyCode);
 			});
 		});
 	}
 
 	showSmileySelectorNearElement(target: HTMLElement, imageHandler: (event: Event) => void): void {
-		event.stopPropagation();
+		if (event) {
+			event.stopPropagation();
+		}
 
 		let self = this;
 		self.eventCloseSmileySelector();
 		self.smileySelectorImageHandler = imageHandler;
 
-		self.smileySelector.querySelectorAll('img').forEach(element => {
-			element.on('click', self.smileySelectorImageHandler);
-		});
+		if (self.smileySelectorImageHandler) {
+			self.smileySelector.querySelectorAll('img').forEach(element => {
+				element.addEventListener('click', self.smileySelectorImageHandler);
+			});
+		}
 
 		var rect = target.getBoundingClientRect();
-		var targetTop = rect.top + self.win.pageYOffset - self.doc.documentElement.clientTop;
-		var targetLeft = rect.left + self.win.pageXOffset - self.doc.documentElement.clientLeft;
+		var targetTop = rect.top + self.win.pageYOffset - (<HTMLElement>self.doc.documentElement).clientTop;
+		var targetLeft = rect.left + self.win.pageXOffset - (<HTMLElement>self.doc.documentElement).clientLeft;
 
-		self.smileySelector.show();
+		show(self.smileySelector);
 		self.smileySelector.on('click', self.eventStopPropagation);
 
 		let selectorTopOffset = targetTop + rect.height;
@@ -74,7 +71,7 @@ export class SmileySelector {
 
 		self.smileySelector.style.top = '0';
 		self.smileySelector.style.left = '0';
-		self.smileySelector.hide();
+		hide(self.smileySelector);
 
 		self.body.off('click', self.eventCloseSmileySelector);
 		self.smileySelector.off('click', self.eventStopPropagation);
@@ -84,15 +81,19 @@ export class SmileySelector {
 				element.off('click', self.smileySelectorImageHandler);
 			});
 
-			self.smileySelectorImageHandler = null;
+			delete self.smileySelectorImageHandler;
 		}
 	}
 
 	eventInsertSmileyCode = (event: Event): void => {
 		let self = this;
 
+		if (!self.smileySelectorTargetTextArea) {
+			return;
+		}
+
 		let eventTarget = <Element>event.currentTarget
-		let smileyCode = eventTarget.getAttribute('code');
+		let smileyCode = eventTarget.getAttribute('code') || '';
 			   
 		if (self.smileySelectorTargetTextArea.textContent !== '') {
 			smileyCode = ` ${smileyCode} `;

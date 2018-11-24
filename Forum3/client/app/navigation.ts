@@ -1,4 +1,4 @@
-﻿import { isFirefox } from './helpers';
+﻿import { isFirefox, hide, show } from './helpers';
 
 export class Navigation {
 	constructor(private doc: Document) {}
@@ -27,9 +27,12 @@ export class Navigation {
 
 		for (var i = 0; i < linkParents.length; i++) {
 			let linkParent = linkParents[i];
+			let link = linkParent.querySelector('a');
 
-			linkParent.querySelector('a').off('click', this.eventPreventDefault);
-			linkParent.querySelector('a').on('click', this.eventPreventDefault);
+			if (link) {
+				link.off('click', this.eventPreventDefault);
+				link.on('click', this.eventPreventDefault);
+			}
 
 			if (isFirefox()) {
 				linkParent.off('click', this.eventOpenLink);
@@ -61,14 +64,14 @@ export class Navigation {
 			if (i < 0)
 				continue;
 
-			pageElements[i - 1].show();
+			show(pageElements[i - 1]);
 		}
 
 		for (let i = currentPage; i <= currentPage + 2; i++) {
 			if (i - 1 > pageElements.length)
 				continue;
 
-			pageElements[i - 1].show();
+			show(pageElements[i - 1]);
 		}
 	}
 
@@ -77,13 +80,13 @@ export class Navigation {
 
 		if (currentPage - 2 > 1) {
 			pageNavigatorElement.querySelectorAll('.more-pages-before').forEach(element => {
-				element.show();
+				show(element);
 			});
 		}
 
 		if (currentPage + 2 < totalPages) {
 			pageNavigatorElement.querySelectorAll('.more-pages-after').forEach(element => {
-				element.hide();
+				hide(element);
 			});
 		}
 	}
@@ -91,12 +94,16 @@ export class Navigation {
 	eventUnhidePages = (event: Event) => {
 		let target = <Element>event.currentTarget;
 
+		if (!target.parentElement) {
+			return;
+		}
+
 		target.parentElement.querySelectorAll('.page').forEach(element => {
-			element.show();
+			show(element);
 		});
 
-		target.parentElement.querySelector('.more-pages-before').hide();
-		target.parentElement.querySelector('.more-pages-after').hide();
+		hide(target.parentElement.querySelector('.more-pages-before'));
+		hide(target.parentElement.querySelector('.more-pages-after'));
 	}
 
 	eventOpenLink = (event: Event) => {
@@ -109,22 +116,24 @@ export class Navigation {
 			url = targetElement.getAttribute('href');
 		}
 		else {
-			url = targetElement.closest('[clickable-link-parent]').querySelector('a').getAttribute('href');
+			url = (<Element>(<Element>targetElement.closest('[clickable-link-parent]')).querySelector('a')).getAttribute('href');
 		}
 
-		switch ((<KeyboardEvent>event).which) {
-			case 1:
-				if ((<KeyboardEvent>event).shiftKey) {
-					window.open(url, '_blank');
-				}
-				else {
-					window.location.href = url;
-				}
-				break;
+		if (url) {
+			switch ((<KeyboardEvent>event).which) {
+				case 1:
+					if ((<KeyboardEvent>event).shiftKey) {
+						window.open(url, '_blank');
+					}
+					else {
+						window.location.href = url;
+					}
+					break;
 
-			case 2:
-				window.open(url, '_blank');
-				break;
+				case 2:
+					window.open(url, '_blank');
+					break;
+			}
 		}
 
 		return true;
@@ -139,7 +148,7 @@ export class Navigation {
 		targetElement.on('click', this.eventCloseMenu);
 
 		targetElement.querySelectorAll('.menu-wrapper').forEach(element => {
-			element.show();
+			show(element);
 		});
 
 		let body: Element = this.doc.getElementsByTagName('body')[0];
@@ -153,14 +162,14 @@ export class Navigation {
 		var dropDownMenuElements = this.doc.querySelectorAll('.menu-wrapper');
 
 		for (var i = 0; i < dropDownMenuElements.length; i++) {
-			dropDownMenuElements[i].hide();
+			hide(dropDownMenuElements[i]);
 		}
 
 		this.doc.querySelectorAll('.open-menu').forEach(element => {
-			element.off('click', this.eventCloseMenu);
+			element.removeEventListener('click', this.eventCloseMenu);
 
-			element.off('click', this.eventOpenMenu);
-			element.on('click', this.eventOpenMenu);
+			element.removeEventListener('click', this.eventOpenMenu);
+			element.addEventListener('click', this.eventOpenMenu);
 		});
 
 		this.doc.getElementsByTagName('body')[0].off('click', this.eventCloseMenu);

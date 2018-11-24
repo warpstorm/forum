@@ -4,30 +4,33 @@ import { Navigation } from '../navigation';
 import { Xhr } from '../services/xhr';
 import { XhrOptions } from '../models/xhr-options';
 import { HttpMethod } from '../definitions/http-method';
-import { throwIfNull } from '../helpers';
+import { throwIfNull, show, hide } from '../helpers';
 
 export class TopicIndex {
-	private moreTopicsButton: HTMLElement;
+	private moreTopicsButton: HTMLElement | null;
 
-	constructor(private doc: Document, private app: App = null) {
+	constructor(private doc: Document, private app: App | null = null) {
 		throwIfNull(doc, 'doc');
 		this.moreTopicsButton = doc.querySelector('#load-more-topics');
 	}
 
 	init(): void {
-		if ((<any>this.doc.defaultView).unreadFilter == 0) {
-			this.moreTopicsButton.show();
-			this.moreTopicsButton.off('click', this.eventLoadMoreTopics);
-			this.moreTopicsButton.on('click', this.eventLoadMoreTopics);
+		if ((<any>this.doc.defaultView).unreadFilter == 0 && this.moreTopicsButton) {
+			show(this.moreTopicsButton);
+			this.moreTopicsButton.removeEventListener('click', this.eventLoadMoreTopics);
+			this.moreTopicsButton.addEventListener('click', this.eventLoadMoreTopics);
 		}
 	}
 
 	eventLoadMoreTopics = () => {
 		let self = this;
 
-		let originalText = this.moreTopicsButton.textContent;
+		let originalText = '';
 
-		this.moreTopicsButton.textContent = 'Loading...';
+		if (this.moreTopicsButton) {
+			originalText = this.moreTopicsButton.textContent || '';
+			this.moreTopicsButton.textContent = 'Loading...';
+		}
 
 		let request = Xhr.request(new XhrOptions({
 			method: HttpMethod.Get,
@@ -36,24 +39,31 @@ export class TopicIndex {
 		}));
 
 		request.then((xhrResult) => {
-			let resultDocument = (<Document>xhrResult.response).documentElement.querySelector('body').childNodes;
+			let resultDocument = <HTMLElement>(<Document>xhrResult.response).documentElement;
+			let resultBody = <HTMLBodyElement>resultDocument.querySelector('body');
+			let resultBodyElements = resultBody.childNodes;
 
-			resultDocument.forEach(node => {
+			resultBodyElements.forEach(node => {
 				let element = <Element>node;
 
 				if (element.tagName.toLowerCase() == 'script') {
-					eval(element.textContent);
+					eval(element.textContent || '');
 					new Navigation(self.doc).addListenerClickableLinkParent();
 				}
 				else {
-					self.doc.querySelector('#topic-list').insertAdjacentElement('beforeend', element);
+					let topicList = <Element>self.doc.querySelector('#topic-list');
+					topicList.insertAdjacentElement('beforeend', element);
 				}
 			});
 
-			if ((<any>window).moreTopics)
-				this.moreTopicsButton.textContent = originalText;
-			else
-				this.moreTopicsButton.hide();
+			if (this.moreTopicsButton) {
+				if ((<any>window).moreTopics) {
+					this.moreTopicsButton.textContent = originalText;
+				}
+				else {
+					hide(this.moreTopicsButton);
+				}
+			}
 		});
 	}
 }

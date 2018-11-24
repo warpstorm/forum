@@ -21,17 +21,17 @@ export class App {
 	navigation: Navigation;
 	smileySelector: SmileySelector;
 
-	boot() {
+	constructor() {
 		this.bbCode = new BBCode(document);
-		this.bbCode.init();
-
 		this.easterEgg = new EasterEgg(document);
-		this.easterEgg.init();
-
 		this.navigation = new Navigation(document);
-		this.navigation.addListeners();
-
 		this.smileySelector = new SmileySelector(document);
+	}
+
+	boot() {
+		this.bbCode.init();
+		this.easterEgg.init();
+		this.navigation.addListeners();
 		this.smileySelector.init();
 
 		let pageActions = (<any>window).pageActions;
