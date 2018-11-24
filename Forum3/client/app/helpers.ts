@@ -112,29 +112,25 @@ export function queryify(parameters: any = {}): string {
 }
 
 export function hide(element: any): void {
-	if (element == typeof Element) {
-		let classList = element.classList;
-
-		if (!classList) {
+	if (element instanceof Element) {
+		if (!element.classList) {
 			throw new Error('Element does not contain a class list.');
 		}
 
-		if (!classList.contains('hidden')) {
-			classList.add('hidden');
+		if (!element.classList.contains('hidden')) {
+			element.classList.add('hidden');
 		}
 	}
 };
 
 export function show(element: any): void {
-	if (element == typeof Element) {
-		let classList = element.classList;
-
-		if (!classList) {
+	if (element instanceof Element) {
+		if (!element.classList) {
 			throw new Error('Element does not contain a class list.');
 		}
 
-		if (classList.contains('hidden')) {
-			classList.remove('hidden');
+		if (element.classList.contains('hidden')) {
+			element.classList.remove('hidden');
 		}
 	}
 };
