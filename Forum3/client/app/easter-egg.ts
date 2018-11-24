@@ -1,21 +1,18 @@
-﻿import { throwIfNull } from "./helpers";
+﻿import { show, hide } from "./helpers";
 
 export class EasterEgg {
 	constructor(private doc: Document) {}
 
 	init(): void {
-		let element = this.doc.querySelector('#easter-egg');
-
-		throwIfNull(element, 'element');
-
-		let self = this;
-
+		let element = <Element>this.doc.querySelector('#easter-egg');
+		let dangerSign = <Element>this.doc.querySelector('#danger-sign');
+		
 		element.addEventListener('mouseenter', function () {
-			self.doc.getElementById('danger-sign').classList.remove('hidden');
+			show(dangerSign);
 		});
 
 		element.addEventListener('mouseleave', function () {
-			self.doc.getElementById('danger-sign').classList.add('hidden');
+			hide(dangerSign);
 		});
 	}
 }
