@@ -1,6 +1,6 @@
 ﻿import { insertAtCaret, throwIfNull } from './helpers'
 
-let bbCodes = {
+let bbCodes: { [key: string]: string } = {
 	'bold': '[b]  [/b]',
 	'italics': '[i]  [/i]',
 	'url': '[url=]  [/url]',
@@ -48,6 +48,10 @@ export class BBCode {
 		}
 
 		let targetCode = target.getAttribute('bbcode');	
+
+		if (!targetCode) {
+			throw new Error('Target bbcode not found');
+		}
 
 		let form = target.closest('form');
 
