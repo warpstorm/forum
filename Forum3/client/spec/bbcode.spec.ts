@@ -5,7 +5,7 @@ import * as chai from 'chai';
 let html = new HtmlHelper();
 html.loadDocumentFromPath('client/spec/bbcode.spec.html');
 
-let bbCode = new BBCode(html.window().document);
+let bbCode = new BBCode((<Window>html.window()).document);
 
 describe('BBCode', () => {
 	it('should toggle bbc-spoiler-hover style on click', () => {
@@ -15,7 +15,7 @@ describe('BBCode', () => {
 		chai.expect(hasClassAfterClick()).to.be.false;
 
 		function hasClassAfterClick() {
-			let clickElement = html.get('.bbc-spoiler');
+			let clickElement = <Element>html.get('.bbc-spoiler');
 			html.click(clickElement);
 			return clickElement.classList.contains('bbc-spoiler-hover');
 		}
@@ -23,7 +23,7 @@ describe('BBCode', () => {
 
 	it('find textarea content', () => {
 		let textareaElement = html.get('textarea');
-		let textLength = textareaElement.textContent.length;
+		let textLength = ((<Element>textareaElement).textContent || "").length;
 
 		chai.expect(textLength).to.be.greaterThan(0);
 	});
@@ -34,7 +34,7 @@ describe('BBCode', () => {
 
 		bbCode.addBBCodeListener();
 
-		let clickElement = html.get('[bbcode="img"]');
+		let clickElement = <Element>html.get('[bbcode="img"]');
 		html.click(clickElement);
 
 		chai.expect(textareaElement.value.length).to.be.greaterThan(originalTextLength);
