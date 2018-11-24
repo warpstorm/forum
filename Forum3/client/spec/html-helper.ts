@@ -3,7 +3,7 @@ import { JSDOM } from 'jsdom';
 import * as fs from 'fs';
 
 export class HtmlHelper {
-	private jsdom: JSDOM;
+	private jsdom: JSDOM | null = null;
 
 	constructor() { }
 
@@ -17,53 +17,82 @@ export class HtmlHelper {
 		this.jsdom = new JSDOM(htmlSource);
 	}
 
-	get(selector: string): Element {
-		return this.jsdom.window.document.querySelector(selector);
-	}
-
-	getAll(selector: string): NodeListOf<Element> {
-		return this.jsdom.window.document.querySelectorAll(selector);
-	}
-
-	window(): Window {
+	get(selector: string): Element | null {
 		if (!this.jsdom) {
 			this.loadEmptyDocument();
 		}
 
-		return this.jsdom.window;
+		return this.jsdom ? this.jsdom.window.document.querySelector(selector) : null;
 	}
 
-	element(elementMarkup: string): Element {
+	getAll(selector: string): NodeListOf<Element> | null {
+		if (!this.jsdom) {
+			this.loadEmptyDocument();
+		}
+
+		return this.jsdom ? this.jsdom.window.document.querySelectorAll(selector) : null;
+	}
+
+	window(): Window | null {
+		if (!this.jsdom) {
+			this.loadEmptyDocument();
+		}
+
+		return this.jsdom ? this.jsdom.window : null;
+	}
+
+	element(elementMarkup: string): Element | null {
 		throwIfNull(elementMarkup, 'elementMarkup');
 
-		let element = this.window().document.createElement(elementMarkup);
+		let window = this.window();
 
-		let body = this.window().document.getElementsByTagName('body')[0];
+		if (!window) {
+			return null;
+		}
+
+		let element = window.document.createElement(elementMarkup);
+
+		let body = window.document.getElementsByTagName('body')[0];
 		body.appendChild(element);
 
 		return element;
 	}
 
-	event(eventType: string): Event {
-		throwIfNull(eventType, 'eventType');
-
-		let event = this.window().document.createEvent('Event');
-		event.initEvent(eventType);
-		return event;
-	}
-
 	click(element: Element) {
-		throwIfNull(element, 'element');
-		element.dispatchEvent(this.event('click'));
+		this.dispatchEvent(element, 'click');
 	}
 
 	mouseEnter(element: Element) {
-		throwIfNull(element, 'element');
-		element.dispatchEvent(this.event('mouseenter'));
+		this.dispatchEvent(element, 'mouseenter');
 	}
 
 	mouseLeave(element: Element) {
-		throwIfNull(element, 'element');
-		element.dispatchEvent(this.event('mouseleave'));
+		this.dispatchEvent(element, 'mouseleave');
+	}
+
+	private dispatchEvent(element: Element | null, eventType: EventType) {
+		if (!element) {
+			return;
+		}
+
+		let event = this.event(eventType);
+
+		if (event) {
+			element.dispatchEvent(event);
+		}
+	}
+
+	private event(eventType: EventType): Event | null {
+		throwIfNull(eventType, 'eventType');
+
+		let window = this.window();
+
+		if (!window) {
+			return null;
+		}
+
+		let event = window.document.createEvent('Event');
+		event.initEvent(eventType);
+		return event;
 	}
 }
