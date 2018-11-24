@@ -1,6 +1,6 @@
 ﻿import { isString } from "util";
 
-export function postToPath(path: string, parameters: Object): void {
+export function postToPath(path: string, parameters: { [key: string]: any } ): void {
 	throwIfNull(path, 'path');
 	throwIfNull(parameters, 'parameters');
 
@@ -84,6 +84,17 @@ export function throwIfNull(value: any, name: string): void {
 	}
 }
 
+export function isEmpty(value: string): boolean {
+	// I prefer to treat whitespace as empty.
+	value = value.trim();
+
+	if (value.length == 0) {
+		return true;
+	}
+
+	return false;
+}
+
 export function isFirefox() {
 	// https://stackoverflow.com/a/26358856/2621693
 	if (navigator && navigator.userAgent && navigator.userAgent.indexOf("Firefox") != -1) {
@@ -99,3 +110,31 @@ export function queryify(parameters: any = {}): string {
 		.map(key => `${encodeURIComponent(key)}=${encodeURIComponent(parameters[key])}`)
 		.join('&');
 }
+
+export function hide(element: any): void {
+	if (element == typeof Element) {
+		let classList = element.classList;
+
+		if (!classList) {
+			throw new Error('Element does not contain a class list.');
+		}
+
+		if (!classList.contains('hidden')) {
+			classList.add('hidden');
+		}
+	}
+};
+
+export function show(element: any): void {
+	if (element == typeof Element) {
+		let classList = element.classList;
+
+		if (!classList) {
+			throw new Error('Element does not contain a class list.');
+		}
+
+		if (classList.contains('hidden')) {
+			classList.remove('hidden');
+		}
+	}
+};
