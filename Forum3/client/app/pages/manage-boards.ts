@@ -13,11 +13,11 @@ export class ManageBoards {
 
 	init() {
 		this.doc.querySelectorAll('.merge-board').forEach(element => {
-			element.on('click', this.eventMergeBoard);
+			element.addEventListener('click', this.eventMergeBoard);
 		});
 
 		this.doc.querySelectorAll('.merge-category').forEach(element => {
-			element.on('click', this.eventMergeCategory);
+			element.addEventListener('click', this.eventMergeCategory);
 		});
 	}
 	

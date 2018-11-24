@@ -19,7 +19,7 @@ export class MessageCreate {
 		}
 
 		this.doc.querySelectorAll('[toggle-board]').forEach(element => {
-			element.on('click', this.eventToggleBoard);
+			element.addEventListener('click', this.eventToggleBoard);
 		});
 	}
 

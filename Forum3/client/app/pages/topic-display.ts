@@ -22,19 +22,19 @@ export class TopicDisplay {
 		}
 
 		this.doc.querySelectorAll('.reply-button').forEach(element => {
-			element.on('click', this.eventShowReplyForm)
+			element.addEventListener('click', this.eventShowReplyForm)
 		});
 
 		this.doc.querySelectorAll('.thought-button').forEach(element => {
-			element.on('click', this.eventShowThoughtSelector);
+			element.addEventListener('click', this.eventShowThoughtSelector);
 		});
 
 		this.doc.querySelectorAll('blockquote.reply').forEach(element => {
-			element.on('click', this.eventShowFullReply);
+			element.addEventListener('click', this.eventShowFullReply);
 		});
 
 		this.doc.querySelectorAll('[toggle-board]').forEach(element => {
-			element.on('click', this.eventToggleBoard);
+			element.addEventListener('click', this.eventToggleBoard);
 		});
 
 		if (!(<any>window).showFavicons) {
@@ -50,25 +50,25 @@ export class TopicDisplay {
 		});
 
 		this.doc.querySelectorAll('.reply-button').forEach(element => {
-			element.off('click', this.eventShowReplyForm);
-			element.on('click', this.eventShowReplyForm);
+			element.removeEventListener('click', this.eventShowReplyForm);
+			element.addEventListener('click', this.eventShowReplyForm);
 		});
 
 		this.doc.querySelectorAll('.reply-button').forEach(element => {
-			element.off('click', this.eventHideReplyForm);
+			element.removeEventListener('click', this.eventHideReplyForm);
 		});
 
 		let target = <Element>event.currentTarget;
-		target.off('click', this.eventShowReplyForm);
+		target.removeEventListener('click', this.eventShowReplyForm);
 		(<Element>target.closest('section')).querySelectorAll('.reply-form').forEach(element => { show(element); });
-		target.on('click', this.eventHideReplyForm);
+		target.addEventListener('click', this.eventHideReplyForm);
 	}
 
 	eventHideReplyForm = (event: Event) => {
 		let target = <Element>event.currentTarget;
-		target.off('click', this.eventHideReplyForm);
+		target.removeEventListener('click', this.eventHideReplyForm);
 		(<Element>target.closest('section')).querySelectorAll('.reply-form').forEach(element => { hide(element); });
-		target.on('click', this.eventShowReplyForm);
+		target.addEventListener('click', this.eventShowReplyForm);
 	}
 
 	eventShowThoughtSelector = (event: Event) => {
@@ -81,8 +81,8 @@ export class TopicDisplay {
 	eventShowFullReply = (event: Event) => {
 		let target = <Element>event.currentTarget;
 
-		target.off('click', this.eventCloseFullReply);
-		target.on('click', this.eventCloseFullReply);
+		target.removeEventListener('click', this.eventCloseFullReply);
+		target.addEventListener('click', this.eventCloseFullReply);
 
 		target.querySelectorAll('.reply-preview').forEach(element => { hide(element) });
 		target.querySelectorAll('.reply-body').forEach(element => { show(element) });
@@ -94,8 +94,8 @@ export class TopicDisplay {
 		target.querySelectorAll('.reply-body').forEach(element => { hide(element) });
 		target.querySelectorAll('.reply-preview').forEach(element => { show(element) });
 
-		target.off('click', this.eventShowFullReply);
-		target.on('click', this.eventShowFullReply);
+		target.removeEventListener('click', this.eventShowFullReply);
+		target.addEventListener('click', this.eventShowFullReply);
 	}
 
 	eventToggleBoard = (event: Event) => {

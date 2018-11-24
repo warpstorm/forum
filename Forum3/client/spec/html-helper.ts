@@ -1,5 +1,4 @@
-﻿import { throwIfNull } from '../app/helpers';
-import { JSDOM } from 'jsdom';
+﻿import { JSDOM } from 'jsdom';
 import * as fs from 'fs';
 
 export class HtmlHelper {
@@ -42,7 +41,9 @@ export class HtmlHelper {
 	}
 
 	element(elementMarkup: string): Element | null {
-		throwIfNull(elementMarkup, 'elementMarkup');
+		if (!elementMarkup) {
+			throw new Error('elementMarkup is null');
+		}
 
 		let window = this.window();
 
@@ -70,7 +71,7 @@ export class HtmlHelper {
 		this.dispatchEvent(element, 'mouseleave');
 	}
 
-	private dispatchEvent(element: Element | null, eventType: EventType) {
+	private dispatchEvent(element: Element | null, eventType: "click" | "mouseenter" | "mouseleave" | "mousedown" | "mouseup") {
 		if (!element) {
 			return;
 		}
@@ -82,8 +83,10 @@ export class HtmlHelper {
 		}
 	}
 
-	private event(eventType: EventType): Event | null {
-		throwIfNull(eventType, 'eventType');
+	private event(eventType: "click" | "mouseenter" | "mouseleave" | "mousedown" | "mouseup"): Event | null {
+		if (!eventType) {
+			throw new Error('eventType is null');
+		}
 
 		let window = this.window();
 

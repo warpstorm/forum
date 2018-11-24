@@ -18,7 +18,7 @@ export class SmileySelector {
 		let self = this;
 
 		self.doc.querySelectorAll('.add-smiley').forEach(element => {
-			element.on('click', (event: Event): void => {
+			element.addEventListener('click', (event: Event): void => {
 				let target = <HTMLElement>event.currentTarget;
 
 				self.smileySelectorTargetTextArea = (<HTMLFormElement>target.closest('form')).querySelector('textarea');
@@ -47,7 +47,7 @@ export class SmileySelector {
 		var targetLeft = rect.left + self.win.pageXOffset - (<HTMLElement>self.doc.documentElement).clientLeft;
 
 		show(self.smileySelector);
-		self.smileySelector.on('click', self.eventStopPropagation);
+		self.smileySelector.addEventListener('click', self.eventStopPropagation);
 
 		let selectorTopOffset = targetTop + rect.height;
 		self.smileySelector.style.top = selectorTopOffset + (selectorTopOffset == 0 ? '' : 'px');
@@ -62,7 +62,7 @@ export class SmileySelector {
 		self.smileySelector.style.left = selectorLeftOffset + (selectorLeftOffset == 0 ? '' : 'px');
 
 		setTimeout(function () {
-			self.body.on('click', self.eventCloseSmileySelector);
+			self.body.addEventListener('click', self.eventCloseSmileySelector);
 		}, 50);
 	}
 
@@ -73,12 +73,12 @@ export class SmileySelector {
 		self.smileySelector.style.left = '0';
 		hide(self.smileySelector);
 
-		self.body.off('click', self.eventCloseSmileySelector);
-		self.smileySelector.off('click', self.eventStopPropagation);
+		self.body.removeEventListener('click', self.eventCloseSmileySelector);
+		self.smileySelector.removeEventListener('click', self.eventStopPropagation);
 
 		if (self.smileySelectorImageHandler) {
 			self.smileySelector.querySelectorAll('img').forEach(element => {
-				element.off('click', self.smileySelectorImageHandler);
+				element.removeEventListener('click', self.smileySelectorImageHandler);
 			});
 
 			delete self.smileySelectorImageHandler;

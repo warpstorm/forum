@@ -26,13 +26,13 @@ export class BBCode {
 
 	addBBCodeListener(): void {
 		this.doc.querySelectorAll('.add-bbcode').forEach(element => {
-			element.on('click', this.insertBBCode);
+			element.addEventListener('click', this.insertBBCode);
 		});
 	}
 
 	addSpoilerListener(): void {
 		this.doc.querySelectorAll('.bbc-spoiler').forEach(element => {
-			element.on('click', this.showSpoiler);
+			element.addEventListener('click', this.showSpoiler);
 		});
 	}
 

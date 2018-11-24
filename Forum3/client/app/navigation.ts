@@ -11,14 +11,14 @@ export class Navigation {
 
 	addListenerOpenMenu(): void {
 		this.doc.querySelectorAll('.open-menu').forEach(element => {
-			element.on('click', this.eventOpenMenu);
+			element.addEventListener('click', this.eventOpenMenu);
 		});
 	}
 
     addListenerUnhidePages(pageNavigatorElement: Element): void {
         pageNavigatorElement.querySelectorAll('.unhide-pages').forEach(element => {
-			element.off('click', this.eventUnhidePages);
-			element.on('click', this.eventUnhidePages);
+			element.removeEventListener('click', this.eventUnhidePages);
+			element.addEventListener('click', this.eventUnhidePages);
         });
 	}
 
@@ -30,17 +30,17 @@ export class Navigation {
 			let link = linkParent.querySelector('a');
 
 			if (link) {
-				link.off('click', this.eventPreventDefault);
-				link.on('click', this.eventPreventDefault);
+				link.removeEventListener('click', this.eventPreventDefault);
+				link.addEventListener('click', this.eventPreventDefault);
 			}
 
 			if (isFirefox()) {
-				linkParent.off('click', this.eventOpenLink);
-				linkParent.on('click', this.eventOpenLink);
+				linkParent.removeEventListener('click', this.eventOpenLink);
+				linkParent.addEventListener('click', this.eventOpenLink);
 			}
 			else {
-				linkParent.off('mousedown', this.eventOpenLink);
-				linkParent.on('mousedown', this.eventOpenLink);
+				linkParent.removeEventListener('mousedown', this.eventOpenLink);
+				linkParent.addEventListener('mousedown', this.eventOpenLink);
 			}
 		}
 	}
@@ -144,8 +144,8 @@ export class Navigation {
 
 		let targetElement = <HTMLElement>event.currentTarget;
 
-		targetElement.off('click', this.eventOpenMenu);
-		targetElement.on('click', this.eventCloseMenu);
+		targetElement.removeEventListener('click', this.eventOpenMenu);
+		targetElement.addEventListener('click', this.eventCloseMenu);
 
 		targetElement.querySelectorAll('.menu-wrapper').forEach(element => {
 			show(element);
@@ -154,7 +154,7 @@ export class Navigation {
 		let body: Element = this.doc.getElementsByTagName('body')[0];
 
 		setTimeout(() => {
-			body.on('click', this.eventCloseMenu);
+			body.addEventListener('click', this.eventCloseMenu);
 		}, 50);
 	}
 
@@ -172,7 +172,7 @@ export class Navigation {
 			element.addEventListener('click', this.eventOpenMenu);
 		});
 
-		this.doc.getElementsByTagName('body')[0].off('click', this.eventCloseMenu);
+		this.doc.getElementsByTagName('body')[0].removeEventListener('click', this.eventCloseMenu);
 	}
 
 	private eventPreventDefault = (event: Event) => {
