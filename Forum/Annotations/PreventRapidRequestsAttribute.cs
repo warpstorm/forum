@@ -7,8 +7,9 @@ namespace Forum.Annotations {
 	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
 	public class PreventRapidRequestsAttribute : ActionFilterAttribute {
 		public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next) {
-			if (!context.HttpContext.Request.Form.ContainsKey("__RequestVerificationToken"))
+			if (!context.HttpContext.Request.Form.ContainsKey("__RequestVerificationToken")) {
 				return;
+			}
 
 			await context.HttpContext.Session.LoadAsync();
 
@@ -17,26 +18,26 @@ namespace Forum.Annotations {
 
 			if (lastToken == currentToken) {
 				context.ModelState.AddModelError(string.Empty, "Looks like you accidentally submitted the same form twice.");
-				return;
 			}
 
-			context.HttpContext.Session.SetString(Constants.InternalKeys.LastProcessedToken, currentToken);
-
 			var currentTime = DateTime.Now;
-			var lastPostTimeStamp = context.HttpContext.Session.GetString(Constants.InternalKeys.LastPostTimestamp);
+			var lastPostTimestamp = context.HttpContext.Session.GetString(Constants.InternalKeys.LastPostTimestamp);
 
-			if (!string.IsNullOrEmpty(lastPostTimeStamp)) {
-				var lastPostTime = Convert.ToDateTime(lastPostTimeStamp);
+			if (!string.IsNullOrEmpty(lastPostTimestamp)) {
+				var lastTime = Convert.ToDateTime(lastPostTimestamp);
 
-				if (currentTime < lastPostTime.AddSeconds(3)) {
+				if (currentTime < lastTime.AddSeconds(3)) {
 					context.ModelState.AddModelError(string.Empty, "You're posting too fast.");
-					return;
 				}
 			}
 
-			context.HttpContext.Session.SetString(Constants.InternalKeys.LastPostTimestamp, currentTime.ToString());
+			// Only update the last timestamp if the state is still valid.
+			if (context.ModelState.IsValid) {
+				context.HttpContext.Session.SetString(Constants.InternalKeys.LastProcessedToken, currentToken);
+				context.HttpContext.Session.SetString(Constants.InternalKeys.LastPostTimestamp, currentTime.ToString());
+				await context.HttpContext.Session.CommitAsync();
+			}
 
-			await context.HttpContext.Session.CommitAsync();
 			await next();
 		}
 	}
