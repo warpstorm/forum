@@ -1,7 +1,11 @@
 ﻿import { isFirefox, hide, show } from './helpers';
 
 export class Navigation {
-	constructor(private doc: Document) {}
+	private win: Window;
+
+	constructor(private doc: Document) {
+		this.win = <Window>doc.defaultView;
+	}
 
 	addListeners(): void {
 		this.addListenerOpenMenu();
@@ -46,14 +50,15 @@ export class Navigation {
 	}
 
 	setupPageNavigators(): void {
-		if ((<any>this.doc).currentPage === undefined || (<any>this.doc).totalPages === undefined)
+		if (!(<any>this.win).currentPage || !(<any>this.win).totalPages) {
 			return;
+		}
 
-		this.doc.querySelectorAll('.pages').forEach(pageNavigatorElement => {
-			this.addListenerUnhidePages(pageNavigatorElement);
-			let currentPage = (<any>this.doc).currentPage;
-			this.updateMorePageBeforeAfterControlsVisibility(pageNavigatorElement, currentPage);
-			this.updatePageControlsVisibility(pageNavigatorElement, currentPage);
+		this.doc.querySelectorAll('.pages').forEach(element => {
+			this.addListenerUnhidePages(element);
+			let currentPage = (<any>this.win).currentPage;
+			this.updateMorePageBeforeAfterControlsVisibility(element, currentPage);
+			this.updatePageControlsVisibility(element, currentPage);
 		});
 	}
 
@@ -61,15 +66,17 @@ export class Navigation {
 		let pageElements = pageNavigatorElement.querySelectorAll(".page");
 
 		for (let i = currentPage - 2; i < currentPage; i++) {
-			if (i < 0)
+			if (i < 0) {
 				continue;
+			}
 
 			show(pageElements[i - 1]);
 		}
 
 		for (let i = currentPage; i <= currentPage + 2; i++) {
-			if (i - 1 > pageElements.length)
+			if (i - 1 > pageElements.length) {
 				continue;
+			}
 
 			show(pageElements[i - 1]);
 		}
