@@ -21,6 +21,8 @@ A light-weight and mobile-friendly message board solution intended for small com
 
 Anything in this project which is originally written by me is open and free, so you're welcome to use it however you want. If you do, you would help me feel better about all my time spent by simply emailing<sup>[0]</sup> me to let me know you found some value.
 
+Instructions for setup can be found [here](https://github.com/jyarbro/forum/wiki/Setup).
+
 ## Notes
 
 0: yarbro@outlook.com
