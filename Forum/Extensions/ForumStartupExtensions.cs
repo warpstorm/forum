@@ -1,6 +1,6 @@
-﻿using Forum.Annotations;
-using Forum.Contexts;
+﻿using Forum.Contexts;
 using Forum.Errors;
+using Forum.Filters;
 using Forum.Interfaces.Filters;
 using Forum.Interfaces.Services;
 using Forum.Middleware;
@@ -31,6 +31,7 @@ namespace Forum.Extensions {
 
 			builder.UseMiddleware<HttpStatusCodeHandler>();
 			builder.UseMiddleware<PageTimer>();
+			builder.UseMiddleware<UserContextLoader>();
 
 			return builder;
 		}
@@ -90,11 +91,13 @@ namespace Forum.Extensions {
 				// Try to pull from the environment first
 				var storageConnectionString = configuration[Constants.InternalKeys.StorageConnection];
 
-				if (string.IsNullOrEmpty(storageConnectionString))
+				if (string.IsNullOrEmpty(storageConnectionString)) {
 					storageConnectionString = configuration.GetConnectionString(Constants.InternalKeys.StorageConnection);
+				}
 
-				if (string.IsNullOrEmpty(storageConnectionString))
+				if (string.IsNullOrEmpty(storageConnectionString)) {
 					throw new HttpInternalServerError("No storage connection string found.");
+				}
 
 				var storageAccount = CloudStorageAccount.Parse(storageConnectionString);
 

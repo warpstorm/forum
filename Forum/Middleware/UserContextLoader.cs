@@ -1,46 +1,46 @@
 ﻿using Forum.Contexts;
 using Forum.Enums;
 using Forum.Repositories;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Forum.Filters {
+namespace Forum.Middleware {
 	using DataModels = Models.DataModels;
 
-	public class UserContextActionFilter : IAsyncActionFilter {
-		ApplicationDbContext DbContext { get; }
-		UserContext UserContext { get; }
-		UserManager<DataModels.ApplicationUser> UserManager { get; }
-		SignInManager<DataModels.ApplicationUser> SignInManager { get; }
-		RoleRepository RoleRepository { get; }
-		SettingsRepository SettingsRepository { get; }
-		AccountRepository AccountRepository { get; }
+	public class UserContextLoader {
+		RequestDelegate Next { get; }
 
-		public UserContextActionFilter(
+		#region Dependencies which cannot be loaded from the root scope, and must therefore be injected during Invoke()
+		ApplicationDbContext DbContext { get; set; }
+		UserContext UserContext { get; set; }
+		SettingsRepository SettingsRepository { get; set; }
+		SignInManager<DataModels.ApplicationUser> SignInManager { get; set; }
+		UserManager<DataModels.ApplicationUser> UserManager { get; set; }
+		#endregion
+
+		public UserContextLoader(RequestDelegate next) {
+			Next = next;
+		}
+
+		public async Task Invoke(
+			HttpContext context,
 			ApplicationDbContext dbContext,
 			UserContext userContext,
-			UserManager<DataModels.ApplicationUser> userManager,
-			SignInManager<DataModels.ApplicationUser> signInManager,
-			RoleRepository roleRepository,
 			SettingsRepository settingsRepository,
-			AccountRepository accountRepository
+			SignInManager<DataModels.ApplicationUser> signInManager,
+			UserManager<DataModels.ApplicationUser> userManager
 		) {
 			DbContext = dbContext;
 			UserContext = userContext;
-			UserManager = userManager;
-			RoleRepository = roleRepository;
-			SignInManager = signInManager;
 			SettingsRepository = settingsRepository;
-			AccountRepository = accountRepository;
-		}
+			SignInManager = signInManager;
+			UserManager = userManager;
 
-		public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next) {
-			var currentPrincipal = context.HttpContext.User;
+			var currentPrincipal = context.User;
 
 			if (currentPrincipal.Identity.IsAuthenticated) {
 				UserContext.ApplicationUser = await UserManager.GetUserAsync(currentPrincipal);
@@ -55,23 +55,23 @@ namespace Forum.Filters {
 				}
 			}
 
-			await next();
+			await Next(context);
 		}
 
-		public async Task LoadUserRoles() {
-			var userRolesQuery = from userRole in RoleRepository.UserRoles
-								 join role in RoleRepository.SiteRoles on userRole.RoleId equals role.Id
+		async Task LoadUserRoles() {
+			var userRolesQuery = from userRole in DbContext.UserRoles
+								 join role in DbContext.Roles on userRole.RoleId equals role.Id
 								 where userRole.UserId.Equals(UserContext.ApplicationUser.Id)
 								 select role.Id;
 
-			var adminUsersQuery = from user in AccountRepository
-								  join userRole in RoleRepository.UserRoles on user.Id equals userRole.UserId
-								  join role in RoleRepository.SiteRoles on userRole.RoleId equals role.Id
+			var adminUsersQuery = from user in DbContext.Users
+								  join userRole in DbContext.UserRoles on user.Id equals userRole.UserId
+								  join role in DbContext.Roles on userRole.RoleId equals role.Id
 								  where role.Name == "Admin"
 								  select user.Id;
 
 			UserContext.Roles = userRolesQuery.ToList();
-			var adminRole = RoleRepository.SiteRoles.FirstOrDefault(r => r.Name == "Admin");
+			var adminRole = DbContext.Roles.FirstOrDefault(r => r.Name == "Admin");
 			var anyAdminUsers = adminUsersQuery.Any();
 
 			if (adminRole != null && UserContext.Roles.Contains(adminRole.Id)) {
@@ -87,13 +87,13 @@ namespace Forum.Filters {
 			UserContext.IsAuthenticated = true;
 		}
 
-		public async Task UpdateLastOnline() {
+		async Task UpdateLastOnline() {
 			UserContext.ApplicationUser.LastOnline = DateTime.Now;
 			DbContext.Update(UserContext.ApplicationUser);
 			await DbContext.SaveChangesAsync();
 		}
 
-		public async Task LoadViewLogs() {
+		async Task LoadViewLogs() {
 			var historyTimeLimit = SettingsRepository.HistoryTimeLimit().AddDays(-1);
 
 			var viewLogsQuery = from record in DbContext.ViewLogs
@@ -110,8 +110,9 @@ namespace Forum.Filters {
 			var expiredViewLogs = expiredViewLogsQuery.ToList();
 
 			if (expiredViewLogs.Where(record => record.LogTime <= historyTimeLimit).Any()) {
-				foreach (var viewLog in expiredViewLogs)
+				foreach (var viewLog in expiredViewLogs) {
 					DbContext.ViewLogs.Remove(viewLog);
+				}
 
 				// Gives them a day before the next update so we don't do this every request.
 				historyTimeLimit = historyTimeLimit.AddDays(1);

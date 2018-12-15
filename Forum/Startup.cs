@@ -1,7 +1,7 @@
-﻿using Forum.Filters;
-using Forum.Contexts;
+﻿using Forum.Contexts;
 using Forum.Controllers;
 using Forum.Extensions;
+using Jdenticon.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Jdenticon.AspNetCore;
 
 namespace Forum {
 	using DataModels = Models.DataModels;
@@ -30,8 +29,9 @@ namespace Forum {
 			var dbConnectionString = Configuration["DefaultConnection"];
 
 			// Or use the one defined in ConnectionStrings setting of app configuration.
-			if (string.IsNullOrEmpty(dbConnectionString))
+			if (string.IsNullOrEmpty(dbConnectionString)) {
 				dbConnectionString = Configuration.GetConnectionString("DefaultConnection");
+			}
 
 			services.AddDbContextPool<ApplicationDbContext>(options =>
 				options.UseSqlServer(dbConnectionString)
@@ -52,7 +52,6 @@ namespace Forum {
 
 			services.Configure<MvcOptions>(options => {
 				//options.Filters.Add<RequireRemoteHttpsAttribute>();
-				options.Filters.Add<UserContextActionFilter>();
 			});
 
 			services.AddForum(Configuration);
@@ -75,8 +74,9 @@ namespace Forum {
 				app.UseBrowserLink();
 				app.UseDatabaseErrorPage();
 			}
-			else
+			else {
 				app.UseExceptionHandler("/Home/Error");
+			}
 
 			app.UseJdenticon();
 			app.UseStaticFiles();
