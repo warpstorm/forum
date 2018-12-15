@@ -1,10 +1,7 @@
 ﻿using Forum.Contexts;
 using Forum.Controllers;
 using Forum.Extensions;
-using Forum.Plugins.EmailSender;
-using Forum.Plugins.ImageStore;
-using Forum.Plugins.Recaptcha;
-using Forum.Plugins.UrlReplacement;
+using Forum.Plugins;
 using Jdenticon.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -59,10 +56,7 @@ namespace Forum {
 			});
 
 			services.AddForum(Configuration);
-			services.AddRecaptcha(Configuration);
-			services.AddImageStore(Configuration);
-			services.AddUrlReplacement(Configuration);
-			services.AddEmailSender(Configuration);
+			services.AddPlugins(Configuration);
 
 			services.AddDistributedMemoryCache();
 			services.AddSession();
