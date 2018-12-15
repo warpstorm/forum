@@ -16,8 +16,6 @@ using Microsoft.Extensions.DependencyInjection;
 // Singleton: created the first time they are requested (or when ConfigureServices is run if you specify an instance there) and then every subsequent request will use the same instance.
 
 namespace Forum.Extensions {
-	using ServiceModels = Models.ServiceModels;
-
 	public static class ForumStartupExtensions {
 		public static IApplicationBuilder UseForum(this IApplicationBuilder builder) {
 			Identicon.DefaultStyle = new IdenticonStyle {
@@ -33,9 +31,6 @@ namespace Forum.Extensions {
 
 		public static IServiceCollection AddForum(this IServiceCollection services, IConfiguration configuration) {
 			RegisterRepositories(services, configuration);
-
-			services.Configure<ServiceModels.EmailSenderOptions>(configuration);
-			services.AddTransient<IEmailSender, EmailSender>();
 
 			services.AddScoped<UserContext>();
 			services.AddTransient<Sidebar>();

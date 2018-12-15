@@ -3,6 +3,7 @@ using Forum.Controllers;
 using Forum.Errors;
 using Forum.Extensions;
 using Forum.Interfaces.Services;
+using Forum.Plugins.EmailSender;
 using Forum.Plugins.ImageStore;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;

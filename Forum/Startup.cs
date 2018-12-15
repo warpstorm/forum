@@ -1,6 +1,7 @@
 ﻿using Forum.Contexts;
 using Forum.Controllers;
 using Forum.Extensions;
+using Forum.Plugins.EmailSender;
 using Forum.Plugins.ImageStore;
 using Forum.Plugins.Recaptcha;
 using Forum.Plugins.UrlReplacement;
@@ -61,6 +62,7 @@ namespace Forum {
 			services.AddRecaptcha(Configuration);
 			services.AddImageStore(Configuration);
 			services.AddUrlReplacement(Configuration);
+			services.AddEmailSender(Configuration);
 
 			services.AddDistributedMemoryCache();
 			services.AddSession();

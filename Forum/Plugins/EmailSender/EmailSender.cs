@@ -1,6 +1,4 @@
 ﻿using Forum.Errors;
-using Forum.Interfaces.Services;
-using Forum.Models.ServiceModels;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SendGrid;
@@ -9,7 +7,7 @@ using System.Net;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 
-namespace Forum.Services {
+namespace Forum.Plugins.EmailSender {
 	public class EmailSender : IEmailSender {
 		public bool Ready { get; }
 
@@ -23,11 +21,12 @@ namespace Forum.Services {
 			Options = optionsAccessor.Value;
 			Logger = logger;
 
-			if (Options.SendGridKey != null 
+			if (Options.SendGridKey != null
 				&& Options.SendGridUser != null
 				&& Options.FromName != null
-				&& Options.FromAddress != null)
+				&& Options.FromAddress != null) {
 				Ready = true;
+			}
 		}
 
 		public Task SendEmailAsync(string email, string subject, string message) {
@@ -43,8 +42,9 @@ namespace Forum.Services {
 		}
 
 		public async Task Execute(string apiKey, string subject, string message, string email) {
-			if (!Ready)
+			if (!Ready) {
 				throw new HttpInternalServerError("EmailSender is not ready.");
+			}
 
 			var client = new SendGridClient(apiKey);
 
@@ -59,8 +59,9 @@ namespace Forum.Services {
 
 			var response = await client.SendEmailAsync(msg);
 
-			if (response.StatusCode != HttpStatusCode.Accepted)
+			if (response.StatusCode != HttpStatusCode.Accepted) {
 				Logger.LogCritical($"Error sending email. Response body: {response.Body}");
+			}
 		}
 	}
 }
