@@ -1,13 +1,10 @@
-﻿using Forum.Interfaces.Services;
+﻿using Forum.Services;
 using Microsoft.Extensions.Options;
 using System.Collections.Generic;
 using System.Net;
 using System.Text.RegularExpressions;
 
-namespace Forum.Services {
-	using ImgurClientModels = Models.ImgurClientModels;
-	using ServiceModels = Models.ServiceModels;
-
+namespace Forum.Plugins.UrlReplacement {
 	public class ImgurClient : IUrlReplacementClient {
 		const string ENDPOINT = "https://api.imgur.com/3";
 
@@ -26,7 +23,7 @@ namespace Forum.Services {
 			};
 		}
 
-		public bool TryGetReplacement(string remoteUrl, string pageTitle, string favicon, out ServiceModels.RemoteUrlReplacement replacement) {
+		public bool TryGetReplacement(string remoteUrl, string pageTitle, string favicon, out UrlReplacement replacement) {
 			replacement = null;
 
 			var albumMatch = Regex.Match(remoteUrl, @"imgur.com\/a\/([a-zA-Z0-9]+)?", RegexOptions.Compiled | RegexOptions.Multiline);
@@ -40,62 +37,70 @@ namespace Forum.Services {
 			else if (galleryMatch.Success) {
 				var topLevelGalleries = new List<string> { "hot", "top", "user" };
 				var hash = galleryMatch.Groups[1].Value;
-				
+
 				// We can't process top level galleries yet.
-				if (!topLevelGalleries.Contains(hash))
+				if (!topLevelGalleries.Contains(hash)) {
 					replacement = GetReplacementForGalleryAlbum(hash, favicon);
+				}
 			}
 			else if (imageMatch.Success) {
 				var hash = imageMatch.Groups[1].Value;
 				replacement = GetReplacementForImage(hash, favicon);
 			}
-			
-			if (replacement is null)
+
+			if (replacement is null) {
 				return false;
+			}
 
 			return true;
 		}
 
-		public ServiceModels.RemoteUrlReplacement GetReplacementForImage(string hash, string favicon) {
+		public UrlReplacement GetReplacementForImage(string hash, string favicon) {
 			var image = GetImage(hash);
 
-			if (image is null)
+			if (image is null) {
 				return null;
+			}
 
-			if (string.IsNullOrEmpty(image.Title))
+			if (string.IsNullOrEmpty(image.Title)) {
 				image.Title = "(No Title)";
+			}
 
-			return new ServiceModels.RemoteUrlReplacement {
+			return new UrlReplacement {
 				ReplacementText = $"<a target='_blank' href='{image.Link}'>{favicon}{image.Title}</a>",
 				Card = GetCardForImages(new List<ImgurClientModels.Image> { image })
 			};
 		}
 
-		public ServiceModels.RemoteUrlReplacement GetReplacementForAlbum(string hash, string favicon) {
+		public UrlReplacement GetReplacementForAlbum(string hash, string favicon) {
 			var album = GetAlbum(hash);
 
-			if (album is null)
+			if (album is null) {
 				return null;
+			}
 
-			if (string.IsNullOrEmpty(album.Title))
+			if (string.IsNullOrEmpty(album.Title)) {
 				album.Title = "(No Title)";
+			}
 
-			return new ServiceModels.RemoteUrlReplacement {
+			return new UrlReplacement {
 				ReplacementText = $"<a target='_blank' href='{album.Link}'>{favicon}{album.Title}</a>",
 				Card = GetCardForImages(album.Images)
 			};
 		}
 
-		public ServiceModels.RemoteUrlReplacement GetReplacementForGalleryAlbum(string hash, string favicon) {
+		public UrlReplacement GetReplacementForGalleryAlbum(string hash, string favicon) {
 			var album = GetGalleryAlbum(hash);
 
-			if (album is null)
+			if (album is null) {
 				return null;
+			}
 
-			if (string.IsNullOrEmpty(album.Title))
+			if (string.IsNullOrEmpty(album.Title)) {
 				album.Title = "(No Title)";
+			}
 
-			return new ServiceModels.RemoteUrlReplacement {
+			return new UrlReplacement {
 				ReplacementText = $"<a target='_blank' href='{album.Link}'>{favicon}{album.Title}</a>",
 				Card = GetCardForImages(album.Images)
 			};
@@ -131,16 +136,18 @@ namespace Forum.Services {
 			foreach (var image in images) {
 				var imageElement = string.Empty;
 
-				if (!string.IsNullOrEmpty(image.Mp4))
+				if (!string.IsNullOrEmpty(image.Mp4)) {
 					card += $@"<div class='embedded-video'>
 								<p><video autoplay loop controls><source src='{image.Link}' type='video/mp4' /></video></p>
 								<p>{image.Description}</p>
 							</div>";
-				else
+				}
+				else {
 					card += $@"<div class='imgur-image'>
 								<p><a target='_blank' href='{image.Link}'><img src='{image.Link}' /></a></p>
 								<p>{image.Description}</p>
 							</div>";
+				}
 			}
 
 			return card;

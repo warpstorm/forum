@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Forum.Models.ImgurClientModels {
+namespace Forum.Plugins.UrlReplacement.ImgurClientModels {
 	public class Image {
 		[JsonProperty("id")] public string Id { get; set; }
 		[JsonProperty("title")] public string Title { get; set; }

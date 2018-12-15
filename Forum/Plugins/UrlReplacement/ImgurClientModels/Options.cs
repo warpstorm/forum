@@ -1,4 +1,4 @@
-﻿namespace Forum.Models.ImgurClientModels {
+﻿namespace Forum.Plugins.UrlReplacement.ImgurClientModels {
 	public class Options {
 		public string ClientId { get; set; }
 	}

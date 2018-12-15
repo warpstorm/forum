@@ -1,5 +1,4 @@
 ﻿using Forum.Contexts;
-using Forum.Errors;
 using Forum.Interfaces.Services;
 using Forum.Middleware;
 using Forum.Services;
@@ -10,7 +9,6 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.WindowsAzure.Storage;
 
 // REMINDER -
 // Transient: created each time they are requested. This lifetime works best for lightweight, stateless services.
@@ -18,7 +16,6 @@ using Microsoft.WindowsAzure.Storage;
 // Singleton: created the first time they are requested (or when ConfigureServices is run if you specify an instance there) and then every subsequent request will use the same instance.
 
 namespace Forum.Extensions {
-	using ImgurClientModels = Models.ImgurClientModels;
 	using ServiceModels = Models.ServiceModels;
 
 	public static class ForumStartupExtensions {
@@ -40,17 +37,10 @@ namespace Forum.Extensions {
 			services.Configure<ServiceModels.EmailSenderOptions>(configuration);
 			services.AddTransient<IEmailSender, EmailSender>();
 
-			services.AddTransient<IForumViewResult, ForumViewResult>();
-
-			services.AddTransient<GzipWebClient>();
-
-			services.Configure<ImgurClientModels.Options>(configuration.GetSection("Imgur"));
-			services.AddTransient<ImgurClient>();
-			services.AddTransient<YouTubeClient>();
-
 			services.AddScoped<UserContext>();
-
 			services.AddTransient<Sidebar>();
+			services.AddTransient<IForumViewResult, ForumViewResult>();
+			services.AddTransient<GzipWebClient>();
 
 			services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
 			services.AddSingleton<IUrlHelperFactory, UrlHelperFactory>();

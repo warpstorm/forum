@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Forum.Models.ImgurClientModels {
+namespace Forum.Plugins.UrlReplacement.ImgurClientModels {
 	public class GalleryAlbumResponse {
 		[JsonProperty("data")] public GalleryAlbum Data { get; set; }
 		[JsonProperty("success")] public bool Success { get; set; }

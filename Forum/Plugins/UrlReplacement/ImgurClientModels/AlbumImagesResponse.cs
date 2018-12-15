@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
 
-namespace Forum.Models.ImgurClientModels {
+namespace Forum.Plugins.UrlReplacement.ImgurClientModels {
 	public class AlbumImagesResponse {
 		[JsonProperty("data")] public List<Image> Data { get; set; }
 		[JsonProperty("success")] public bool Success { get; set; }

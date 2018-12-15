@@ -3,8 +3,8 @@ using Forum.Contexts;
 using Forum.Controllers;
 using Forum.Errors;
 using Forum.Extensions;
-using Forum.Interfaces.Services;
 using Forum.Plugins.ImageStore;
+using Forum.Plugins.UrlReplacement;
 using Forum.Services;
 using HtmlAgilityPack;
 using Microsoft.AspNetCore.Mvc;
@@ -68,7 +68,7 @@ namespace Forum.Repositories {
 		}
 
 		public int GetPageNumber(int messageId, List<int> messageIds) {
-			var index = (double) messageIds.FindIndex(id => id == messageId);
+			var index = (double)messageIds.FindIndex(id => id == messageId);
 			index++;
 
 			var messagesPerPage = SettingsRepository.MessagesPerPage();
@@ -417,7 +417,7 @@ namespace Forum.Repositories {
 		/// <summary>
 		/// Attempt to replace the ugly URL with a human readable title.
 		/// </summary>
-		public async Task<ServiceModels.RemoteUrlReplacement> GetRemoteUrlReplacement(string remoteUrl) {
+		public async Task<UrlReplacement> GetRemoteUrlReplacement(string remoteUrl) {
 			var remotePageDetails = await GetRemotePageDetails(remoteUrl);
 			remotePageDetails.Title = remotePageDetails.Title.Replace("$", "&#36;");
 
@@ -427,9 +427,8 @@ namespace Forum.Repositories {
 				favicon = $"<img class='link-favicon' src='{remotePageDetails.Favicon}' /> ";
 			}
 
-			ServiceModels.RemoteUrlReplacement replacement;
 
-			if (YouTubeClient.TryGetReplacement(remoteUrl, remotePageDetails.Title, favicon, out replacement)) {
+			if (YouTubeClient.TryGetReplacement(remoteUrl, remotePageDetails.Title, favicon, out var replacement)) {
 				return replacement;
 			}
 
@@ -438,7 +437,7 @@ namespace Forum.Repositories {
 			}
 
 			// replace the URL with the HTML
-			return new ServiceModels.RemoteUrlReplacement {
+			return new UrlReplacement {
 				ReplacementText = $"<a target='_blank' href='{remoteUrl}'>{favicon}{remotePageDetails.Title}</a>",
 				Card = remotePageDetails.Card ?? string.Empty
 			};
@@ -890,7 +889,7 @@ namespace Forum.Repositories {
 			var recordCount = query.Count();
 
 			var take = SettingsRepository.TopicsPerPage(true);
-			var totalSteps = (int) Math.Ceiling(1D * recordCount / take);
+			var totalSteps = (int)Math.Ceiling(1D * recordCount / take);
 
 			return totalSteps;
 		}
@@ -958,7 +957,7 @@ namespace Forum.Repositories {
 			var recordCount = query.Count();
 
 			var take = SettingsRepository.TopicsPerPage(true);
-			var totalSteps = (int) Math.Ceiling(1D * recordCount / take);
+			var totalSteps = (int)Math.Ceiling(1D * recordCount / take);
 
 			return totalSteps;
 		}
@@ -1020,7 +1019,7 @@ namespace Forum.Repositories {
 			var recordCount = records.Count();
 
 			var take = SettingsRepository.MessagesPerPage(true);
-			var totalSteps = (int) Math.Ceiling(1D * recordCount / take);
+			var totalSteps = (int)Math.Ceiling(1D * recordCount / take);
 
 			return totalSteps;
 		}
