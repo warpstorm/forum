@@ -14,8 +14,9 @@ namespace CodeKicker.BBCode {
 			id.ThrowIfNull(nameof(id));
 			name.ThrowIfNull(nameof(name), true);
 
-			if (!Enum.IsDefined(typeof(EHtmlEncodingMode), htmlEncodingMode))
+			if (!Enum.IsDefined(typeof(EHtmlEncodingMode), htmlEncodingMode)) {
 				throw new ArgumentException("htmlEncodingMode");
+			}
 
 			ID = id;
 			Name = name;

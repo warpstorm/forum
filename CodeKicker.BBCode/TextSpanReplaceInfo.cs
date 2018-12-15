@@ -8,8 +8,13 @@ namespace CodeKicker.BBCode {
 		public SyntaxTreeNode Replacement { get; }
 
 		public TextSpanReplaceInfo(int index, int length, SyntaxTreeNode replacement) {
-			if (index < 0) throw new ArgumentOutOfRangeException("index");
-			if (length < 0) throw new ArgumentOutOfRangeException("index");
+			if (index < 0) {
+				throw new ArgumentOutOfRangeException("index");
+			}
+
+			if (length < 0) {
+				throw new ArgumentOutOfRangeException("index");
+			}
 
 			Index = index;
 			Length = length;

@@ -48,19 +48,22 @@ namespace CodeKicker.BBCode {
 			var escapeCount = 0;
 
 			for (var i = 0; i < text.Length; i++) {
-				if (text[i] == '[' || text[i] == ']' || text[i] == '\\')
+				if (text[i] == '[' || text[i] == ']' || text[i] == '\\') {
 					escapeCount++;
+				}
 			}
 
-			if (escapeCount == 0)
+			if (escapeCount == 0) {
 				return text;
+			}
 
 			var output = new char[text.Length + escapeCount];
 			var outputWritePos = 0;
 
 			for (var i = 0; i < text.Length; i++) {
-				if (text[i] == '[' || text[i] == ']' || text[i] == '\\')
+				if (text[i] == '[' || text[i] == ']' || text[i] == '\\') {
 					output[outputWritePos++] = '\\';
+				}
 
 				output[outputWritePos++] = text[i];
 			}
@@ -85,38 +88,45 @@ namespace CodeKicker.BBCode {
 
 				var replacements = getTextSpansToReplace(text);
 
-				if (replacements is null || replacements.Count == 0)
+				if (replacements is null || replacements.Count == 0) {
 					return node;
+				}
 
 				var replacementNodes = new List<SyntaxTreeNode>(replacements.Count * 2 + 1);
 				var lastPos = 0;
 
 				foreach (var r in replacements) {
-					if (r.Index < lastPos)
+					if (r.Index < lastPos) {
 						throw new ArgumentException("the replacement text spans must be ordered by index and non-overlapping");
+					}
 
-					if (r.Index > text.Length - r.Length)
+					if (r.Index > text.Length - r.Length) {
 						throw new ArgumentException("every replacement text span must reference a range within the text node");
+					}
 
-					if (r.Index != lastPos)
+					if (r.Index != lastPos) {
 						replacementNodes.Add(new TextNode(text.Substring(lastPos, r.Index - lastPos)));
+					}
 
-					if (r.Replacement != null)
+					if (r.Replacement != null) {
 						replacementNodes.Add(r.Replacement);
+					}
 
 					lastPos = r.Index + r.Length;
 				}
 
-				if (lastPos != text.Length)
+				if (lastPos != text.Length) {
 					replacementNodes.Add(new TextNode(text.Substring(lastPos)));
+				}
 
 				return new SequenceNode(replacementNodes);
 			}
 			else {
 				var fixedSubNodes = node.SubNodes.Select(n => {
 					//skip filtered tags
-					if (n is TagNode && (tagFilter != null && !tagFilter((TagNode)n)))
+					if (n is TagNode && (tagFilter != null && !tagFilter((TagNode)n))) {
 						return n;
+					}
 
 					var repl = ReplaceTextSpans(n, getTextSpansToReplace, tagFilter);
 
@@ -125,8 +135,9 @@ namespace CodeKicker.BBCode {
 					return repl;
 				}).ToList();
 
-				if (fixedSubNodes.SequenceEqual(node.SubNodes, ReferenceEqualityComparer<SyntaxTreeNode>.Instance))
+				if (fixedSubNodes.SequenceEqual(node.SubNodes, ReferenceEqualityComparer<SyntaxTreeNode>.Instance)) {
 					return node;
+				}
 
 				return node.SetSubNodes(fixedSubNodes);
 			}
@@ -141,11 +152,13 @@ namespace CodeKicker.BBCode {
 			}
 			else {
 				//skip filtered tags
-				if (node is TagNode && (tagFilter != null && !tagFilter((TagNode)node)))
+				if (node is TagNode && (tagFilter != null && !tagFilter((TagNode)node))) {
 					return;
+				}
 
-				foreach (var subNode in node.SubNodes)
+				foreach (var subNode in node.SubNodes) {
 					VisitTextNodes(subNode, visitText, tagFilter);
+				}
 			}
 		}
 

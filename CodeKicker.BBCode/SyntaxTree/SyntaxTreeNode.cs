@@ -25,25 +25,32 @@ namespace CodeKicker.BBCode.SyntaxTree {
 		public override int GetHashCode() => base.GetHashCode();
 
 		public static bool operator ==(SyntaxTreeNode a, SyntaxTreeNode b) {
-			if (ReferenceEquals(a, b))
+			if (ReferenceEquals(a, b)) {
 				return true;
+			}
 
-			if (a is null)
+			if (a is null) {
 				return false;
+			}
 
-			if (b is null)
+			if (b is null) {
 				return false;
+			}
 
-			if (a.GetType() != b.GetType())
+			if (a.GetType() != b.GetType()) {
 				return false;
+			}
 
-			if (a.SubNodes.Count != b.SubNodes.Count)
+			if (a.SubNodes.Count != b.SubNodes.Count) {
 				return false;
+			}
 
 			if (!ReferenceEquals(a.SubNodes, b.SubNodes)) {
-				for (var i = 0; i < a.SubNodes.Count; i++)
-					if (a.SubNodes[i] != b.SubNodes[i])
+				for (var i = 0; i < a.SubNodes.Count; i++) {
+					if (a.SubNodes[i] != b.SubNodes[i]) {
 						return false;
+					}
+				}
 			}
 
 			return a.EqualsCore(b);

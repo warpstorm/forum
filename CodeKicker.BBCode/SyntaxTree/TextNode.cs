@@ -25,8 +25,9 @@ namespace CodeKicker.BBCode.SyntaxTree {
 		public override SyntaxTreeNode SetSubNodes(IList<SyntaxTreeNode> subNodes) {
 			subNodes.ThrowIfNull(nameof(subNodes));
 
-			if (subNodes.Any())
+			if (subNodes.Any()) {
 				throw new ArgumentException("subNodes cannot contain any nodes for a TextNode");
+			}
 
 			return this;
 		}

@@ -17,8 +17,9 @@ namespace CodeKicker.BBCode {
 		public BBCodeParser(IList<BBTag> tags) : this(EErrorMode.ErrorFree, null, tags) { }
 
 		public BBCodeParser(EErrorMode errorMode, string textNodeHtmlTemplate, IList<BBTag> tags) {
-			if (!Enum.IsDefined(typeof(EErrorMode), errorMode))
+			if (!Enum.IsDefined(typeof(EErrorMode), errorMode)) {
 				throw new ArgumentOutOfRangeException("errorMode");
+			}
 
 			tags.ThrowIfNull(nameof(tags));
 
@@ -42,18 +43,22 @@ namespace CodeKicker.BBCode {
 			var end = 0;
 
 			while (end < bbCode.Length) {
-				if (MatchTagEnd(bbCode, ref end, stack))
+				if (MatchTagEnd(bbCode, ref end, stack)) {
 					continue;
+				}
 
-				if (MatchStartTag(bbCode, ref end, stack))
+				if (MatchStartTag(bbCode, ref end, stack)) {
 					continue;
+				}
 
-				if (MatchTextNode(bbCode, ref end, stack))
+				if (MatchTextNode(bbCode, ref end, stack)) {
 					continue;
+				}
 
 				//there is no possible match at the current position
-				if (ErrorMode != EErrorMode.ErrorFree)
+				if (ErrorMode != EErrorMode.ErrorFree) {
 					throw new BBCodeParsingException(string.Empty);
+				}
 
 				//if the error free mode is enabled force interpretation as text if no other match could be made
 				AppendText(bbCode[end].ToString(), stack);
@@ -68,8 +73,9 @@ namespace CodeKicker.BBCode {
 			while (stack.Count > 1) {
 				var node = (TagNode) stack.Pop();
 
-				if (node.Tag.RequiresClosingTag && ErrorMode == EErrorMode.Strict)
+				if (node.Tag.RequiresClosingTag && ErrorMode == EErrorMode.Strict) {
 					throw new BBCodeParsingException(MessagesHelper.GetString("TagNotClosed", node.Tag.Name));
+				}
 			}
 
 			if (stack.Count != 1) {
@@ -85,15 +91,17 @@ namespace CodeKicker.BBCode {
 
 			var tagEnd = ParseTagEnd(bbCode, ref end);
 
-			if (tagEnd is null)
+			if (tagEnd is null) {
 				return false;
+			}
 
 			while (true) {
 				//could also be a SequenceNode
 				var openingNode = stack.Peek() as TagNode;
 
-				if (openingNode is null && ErrorOrReturn("TagNotOpened", tagEnd))
+				if (openingNode is null && ErrorOrReturn("TagNotOpened", tagEnd)) {
 					return false;
+				}
 
 				//ErrorOrReturn will either or throw make this stack frame exit
 				Debug.Assert(openingNode != null);
@@ -101,10 +109,12 @@ namespace CodeKicker.BBCode {
 				if (!openingNode.Tag.Name.Equals(tagEnd, StringComparison.OrdinalIgnoreCase)) {
 					//a nesting imbalance was detected
 
-					if (openingNode.Tag.RequiresClosingTag && ErrorOrReturn("TagNotMatching", tagEnd, openingNode.Tag.Name))
+					if (openingNode.Tag.RequiresClosingTag && ErrorOrReturn("TagNotMatching", tagEnd, openingNode.Tag.Name)) {
 						return false;
-					else
+					}
+					else {
 						stack.Pop();
+					}
 				}
 				else {
 					//the opening node properly matches the closing node
@@ -122,8 +132,9 @@ namespace CodeKicker.BBCode {
 			var end = pos;
 			var tag = ParseTagStart(bbCode, ref end);
 
-			if (tag is null)
+			if (tag is null) {
 				return false;
+			}
 
 			if (tag.Tag.EnableIterationElementBehavior) {
 				//this element behaves like a list item: it allows tags as content, it auto-closes and it does not nest.
@@ -139,8 +150,9 @@ namespace CodeKicker.BBCode {
 					//isThisTagAlreadyOnStack would have been false
 					Debug.Assert(openingNode != null);
 
-					if (openingNode.Tag != tag.Tag && ErrorMode == EErrorMode.Strict && ErrorOrReturn("TagNotMatching", tag.Tag.Name, openingNode.Tag.Name))
+					if (openingNode.Tag != tag.Tag && ErrorMode == EErrorMode.Strict && ErrorOrReturn("TagNotMatching", tag.Tag.Name, openingNode.Tag.Name)) {
 						return false;
+					}
 
 					while (true) {
 						var poppedOpeningNode = (TagNode) stack.Pop();
@@ -148,8 +160,9 @@ namespace CodeKicker.BBCode {
 						if (poppedOpeningNode.Tag != tag.Tag) {
 							//a nesting imbalance was detected
 
-							if (openingNode.Tag.RequiresClosingTag && ErrorMode == EErrorMode.Strict && ErrorOrReturn("TagNotMatching", tag.Tag.Name, openingNode.Tag.Name))
+							if (openingNode.Tag.RequiresClosingTag && ErrorMode == EErrorMode.Strict && ErrorOrReturn("TagNotMatching", tag.Tag.Name, openingNode.Tag.Name)) {
 								return false;
+							}
 
 							//close the (wrongly) open tag. we have already popped so do nothing.
 						}
@@ -165,8 +178,9 @@ namespace CodeKicker.BBCode {
 			stack.Peek().SubNodes.Add(tag);
 
 			//leaf elements have no content - they are closed immediately
-			if (tag.Tag.TagClosingStyle != EBBTagClosingStyle.LeafElementWithoutContent)
+			if (tag.Tag.TagClosingStyle != EBBTagClosingStyle.LeafElementWithoutContent) {
 				stack.Push(tag);
+			}
 
 			pos = end;
 
@@ -192,32 +206,39 @@ namespace CodeKicker.BBCode {
 			var lastChild = currentNode.SubNodes.Count == 0 ? null : currentNode.SubNodes[currentNode.SubNodes.Count - 1] as TextNode;
 
 			TextNode newChild;
-			if (lastChild is null)
+			if (lastChild is null) {
 				newChild = new TextNode(textToAppend, TextNodeHtmlTemplate);
-			else
+			}
+			else {
 				newChild = new TextNode(lastChild.Text + textToAppend, TextNodeHtmlTemplate);
+			}
 
-			if (currentNode.SubNodes.Count != 0 && currentNode.SubNodes[currentNode.SubNodes.Count - 1] is TextNode)
+			if (currentNode.SubNodes.Count != 0 && currentNode.SubNodes[currentNode.SubNodes.Count - 1] is TextNode) {
 				currentNode.SubNodes[currentNode.SubNodes.Count - 1] = newChild;
-			else
+			}
+			else {
 				currentNode.SubNodes.Add(newChild);
+			}
 		}
 
 		TagNode ParseTagStart(string input, ref int pos) {
 			var end = pos;
 
-			if (!ParseChar(input, ref end, '['))
+			if (!ParseChar(input, ref end, '[')) {
 				return null;
+			}
 
 			var tagName = ParseName(input, ref end);
 
-			if (tagName is null)
+			if (tagName is null) {
 				return null;
+			}
 
 			var tag = Tags.SingleOrDefault(t => t.Name.Equals(tagName, StringComparison.OrdinalIgnoreCase));
 
-			if (tag is null && ErrorOrReturn("UnknownTag", tagName))
+			if (tag is null && ErrorOrReturn("UnknownTag", tagName)) {
 				return null;
+			}
 
 			var result = new TagNode(tag);
 
@@ -226,8 +247,9 @@ namespace CodeKicker.BBCode {
 			if (defaultAttrValue != null) {
 				var attr = tag.FindAttribute(string.Empty);
 
-				if (attr is null && ErrorOrReturn("UnknownAttribute", tag.Name, "\"Default Attribute\""))
+				if (attr is null && ErrorOrReturn("UnknownAttribute", tag.Name, "\"Default Attribute\"")) {
 					return null;
+				}
 
 				result.AttributeValues.Add(attr, defaultAttrValue);
 			}
@@ -237,30 +259,36 @@ namespace CodeKicker.BBCode {
 
 				var attrName = ParseName(input, ref end);
 
-				if (attrName is null)
+				if (attrName is null) {
 					break;
+				}
 
 				var attrVal = ParseAttributeValue(input, ref end);
 
-				if (attrVal is null && ErrorOrReturn(string.Empty))
+				if (attrVal is null && ErrorOrReturn(string.Empty)) {
 					return null;
+				}
 
-				if (tag.Attributes is null && ErrorOrReturn("UnknownTag", tag.Name))
+				if (tag.Attributes is null && ErrorOrReturn("UnknownTag", tag.Name)) {
 					return null;
+				}
 
 				var attr = tag.FindAttribute(attrName);
 
-				if (attr is null && ErrorOrReturn("UnknownTag", tag.Name, attrName))
+				if (attr is null && ErrorOrReturn("UnknownTag", tag.Name, attrName)) {
 					return null;
+				}
 
-				if (result.AttributeValues.ContainsKey(attr) && ErrorOrReturn("DuplicateAttribute", tagName, attrName))
+				if (result.AttributeValues.ContainsKey(attr) && ErrorOrReturn("DuplicateAttribute", tagName, attrName)) {
 					return null;
+				}
 
 				result.AttributeValues.Add(attr, attrVal);
 			}
 
-			if (!ParseChar(input, ref end, ']') && ErrorOrReturn("TagNotClosed", tagName))
+			if (!ParseChar(input, ref end, ']') && ErrorOrReturn("TagNotClosed", tagName)) {
 				return null;
+			}
 
 			pos = end;
 
@@ -270,24 +298,29 @@ namespace CodeKicker.BBCode {
 		string ParseTagEnd(string input, ref int pos) {
 			var end = pos;
 
-			if (!ParseChar(input, ref end, '['))
+			if (!ParseChar(input, ref end, '[')) {
 				return null;
+			}
 
-			if (!ParseChar(input, ref end, '/'))
+			if (!ParseChar(input, ref end, '/')) {
 				return null;
+			}
 
 			var tagName = ParseName(input, ref end);
 
-			if (tagName is null)
+			if (tagName is null) {
 				return null;
+			}
 
 			ParseWhitespace(input, ref end);
 
 			if (!ParseChar(input, ref end, ']')) {
-				if (ErrorMode == EErrorMode.ErrorFree)
+				if (ErrorMode == EErrorMode.ErrorFree) {
 					return null;
-				else
+				}
+				else {
 					throw new BBCodeParsingException(string.Empty);
+				}
 			}
 
 			pos = end;
@@ -300,19 +333,22 @@ namespace CodeKicker.BBCode {
 			var anyEscapeFound = false;
 
 			while (end < input.Length) {
-				if (input[end] == '[' && !escapeFound)
+				if (input[end] == '[' && !escapeFound) {
 					break;
+				}
 
-				if (ErrorMode == EErrorMode.Strict && input[end] == ']' && !escapeFound)
+				if (ErrorMode == EErrorMode.Strict && input[end] == ']' && !escapeFound) {
 					throw new BBCodeParsingException(MessagesHelper.GetString("NonescapedChar"));
+				}
 
 				if (input[end] == '\\' && !escapeFound) {
 					escapeFound = true;
 					anyEscapeFound = true;
 				}
 				else if (escapeFound) {
-					if (ErrorMode == EErrorMode.Strict && !(input[end] == '[' || input[end] == ']' || input[end] == '\\'))
+					if (ErrorMode == EErrorMode.Strict && !(input[end] == '[' || input[end] == ']' || input[end] == '\\')) {
 						throw new BBCodeParsingException(MessagesHelper.GetString("EscapeChar"));
+					}
 
 					escapeFound = false;
 				}
@@ -320,8 +356,9 @@ namespace CodeKicker.BBCode {
 				end++;
 			}
 
-			if (ErrorMode == EErrorMode.Strict && escapeFound)
+			if (ErrorMode == EErrorMode.Strict && escapeFound) {
 				throw new BBCodeParsingException(string.Empty);
+			}
 
 			var result = input.Substring(pos, end - pos);
 
@@ -333,10 +370,12 @@ namespace CodeKicker.BBCode {
 				for (var i = 0; i < result.Length; i++) {
 					if (!lastWasEscapeChar && result[i] == '\\') {
 						if (i < result.Length - 1) {
-							if (!(result[i + 1] == '[' || result[i + 1] == ']' || result[i + 1] == '\\'))
+							if (!(result[i + 1] == '[' || result[i + 1] == ']' || result[i + 1] == '\\')) {
 								result2[writePos++] = result[i]; //the next char was not escapable. write the slash into the output array
-							else
+							}
+							else {
 								lastWasEscapeChar = true; //the next char is meant to be escaped so the backslash is skipped
+							}
 						}
 						else {
 							result2[writePos++] = '\\'; //the backslash was the last char in the string. just write it into the output array
@@ -359,11 +398,13 @@ namespace CodeKicker.BBCode {
 		static string ParseName(string input, ref int pos) {
 			var end = pos;
 
-			for (; end < input.Length && (char.ToLower(input[end]) >= 'a' && char.ToLower(input[end]) <= 'z' || (input[end]) >= '0' && (input[end]) <= '9' || input[end] == '*'); end++)
+			for (; end < input.Length && (char.ToLower(input[end]) >= 'a' && char.ToLower(input[end]) <= 'z' || (input[end]) >= '0' && (input[end]) <= '9' || input[end] == '*'); end++) {
 				;
+			}
 
-			if (end - pos == 0)
+			if (end - pos == 0) {
 				return null;
+			}
 
 			var result = input.Substring(pos, end - pos);
 
@@ -375,15 +416,17 @@ namespace CodeKicker.BBCode {
 		static string ParseAttributeValue(string input, ref int pos) {
 			var end = pos;
 
-			if (end >= input.Length || input[end] != '=')
+			if (end >= input.Length || input[end] != '=') {
 				return null;
+			}
 
 			end++;
 
 			var endIndex = input.IndexOfAny(" []".ToCharArray(), end);
 
-			if (endIndex == -1)
+			if (endIndex == -1) {
 				endIndex = input.Length;
+			}
 
 			var valStart = pos + 1;
 			var result = input.Substring(valStart, endIndex - valStart);
@@ -396,8 +439,9 @@ namespace CodeKicker.BBCode {
 		static bool ParseWhitespace(string input, ref int pos) {
 			var end = pos;
 
-			while (end < input.Length && char.IsWhiteSpace(input[end]))
+			while (end < input.Length && char.IsWhiteSpace(input[end])) {
 				end++;
+			}
 
 			var found = pos != end;
 
@@ -407,8 +451,9 @@ namespace CodeKicker.BBCode {
 		}
 
 		static bool ParseChar(string input, ref int pos, char c) {
-			if (pos >= input.Length || input[pos] != c)
+			if (pos >= input.Length || input[pos] != c) {
 				return false;
+			}
 
 			pos++;
 
@@ -416,10 +461,12 @@ namespace CodeKicker.BBCode {
 		}
 
 		bool ErrorOrReturn(string msgKey, params string[] parameters) {
-			if (ErrorMode == EErrorMode.ErrorFree)
+			if (ErrorMode == EErrorMode.ErrorFree) {
 				return true;
-			else
+			}
+			else {
 				throw new BBCodeParsingException(string.IsNullOrEmpty(msgKey) ? "" : MessagesHelper.GetString(msgKey, parameters));
+			}
 		}
 	}
 }

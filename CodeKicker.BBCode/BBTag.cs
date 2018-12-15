@@ -10,8 +10,9 @@ namespace CodeKicker.BBCode {
 			openTagTemplate.ThrowIfNull(nameof(openTagTemplate));
 			closeTagTemplate.ThrowIfNull(nameof(closeTagTemplate), true);
 			
-			if (!Enum.IsDefined(typeof(EBBTagClosingStyle), tagClosingClosingStyle))
+			if (!Enum.IsDefined(typeof(EBBTagClosingStyle), tagClosingClosingStyle)) {
 				throw new ArgumentException(nameof(tagClosingClosingStyle));
+			}
 
 			Name = name;
 			OpenTagTemplate = openTagTemplate;

@@ -13,10 +13,12 @@ namespace CodeKicker.BBCode.SyntaxTree {
 			tag.ThrowIfNull(nameof(tag));
 			Tag = tag;
 
-			if (attributeValues is null)
+			if (attributeValues is null) {
 				AttributeValues = new Dictionary<BBAttribute, string>();
-			else
+			}
+			else {
 				AttributeValues = new Dictionary<BBAttribute, string>(attributeValues);
+			}
 		}
 
 		public override string ToHtml() {
@@ -31,13 +33,16 @@ namespace CodeKicker.BBCode.SyntaxTree {
 			var defAttr = Tag.FindAttribute(string.Empty);
 
 			if (defAttr != null) {
-				if (AttributeValues.ContainsKey(defAttr))
+				if (AttributeValues.ContainsKey(defAttr)) {
 					attrs += "=" + AttributeValues[defAttr];
+				}
 			}
 
 			foreach (var attrKvp in AttributeValues) {
-				if (attrKvp.Key.Name == "")
+				if (attrKvp.Key.Name == "") {
 					continue;
+				}
+
 				attrs += " " + attrKvp.Key.Name + "=" + attrKvp.Value;
 			}
 
@@ -62,8 +67,9 @@ namespace CodeKicker.BBCode.SyntaxTree {
 
 			var attrValuesByID = attributesWithValues.Where(x => x.attrAndVal != null).ToDictionary(x => x.attrID, x => x.attrAndVal.val);
 
-			if (!attrValuesByID.ContainsKey(BBTag.ContentPlaceholderName))
+			if (!attrValuesByID.ContainsKey(BBTag.ContentPlaceholderName)) {
 				attrValuesByID.Add(BBTag.ContentPlaceholderName, content);
+			}
 
 			var output = template;
 
@@ -104,8 +110,9 @@ namespace CodeKicker.BBCode.SyntaxTree {
 				effectiveValue = attribute.ContentTransformer(ctx);
 			}
 
-			if (effectiveValue is null)
+			if (effectiveValue is null) {
 				effectiveValue = "";
+			}
 
 			var encodedValue =
 				attribute.HtmlEncodingMode == EHtmlEncodingMode.HtmlAttributeEncode ? WebUtility.HtmlEncode(effectiveValue)
@@ -153,8 +160,9 @@ namespace CodeKicker.BBCode.SyntaxTree {
 			}
 
 			public string GetAttributeValueByID(string id) {
-				if (!GetAttributeValueByIDData.TryGetValue(id, out var value))
+				if (!GetAttributeValueByIDData.TryGetValue(id, out var value)) {
 					return null;
+				}
 
 				return value;
 			}
