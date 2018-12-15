@@ -1,6 +1,6 @@
 ﻿using Forum.Contexts;
+using Forum.Plugins.ImageStore;
 using Microsoft.Extensions.Logging;
-using Microsoft.WindowsAzure.Storage.Blob;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -15,15 +15,15 @@ namespace Forum.Repositories {
 
 	public class SmileyRepository : Repository<DataModels.Smiley> {
 		ApplicationDbContext DbContext { get; }
-		CloudBlobClient CloudBlobClient { get; }
+		IImageStore ImageStore { get; }
 
 		public SmileyRepository(
 			ApplicationDbContext dbContext,
-			CloudBlobClient cloudBlobClient,
+			IImageStore imageStore,
 			ILogger<SmileyRepository> log
 		) : base(log) {
 			DbContext = dbContext;
-			CloudBlobClient = cloudBlobClient;
+			ImageStore = imageStore;
 		}
 
 		public List<List<ViewModels.IndexItem>> GetSelectorList() {
@@ -62,17 +62,21 @@ namespace Forum.Repositories {
 			var allowedExtensions = new[] { "gif", "png" };
 			var extension = Path.GetExtension(input.File.FileName).ToLower().Substring(1);
 
-			if (Regex.IsMatch(input.File.FileName, @"[^a-zA-Z 0-9_\-\.]"))
+			if (Regex.IsMatch(input.File.FileName, @"[^a-zA-Z 0-9_\-\.]")) {
 				serviceResponse.Error("File", "Your filename contains invalid characters.");
+			}
 
-			if (!allowedExtensions.Contains(extension))
+			if (!allowedExtensions.Contains(extension)) {
 				serviceResponse.Error("File", $"Your file must be: {string.Join(", ", allowedExtensions)}.");
+			}
 
-			if (DbContext.Smileys.Any(s => s.Code == input.Code))
+			if (DbContext.Smileys.Any(s => s.Code == input.Code)) {
 				serviceResponse.Error(nameof(input.Code), "Another smiley exists with that code.");
+			}
 
-			if (!serviceResponse.Success)
+			if (!serviceResponse.Success) {
 				return serviceResponse;
+			}
 
 			var smileyRecord = new DataModels.Smiley {
 				Code = input.Code,
@@ -82,24 +86,15 @@ namespace Forum.Repositories {
 
 			DbContext.Smileys.Add(smileyRecord);
 
-			var container = CloudBlobClient.GetContainerReference("smileys");
-
-			if (await container.CreateIfNotExistsAsync())
-				await container.SetPermissionsAsync(new BlobContainerPermissions { PublicAccess = BlobContainerPublicAccessType.Blob });
-
-			var blobReference = container.GetBlockBlobReference(input.File.FileName);
-
-			// Multiple smileys can point to the same image.
-			if (!await blobReference.ExistsAsync()) {
-				blobReference.Properties.ContentType = $"{input.File.ContentType}";
-
-				using (var fileStream = input.File.OpenReadStream()) {
-					fileStream.Position = 0;
-					await blobReference.UploadFromStreamAsync(fileStream);
-				}
+			using (var inputStream = input.File.OpenReadStream()) {
+				smileyRecord.Path = await ImageStore.Save(new ImageStoreSaveOptions {
+					ContainerName = Constants.InternalKeys.SmileyContainer,
+					FileName = input.File.FileName,
+					ContentType = input.File.ContentType,
+					InputStream = inputStream,
+					Overwrite = true
+				});
 			}
-
-			smileyRecord.Path = blobReference.Uri.AbsoluteUri;
 
 			DbContext.SaveChanges();
 
@@ -127,8 +122,9 @@ namespace Forum.Repositories {
 				var newSortOrder = (smileyInput.Column * 1000) + smileyInput.Row;
 
 				if (smileySortOrder[smileyInput.Id] != newSortOrder) {
-					foreach (var kvp in smileySortOrder.Where(kvp => smileyInput.Column == kvp.Value / 1000 && kvp.Value >= newSortOrder).ToList())
+					foreach (var kvp in smileySortOrder.Where(kvp => smileyInput.Column == kvp.Value / 1000 && kvp.Value >= newSortOrder).ToList()) {
 						smileySortOrder[kvp.Key]++;
+					}
 
 					smileySortOrder[smileyInput.Id] = newSortOrder;
 				}
@@ -153,8 +149,9 @@ namespace Forum.Repositories {
 				}
 			}
 
-			if (!serviceResponse.Success)
+			if (!serviceResponse.Success) {
 				return serviceResponse;
+			}
 
 			DbContext.SaveChanges();
 
@@ -167,26 +164,28 @@ namespace Forum.Repositories {
 
 			var smileyRecord = await DbContext.Smileys.FindAsync(id);
 
-			if (smileyRecord is null)
+			if (smileyRecord is null) {
 				serviceResponse.Error($@"No smiley was found with the id '{id}'");
+			}
 
-			if (!serviceResponse.Success)
+			if (!serviceResponse.Success) {
 				return serviceResponse;
-
-			var otherSmileys = DbContext.Smileys.Where(s => s.FileName == smileyRecord.FileName).ToList();
+			}
 
 			DbContext.Smileys.Remove(smileyRecord);
 
 			var thoughts = DbContext.MessageThoughts.Where(t => t.SmileyId == id).ToList();
 
-			if (thoughts.Any())
+			if (thoughts.Any()) {
 				DbContext.MessageThoughts.RemoveRange(thoughts);
+			}
 
-			var container = CloudBlobClient.GetContainerReference("smileys");
-
-			if (!otherSmileys.Any() && await container.ExistsAsync()) {
-				var blobReference = container.GetBlockBlobReference(smileyRecord.Path);
-				await blobReference.DeleteIfExistsAsync();
+			// Only delete the file if no other smileys are using the file.
+			if (!DbContext.Smileys.Any(s => s.FileName == smileyRecord.FileName)) {
+				await ImageStore.Delete(new ImageStoreDeleteOptions {
+					ContainerName = Constants.InternalKeys.SmileyContainer,
+					Path = smileyRecord.Path
+				});
 			}
 
 			DbContext.SaveChanges();

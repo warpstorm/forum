@@ -4,6 +4,7 @@ using Forum.Controllers;
 using Forum.Errors;
 using Forum.Extensions;
 using Forum.Interfaces.Services;
+using Forum.Plugins.ImageStore;
 using Forum.Services;
 using HtmlAgilityPack;
 using Microsoft.AspNetCore.Mvc;
@@ -635,9 +636,10 @@ namespace Forum.Repositories {
 
 				using (var webResponse = webRequest.GetResponse())
 				using (var inputStream = webResponse.GetResponseStream()) {
-					return await ImageStore.StoreImage(new ServiceModels.ImageStoreOptions {
+					return await ImageStore.Save(new ImageStoreSaveOptions {
 						ContainerName = "favicons",
-						FileName = domain,
+						FileName = $"{domain}.png",
+						ContentType = "image/png",
 						InputStream = inputStream,
 						MaxDimension = 16
 					});

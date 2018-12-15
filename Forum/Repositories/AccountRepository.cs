@@ -3,6 +3,7 @@ using Forum.Controllers;
 using Forum.Errors;
 using Forum.Extensions;
 using Forum.Interfaces.Services;
+using Forum.Plugins.ImageStore;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -18,7 +19,6 @@ using System.Threading.Tasks;
 namespace Forum.Repositories {
 	using DataModels = Models.DataModels;
 	using InputModels = Models.InputModels;
-	using ItemViewModels = Models.ViewModels.Boards.Items;
 	using ServiceModels = Models.ServiceModels;
 	using ViewModels = Models.ViewModels;
 
@@ -285,9 +285,10 @@ namespace Forum.Repositories {
 			using (var inputStream = input.NewAvatar.OpenReadStream()) {
 				inputStream.Position = 0;
 
-				userRecord.AvatarPath = await ImageStore.StoreImage(new ServiceModels.ImageStoreOptions {
-					ContainerName = "avatars",
-					FileName = $"avatar{userRecord.Id}",
+				userRecord.AvatarPath = await ImageStore.Save(new ImageStoreSaveOptions {
+					ContainerName = Constants.InternalKeys.AvatarContainer,
+					FileName = $"avatar{userRecord.Id}.png",
+					ContentType = "image/png",
 					InputStream = inputStream,
 					MaxDimension = SettingsRepository.AvatarSize(true),
 					Overwrite = true

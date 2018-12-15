@@ -12,6 +12,8 @@
 			public const string LastProcessedToken = "LastProcessedToken";
 			public const string StatusMessage = "StatusMessage";
 			public const string StorageConnection = "StorageConnection";
+			public const string AvatarContainer = "avatars";
+			public const string SmileyContainer = "smileys";
 		}
 	}
 }

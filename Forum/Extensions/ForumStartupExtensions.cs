@@ -37,12 +37,9 @@ namespace Forum.Extensions {
 		public static IServiceCollection AddForum(this IServiceCollection services, IConfiguration configuration) {
 			RegisterRepositories(services, configuration);
 
-			RegisterAzureStorage(services, configuration);
-
 			services.Configure<ServiceModels.EmailSenderOptions>(configuration);
 			services.AddTransient<IEmailSender, EmailSender>();
 
-			services.AddTransient<IImageStore, ImageStore>();
 			services.AddTransient<IForumViewResult, ForumViewResult>();
 
 			services.AddTransient<GzipWebClient>();
@@ -78,25 +75,6 @@ namespace Forum.Extensions {
 			services.AddScoped<Repositories.SettingsRepository>();
 			services.AddScoped<Repositories.SmileyRepository>();
 			services.AddScoped<Repositories.TopicRepository>();
-		}
-
-		static void RegisterAzureStorage(IServiceCollection services, IConfiguration configuration) {
-			services.AddScoped((serviceProvider) => {
-				// Try to pull from the environment first
-				var storageConnectionString = configuration[Constants.InternalKeys.StorageConnection];
-
-				if (string.IsNullOrEmpty(storageConnectionString)) {
-					storageConnectionString = configuration.GetConnectionString(Constants.InternalKeys.StorageConnection);
-				}
-
-				if (string.IsNullOrEmpty(storageConnectionString)) {
-					throw new HttpInternalServerError("No storage connection string found.");
-				}
-
-				var storageAccount = CloudStorageAccount.Parse(storageConnectionString);
-
-				return storageAccount.CreateCloudBlobClient();
-			});
 		}
 	}
 }
