@@ -3,6 +3,7 @@ using Forum.Contexts;
 using Forum.Errors;
 using Forum.Extensions;
 using Forum.Interfaces.Services;
+using Forum.Plugins.Recaptcha;
 using Forum.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;

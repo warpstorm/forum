@@ -1,7 +1,5 @@
 ﻿using Forum.Contexts;
 using Forum.Errors;
-using Forum.Filters;
-using Forum.Interfaces.Filters;
 using Forum.Interfaces.Services;
 using Forum.Middleware;
 using Forum.Services;
@@ -40,10 +38,6 @@ namespace Forum.Extensions {
 			RegisterRepositories(services, configuration);
 
 			RegisterAzureStorage(services, configuration);
-
-			services.Configure<ServiceModels.RecaptchaOptions>(configuration);
-			services.AddTransient<IRecaptchaValidator, RecaptchaValidator>();
-			services.AddTransient<ValidateRecaptchaActionFilter>();
 
 			services.Configure<ServiceModels.EmailSenderOptions>(configuration);
 			services.AddTransient<IEmailSender, EmailSender>();

@@ -1,5 +1,4 @@
 ﻿using Forum.Errors;
-using Forum.Interfaces.Filters;
 using Forum.Models.ServiceModels;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -9,7 +8,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace Forum.Services {
+namespace Forum.Plugins.Recaptcha {
 	public class RecaptchaValidator : IRecaptchaValidator {
 		public string Response { get; }
 

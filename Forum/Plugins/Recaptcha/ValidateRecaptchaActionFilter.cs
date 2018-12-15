@@ -1,10 +1,9 @@
 ﻿using Forum.Extensions;
-using Forum.Interfaces.Filters;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System;
 using System.Threading.Tasks;
 
-namespace Forum.Filters {
+namespace Forum.Plugins.Recaptcha {
 	public class ValidateRecaptchaActionFilter : IAsyncAuthorizationFilter {
 		IRecaptchaValidator RecaptchaValidator { get; }
 

@@ -1,6 +1,7 @@
 ﻿using Forum.Contexts;
 using Forum.Controllers;
 using Forum.Extensions;
+using Forum.Plugins.Recaptcha;
 using Jdenticon.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -55,6 +56,7 @@ namespace Forum {
 			});
 
 			services.AddForum(Configuration);
+			services.AddRecaptcha(Configuration);
 
 			services.AddDistributedMemoryCache();
 			services.AddSession();

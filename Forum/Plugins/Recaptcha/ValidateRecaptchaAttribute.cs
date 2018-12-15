@@ -1,9 +1,8 @@
-﻿using Forum.Filters;
-using Microsoft.AspNetCore.Mvc.Filters;
+﻿using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 
-namespace Forum.Annotations {
+namespace Forum.Plugins.Recaptcha {
 	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
 	public class ValidateRecaptchaAttribute : Attribute, IFilterFactory, IOrderedFilter {
 		public int Order { get; set; }

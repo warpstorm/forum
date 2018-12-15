@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace Forum.Interfaces.Filters {
+namespace Forum.Plugins.Recaptcha {
 	public interface IRecaptchaValidator {
 		string Response { get; }
 		Task Validate(string recaptchaResponse, string ipAddress);
