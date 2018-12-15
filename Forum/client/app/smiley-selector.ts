@@ -28,10 +28,6 @@ export class SmileySelector {
 	}
 
 	showSmileySelectorNearElement(target: HTMLElement, imageHandler: (event: Event) => void): void {
-		if (event) {
-			event.stopPropagation();
-		}
-
 		let self = this;
 		self.eventCloseSmileySelector();
 		self.smileySelectorImageHandler = imageHandler;
