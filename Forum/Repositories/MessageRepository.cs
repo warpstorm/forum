@@ -79,15 +79,17 @@ namespace Forum.Repositories {
 
 			var processedMessage = await ProcessMessageInput(serviceResponse, input.Body);
 
-			if (!serviceResponse.Success)
+			if (!serviceResponse.Success) {
 				return serviceResponse;
+			}
 
 			var record = CreateMessageRecord(processedMessage, null);
 
 			var existingMessageBoards = DbContext.MessageBoards.Where(item => item.MessageId == record.Id).ToList();
 
-			foreach (var item in existingMessageBoards)
+			foreach (var item in existingMessageBoards) {
 				DbContext.Remove(item);
+			}
 
 			foreach (var selectedBoard in input.SelectedBoards) {
 				var board = BoardRepository.FirstOrDefault(item => item.Id == selectedBoard);
@@ -111,21 +113,25 @@ namespace Forum.Repositories {
 		public async Task<ServiceModels.ServiceResponse> CreateReply(InputModels.MessageInput input) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
-			if (input.Id == 0)
+			if (input.Id == 0) {
 				throw new HttpBadRequestError();
+			}
 
 			var replyRecord = DbContext.Messages.FirstOrDefault(m => m.Id == input.Id);
 
-			if (replyRecord is null)
+			if (replyRecord is null) {
 				serviceResponse.Error($"A record does not exist with ID '{input.Id}'");
+			}
 
-			if (!serviceResponse.Success)
+			if (!serviceResponse.Success) {
 				return serviceResponse;
+			}
 
 			var processedMessage = await ProcessMessageInput(serviceResponse, input.Body);
 
-			if (!serviceResponse.Success)
+			if (!serviceResponse.Success) {
 				return serviceResponse;
+			}
 
 			var record = CreateMessageRecord(processedMessage, replyRecord);
 
@@ -136,13 +142,15 @@ namespace Forum.Repositories {
 		public async Task<ServiceModels.ServiceResponse> EditMessage(InputModels.MessageInput input) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
-			if (input.Id == 0)
+			if (input.Id == 0) {
 				throw new HttpBadRequestError();
+			}
 
 			var record = DbContext.Messages.FirstOrDefault(m => m.Id == input.Id);
 
-			if (record is null)
+			if (record is null) {
 				serviceResponse.Error(nameof(input.Id), $"No record found with the ID '{input.Id}'.");
+			}
 
 			var processedMessage = await ProcessMessageInput(serviceResponse, input.Body);
 
@@ -159,11 +167,13 @@ namespace Forum.Repositories {
 
 			var record = DbContext.Messages.FirstOrDefault(m => m.Id == messageId);
 
-			if (record is null)
+			if (record is null) {
 				serviceResponse.Error($@"No record was found with the id '{messageId}'");
+			}
 
-			if (!serviceResponse.Success)
+			if (!serviceResponse.Success) {
 				return serviceResponse;
+			}
 
 			var parentId = record.ParentId;
 
@@ -185,13 +195,15 @@ namespace Forum.Repositories {
 
 				DbContext.SaveChanges();
 			}
-			else
+			else {
 				serviceResponse.RedirectPath = UrlHelper.Action(nameof(Topics.Index), nameof(Topics));
+			}
 
 			var topicReplies = await DbContext.Messages.Where(m => m.ParentId == messageId).ToListAsync();
 
-			foreach (var reply in topicReplies)
+			foreach (var reply in topicReplies) {
 				await RemoveMessageArtifacts(reply);
+			}
 
 			await RemoveMessageArtifacts(record);
 
@@ -200,8 +212,9 @@ namespace Forum.Repositories {
 			if (parentId > 0) {
 				var parent = DbContext.Messages.FirstOrDefault(item => item.Id == parentId);
 
-				if (parent != null)
+				if (parent != null) {
 					RecountRepliesForTopic(parent);
+				}
 			}
 
 			return serviceResponse;
@@ -210,18 +223,21 @@ namespace Forum.Repositories {
 		async Task RemoveMessageArtifacts(DataModels.Message record) {
 			var messageBoards = await DbContext.MessageBoards.Where(m => m.MessageId == record.Id).ToListAsync();
 
-			foreach (var messageBoard in messageBoards)
+			foreach (var messageBoard in messageBoards) {
 				DbContext.MessageBoards.Remove(messageBoard);
+			}
 
 			var messageThoughts = await DbContext.MessageThoughts.Where(mt => mt.MessageId == record.Id).ToListAsync();
 
-			foreach (var messageThought in messageThoughts)
+			foreach (var messageThought in messageThoughts) {
 				DbContext.MessageThoughts.Remove(messageThought);
+			}
 
 			var notifications = DbContext.Notifications.Where(item => item.MessageId == record.Id).ToList();
 
-			foreach (var notification in notifications)
+			foreach (var notification in notifications) {
 				DbContext.Notifications.Remove(notification);
+			}
 
 			DbContext.Messages.Remove(record);
 		}
@@ -231,16 +247,19 @@ namespace Forum.Repositories {
 
 			var messageRecord = DbContext.Messages.Find(input.MessageId);
 
-			if (messageRecord is null)
+			if (messageRecord is null) {
 				serviceResponse.Error($@"No message was found with the id '{input.MessageId}'");
+			}
 
 			var smileyRecord = await DbContext.Smileys.FindAsync(input.SmileyId);
 
-			if (messageRecord is null)
+			if (messageRecord is null) {
 				serviceResponse.Error($@"No smiley was found with the id '{input.SmileyId}'");
+			}
 
-			if (!serviceResponse.Success)
+			if (!serviceResponse.Success) {
 				return serviceResponse;
+			}
 
 			var existingRecord = await DbContext.MessageThoughts
 				.SingleOrDefaultAsync(mt =>
@@ -275,8 +294,9 @@ namespace Forum.Repositories {
 
 				var notification = DbContext.Notifications.FirstOrDefault(item => item.MessageId == existingRecord.MessageId && item.TargetUserId == existingRecord.UserId && item.Type == Enums.ENotificationType.Thought);
 
-				if (notification != null)
+				if (notification != null) {
 					DbContext.Remove(notification);
+				}
 			}
 
 			DbContext.SaveChanges();
@@ -290,7 +310,6 @@ namespace Forum.Repositories {
 
 			try {
 				processedMessage = PreProcessMessageInput(messageBody);
-				PreProcessSmileys(processedMessage);
 				ParseBBC(processedMessage);
 				ProcessSmileys(processedMessage);
 				await ProcessMessageBodyUrls(processedMessage);
@@ -319,15 +338,18 @@ namespace Forum.Repositories {
 				MentionedUsers = new List<string>()
 			};
 
-			var displayBody = processedMessageInput.DisplayBody.Trim();
+			processedMessageInput.DisplayBody = processedMessageInput.DisplayBody.Trim();
 
-			if (string.IsNullOrEmpty(displayBody))
+			if (string.IsNullOrEmpty(processedMessageInput.DisplayBody)) {
 				throw new ArgumentException("Message body is empty.");
+			}
 
-			// keep this as close to the smiley replacement as possible to prevent HTML-izing the bracket.
-			displayBody = displayBody.Replace("*heartsmiley*", "<3");
-
-			processedMessageInput.DisplayBody = displayBody;
+			// Ensures the smileys are safe from other HTML processing.
+			for (var i = 0; i < SmileyRepository.Count(); i++) {
+				var pattern = $@"(^|[\r\n\s]){Regex.Escape(SmileyRepository[i].Code)}(?=$|[\r\n\s])";
+				var replacement = $"$1SMILEY_{i}_INDEX";
+				processedMessageInput.DisplayBody = Regex.Replace(processedMessageInput.DisplayBody, pattern, replacement, RegexOptions.Singleline);
+			}
 
 			return processedMessageInput;
 		}
@@ -355,13 +377,15 @@ namespace Forum.Repositories {
 				matches++;
 
 				// DoS prevention
-				if (matches > 10)
+				if (matches > 10) {
 					break;
+				}
 
 				var siteUrl = regexMatch.Groups[2].Value;
 
-				if (string.IsNullOrEmpty(siteUrl))
+				if (string.IsNullOrEmpty(siteUrl)) {
 					continue;
+				}
 
 				var key = $"SITEURL_{matches}";
 				displayBody = displayBody.Replace(siteUrl, key);
@@ -374,24 +398,17 @@ namespace Forum.Repositories {
 				}
 			}
 
-			foreach (var kvp in replacements)
+			foreach (var kvp in replacements) {
 				displayBody = displayBody.Replace(kvp.Key, kvp.Value);
+			}
 
 			processedMessageInput.DisplayBody = displayBody;
-		}
-
-		public void PreProcessSmileys(InputModels.ProcessedMessageInput processedMessageInput) {
-			for (var i = 0; i < SmileyRepository.Count(); i++) {
-				var pattern = @"(^|[\r\n\s])" + Regex.Escape(SmileyRepository[i].Code) + @"(?=$|[\r\n\s])";
-				var replacement = $"$1SMILEY_{i}_INDEX";
-				processedMessageInput.DisplayBody = Regex.Replace(processedMessageInput.DisplayBody, pattern, replacement, RegexOptions.Singleline);
-			}
 		}
 
 		public void ProcessSmileys(InputModels.ProcessedMessageInput processedMessageInput) {
 			for (var i = 0; i < SmileyRepository.Count(); i++) {
 				var pattern = $@"SMILEY_{i}_INDEX";
-				var replacement = "<img src='" + SmileyRepository[i].Path + "' />";
+				var replacement = $"<img src='{SmileyRepository[i].Path}' />";
 				processedMessageInput.DisplayBody = Regex.Replace(processedMessageInput.DisplayBody, pattern, replacement);
 			}
 		}
@@ -405,16 +422,19 @@ namespace Forum.Repositories {
 
 			var favicon = string.Empty;
 
-			if (!string.IsNullOrEmpty(remotePageDetails.Favicon))
+			if (!string.IsNullOrEmpty(remotePageDetails.Favicon)) {
 				favicon = $"<img class='link-favicon' src='{remotePageDetails.Favicon}' /> ";
+			}
 
 			ServiceModels.RemoteUrlReplacement replacement;
 
-			if (YouTubeClient.TryGetReplacement(remoteUrl, remotePageDetails.Title, favicon, out replacement))
+			if (YouTubeClient.TryGetReplacement(remoteUrl, remotePageDetails.Title, favicon, out replacement)) {
 				return replacement;
+			}
 
-			if (ImgurClient.TryGetReplacement(remoteUrl, remotePageDetails.Title, favicon, out replacement))
+			if (ImgurClient.TryGetReplacement(remoteUrl, remotePageDetails.Title, favicon, out replacement)) {
 				return replacement;
+			}
 
 			// replace the URL with the HTML
 			return new ServiceModels.RemoteUrlReplacement {
@@ -440,13 +460,15 @@ namespace Forum.Repositories {
 
 			var document = WebClient.DownloadDocument(remoteUrl);
 
-			if (document is null)
+			if (document is null) {
 				return returnResult;
+			}
 
 			var titleTag = document.DocumentNode.SelectSingleNode(@"//title");
 
-			if (titleTag != null && !string.IsNullOrEmpty(titleTag.InnerText.Trim()))
+			if (titleTag != null && !string.IsNullOrEmpty(titleTag.InnerText.Trim())) {
 				returnResult.Title = titleTag.InnerText.Trim();
+			}
 
 			if (string.IsNullOrEmpty(faviconStoragePath)) {
 				var element = document.DocumentNode.SelectSingleNode(@"//link[@rel='shortcut icon']");
@@ -470,10 +492,12 @@ namespace Forum.Repositories {
 
 			ServiceModels.OgDetails ogDetails = null;
 
-			if (domain == "warpstorm.com" || domain == "localhost")
+			if (domain == "warpstorm.com" || domain == "localhost") {
 				ogDetails = GetWarpstormOgDetails(remoteUrl);
-			else
+			}
+			else {
 				ogDetails = GetOgDetails(document);
+			}
 
 			if (ogDetails != null) {
 				returnResult.Title = ogDetails.Title;
@@ -482,8 +506,9 @@ namespace Forum.Repositories {
 					returnResult.Card += "<blockquote class='card pointer hover-highlight' clickable-link-parent>";
 
 					if (!string.IsNullOrEmpty(ogDetails.Image)) {
-						if (ogDetails.Image.StartsWith("/"))
+						if (ogDetails.Image.StartsWith("/")) {
 							ogDetails.Image = $"{remoteUrlAuthority}{ogDetails.Image}";
+						}
 
 						returnResult.Card += $"<div class='card-image'><img src='{ogDetails.Image}' /></div>";
 					}
@@ -495,17 +520,20 @@ namespace Forum.Repositories {
 
 					returnResult.Card += $"<p class='card-description'>{decodedDescription}</p>";
 
-					if (string.IsNullOrEmpty(ogDetails.SiteName))
+					if (string.IsNullOrEmpty(ogDetails.SiteName)) {
 						returnResult.Card += $"<p class='card-link'><a target='_blank' href='{remoteUrl}'>[Direct Link]</a></p>";
-					else
+					}
+					else {
 						returnResult.Card += $"<p class='card-link'><a target='_blank' href='{remoteUrl}'>[{ogDetails.SiteName}]</a></p>";
+					}
 
 					returnResult.Card += "</div><br class='clear' /></blockquote>";
 				}
 			}
 
-			if (returnResult.Title.Contains(" - "))
+			if (returnResult.Title.Contains(" - ")) {
 				StripTitleSiteName(domain, returnResult);
+			}
 
 			return returnResult;
 		}
@@ -513,15 +541,18 @@ namespace Forum.Repositories {
 		ServiceModels.OgDetails GetWarpstormOgDetails(string remoteUrl) {
 			var topicIdMatch = Regex.Match(remoteUrl, @"Topics\/(Display|Latest)\/(\d+)\/?(\d+|)\/?(\d+|)(#message(\d+))?");
 
-			if (!topicIdMatch.Success)
+			if (!topicIdMatch.Success) {
 				return null;
+			}
 
 			var messageId = 0;
 
-			if (string.IsNullOrEmpty(topicIdMatch.Groups[6].Value))
+			if (string.IsNullOrEmpty(topicIdMatch.Groups[6].Value)) {
 				messageId = Convert.ToInt32(topicIdMatch.Groups[2].Value);
-			else
+			}
+			else {
 				messageId = Convert.ToInt32(topicIdMatch.Groups[6].Value);
+			}
 
 			var messageRecordQuery = from message in DbContext.Messages
 									 where message.Id == messageId
@@ -532,8 +563,9 @@ namespace Forum.Repositories {
 
 			var messageRecord = messageRecordQuery.FirstOrDefault();
 
-			if (messageRecord is null)
+			if (messageRecord is null) {
 				return null;
+			}
 
 			return new ServiceModels.OgDetails {
 				Title = messageRecord.ShortPreview,
@@ -548,26 +580,31 @@ namespace Forum.Repositories {
 
 			var titleNode = document.DocumentNode.SelectSingleNode(@"//meta[@property='og:title']");
 
-			if (titleNode != null && titleNode.Attributes["content"] != null)
+			if (titleNode != null && titleNode.Attributes["content"] != null) {
 				returnObject.Title = titleNode.Attributes["content"].Value.Trim();
+			}
 
 			var descriptionNode = document.DocumentNode.SelectSingleNode(@"//meta[@property='og:description']");
 
-			if (descriptionNode != null && descriptionNode.Attributes["content"] != null)
+			if (descriptionNode != null && descriptionNode.Attributes["content"] != null) {
 				returnObject.Description = descriptionNode.Attributes["content"].Value.Trim();
+			}
 
 			var siteNameNode = document.DocumentNode.SelectSingleNode(@"//meta[@property='og:site_name']");
 
-			if (siteNameNode != null && siteNameNode.Attributes["content"] != null)
+			if (siteNameNode != null && siteNameNode.Attributes["content"] != null) {
 				returnObject.SiteName = siteNameNode.Attributes["content"].Value.Trim();
+			}
 
 			var imageNode = document.DocumentNode.SelectSingleNode(@"//meta[@property='og:image']");
 
-			if (imageNode != null && imageNode.Attributes["content"] != null)
+			if (imageNode != null && imageNode.Attributes["content"] != null) {
 				returnObject.Image = imageNode.Attributes["content"].Value.Trim();
+			}
 
-			if (string.IsNullOrEmpty(returnObject.Title))
+			if (string.IsNullOrEmpty(returnObject.Title)) {
 				return null;
+			}
 
 			return returnObject;
 		}
@@ -578,8 +615,9 @@ namespace Forum.Repositories {
 			if (secondLevelDomainMatches.Success) {
 				var strippedUrls = SettingsRepository.StrippedUrls();
 
-				if (strippedUrls.Contains(secondLevelDomainMatches.Groups[1].Value))
+				if (strippedUrls.Contains(secondLevelDomainMatches.Groups[1].Value)) {
 					returnResult.Title = returnResult.Title.Split(" - ")[0];
+				}
 			}
 		}
 
@@ -624,20 +662,23 @@ namespace Forum.Repositories {
 				matches++;
 
 				// DoS prevention
-				if (matches > 10)
+				if (matches > 10) {
 					break;
+				}
 
 				var matchedTag = regexMatch.Groups[1].Value;
 
 				var user = AccountRepository.FirstOrDefault(u => u.DisplayName.ToLower() == matchedTag.ToLower());
 
 				// try to guess what they meant
-				if (user is null)
+				if (user is null) {
 					user = AccountRepository.FirstOrDefault(u => u.UserName.ToLower().Contains(matchedTag.ToLower()));
+				}
 
 				if (user != null) {
-					if (user.Id != UserContext.ApplicationUser.Id)
+					if (user.Id != UserContext.ApplicationUser.Id) {
 						processedMessageInput.MentionedUsers.Add(user.Id);
+					}
 
 					// Eventually link to user profiles
 					// returnObject.ProcessedBody = Regex.Replace(returnObject.ProcessedBody, @"@" + regexMatch.Groups[1].Value, "<a href='/Profile/Details/" + user.UserId + "' class='user'>" + user.DisplayName + "</span>");
@@ -676,15 +717,17 @@ namespace Forum.Repositories {
 			// strip out tags
 			preview = Regex.Replace(preview, @"(<.+?>|\[.+?\])", string.Empty, RegexOptions.Compiled);
 
-			if (!multiline)
+			if (!multiline) {
 				preview = Regex.Match(preview, @"^(.+)?(\r|\n|\r\n|)*", RegexOptions.Compiled).Groups[1].Value;
+			}
 
 			if (preview.Length > previewLength) {
 				var matches = Regex.Match(preview, @"^(.{" + (previewLength - 1) + "})", RegexOptions.Compiled);
 				preview = matches.Groups[1].Value + "…";
 			}
-			else if (preview.Length <= 0)
+			else if (preview.Length <= 0) {
 				preview = "No text";
+			}
 
 			preview = preview.Trim();
 
@@ -863,8 +906,9 @@ namespace Forum.Repositories {
 
 			var parents = parentMessageQuery.Skip(skip).Take(take).ToList();
 
-			foreach (var parent in parents)
+			foreach (var parent in parents) {
 				RecountRepliesForTopic(parent);
+			}
 		}
 
 		public void RecountRepliesForTopic(DataModels.Message parentMessage) {
@@ -930,8 +974,9 @@ namespace Forum.Repositories {
 
 			var parents = parentMessageQuery.Skip(skip).Take(take).ToList();
 
-			foreach (var parent in parents)
+			foreach (var parent in parents) {
 				RebuildParticipantsForTopic(parent.Id);
+			}
 		}
 
 		public void RebuildParticipantsForTopic(int topicId) {
