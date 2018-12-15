@@ -1,9 +1,10 @@
-﻿using System.Text.RegularExpressions;
+﻿using Forum.Interfaces.Services;
+using System.Text.RegularExpressions;
 
 namespace Forum.Services {
 	using ServiceModels = Models.ServiceModels;
 
-	public class YouTubeClient {
+	public class YouTubeClient : IUrlReplacementClient {
 		public bool TryGetReplacement(string remoteUrl, string pageTitle, string favicon, out ServiceModels.RemoteUrlReplacement replacement) {
 			replacement = null;
 
@@ -19,10 +20,7 @@ namespace Forum.Services {
 				};
 			}
 
-			if (replacement is null)
-				return false;
-
-			return true;
+			return !(replacement is null);
 		}
 	}
 }
