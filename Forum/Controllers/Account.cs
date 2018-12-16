@@ -390,14 +390,7 @@ namespace Forum.Controllers {
 		public IActionResult ResetPasswordConfirmation() => ForumViewResult.ViewResult(this);
 
 		[HttpGet]
-		public IActionResult Delete(string userId) => ForumViewResult.ViewResult(this, "Delete", userId);
-
-		[HttpGet]
-		public async Task<IActionResult> ConfirmDelete(string userId) {
-			if (UserContext.ApplicationUser.Id != userId && !UserContext.IsAdmin) {
-				throw new HttpForbiddenError();
-			}
-
+		public IActionResult Delete(string userId) {
 			var deletedAccount = AccountRepository.FirstOrDefault(item => item.DisplayName == "Deleted Account");
 
 			if (deletedAccount is null) {
@@ -412,6 +405,21 @@ namespace Forum.Controllers {
 
 				DbContext.Users.Add(deletedAccount);
 				DbContext.SaveChanges();
+			}
+
+			return ForumViewResult.ViewResult(this, "Delete", userId);
+		}
+
+		[HttpGet]
+		public async Task<IActionResult> ConfirmDelete(string userId) {
+			if (UserContext.ApplicationUser.Id != userId && !UserContext.IsAdmin) {
+				throw new HttpForbiddenError();
+			}
+
+			var deletedAccount = AccountRepository.FirstOrDefault(item => item.DisplayName == "Deleted Account");
+
+			if (deletedAccount is null) {
+				throw new HttpNotFoundError();
 			}
 
 			await AccountRepository.MergeAccounts(userId, deletedAccount.Id, true);
