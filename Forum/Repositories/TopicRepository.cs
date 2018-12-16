@@ -103,8 +103,9 @@ namespace Forum.Repositories {
 					if (reply != null) {
 						var replyPostedBy = AccountRepository.FirstOrDefault(item => item.Id == reply.PostedById);
 
-						if (string.IsNullOrEmpty(reply.ShortPreview))
+						if (string.IsNullOrEmpty(reply.ShortPreview)) {
 							reply.ShortPreview = "No preview";
+						}
 
 						message.ReplyBody = reply.DisplayBody;
 						message.ReplyPreview = reply.ShortPreview;
@@ -127,7 +128,9 @@ namespace Forum.Repositories {
 
 				message.Thoughts = thoughts.Where(item => item.MessageId == message.Id).ToList();
 
-				message.Poseys = poseyUsers.Contains(postedBy.Id);
+				if (!(postedBy is null)) {
+					message.Poseys = poseyUsers.Contains(postedBy.Id);
+				}
 			}
 
 			return messages;
@@ -138,11 +141,13 @@ namespace Forum.Repositories {
 
 			var record = DbContext.Messages.Find(messageId);
 
-			if (record is null)
+			if (record is null) {
 				throw new HttpNotFoundError();
+			}
 
-			if (record.ParentId > 0)
+			if (record.ParentId > 0) {
 				record = DbContext.Messages.Find(record.ParentId);
+			}
 
 			if (!UserContext.IsAuthenticated) {
 				serviceResponse.RedirectPath = UrlHelper.Action(nameof(Controllers.Topics.Display), nameof(Controllers.Topics), new { id = record.LastReplyId });
@@ -156,13 +161,17 @@ namespace Forum.Repositories {
 			foreach (var viewLog in viewLogs) {
 				switch (viewLog.TargetType) {
 					case EViewLogTargetType.All:
-						if (viewLog.LogTime >= latestViewTime)
+						if (viewLog.LogTime >= latestViewTime) {
 							latestViewTime = viewLog.LogTime;
+						}
+
 						break;
 
 					case EViewLogTargetType.Message:
-						if (viewLog.TargetId == record.Id && viewLog.LogTime >= latestViewTime)
+						if (viewLog.TargetId == record.Id && viewLog.LogTime >= latestViewTime) {
 							latestViewTime = viewLog.LogTime;
+						}
+
 						break;
 				}
 			}
@@ -174,11 +183,13 @@ namespace Forum.Repositories {
 
 			var latestMessageId = messageIdQuery.FirstOrDefault();
 
-			if (latestMessageId == 0)
+			if (latestMessageId == 0) {
 				latestMessageId = record.LastReplyId;
+			}
 
-			if (latestMessageId == 0)
+			if (latestMessageId == 0) {
 				latestMessageId = record.Id;
+			}
 
 			serviceResponse.RedirectPath = UrlHelper.Action(nameof(Controllers.Topics.Display), nameof(Controllers.Topics), new { id = latestMessageId });
 
@@ -255,8 +266,9 @@ namespace Forum.Repositories {
 					}
 				}
 
-				if (lastMessageTime > historyTimeLimit)
+				if (lastMessageTime > historyTimeLimit) {
 					messagePreview.Unread = GetUnreadLevel(message.Id, lastMessageTime, participation, viewLogs);
+				}
 			}
 
 			return messagePreviews;
@@ -291,8 +303,9 @@ namespace Forum.Repositories {
 							   };
 			}
 
-			if (unreadFilter > 0)
+			if (unreadFilter > 0) {
 				messageQuery = messageQuery.Where(m => m.LastReplyPosted > historyTimeLimit);
+			}
 
 			var pinnedTopicIds = PinRepository.Select(item => item.MessageId).ToList();
 
@@ -311,8 +324,9 @@ namespace Forum.Repositories {
 
 			foreach (var message in sortedMessageQuery) {
 				if (IsAccessDenied(message.Id, forbiddenBoardIds)) {
-					if (attempts++ > 100)
+					if (attempts++ > 100) {
 						break;
+					}
 
 					continue;
 				}
@@ -320,27 +334,31 @@ namespace Forum.Repositories {
 				var unreadLevel = unreadFilter == 0 ? 0 : GetUnreadLevel(message.Id, message.LastReplyPosted, participation, viewLogs);
 
 				if (unreadLevel < unreadFilter) {
-					if (attempts++ > 100)
+					if (attempts++ > 100) {
 						break;
+					}
 
 					continue;
 				}
 
-				if (skipped++ < skip)
+				if (skipped++ < skip) {
 					continue;
+				}
 
 				messageIds.Add(message.Id);
 
-				if (messageIds.Count == take)
+				if (messageIds.Count == take) {
 					break;
+				}
 			}
 
 			return messageIds;
 		}
 
 		public bool IsAccessDenied(int messageId, List<int> forbiddenBoardIds) {
-			if (UserContext.IsAdmin)
+			if (UserContext.IsAdmin) {
 				return false;
+			}
 
 			var messageBoards = DbContext.MessageBoards.Where(mb => mb.MessageId == messageId).Select(mb => mb.BoardId);
 
@@ -358,19 +376,23 @@ namespace Forum.Repositories {
 							break;
 
 						case EViewLogTargetType.Message:
-							if (viewLog.TargetId == messageId)
+							if (viewLog.TargetId == messageId) {
 								unread = 0;
+							}
+
 							break;
 					}
 
 					// Exit the loop early if we already know it's been read.
-					if (unread == 0)
+					if (unread == 0) {
 						break;
+					}
 				}
 			}
 
-			if (unread == 1 && participation.Any(r => r.MessageId == messageId))
+			if (unread == 1 && participation.Any(r => r.MessageId == messageId)) {
 				unread = 2;
+			}
 
 			return unread;
 		}
@@ -378,11 +400,13 @@ namespace Forum.Repositories {
 		public ServiceModels.ServiceResponse Pin(int messageId) {
 			var record = DbContext.Messages.Find(messageId);
 
-			if (record is null)
+			if (record is null) {
 				throw new HttpNotFoundError();
+			}
 
-			if (record.ParentId > 0)
+			if (record.ParentId > 0) {
 				messageId = record.ParentId;
+			}
 
 			var existingRecord = DbContext.Pins.FirstOrDefault(p => p.MessageId == messageId && p.UserId == UserContext.ApplicationUser.Id);
 
@@ -395,8 +419,9 @@ namespace Forum.Repositories {
 
 				DbContext.Pins.Add(pinRecord);
 			}
-			else
+			else {
 				DbContext.Pins.Remove(existingRecord);
+			}
 
 			DbContext.SaveChanges();
 
@@ -407,8 +432,9 @@ namespace Forum.Repositories {
 			var viewLogs = DbContext.ViewLogs.Where(item => item.UserId == UserContext.ApplicationUser.Id).ToList();
 
 			if (viewLogs.Any()) {
-				foreach (var viewLog in viewLogs)
+				foreach (var viewLog in viewLogs) {
 					DbContext.Remove(viewLog);
+				}
 
 				DbContext.SaveChanges();
 			}
@@ -429,17 +455,20 @@ namespace Forum.Repositories {
 		public ServiceModels.ServiceResponse MarkUnread(int messageId) {
 			var record = DbContext.Messages.Find(messageId);
 
-			if (record is null)
+			if (record is null) {
 				throw new HttpNotFoundError();
+			}
 
-			if (record.ParentId > 0)
+			if (record.ParentId > 0) {
 				messageId = record.ParentId;
+			}
 
 			var viewLogs = DbContext.ViewLogs.Where(item => item.UserId == UserContext.ApplicationUser.Id && item.TargetId == messageId && item.TargetType == EViewLogTargetType.Message).ToList();
 
 			if (viewLogs.Any()) {
-				foreach (var viewLog in viewLogs)
+				foreach (var viewLog in viewLogs) {
 					DbContext.Remove(viewLog);
+				}
 
 				DbContext.SaveChanges();
 			}
@@ -452,16 +481,19 @@ namespace Forum.Repositories {
 		public void Toggle(InputModels.ToggleBoardInput input) {
 			var messageRecord = DbContext.Messages.Find(input.MessageId);
 
-			if (messageRecord is null)
+			if (messageRecord is null) {
 				throw new HttpNotFoundError();
+			}
 
-			if (!BoardRepository.Any(r => r.Id == input.BoardId))
+			if (!BoardRepository.Any(r => r.Id == input.BoardId)) {
 				throw new HttpNotFoundError();
+			}
 
 			var messageId = input.MessageId;
 
-			if (messageRecord.ParentId > 0)
+			if (messageRecord.ParentId > 0) {
 				messageId = messageRecord.ParentId;
+			}
 
 			var boardId = input.BoardId;
 
@@ -476,8 +508,9 @@ namespace Forum.Repositories {
 
 				DbContext.MessageBoards.Add(messageBoardRecord);
 			}
-			else
+			else {
 				DbContext.MessageBoards.Remove(existingRecord);
+			}
 
 			DbContext.SaveChanges();
 		}
@@ -494,15 +527,17 @@ namespace Forum.Repositories {
 				var latestViewLogTime = viewLogs.Max(r => r.LogTime);
 				latestTime = latestViewLogTime > latestMessageTime ? latestViewLogTime : latestMessageTime;
 			}
-			else
+			else {
 				latestTime = latestMessageTime;
+			}
 
 			latestTime.AddSeconds(1);
 
 			var existingLogs = viewLogs.Where(r => r.TargetType == EViewLogTargetType.Message);
 
-			foreach (var viewLog in existingLogs)
+			foreach (var viewLog in existingLogs) {
 				DbContext.ViewLogs.Remove(viewLog);
+			}
 
 			DbContext.ViewLogs.Add(new DataModels.ViewLog {
 				LogTime = latestTime,
@@ -531,21 +566,26 @@ namespace Forum.Repositories {
 
 			var sourceRecord = DbContext.Messages.FirstOrDefault(item => item.Id == sourceId);
 
-			if (sourceRecord is null)
+			if (sourceRecord is null) {
 				serviceResponse.Error("Source record not found");
+			}
 
 			var targetRecord = DbContext.Messages.FirstOrDefault(item => item.Id == targetId);
 
-			if (targetRecord is null)
+			if (targetRecord is null) {
 				serviceResponse.Error("Target record not found");
+			}
 
-			if (!serviceResponse.Success)
+			if (!serviceResponse.Success) {
 				return serviceResponse;
+			}
 
-			if (sourceRecord.TimePosted > targetRecord.TimePosted)
+			if (sourceRecord.TimePosted > targetRecord.TimePosted) {
 				Merge(sourceRecord, targetRecord);
-			else
+			}
+			else {
 				Merge(targetRecord, sourceRecord);
+			}
 
 			return serviceResponse;
 		}
