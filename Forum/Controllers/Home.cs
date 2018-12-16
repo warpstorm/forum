@@ -1,5 +1,4 @@
-﻿using Forum.Contexts;
-using Forum.Interfaces.Services;
+﻿using Forum.Interfaces.Services;
 using Forum.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

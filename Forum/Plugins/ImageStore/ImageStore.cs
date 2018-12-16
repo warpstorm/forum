@@ -9,8 +9,6 @@ using System.IO;
 using System.Threading.Tasks;
 
 namespace Forum.Plugins.ImageStore {
-	using ServiceModels = Models.ServiceModels;
-
 	public class ImageStore : IImageStore {
 		UserContext UserContext { get; }
 		SettingsRepository SettingsRepository { get; }

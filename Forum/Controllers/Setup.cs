@@ -60,10 +60,10 @@ namespace Forum.Controllers {
 
 		public async Task<IActionResult> Process(InputModels.Continue input) {
 			CheckContext();
-		
+
 			var note = string.Empty;
 
-			switch(input.CurrentStep) {
+			switch (input.CurrentStep) {
 				case 1:
 					note = "Roles have been setup.";
 					await SetupService.SetupRoles();

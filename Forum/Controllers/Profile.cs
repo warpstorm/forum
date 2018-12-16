@@ -27,11 +27,12 @@ namespace Forum.Controllers {
 			ForumViewResult = forumViewResult;
 			UrlEncoder = urlEncoder;
 		}
-		
+
 		[HttpGet]
 		public IActionResult Details(string id) {
-			if (string.IsNullOrEmpty(id))
+			if (string.IsNullOrEmpty(id)) {
 				id = UserContext.ApplicationUser.Id;
+			}
 
 			var userRecord = AccountRepository.First(item => item.Id == id);
 

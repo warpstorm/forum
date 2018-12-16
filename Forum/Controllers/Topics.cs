@@ -37,20 +37,19 @@ namespace Forum.Controllers {
 		public Topics(
 			ApplicationDbContext applicationDbContext,
 			UserContext userContext,
-			Sidebar sidebar,
 			BoardRepository boardRepository,
 			MessageRepository messageRepository,
 			RoleRepository roleRepository,
 			SettingsRepository settingsRepository,
 			SmileyRepository smileyRepository,
 			TopicRepository topicRepository,
+			Sidebar sidebar,
 			IForumViewResult forumViewResult,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory
 		) {
 			DbContext = applicationDbContext;
 			UserContext = userContext;
-			Sidebar = sidebar;
 
 			BoardRepository = boardRepository;
 			MessageRepository = messageRepository;
@@ -59,6 +58,7 @@ namespace Forum.Controllers {
 			SmileyRepository = smileyRepository;
 			TopicRepository = topicRepository;
 
+			Sidebar = sidebar;
 			ForumViewResult = forumViewResult;
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
@@ -67,8 +67,9 @@ namespace Forum.Controllers {
 		public IActionResult Index(int id = 0, int unread = 0) {
 			var boardRoles = RoleRepository.BoardRoles.Where(r => r.BoardId == id).Select(r => r.RoleId).ToList();
 
-			if (!UserContext.IsAdmin && boardRoles.Any() && !boardRoles.Intersect(UserContext.Roles).Any())
+			if (!UserContext.IsAdmin && boardRoles.Any() && !boardRoles.Intersect(UserContext.Roles).Any()) {
 				throw new HttpForbiddenError();
+			}
 
 			var sidebar = Sidebar.Generate();
 
@@ -93,8 +94,9 @@ namespace Forum.Controllers {
 		public IActionResult IndexMore(int id = 0, int page = 0, int unread = 0) {
 			var boardRoles = RoleRepository.BoardRoles.Where(r => r.BoardId == id).Select(r => r.RoleId).ToList();
 
-			if (!UserContext.IsAdmin && boardRoles.Any() && !boardRoles.Intersect(UserContext.Roles).Any())
+			if (!UserContext.IsAdmin && boardRoles.Any() && !boardRoles.Intersect(UserContext.Roles).Any()) {
 				throw new HttpForbiddenError();
+			}
 
 			var topicPreviews = TopicRepository.GetPreviews(id, page, unread);
 
@@ -108,20 +110,23 @@ namespace Forum.Controllers {
 		}
 
 		[HttpGet]
-		[Authorize(Roles="Admin")]
+		[Authorize(Roles = "Admin")]
 		public IActionResult Merge(int id) {
 			var record = DbContext.Messages.FirstOrDefault(item => item.Id == id);
 
-			if (record is null)
+			if (record is null) {
 				throw new HttpNotFoundError();
+			}
 
 			var topicPreviews = TopicRepository.GetPreviews(0, 1, 0);
 
 			foreach (var topicPreview in topicPreviews.ToList()) {
-				if (topicPreview.Id == id)
+				if (topicPreview.Id == id) {
 					topicPreviews.Remove(topicPreview);
-				else
+				}
+				else {
 					topicPreview.SourceId = id;
+				}
 			}
 
 			var viewModel = new PageModels.TopicIndexPage {
@@ -140,16 +145,19 @@ namespace Forum.Controllers {
 		public IActionResult MergeMore(int id, int page = 0) {
 			var record = DbContext.Messages.FirstOrDefault(item => item.Id == id);
 
-			if (record is null)
+			if (record is null) {
 				throw new HttpNotFoundError();
+			}
 
 			var topicPreviews = TopicRepository.GetPreviews(0, page, 0);
 
 			foreach (var topicPreview in topicPreviews.ToList()) {
-				if (topicPreview.Id == id)
+				if (topicPreview.Id == id) {
 					topicPreviews.Remove(topicPreview);
-				else
+				}
+				else {
 					topicPreview.SourceId = id;
+				}
 			}
 
 			var viewModel = new PageModels.TopicIndexMorePage {
@@ -162,7 +170,7 @@ namespace Forum.Controllers {
 		}
 
 		[HttpGet]
-		[Authorize(Roles="Admin")]
+		[Authorize(Roles = "Admin")]
 		public async Task<IActionResult> FinishMerge(int sourceId, int targetId) {
 			var serviceResponse = TopicRepository.Merge(sourceId, targetId);
 			return await ForumViewResult.RedirectFromService(this, serviceResponse, FailToReferrer);
@@ -174,10 +182,12 @@ namespace Forum.Controllers {
 
 			var viewModel = GetDisplayPageModel(id, pageId, target);
 
-			if (string.IsNullOrEmpty(viewModel.RedirectPath))
+			if (string.IsNullOrEmpty(viewModel.RedirectPath)) {
 				return ForumViewResult.ViewResult(this, viewModel);
-			else
+			}
+			else {
 				return Redirect(viewModel.RedirectPath);
+			}
 		}
 
 		[HttpGet]
@@ -226,8 +236,9 @@ namespace Forum.Controllers {
 
 		[HttpGet]
 		public IActionResult ToggleBoard(InputModels.ToggleBoardInput input) {
-			if (ModelState.IsValid)
+			if (ModelState.IsValid) {
 				TopicRepository.Toggle(input);
+			}
 
 			return new NoContentResult();
 		}
@@ -252,8 +263,9 @@ namespace Forum.Controllers {
 		}
 
 		public string GetRedirectPath(int messageId, int parentMessageId, List<int> messageIds) {
-			if (parentMessageId == 0)
+			if (parentMessageId == 0) {
 				parentMessageId = messageId;
+			}
 
 			var routeValues = new {
 				id = parentMessageId,
@@ -269,13 +281,15 @@ namespace Forum.Controllers {
 
 			var record = DbContext.Messages.Find(id);
 
-			if (record is null)
+			if (record is null) {
 				throw new HttpNotFoundError();
+			}
 
 			var parentId = id;
 
-			if (record.ParentId > 0)
+			if (record.ParentId > 0) {
 				parentId = record.ParentId;
+			}
 
 			var messageIdQuery = from message in DbContext.Messages
 								 where message.Id == parentId || message.ParentId == parentId
@@ -306,11 +320,13 @@ namespace Forum.Controllers {
 
 			var boardRoles = RoleRepository.BoardRoles.Where(r => assignedBoards.Any(b => b.Id == r.BoardId)).Select(r => r.RoleId).ToList();
 
-			if (!UserContext.IsAdmin && boardRoles.Any() && !boardRoles.Intersect(UserContext.Roles).Any())
+			if (!UserContext.IsAdmin && boardRoles.Any() && !boardRoles.Intersect(UserContext.Roles).Any()) {
 				throw new HttpForbiddenError();
+			}
 
-			if (pageId < 1)
+			if (pageId < 1) {
 				pageId = 1;
+			}
 
 			var take = SettingsRepository.MessagesPerPage();
 			var skip = take * (pageId - 1);
@@ -324,8 +340,9 @@ namespace Forum.Controllers {
 
 			var messages = TopicRepository.GetMessages(pageMessageIds);
 
-			if (string.IsNullOrEmpty(record.ShortPreview))
+			if (string.IsNullOrEmpty(record.ShortPreview)) {
 				record.ShortPreview = "No subject";
+			}
 
 			var showFavicons = SettingsRepository.ShowFavicons();
 

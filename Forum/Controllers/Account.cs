@@ -41,10 +41,8 @@ namespace Forum.Controllers {
 		) {
 			DbContext = dbContext;
 			UserContext = userContext;
-
 			AccountRepository = accountRepository;
 			SettingsRepository = settingsRepository;
-
 			UserManager = userManager;
 			ForumViewResult = forumViewResult;
 			Log = log;

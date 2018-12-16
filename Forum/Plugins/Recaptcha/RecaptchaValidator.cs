@@ -1,5 +1,4 @@
 ﻿using Forum.Errors;
-using Forum.Models.ServiceModels;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
