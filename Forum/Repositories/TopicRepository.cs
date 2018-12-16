@@ -5,6 +5,7 @@ using Forum.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -46,7 +47,6 @@ namespace Forum.Repositories {
 		) {
 			DbContext = dbContext;
 			UserContext = userContext;
-
 			AccountRepository = accountRepository;
 			BoardRepository = boardRepository;
 			MessageRepository = messageRepository;
@@ -55,7 +55,6 @@ namespace Forum.Repositories {
 			RoleRepository = roleRepository;
 			SettingsRepository = settingsRepository;
 			SmileyRepository = smileyRepository;
-
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
@@ -553,12 +552,12 @@ namespace Forum.Repositories {
 				}
 			}
 
-			//try {
-			DbContext.SaveChanges();
-			// Uncomment if this problem occurs again.
+			try {
+				DbContext.SaveChanges();
+			}
 			// see - https://docs.microsoft.com/en-us/ef/core/saving/concurrency
 			// The user probably refreshed several times in a row.
-			//catch (DbUpdateConcurrencyException) { }
+			catch (DbUpdateConcurrencyException) { }
 		}
 
 		public ServiceModels.ServiceResponse Merge(int sourceId, int targetId) {
