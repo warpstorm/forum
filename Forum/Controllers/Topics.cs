@@ -357,7 +357,7 @@ namespace Forum.Controllers {
 				Categories = BoardRepository.CategoryIndex(),
 				AssignedBoards = new List<ViewModels.Boards.Items.IndexBoard>(),
 				IsAuthenticated = UserContext.IsAuthenticated,
-				CanManage = UserContext.IsAdmin || record.PostedById == UserContext.ApplicationUser.Id,
+				CanManage = UserContext.IsAdmin || record.PostedById == UserContext.ApplicationUser?.Id,
 				TotalPages = totalPages,
 				ReplyCount = record.ReplyCount,
 				ViewCount = record.ViewCount,

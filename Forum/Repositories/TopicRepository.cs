@@ -515,6 +515,10 @@ namespace Forum.Repositories {
 		}
 
 		public void MarkRead(int topicId, DateTime latestMessageTime, List<int> pageMessageIds) {
+			if (!UserContext.IsAuthenticated) {
+				return;
+			}
+
 			var viewLogs = DbContext.ViewLogs.Where(v =>
 				v.UserId == UserContext.ApplicationUser.Id
 				&& (v.TargetType == EViewLogTargetType.All || (v.TargetType == EViewLogTargetType.Message && v.TargetId == topicId))
