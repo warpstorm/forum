@@ -2,7 +2,6 @@
 using Forum.Controllers;
 using Forum.Errors;
 using Forum.Extensions;
-using Forum.Interfaces.Services;
 using Forum.Plugins.EmailSender;
 using Forum.Plugins.ImageStore;
 using Microsoft.AspNetCore.Http;
@@ -10,9 +9,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -435,80 +436,53 @@ namespace Forum.Repositories {
 			var siteSettings = DbContext.SiteSettings.Where(item => item.UserId == sourceId).ToList();
 			DbContext.RemoveRange(siteSettings);
 
-			var notifications = DbContext.Notifications.Where(item => item.UserId == sourceId).ToList();
-			var participants = DbContext.Participants.Where(item => item.UserId == sourceId).ToList();
-			var pins = DbContext.Pins.Where(item => item.UserId == sourceId).ToList();
-			var viewLogs = DbContext.ViewLogs.Where(item => item.UserId == sourceId).ToList();
+			var updateTasks = new List<Task>();
+
+			var pSourceId = new SqlParameter("@SourceId", sourceId);
+			var pTargetId = new SqlParameter("@TargetId", targetId);
 
 			if (eraseContent) {
-				DbContext.RemoveRange(notifications);
-				DbContext.RemoveRange(participants);
-				DbContext.RemoveRange(pins);
-				DbContext.RemoveRange(viewLogs);
+				updateTasks.AddRange(new List<Task> {
+					DbContext.Database.ExecuteSqlCommandAsync($"DELETE FROM [Notifications] WHERE UserId = @SourceId", pSourceId),
+					DbContext.Database.ExecuteSqlCommandAsync($"DELETE FROM [Participants] WHERE UserId = @SourceId", pSourceId),
+					DbContext.Database.ExecuteSqlCommandAsync($"DELETE FROM [Pins] WHERE UserId = @SourceId", pSourceId),
+					DbContext.Database.ExecuteSqlCommandAsync($"DELETE FROM [ViewLogs] WHERE UserId = @SourceId", pSourceId),
+					DbContext.Database.ExecuteSqlCommandAsync($"DELETE FROM [Quotes] WHERE PostedById = @SourceId", pSourceId),
+					DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [Messages] SET EditedById = @TargetId WHERE EditedById = @SourceId", pSourceId, pTargetId),
+					DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [Messages] SET LastReplyById = @TargetId WHERE LastReplyById = @SourceId", pSourceId, pTargetId),
+				});
 
-				DbContext.SaveChanges();
+				updateTasks.Add(DbContext.Database.ExecuteSqlCommandAsync($@"
+					UPDATE [Messages] SET
+						PostedById = @TargetId,
+						OriginalBody = '',
+						DisplayBody = 'This account has been deleted.',
+						LongPreview = '',
+						ShortPreview = '',
+						Cards = ''
+					WHERE PostedById = @SourceId", pSourceId, pTargetId));
 			}
 			else {
-				foreach (var item in notifications) {
-					item.UserId = targetId;
-					DbContext.Update(item);
-				}
-
-				foreach (var item in participants) {
-					item.UserId = targetId;
-					DbContext.Update(item);
-				}
-
-				foreach (var item in pins) {
-					item.UserId = targetId;
-					DbContext.Update(item);
-				}
-
-				foreach (var item in viewLogs) {
-					item.UserId = targetId;
-					DbContext.Update(item);
-				}
+				updateTasks.AddRange(new List<Task> {
+					DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [Notifications] SET UserId = @TargetId WHERE UserId = @SourceId", pSourceId, pTargetId),
+					DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [Participants] SET UserId = @TargetId WHERE UserId = @SourceId", pSourceId, pTargetId),
+					DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [Pins] SET UserId = @TargetId WHERE UserId = @SourceId", pSourceId, pTargetId),
+					DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [ViewLogs] SET UserId = @TargetId WHERE UserId = @SourceId", pSourceId, pTargetId),
+					DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [Quotes] SET PostedById = @TargetId WHERE PostedById = @SourceId", pSourceId, pTargetId),
+					DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [Messages] SET PostedById = @TargetId WHERE PostedById = @SourceId", pSourceId, pTargetId),
+					DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [Messages] SET EditedById = @TargetId WHERE EditedById = @SourceId", pSourceId, pTargetId),
+					DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [Messages] SET LastReplyById = @TargetId WHERE LastReplyById = @SourceId", pSourceId, pTargetId),
+				});
 			}
 
-			foreach (var item in DbContext.MessageBoards.Where(item => item.UserId == sourceId).ToList()) {
-				item.UserId = targetId;
-				DbContext.Update(item);
-			}
+			updateTasks.AddRange(new List<Task> {
+				DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [MessageBoards] SET UserId = @TargetId WHERE UserId = @SourceId", pSourceId, pTargetId),
+				DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [MessageThoughts] SET UserId = @TargetId WHERE UserId = @SourceId", pSourceId, pTargetId),
+				DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [Notifications] SET TargetUserId = @TargetId WHERE TargetUserId = @SourceId", pSourceId, pTargetId),
+				DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [Quotes] SET SubmittedById = @TargetId WHERE SubmittedById = @SourceId", pSourceId, pTargetId),
+			});
 
-			foreach (var item in DbContext.MessageThoughts.Where(item => item.UserId == sourceId).ToList()) {
-				item.UserId = targetId;
-				DbContext.Update(item);
-			}
-
-			foreach (var item in DbContext.Notifications.Where(item => item.TargetUserId == sourceId).ToList()) {
-				item.TargetUserId = targetId;
-				DbContext.Update(item);
-			}
-
-			foreach (var item in DbContext.Quotes.Where(item => item.PostedById == sourceId).ToList()) {
-				item.PostedById = targetId;
-				DbContext.Update(item);
-			}
-
-			foreach (var item in DbContext.Quotes.Where(item => item.SubmittedById == sourceId).ToList()) {
-				item.SubmittedById = targetId;
-				DbContext.Update(item);
-			}
-
-			DbContext.SaveChanges();
-
-			foreach (var item in DbContext.Messages.Where(item => item.PostedById == sourceId).ToList()) {
-				item.PostedById = targetId;
-				item.EditedById = targetId;
-
-				if (eraseContent) {
-					item.OriginalBody = string.Empty;
-					item.DisplayBody = "This account has been deleted.";
-					item.LongPreview = string.Empty;
-					item.ShortPreview = string.Empty;
-					item.Cards = string.Empty;
-				}
-			}
+			Task.WaitAll(updateTasks.ToArray());
 
 			DbContext.SaveChanges();
 
