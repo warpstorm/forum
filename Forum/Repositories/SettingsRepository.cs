@@ -108,7 +108,7 @@ namespace Forum.Repositories {
 		public string GetSetting(string name, bool forceGlobal) {
 			var settingValue = string.Empty;
 
-			if (!forceGlobal) {
+			if (!forceGlobal && !(UserContext.ApplicationUser is null)) {
 				var userId = UserContext.ApplicationUser.Id;
 
 				if (!UserSettings.ContainsKey(userId)) {
