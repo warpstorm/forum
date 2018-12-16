@@ -1,6 +1,7 @@
 ﻿using Forum.Contexts;
 using Forum.Controllers;
 using Forum.Extensions;
+using Forum.Filters;
 using Forum.Plugins;
 using Jdenticon.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
@@ -34,8 +35,8 @@ namespace Forum {
 				dbConnectionString = Configuration.GetConnectionString("DefaultConnection");
 			}
 
-			services.AddDbContextPool<ApplicationDbContext>(options =>
-				options.UseSqlServer(dbConnectionString)
+			services.AddDbContextPool<ApplicationDbContext>(
+				options => options.UseSqlServer(dbConnectionString)
 			);
 
 			services.AddIdentity<DataModels.ApplicationUser, DataModels.ApplicationRole>(options => {
@@ -53,6 +54,7 @@ namespace Forum {
 
 			services.Configure<MvcOptions>(options => {
 				//options.Filters.Add<RequireRemoteHttpsAttribute>();
+				options.Filters.Add<UserContextActionFilter>();
 			});
 
 			services.AddForum(Configuration);

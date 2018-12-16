@@ -24,7 +24,6 @@ namespace Forum.Extensions {
 
 			builder.UseMiddleware<HttpStatusCodeHandler>();
 			builder.UseMiddleware<PageTimer>();
-			builder.UseMiddleware<UserContextLoader>();
 
 			return builder;
 		}
@@ -32,10 +31,13 @@ namespace Forum.Extensions {
 		public static IServiceCollection AddForum(this IServiceCollection services, IConfiguration configuration) {
 			RegisterRepositories(services, configuration);
 
-			services.AddScoped<UserContext>();
-			services.AddTransient<Sidebar>();
 			services.AddTransient<IForumViewResult, ForumViewResult>();
-			services.AddTransient<GzipWebClient>();
+
+			services.AddScoped<SetupService>();
+			services.AddScoped<Sidebar>();
+			services.AddScoped<GzipWebClient>();
+			services.AddScoped<UserContext>();
+			services.AddScoped<UserContextLoader>();
 
 			services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
 			services.AddSingleton<IUrlHelperFactory, UrlHelperFactory>();
@@ -43,8 +45,6 @@ namespace Forum.Extensions {
 			services.AddSingleton((serviceProvider) => {
 				return BBCParserFactory.GetParser();
 			});
-
-			services.AddTransient<SetupService>();
 
 			return services;
 		}
