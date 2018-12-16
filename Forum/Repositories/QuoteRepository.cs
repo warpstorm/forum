@@ -19,11 +19,11 @@ namespace Forum.Repositories {
 		MessageRepository MessageRepository { get; }
 
 		public QuoteRepository(
-			ILogger<PinRepository> log,
 			ApplicationDbContext dbContext,
 			UserContext userContext,
 			AccountRepository accountRepository,
-			MessageRepository messageRepository
+			MessageRepository messageRepository,
+			ILogger<PinRepository> log
 		) : base(log) {
 			DbContext = dbContext;
 			UserContext = userContext;
