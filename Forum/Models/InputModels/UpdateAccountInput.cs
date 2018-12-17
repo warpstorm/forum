@@ -6,6 +6,9 @@ namespace Forum.Models.InputModels {
 		public string Id { get; set; }
 
 		[Required]
+		[MinLength(3)]
+		[MaxLength(64)]
+		[RegularExpression(@"(^\s+.+|.+\s+$)")]
 		public string DisplayName { get; set; }
 
 		[Required]

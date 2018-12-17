@@ -80,8 +80,9 @@ namespace Forum.Repositories {
 					var now = DateTime.Today;
 					var age = now.Year - item.Birthday.Year;
 
-					if (item.Birthday > now.AddYears(-age))
+					if (item.Birthday > now.AddYears(-age)) {
 						age--;
+					}
 
 					todayBirthdayNames.Add($"{item.DisplayName} ({age})");
 				}
@@ -109,8 +110,9 @@ namespace Forum.Repositories {
 
 			var onlineUsers = onlineUsersQuery.ToList();
 
-			foreach (var onlineUser in onlineUsers)
+			foreach (var onlineUser in onlineUsers) {
 				onlineUser.LastOnlineString = onlineUser.LastOnline.ToPassedTimeString();
+			}
 
 			return onlineUsers;
 		}
@@ -128,8 +130,9 @@ namespace Forum.Repositories {
 				Log.LogWarning($"Invalid login attempt for account '{input.Email}'.");
 				serviceResponse.Error("Invalid login attempt.");
 			}
-			else
+			else {
 				Log.LogInformation($"User logged in '{input.Email}'.");
+			}
 
 			return serviceResponse;
 		}
@@ -159,8 +162,15 @@ namespace Forum.Repositories {
 				Log.LogCritical(message);
 			}
 
-			if (!serviceResponse.Success)
+			if (DbContext.Users.Any(r => r.DisplayName == input.DisplayName)) {
+				var message = $"The display name '{input.DisplayName}' is already taken.";
+				serviceResponse.Error(message);
+				Log.LogWarning(message);
+			}
+
+			if (!serviceResponse.Success) {
 				return serviceResponse;
+			}
 
 			if (input.DisplayName != userRecord.DisplayName) {
 				userRecord.DisplayName = input.DisplayName;
@@ -214,8 +224,9 @@ namespace Forum.Repositories {
 
 					await EmailSender.SendEmailConfirmationAsync(input.NewEmail, callbackUrl);
 
-					if (userRecord.Id == UserContext.ApplicationUser.Id)
+					if (userRecord.Id == UserContext.ApplicationUser.Id) {
 						await SignOut();
+					}
 				}
 				else {
 					identityResult = await UserManager.ConfirmEmailAsync(userRecord, code);
@@ -226,8 +237,9 @@ namespace Forum.Repositories {
 							serviceResponse.Error(error.Description);
 						}
 					}
-					else
+					else {
 						Log.LogInformation($"User confirmed email '{userRecord.Email}'.");
+					}
 				}
 
 				return serviceResponse;
@@ -252,8 +264,9 @@ namespace Forum.Repositories {
 				}
 			}
 
-			if (serviceResponse.Success)
+			if (serviceResponse.Success) {
 				serviceResponse.RedirectPath = UrlHelper.Action(nameof(Account.Details), nameof(Account), new { id = input.DisplayName });
+			}
 
 			return serviceResponse;
 		}
@@ -271,18 +284,21 @@ namespace Forum.Repositories {
 
 			CanEdit(input.Id);
 
-			if (!serviceResponse.Success)
+			if (!serviceResponse.Success) {
 				return serviceResponse;
+			}
 
 			var allowedExtensions = new[] { ".gif", ".jpg", ".png", ".jpeg" };
 
 			var extension = Path.GetExtension(input.NewAvatar.FileName).ToLower();
 
-			if (!allowedExtensions.Contains(extension))
+			if (!allowedExtensions.Contains(extension)) {
 				serviceResponse.Error(nameof(input.NewAvatar), "Your avatar must end with .gif, .jpg, .jpeg, or .png");
+			}
 
-			if (!serviceResponse.Success)
+			if (!serviceResponse.Success) {
 				return serviceResponse;
+			}
 
 			using (var inputStream = input.NewAvatar.OpenReadStream()) {
 				inputStream.Position = 0;
@@ -309,6 +325,18 @@ namespace Forum.Repositories {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			var birthday = new DateTime(input.BirthdayYear, input.BirthdayMonth, input.BirthdayDay);
+
+			if ((DateTime.Now - birthday).TotalDays < 13 * 365) {
+				var message = $"You must be 13 or older to register.";
+				serviceResponse.Error(message);
+				Log.LogWarning(message);
+			}
+
+			if (DbContext.Users.Any(r => r.DisplayName == input.DisplayName)) {
+				var message = $"The display name '{input.DisplayName}' is already taken.";
+				serviceResponse.Error(message);
+				Log.LogWarning(message);
+			}
 
 			var user = new DataModels.ApplicationUser {
 				DisplayName = input.DisplayName,
@@ -367,8 +395,9 @@ namespace Forum.Repositories {
 
 			var account = await UserManager.FindByIdAsync(input.UserId);
 
-			if (account is null)
+			if (account is null) {
 				serviceResponse.Error($"Unable to load account '{input.UserId}'.");
+			}
 
 			if (serviceResponse.Success) {
 				var identityResult = await UserManager.ConfirmEmailAsync(account, input.Code);
@@ -379,8 +408,9 @@ namespace Forum.Repositories {
 						serviceResponse.Error(error.Description);
 					}
 				}
-				else
+				else {
 					Log.LogInformation($"User confirmed email '{account.Id}'.");
+				}
 			}
 
 			await SignOut();
@@ -418,11 +448,13 @@ namespace Forum.Repositories {
 				var identityResult = await UserManager.ResetPasswordAsync(account, input.Code, input.Password);
 
 				if (!identityResult.Succeeded) {
-					foreach (var error in identityResult.Errors)
+					foreach (var error in identityResult.Errors) {
 						Log.LogError($"Error resetting password for '{account.Email}'. Message: {error.Description}");
+					}
 				}
-				else
+				else {
 					Log.LogInformation($"Password was reset for '{account.Email}'.");
+				}
 			}
 
 			serviceResponse.RedirectPath = nameof(Account.ResetPasswordConfirmation);
@@ -492,8 +524,9 @@ namespace Forum.Repositories {
 		}
 
 		public void CanEdit(string userId) {
-			if (userId == UserContext.ApplicationUser.Id || UserContext.IsAdmin)
+			if (userId == UserContext.ApplicationUser.Id || UserContext.IsAdmin) {
 				return;
+			}
 
 			Log.LogWarning($"A user tried to edit another user's profile. {UserContext.ApplicationUser.DisplayName}");
 
