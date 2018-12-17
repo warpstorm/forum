@@ -52,11 +52,7 @@ namespace Forum.Controllers {
 		public IActionResult Index() {
 			var viewModel = new ViewModels.Account.IndexPage();
 
-			foreach (var user in AccountRepository) {
-				if (user.DisplayName == "Deleted Account") {
-					continue;
-				}
-
+			foreach (var user in AccountRepository.Where(r => r.DisplayName != "Deleted Account")) {
 				var indexItem = new ViewModels.Account.IndexItem {
 					Id = user.Id,
 					DisplayName = user.DisplayName,
@@ -434,7 +430,7 @@ namespace Forum.Controllers {
 				SourceId = userId
 			};
 
-			foreach (var user in AccountRepository.Where(item => item.Id != userId)) {
+			foreach (var user in AccountRepository.Where(item => item.Id != userId && item.DisplayName != "Deleted Account")) {
 				var indexItem = new ViewModels.Account.IndexItem {
 					Id = user.Id,
 					DisplayName = user.DisplayName,
