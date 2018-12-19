@@ -212,6 +212,7 @@ namespace Forum.Repositories {
 			var sortedMessageIds = GetIndexIds(boardId, page, unread, historyTimeLimit, participation, viewLogs);
 
 			var messageQuery = from message in DbContext.Messages
+							   join postedBy in DbContext.Users on message.PostedById equals postedBy.Id
 							   where sortedMessageIds.Contains(message.Id)
 							   select new {
 								   message.Id,
@@ -219,6 +220,9 @@ namespace Forum.Repositories {
 								   message.ViewCount,
 								   message.ReplyCount,
 								   message.TimePosted,
+								   message.PostedById,
+								   postedBy.DisplayName,
+								   postedBy.Birthday,
 								   message.LastReplyId,
 								   message.LastReplyById,
 								   message.LastReplyPosted
@@ -242,7 +246,12 @@ namespace Forum.Repositories {
 					Pages = Convert.ToInt32(Math.Ceiling(1.0 * message.ReplyCount / take)),
 					LastReplyId = message.Id,
 					Popular = message.ReplyCount > popularityLimit,
-					Pinned = PinRepository.Any(item => item.MessageId == message.Id)
+					Pinned = PinRepository.Any(item => item.MessageId == message.Id),
+					TimePostedDT = message.TimePosted,
+					TimePosted = message.TimePosted.ToPassedTimeString(),
+					PostedById = message.PostedById,
+					PostedByName = message.DisplayName,
+					PostedByBirthday = DateTime.Now.Date == new DateTime(DateTime.Now.Year, message.Birthday.Month, message.Birthday.Day).Date
 				};
 
 				messagePreviews.Add(messagePreview);
@@ -250,19 +259,21 @@ namespace Forum.Repositories {
 				var lastMessageTime = message.TimePosted;
 
 				if (message.LastReplyId != 0) {
-					var lastReplyDetails = (from item in DbContext.Messages
+					var lastReply = (from item in DbContext.Messages
 											join postedBy in DbContext.Users on item.PostedById equals postedBy.Id
 											where item.Id == message.LastReplyId
 											select new {
 												postedBy.DisplayName,
+												postedBy.Birthday,
 												item.ShortPreview
 											}).FirstOrDefault();
 
-					if (lastReplyDetails != null) {
+					if (lastReply != null) {
 						messagePreview.LastReplyId = message.LastReplyId;
-						messagePreview.LastReplyPreview = lastReplyDetails.ShortPreview;
-						messagePreview.LastReplyByName = lastReplyDetails.DisplayName;
+						messagePreview.LastReplyPreview = lastReply.ShortPreview;
+						messagePreview.LastReplyByName = lastReply.DisplayName;
 						messagePreview.LastReplyById = message.LastReplyById;
+						messagePreview.LastReplyByBirthday = DateTime.Now.Date == new DateTime(DateTime.Now.Year, lastReply.Birthday.Month, lastReply.Birthday.Day).Date;
 						messagePreview.LastReplyPosted = message.LastReplyPosted.ToPassedTimeString();
 						messagePreview.LastReplyPostedDT = message.LastReplyPosted;
 						lastMessageTime = message.LastReplyPosted;

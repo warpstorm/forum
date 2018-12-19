@@ -18,45 +18,49 @@
 		</p>
 		<div class="note pad-left small-pad-top">
 			<p>
-				@if (Model.Views == 0) {
-					<text>No views yet</text>
-				}
-				else if (Model.Views == 1) {
-					<text>1 view</text>
-				}
-				else {
-					@Model.Views <text> views</text>
-				}
-
-				&nbsp;
-
-				@if (Model.Replies == 0) {
-					<text>No replies yet</text>
-				}
-				else if (Model.Replies == 1) {
-					<text>1 reply</text>
-				}
-				else {
-					@Model.Replies <text> replies</text>
-				}
-
-				&nbsp;
-
-				@if (Model.Pages > 1) {
-					<text>Pages:</text>
-					for (var i = Model.Pages - 4; i <= Model.Pages; i++) {
-						if (i <= 0) {
-							continue;
-						}
-
-						<a class="small-pad-left" asp-action="@nameof(Topics.Display)" asp-route-id="@Model.Id" asp-route-pageId="@i">@i</a>
-					}
-				}
+				Started @Model.TimePosted by @Model.PostedByName.
 			</p>
 			@if (Model.LastReplyId != Model.Id) {
-				<p class="small-pad-top">Last post was @Model.LastReplyPosted by @Model.LastReplyByName</p>
-				<p class="small-pad-left">@Html.Raw(Model.LastReplyPreview)</p>
+				<p>
+					Last reply was @Model.LastReplyPosted by @Model.LastReplyByName.
+				</p>
 			}
+				<p class="small-pad-top">
+					@if (Model.Views == 0) {
+						<text>No views yet</text>
+					}
+					else if (Model.Views == 1) {
+						<text>1 view</text>
+					}
+					else {
+						@Model.Views <text> views</text>
+					}
+
+					&nbsp;
+
+					@if (Model.Replies == 0) {
+						<text>No replies yet</text>
+					}
+					else if (Model.Replies == 1) {
+						<text>1 reply</text>
+					}
+					else {
+						@Model.Replies <text> replies</text>
+					}
+
+					&nbsp;
+
+					@if (Model.Pages > 1) {
+						<text>Pages:</text>
+						for (var i = Model.Pages - 4; i <= Model.Pages; i++) {
+							if (i <= 0) {
+								continue;
+							}
+
+							<a class="small-pad-left hover-underline" asp-action="@nameof(Topics.Display)" asp-route-id="@Model.Id" asp-route-pageId="@i">@i</a>
+						}
+					}
+				</p>
 		</div>
 	</div>
 </div>

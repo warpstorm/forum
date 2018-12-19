@@ -79,6 +79,7 @@ namespace Forum.Repositories {
 									   Id = user.Id,
 									   Name = user.DisplayName,
 									   Online = user.LastOnline >= onlineTimeLimit,
+									   Birthday = user.Birthday,
 									   LastOnline = user.LastOnline
 								   };
 
@@ -86,6 +87,10 @@ namespace Forum.Repositories {
 
 			foreach (var onlineUser in onlineUsers) {
 				onlineUser.LastOnlineString = onlineUser.LastOnline.ToPassedTimeString();
+
+				if (DateTime.Now.Date == new DateTime(DateTime.Now.Year, onlineUser.Birthday.Month, onlineUser.Birthday.Day).Date) {
+					onlineUser.IsBirthday = true;
+				}
 			}
 
 			return onlineUsers;

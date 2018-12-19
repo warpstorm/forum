@@ -8,7 +8,12 @@
 			@if (onlineUser.Online) {
 				<span class="chiclet chiclet-green"></span>
 			}
-			<span>@onlineUser.Name</span>
+			<span>
+				@if (onlineUser.IsBirthday) {
+					<img src="~/images/hbd.png" alt="Happy birthday!" title="Happy birthday!" />
+				}
+				@onlineUser.Name
+			</span>
 			<time>@onlineUser.LastOnlineString</time>
 		</li>
 	}

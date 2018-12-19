@@ -18,10 +18,19 @@ namespace Forum.Models.ViewModels.Topics.Items {
 		public bool Popular { get; set; }
 
 		public int LastReplyId { get; set; }
+		public string LastReplyPreview { get; set; }
+
+		public string PostedById { get; set; }
+		public string PostedByName { get; set; }
+		public bool PostedByBirthday { get; set; }
+
 		public string LastReplyById { get; set; }
 		public string LastReplyByName { get; set; }
+		public bool LastReplyByBirthday { get; set; }
+
+		public string TimePosted { get; set; }
+		public DateTime TimePostedDT { get; set; }
 		public string LastReplyPosted { get; set; }
-		public string LastReplyPreview { get; set; }
 		public DateTime LastReplyPostedDT { get; set; }
 	}
 }
