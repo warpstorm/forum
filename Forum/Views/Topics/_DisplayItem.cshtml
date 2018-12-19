@@ -65,6 +65,10 @@
 					}
 				</aside>
 
+				@if (Model.Birthday) {
+					<img src="~/images/hbd.png" alt="Happy birthday!" title="Happy birthday!" />
+				}
+
 				@Model.PostedByName
 				<time>
 					posted @Model.TimePosted

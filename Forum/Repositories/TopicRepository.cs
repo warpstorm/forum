@@ -92,10 +92,6 @@ namespace Forum.Repositories {
 			var messages = messageQuery.ToList();
 
 			foreach (var message in messages) {
-				var postedBy = AccountRepository.FirstOrDefault(item => item.Id == message.PostedById);
-				message.PostedByAvatarPath = postedBy?.AvatarPath;
-				message.PostedByName = postedBy?.DisplayName;
-
 				if (message.ReplyId > 0) {
 					var reply = DbContext.Messages.FirstOrDefault(item => item.Id == message.ReplyId);
 
@@ -127,8 +123,16 @@ namespace Forum.Repositories {
 
 				message.Thoughts = thoughts.Where(item => item.MessageId == message.Id).ToList();
 
+				var postedBy = AccountRepository.FirstOrDefault(item => item.Id == message.PostedById);
+
 				if (!(postedBy is null)) {
+					message.PostedByAvatarPath = postedBy.AvatarPath;
+					message.PostedByName = postedBy.DisplayName;
 					message.Poseys = poseyUsers.Contains(postedBy.Id);
+
+					if (DateTime.Now.Date == new DateTime(DateTime.Now.Year, postedBy.Birthday.Month, postedBy.Birthday.Day).Date) {
+						message.Birthday = true;
+					}
 				}
 			}
 

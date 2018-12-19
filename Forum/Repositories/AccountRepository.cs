@@ -65,32 +65,6 @@ namespace Forum.Repositories {
 			ImageStore = imageStore;
 		}
 
-		public List<string> GetBirthdaysList() {
-			var todayBirthdayNames = new List<string>();
-
-			var birthdays = Records.Select(u => new {
-				u.Birthday,
-				u.DisplayName
-			}).ToList();
-
-			if (birthdays.Any()) {
-				var todayBirthdays = birthdays.Where(u => new DateTime(DateTime.Now.Year, u.Birthday.Month, u.Birthday.Day).Date == DateTime.Now.Date);
-
-				foreach (var item in todayBirthdays) {
-					var now = DateTime.Today;
-					var age = now.Year - item.Birthday.Year;
-
-					if (item.Birthday > now.AddYears(-age)) {
-						age--;
-					}
-
-					todayBirthdayNames.Add($"{item.DisplayName} ({age})");
-				}
-			}
-
-			return todayBirthdayNames;
-		}
-
 		public List<ViewModels.Profile.OnlineUser> GetOnlineList() {
 			var onlineTimeLimitSetting = SettingsRepository.OnlineTimeLimit();
 			onlineTimeLimitSetting *= -1;

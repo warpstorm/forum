@@ -21,7 +21,6 @@ namespace Forum.Services {
 		public ViewModels.Sidebar.Sidebar Generate() {
 			var sidebar = new ViewModels.Sidebar.Sidebar {
 				Quote = QuoteRepository.Get(),
-				Birthdays = AccountRepository.GetBirthdaysList().ToArray(),
 				OnlineUsers = AccountRepository.GetOnlineList(),
 				Notifications = NotificationRepository.Index()
 			};
