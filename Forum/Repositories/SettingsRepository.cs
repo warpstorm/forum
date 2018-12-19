@@ -29,12 +29,14 @@ namespace Forum.Repositories {
 		}
 
 		public bool Installed() => GetBool("Installed", true);
+		public bool ShowFavicons(bool forceGlobal = false) => GetBool("ShowFavicons", forceGlobal);
 
 		public int AvatarSize(bool forceGlobal = false) {
 			var setting = GetInt("AvatarSize", forceGlobal);
 
-			if (setting == 0)
+			if (setting == 0) {
 				setting = 100;
+			}
 
 			return setting;
 		}
@@ -42,8 +44,9 @@ namespace Forum.Repositories {
 		public DateTime HistoryTimeLimit(bool forceGlobal = false) {
 			var setting = GetInt("HistoryTimeLimit", forceGlobal);
 
-			if (setting == 0)
+			if (setting == 0) {
 				setting = -14;
+			}
 
 			return DateTime.Now.AddDays(setting);
 		}
@@ -51,8 +54,9 @@ namespace Forum.Repositories {
 		public int MessagesPerPage(bool forceGlobal = false) {
 			var setting = GetInt("MessagesPerPage", forceGlobal);
 
-			if (setting == 0)
+			if (setting == 0) {
 				setting = 15;
+			}
 
 			return setting;
 		}
@@ -60,8 +64,9 @@ namespace Forum.Repositories {
 		public int OnlineTimeLimit(bool forceGlobal = false) {
 			var setting = GetInt("OnlineTimeLimit", forceGlobal);
 
-			if (setting == 0)
+			if (setting == 0) {
 				setting = 5;
+			}
 
 			return setting;
 		}
@@ -69,8 +74,9 @@ namespace Forum.Repositories {
 		public int PopularityLimit(bool forceGlobal = false) {
 			var setting = GetInt("PopularityLimit", forceGlobal);
 
-			if (setting == 0)
+			if (setting == 0) {
 				setting = 25;
+			}
 
 			return setting;
 		}
@@ -78,13 +84,12 @@ namespace Forum.Repositories {
 		public int TopicsPerPage(bool forceGlobal = false) {
 			var setting = GetInt("TopicsPerPage", forceGlobal);
 
-			if (setting == 0)
+			if (setting == 0) {
 				setting = 15;
+			}
 
 			return setting;
 		}
-
-		public bool ShowFavicons(bool forceGlobal = false) =>  GetBool("ShowFavicons", forceGlobal);
 
 		public List<string> PoseyUsers(bool forceGlobal = false) {
 			var value = GetSetting("PoseyUsers", forceGlobal);
@@ -99,8 +104,9 @@ namespace Forum.Repositories {
 		public string FrontPage(bool forceGlobal = false) {
 			var setting = GetSetting("FrontPage", forceGlobal);
 
-			if (string.IsNullOrEmpty(setting))
+			if (string.IsNullOrEmpty(setting)) {
 				setting = "Board List";
+			}
 
 			return setting;
 		}
@@ -121,8 +127,9 @@ namespace Forum.Repositories {
 					var setting = Records.FirstOrDefault(r => r.Name == name && r.UserId == userId);
 
 					lock (UserSettings[userId]) {
-						if (!UserSettings[userId].ContainsKey(name))
+						if (!UserSettings[userId].ContainsKey(name)) {
 							UserSettings[userId].Add(name, setting?.Value ?? string.Empty);
+						}
 					}
 				}
 
@@ -134,8 +141,9 @@ namespace Forum.Repositories {
 					var setting = Records.FirstOrDefault(r => r.Name == name && string.IsNullOrEmpty(r.UserId));
 
 					lock (Settings) {
-						if (!Settings.ContainsKey(name))
+						if (!Settings.ContainsKey(name)) {
 							Settings.Add(name, setting?.Value ?? string.Empty);
+						}
 					}
 				}
 
@@ -148,8 +156,9 @@ namespace Forum.Repositories {
 		public int GetInt(string name, bool forceGlobal) {
 			var setting = GetSetting(name, forceGlobal);
 
-			if (string.IsNullOrEmpty(setting))
+			if (string.IsNullOrEmpty(setting)) {
 				return default(int);
+			}
 
 			return Convert.ToInt32(setting);
 		}
@@ -206,20 +215,23 @@ namespace Forum.Repositories {
 		public void UpdateUserSettings(InputModels.UpdateAccountInput input) {
 			var existingRecords = Records.Where(s => s.UserId == input.Id).ToList();
 
-			if (existingRecords.Any())
+			if (existingRecords.Any()) {
 				DbContext.RemoveRange(existingRecords);
+			}
 
 			foreach (var settingInput in input.Settings) {
-				if (string.IsNullOrEmpty(settingInput.Value))
+				if (string.IsNullOrEmpty(settingInput.Value)) {
 					continue;
+				}
 
 				var siteSetting = Records.FirstOrDefault(s => !s.AdminOnly && s.Name == settingInput.Key && string.IsNullOrEmpty(s.UserId));
 
 				if (siteSetting != null) {
 					var baseSetting = BaseSettings.Get(siteSetting.Name);
 
-					if (baseSetting.Options != null && !baseSetting.Options.Contains(settingInput.Value))
+					if (baseSetting.Options != null && !baseSetting.Options.Contains(settingInput.Value)) {
 						throw new HttpBadRequestError();
+					}
 
 					var record = new DataModels.SiteSetting {
 						UserId = input.Id,
@@ -241,16 +253,19 @@ namespace Forum.Repositories {
 			foreach (var settingInput in input.Settings) {
 				var existingRecords = Records.Where(s => s.Name == settingInput.Key && string.IsNullOrEmpty(s.UserId)).ToList();
 
-				if (existingRecords.Any())
+				if (existingRecords.Any()) {
 					DbContext.RemoveRange(existingRecords);
+				}
 
-				if (string.IsNullOrEmpty(settingInput.Value))
+				if (string.IsNullOrEmpty(settingInput.Value)) {
 					continue;
+				}
 
 				var baseSetting = BaseSettings.Get(settingInput.Key);
 
-				if (baseSetting.Options != null && !baseSetting.Options.Contains(settingInput.Value))
+				if (baseSetting.Options != null && !baseSetting.Options.Contains(settingInput.Value)) {
 					throw new HttpBadRequestError();
+				}
 
 				var record = new DataModels.SiteSetting {
 					Name = settingInput.Key,
