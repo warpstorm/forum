@@ -81,7 +81,7 @@ export class TopicDisplay {
 	eventShowFullReply = (event: Event) => {
 		let target = <Element>event.currentTarget;
 
-		target.removeEventListener('click', this.eventCloseFullReply);
+		target.removeEventListener('click', this.eventShowFullReply);
 		target.addEventListener('click', this.eventCloseFullReply);
 
 		target.querySelectorAll('.reply-preview').forEach(element => { hide(element) });
@@ -94,7 +94,7 @@ export class TopicDisplay {
 		target.querySelectorAll('.reply-body').forEach(element => { hide(element) });
 		target.querySelectorAll('.reply-preview').forEach(element => { show(element) });
 
-		target.removeEventListener('click', this.eventShowFullReply);
+		target.removeEventListener('click', this.eventCloseFullReply);
 		target.addEventListener('click', this.eventShowFullReply);
 	}
 
