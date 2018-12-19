@@ -46,8 +46,8 @@ namespace Forum {
 				Display = "ShowFavicons",
 				Description = "Show icons by links in post bodies.",
 				Options = new List<string> {
-					"True",
-					"False"
+					"False",
+					"True"
 				}
 			},
 			new BaseSetting {
