@@ -48,8 +48,9 @@ namespace Forum.Controllers {
 
 			var board = BoardRepository.First(item => item.Id == id);
 
-			if (Request.Query.TryGetValue("source", out var source))
+			if (Request.Query.TryGetValue("source", out var source)) {
 				return await Create(new InputModels.MessageInput { BoardId = id, Body = source });
+			}
 
 			var viewModel = new ViewModels.Messages.CreateTopicPage {
 				BoardId = id
@@ -63,13 +64,15 @@ namespace Forum.Controllers {
 		[PreventRapidRequests]
 		public async Task<IActionResult> Create(InputModels.MessageInput input) {
 			if (ModelState.IsValid) {
-				if (Request.Method == "GET" && input.BoardId != null)
+				if (Request.Method == "GET" && input.BoardId != null) {
 					input.SelectedBoards.Add((int)input.BoardId);
+				}
 				else {
 					foreach (var board in BoardRepository) {
 						if (Request.Form.TryGetValue("Selected_" + board.Id, out var boardSelected)) {
-							if (boardSelected == "True")
+							if (boardSelected == "True") {
 								input.SelectedBoards.Add(board.Id);
+							}
 						}
 					}
 				}
@@ -96,8 +99,9 @@ namespace Forum.Controllers {
 
 			var record = await DbContext.Messages.SingleOrDefaultAsync(m => m.Id == id);
 
-			if (record is null)
+			if (record is null) {
 				throw new HttpNotFoundError();
+			}
 
 			var viewModel = new ViewModels.Messages.EditMessagePage {
 				Id = id,
@@ -173,8 +177,9 @@ namespace Forum.Controllers {
 					TotalSteps = totalSteps
 				};
 			}
-			else
+			else {
 				await MessageRepository.ProcessMessagesContinue(input);
+			}
 
 			var viewModel = new ViewModels.Delay {
 				ActionName = "Processing Messages",
@@ -204,8 +209,9 @@ namespace Forum.Controllers {
 					TotalSteps = totalSteps
 				};
 			}
-			else
+			else {
 				await MessageRepository.ReprocessMessagesContinue(input);
+			}
 
 			var viewModel = new ViewModels.Delay {
 				ActionName = "Reprocessing Messages",
@@ -235,8 +241,9 @@ namespace Forum.Controllers {
 					TotalSteps = totalSteps
 				};
 			}
-			else
+			else {
 				MessageRepository.RecountRepliesContinue(input);
+			}
 
 			var viewModel = new ViewModels.Delay {
 				ActionName = "Recounting Replies",
@@ -265,8 +272,9 @@ namespace Forum.Controllers {
 					TotalSteps = totalSteps
 				};
 			}
-			else
+			else {
 				MessageRepository.RebuildParticipantsContinue(input);
+			}
 
 			var viewModel = new ViewModels.Delay {
 				ActionName = "Rebuilding participants",
