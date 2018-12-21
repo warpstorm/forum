@@ -29,7 +29,7 @@ namespace Forum.Extensions {
 		}
 
 		public static IServiceCollection AddForum(this IServiceCollection services, IConfiguration configuration) {
-			RegisterRepositories(services, configuration);
+			RegisterRepositories(services);
 
 			services.AddTransient<IForumViewResult, ForumViewResult>();
 
@@ -49,7 +49,7 @@ namespace Forum.Extensions {
 			return services;
 		}
 
-		static void RegisterRepositories(IServiceCollection services, IConfiguration configuration) {
+		static void RegisterRepositories(IServiceCollection services) {
 			services.AddScoped<Repositories.AccountRepository>();
 			services.AddScoped<Repositories.BoardRepository>();
 			services.AddScoped<Repositories.MessageRepository>();
