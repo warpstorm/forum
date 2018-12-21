@@ -2,6 +2,7 @@
 using Forum.Controllers;
 using Forum.Extensions;
 using Forum.Filters;
+using Forum.Hubs;
 using Forum.Plugins;
 using Jdenticon.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
@@ -20,23 +21,15 @@ namespace Forum {
 	public class Startup {
 		public IConfiguration Configuration { get; }
 
-		public Startup(IConfiguration configuration) {
+		public Startup(
+			IConfiguration configuration
+		) {
 			Configuration = configuration;
 		}
 
 		public void ConfigureServices(IServiceCollection services) {
-			// services.AddApplicationInsightsTelemetry(Configuration);
-
-			// Loads from the environment
-			var dbConnectionString = Configuration["DefaultConnection"];
-
-			// Or use the one defined in ConnectionStrings setting of app configuration.
-			if (string.IsNullOrEmpty(dbConnectionString)) {
-				dbConnectionString = Configuration.GetConnectionString("DefaultConnection");
-			}
-
 			services.AddDbContextPool<ApplicationDbContext>(
-				options => options.UseSqlServer(dbConnectionString)
+				options => options.UseSqlServer(GetDbConnectionString())
 			);
 
 			services.AddIdentity<DataModels.ApplicationUser, DataModels.ApplicationRole>(options => {
@@ -55,6 +48,12 @@ namespace Forum {
 			services.Configure<MvcOptions>(options => {
 				//options.Filters.Add<RequireRemoteHttpsAttribute>();
 				options.Filters.Add<UserContextActionFilter>();
+
+				var policy = new AuthorizationPolicyBuilder()
+				 .RequireAuthenticatedUser()
+				 .Build();
+
+				options.Filters.Add(new AuthorizeFilter(policy));
 			});
 
 			services.AddForum(Configuration);
@@ -62,14 +61,8 @@ namespace Forum {
 
 			services.AddDistributedMemoryCache();
 			services.AddSession();
-
-			services.AddMvc(config => {
-				var policy = new AuthorizationPolicyBuilder()
-								 .RequireAuthenticatedUser()
-								 .Build();
-
-				config.Filters.Add(new AuthorizeFilter(policy));
-			}).SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+			services.AddSignalR();
+			services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 		}
 
 		public void Configure(IApplicationBuilder app, IHostingEnvironment env) {
@@ -88,11 +81,27 @@ namespace Forum {
 			app.UseSession();
 			app.UseForum();
 
+			app.UseSignalR(routes => {
+				routes.MapHub<TopicHub>("/Hub/Topics");
+			});
+
 			app.UseMvc(routes => {
 				routes.MapRoute(
 					name: "default",
 					template: "{controller=Home}/{action=FrontPage}/{id?}/{pageId?}/{target?}");
 			});
+		}
+
+		string GetDbConnectionString() {
+			// Loads from the environment
+			var dbConnectionString = Configuration["DefaultConnection"];
+
+			// Or use the one defined in ConnectionStrings setting of app configuration.
+			if (string.IsNullOrEmpty(dbConnectionString)) {
+				dbConnectionString = Configuration.GetConnectionString("DefaultConnection");
+			}
+
+			return dbConnectionString;
 		}
 	}
 }

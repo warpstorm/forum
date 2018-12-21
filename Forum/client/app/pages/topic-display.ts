@@ -4,9 +4,12 @@ import { Xhr } from "../services/xhr";
 import { XhrOptions } from "../models/xhr-options";
 import { postToPath, throwIfNull, hide, show } from "../helpers";
 
+import * as SignalR from "@aspnet/signalr";
+
 export class TopicDisplay {
 	private thoughtSelectorMessageId: string = "";
 	private assignedBoards: string[] = [];
+	private topicHub!: SignalR.HubConnection;
 
 	constructor(private doc: Document, private app: App) {
 		throwIfNull(doc, 'doc');
@@ -15,6 +18,9 @@ export class TopicDisplay {
 	}
 
 	init() {
+		this.startConnection();
+		this.addReplyListener();
+
 		let incomingBoards: string[] = (<any>window).assignedBoards;
 
 		if (incomingBoards && incomingBoards.length > 0) {
@@ -42,6 +48,23 @@ export class TopicDisplay {
 				hide(element);
 			});
 		}
+	}
+
+	startConnection = () => {
+		this.topicHub = new SignalR.HubConnectionBuilder()
+			.withUrl('http://localhost:31415/hub/topics')
+			.build();
+
+		this.topicHub
+			.start()
+			.then(() => console.log('Connection started'))
+			.catch(err => console.log('Error while starting connection: ' + err))
+	}
+
+	addReplyListener = () => {
+		this.topicHub.on('newreply', (data) => {
+			console.log(data);
+		});
 	}
 
 	eventShowReplyForm = (event: Event) => {

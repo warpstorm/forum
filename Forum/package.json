@@ -2,7 +2,9 @@
 	"scripts": {
 		"test": "mocha --require ts-node/register client/spec/*.spec.ts"
 	},
-	"dependencies": {},
+	"dependencies": {
+		"@aspnet/signalr": "^1.1.0"
+	},
 	"devDependencies": {
 		"@types/chai": "^4.1.7",
 		"@types/jsdom": "^12.2.0",

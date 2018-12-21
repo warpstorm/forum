@@ -3,6 +3,7 @@ using Forum.Contexts;
 using Forum.Controllers;
 using Forum.Errors;
 using Forum.Extensions;
+using Forum.Hubs;
 using Forum.Plugins.ImageStore;
 using Forum.Plugins.UrlReplacement;
 using Forum.Services;
@@ -10,6 +11,7 @@ using HtmlAgilityPack;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -27,10 +29,11 @@ namespace Forum.Repositories {
 	public class MessageRepository {
 		ApplicationDbContext DbContext { get; }
 		UserContext UserContext { get; }
+		AccountRepository AccountRepository { get; }
 		BoardRepository BoardRepository { get; }
 		SettingsRepository SettingsRepository { get; }
 		SmileyRepository SmileyRepository { get; }
-		AccountRepository AccountRepository { get; }
+		IHubContext<TopicHub> TopicHub { get; }
 		IImageStore ImageStore { get; }
 		IUrlHelper UrlHelper { get; }
 		BBCodeParser BBCParser { get; }
@@ -41,10 +44,11 @@ namespace Forum.Repositories {
 		public MessageRepository(
 			ApplicationDbContext dbContext,
 			UserContext userContext,
+			AccountRepository accountRepository,
 			BoardRepository boardRepository,
 			SettingsRepository settingsRepository,
 			SmileyRepository smileyRepository,
-			AccountRepository accountRepository,
+			IHubContext<TopicHub> topicHub,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory,
 			IImageStore imageStore,
@@ -55,10 +59,11 @@ namespace Forum.Repositories {
 		) {
 			DbContext = dbContext;
 			UserContext = userContext;
+			AccountRepository = accountRepository;
 			BoardRepository = boardRepository;
 			SettingsRepository = settingsRepository;
 			SmileyRepository = smileyRepository;
-			AccountRepository = accountRepository;
+			TopicHub = topicHub;
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 			ImageStore = imageStore;
 			BBCParser = bbcParser;
@@ -135,6 +140,8 @@ namespace Forum.Repositories {
 			}
 
 			var record = CreateMessageRecord(processedMessage, replyRecord);
+
+			await TopicHub.Clients.All.SendAsync("newreply", record.Id);
 
 			serviceResponse.RedirectPath = UrlHelper.DirectMessage(record.Id);
 			return serviceResponse;
