@@ -1,6 +1,8 @@
 ﻿using Forum.Interfaces.Services;
 using Forum.Repositories;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
@@ -10,13 +12,19 @@ namespace Forum.Controllers {
 	public class Home : Controller {
 		SettingsRepository SettingsRepository { get; }
 		IForumViewResult ForumViewResult { get; }
+		IHttpContextAccessor HttpContextAccessor { get; }
+		IAntiforgery Xsrf { get; }
 
 		public Home(
 			IForumViewResult forumViewResult,
-			SettingsRepository settingsRepository
+			SettingsRepository settingsRepository,
+			IHttpContextAccessor httpContextAccessor,
+			IAntiforgery xsrf
 		) {
 			ForumViewResult = forumViewResult;
 			SettingsRepository = settingsRepository;
+			Xsrf = xsrf;
+			HttpContextAccessor = httpContextAccessor;
 		}
 
 		[HttpGet]
@@ -44,5 +52,9 @@ namespace Forum.Controllers {
 
 			return ForumViewResult.ViewResult(this, viewModel);
 		}
+
+		public JsonResult Token() => Json(new {
+			token = Xsrf.GetAndStoreTokens(HttpContextAccessor.HttpContext).RequestToken
+		});
 	}
 }

@@ -3,6 +3,7 @@
 <div asp-validation-summary="ModelOnly"></div>
 
 <form method="post"
+	  class="message-form"
 	  asp-action="@Model.FormAction"
 	  asp-controller="@Model.FormController"
 	  asp-route-returnurl="@ViewData["Referrer"]">
@@ -43,7 +44,6 @@
 	</div>
 
 	<p>
-		<button>Save</button>
-		<cancel-button />
+		<button class="save-button">Save</button>
 	</p>
 </form>

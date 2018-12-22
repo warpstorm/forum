@@ -1,5 +1,5 @@
 ﻿import { App } from "../app";
-import { postToPath, throwIfNull, hide, show } from "../helpers";
+import { postToPath, throwIfNull, hide, show, queryify } from "../helpers";
 
 import { Xhr } from "../services/xhr";
 import { XhrOptions } from "../models/xhr-options";
@@ -8,12 +8,14 @@ import { TopicDisplayWindow } from "../models/topic-display-window";
 
 import * as SignalR from "@aspnet/signalr";
 import { HttpMethod } from "../definitions/http-method";
+import { ResponseToken } from "../models/response-token";
 
 export class TopicDisplay {
 	private hub!: SignalR.HubConnection;
 	private topicWindow: TopicDisplayWindow;
 	private thoughtSelectorMessageId: string = "";
 	private assignedBoards: string[] = [];
+	private submitting: boolean = false;
 
 	constructor(private doc: Document, private app: App) {
 		throwIfNull(doc, 'doc');
@@ -41,18 +43,21 @@ export class TopicDisplay {
 		this.hideFavIcons();
 	}
 
-	establishHubConnection() {
-		this.hub = new SignalR.HubConnectionBuilder()
-			.withUrl('/hub')
-			.build();
+	establishHubConnection = () => {
+		this.hub = new SignalR.HubConnectionBuilder().withUrl('/hub').build();
+		this.hub.start()
+			.then(this.finalizeHubConnection)
+			.catch(err => console.log('Error while starting connection: ' + err));
+	}
 
-		this.hub
-			.start()
-			.then(() => console.log('Hub connection established'))
-			.catch(err => console.log('Error while starting connection: ' + err))
+	finalizeHubConnection = () => {
+		console.log('Hub connection established');
 
-		this.hub
-			.on('newreply', this.hubNewReply);
+		this.hub.on('newreply', this.hubNewReply);
+
+		this.doc.querySelectorAll('.message-form .save-button').forEach(element => {
+			element.addEventListener('click', this.eventSaveMessage);
+		});
 	}
 
 	bindMessageEventListeners() {
@@ -106,8 +111,73 @@ export class TopicDisplay {
 				});
 
 				this.bindMessageEventListeners();
+
+				window.location.hash = `message${data.messageId}`;
 			});
 		}
+	}
+
+	eventSaveMessage = (event: Event) => {
+		event.preventDefault();
+
+		if (this.submitting) {
+			return;
+		}
+
+		this.submitting = true;
+
+		let target = <HTMLElement>event.currentTarget;
+		target.innerHTML = target.textContent + ' <img src="/images/loadingDots.gif" style="vertical-align: middle" />';
+		target.setAttribute('disabled', 'disabled');
+
+		let form = <HTMLFormElement>target.closest('form');
+
+		let tokenElement = form.querySelector('[name=__RequestVerificationToken]') as HTMLInputElement;
+		let idElement = form.querySelector('[name=Id]') as HTMLInputElement;
+		let bodyElement = form.querySelector('[name=body]') as HTMLTextAreaElement;
+
+		let formBody = {
+			id: idElement ? idElement.value : '',
+			body: bodyElement ? bodyElement.value : ''
+		};
+
+		let submitRequestOptions = new XhrOptions({
+			method: HttpMethod.Post,
+			url: form.action,
+			body: queryify(formBody)
+		});
+
+		submitRequestOptions.headers['Content-Type'] = 'application/x-www-form-urlencoded;charset=UTF-8';
+		submitRequestOptions.headers['RequestVerificationToken'] = tokenElement ? tokenElement.value : '';
+
+		let submitRequest = Xhr.request(submitRequestOptions);
+
+		submitRequest.then(() => {
+			let tokenRequest = Xhr.request(new XhrOptions({
+				url: '/Home/Token'
+			}));
+
+			if (bodyElement) {
+				bodyElement.value = '';
+			}
+
+			this.doc.querySelectorAll('.reply-button').forEach(element => {
+				element.removeEventListener('click', this.eventHideReplyForm);
+				element.removeEventListener('click', this.eventShowReplyForm);
+				element.addEventListener('click', this.eventShowReplyForm);
+			});
+
+			this.doc.querySelectorAll('.reply-form').forEach(element => { hide(element); });
+
+			tokenRequest.then((xhrResult) => {
+				var responseToken: ResponseToken = JSON.parse(xhrResult.responseText);
+				tokenElement.value = responseToken.token;
+				target.removeAttribute('disabled');
+				target.innerHTML = target.textContent || "";
+
+				this.submitting = false;
+			});
+		});
 	}
 
 	eventShowReplyForm = (event: Event) => {
