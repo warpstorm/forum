@@ -1,10 +1,5 @@
 @model TopicIndexMorePage
 
-@{
-	// Removes the theme from the page because this result is intended to be embedded through script.
-	Layout = null;
-}
-
 @foreach (var item in Model.Topics) {
 	if (item.Pinned) {
 		<partial name="_PinnedIndexItem" for="@item" />

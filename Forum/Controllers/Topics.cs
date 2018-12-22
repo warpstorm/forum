@@ -100,6 +100,8 @@ namespace Forum.Controllers {
 
 			var topicPreviews = TopicRepository.GetPreviews(id, page, unread);
 
+			ViewData[Constants.InternalKeys.Layout] = null;
+
 			var viewModel = new PageModels.TopicIndexMorePage {
 				More = topicPreviews.Any(),
 				Page = page,
@@ -188,6 +190,20 @@ namespace Forum.Controllers {
 			else {
 				return Redirect(viewModel.RedirectPath);
 			}
+		}
+
+		[HttpGet]
+		public IActionResult MessagePartial(int id) {
+			var viewModelList = TopicRepository.GetMessages(new List<int> { id });
+
+			if (!viewModelList.Any()) {
+				throw new HttpNotFoundError();
+			}
+
+			ViewData[Constants.InternalKeys.Layout] = null;
+
+			var viewModel = viewModelList.First();
+			return ForumViewResult.ViewResult(this, "_DisplayItem", viewModel);
 		}
 
 		[HttpGet]

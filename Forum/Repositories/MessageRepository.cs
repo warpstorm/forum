@@ -3,7 +3,6 @@ using Forum.Contexts;
 using Forum.Controllers;
 using Forum.Errors;
 using Forum.Extensions;
-using Forum.Hubs;
 using Forum.Plugins.ImageStore;
 using Forum.Plugins.UrlReplacement;
 using Forum.Services;
@@ -23,6 +22,7 @@ using System.Threading.Tasks;
 
 namespace Forum.Repositories {
 	using DataModels = Models.DataModels;
+	using HubModels = Models.HubModels;
 	using InputModels = Models.InputModels;
 	using ServiceModels = Models.ServiceModels;
 
@@ -33,7 +33,7 @@ namespace Forum.Repositories {
 		BoardRepository BoardRepository { get; }
 		SettingsRepository SettingsRepository { get; }
 		SmileyRepository SmileyRepository { get; }
-		IHubContext<TopicHub> TopicHub { get; }
+		IHubContext<ForumHub> ForumHub { get; }
 		IImageStore ImageStore { get; }
 		IUrlHelper UrlHelper { get; }
 		BBCodeParser BBCParser { get; }
@@ -48,7 +48,7 @@ namespace Forum.Repositories {
 			BoardRepository boardRepository,
 			SettingsRepository settingsRepository,
 			SmileyRepository smileyRepository,
-			IHubContext<TopicHub> topicHub,
+			IHubContext<ForumHub> forumHub,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory,
 			IImageStore imageStore,
@@ -63,7 +63,7 @@ namespace Forum.Repositories {
 			BoardRepository = boardRepository;
 			SettingsRepository = settingsRepository;
 			SmileyRepository = smileyRepository;
-			TopicHub = topicHub;
+			ForumHub = forumHub;
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 			ImageStore = imageStore;
 			BBCParser = bbcParser;
@@ -141,7 +141,10 @@ namespace Forum.Repositories {
 
 			var record = CreateMessageRecord(processedMessage, replyRecord);
 
-			await TopicHub.Clients.All.SendAsync("newreply", record.Id);
+			await ForumHub.Clients.All.SendAsync("newreply", new HubModels.NewReply {
+				TopicId = record.ParentId,
+				MessageId = record.Id
+			});
 
 			serviceResponse.RedirectPath = UrlHelper.DirectMessage(record.Id);
 			return serviceResponse;

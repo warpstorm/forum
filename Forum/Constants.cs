@@ -2,7 +2,7 @@
 	public class Constants {
 		public class Versions {
 			public const string Theme = "12";
-			public const string Code = "4.3.2";
+			public const string Code = "4.4.0";
 		}
 
 		public class InternalKeys {
@@ -14,6 +14,7 @@
 			public const string StorageConnection = "StorageConnection";
 			public const string AvatarContainer = "avatars";
 			public const string SmileyContainer = "smileys";
+			public const string Layout = "Layout";
 		}
 	}
 }

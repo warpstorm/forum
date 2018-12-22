@@ -1,3 +1,8 @@
 ﻿@{
-    Layout = "_Layout";
+	if (ViewData.ContainsKey(Constants.InternalKeys.Layout)) {
+		Layout = ViewData[Constants.InternalKeys.Layout] as string;
+	}
+	else {
+		Layout = "_Layout";
+	}
 }

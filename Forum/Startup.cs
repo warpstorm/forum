@@ -2,7 +2,6 @@
 using Forum.Controllers;
 using Forum.Extensions;
 using Forum.Filters;
-using Forum.Hubs;
 using Forum.Plugins;
 using Jdenticon.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
@@ -11,6 +10,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -82,7 +82,7 @@ namespace Forum {
 			app.UseForum();
 
 			app.UseSignalR(routes => {
-				routes.MapHub<TopicHub>("/Hub/Topics");
+				routes.MapHub<ForumHub>("/Hub");
 			});
 
 			app.UseMvc(routes => {
