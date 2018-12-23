@@ -44,7 +44,7 @@ namespace Forum.Controllers {
 			return ForumViewResult.ViewResult(this, viewModel);
 		}
 
-		[Authorize(Roles="Admin")]
+		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
 		public IActionResult Manage() {
 			var viewModel = new PageViewModels.IndexPage {
@@ -54,7 +54,7 @@ namespace Forum.Controllers {
 			return ForumViewResult.ViewResult(this, viewModel);
 		}
 
-		[Authorize(Roles="Admin")]
+		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
 		public IActionResult Create() {
 			var viewModel = new PageViewModels.CreatePage() {
@@ -64,7 +64,7 @@ namespace Forum.Controllers {
 			return ForumViewResult.ViewResult(this, viewModel);
 		}
 
-		[Authorize(Roles = "Admin")]
+		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpPost]
 		public async Task<IActionResult> Create(InputModels.CreateBoardInput input) {
 			if (ModelState.IsValid) {
@@ -82,14 +82,15 @@ namespace Forum.Controllers {
 				viewModel.Name = input.Name;
 				viewModel.Description = input.Description;
 
-				if (!string.IsNullOrEmpty(input.Category))
+				if (!string.IsNullOrEmpty(input.Category)) {
 					viewModel.Categories.First(item => item.Value == input.Category).Selected = true;
+				}
 
 				return await Task.Run(() => { return ForumViewResult.ViewResult(this, viewModel); });
 			}
 		}
 
-		[Authorize(Roles="Admin")]
+		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
 		public IActionResult Edit(int id) {
 			var boardRecord = BoardRepository.First(b => b.Id == id);
@@ -108,7 +109,7 @@ namespace Forum.Controllers {
 			return ForumViewResult.ViewResult(this, viewModel);
 		}
 
-		[Authorize(Roles = "Admin")]
+		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpPost]
 		public async Task<IActionResult> Edit(InputModels.EditBoardInput input) {
 			if (ModelState.IsValid) {
@@ -130,14 +131,15 @@ namespace Forum.Controllers {
 				viewModel.Name = input.Name;
 				viewModel.Description = input.Description;
 
-				if (!string.IsNullOrEmpty(input.Category))
+				if (!string.IsNullOrEmpty(input.Category)) {
 					viewModel.Categories.First(item => item.Value == input.Category).Selected = true;
+				}
 
 				return await Task.Run(() => { return ForumViewResult.ViewResult(this, viewModel); });
 			}
 		}
 
-		[Authorize(Roles="Admin")]
+		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
 		public async Task<IActionResult> MoveCategoryUp(int id) {
 			if (ModelState.IsValid) {
@@ -152,7 +154,7 @@ namespace Forum.Controllers {
 			}
 		}
 
-		[Authorize(Roles="Admin")]
+		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
 		public async Task<IActionResult> MoveBoardUp(int id) {
 			if (ModelState.IsValid) {
@@ -167,11 +169,9 @@ namespace Forum.Controllers {
 			}
 		}
 
-		[Authorize(Roles="Admin")]
+		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpPost]
-		public async Task<IActionResult> MergeCategory(
-			InputModels.MergeInput input
-		) {
+		public async Task<IActionResult> MergeCategory(InputModels.MergeInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = BoardRepository.MergeCategory(input);
 				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
@@ -184,7 +184,7 @@ namespace Forum.Controllers {
 			}
 		}
 
-		[Authorize(Roles="Admin")]
+		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpPost]
 		public async Task<IActionResult> MergeBoard(InputModels.MergeInput input) {
 			if (ModelState.IsValid) {

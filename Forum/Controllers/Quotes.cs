@@ -19,7 +19,7 @@ namespace Forum.Controllers {
 			ForumViewResult = forumViewResult;
 		}
 
-		[Authorize(Roles = "Admin")]
+		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
 		public IActionResult Index() {
 			var viewModel = QuoteRepository.Index();
@@ -40,7 +40,7 @@ namespace Forum.Controllers {
 			}
 		}
 
-		[Authorize(Roles = "Admin")]
+		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpPost]
 		public async Task<IActionResult> Edit(InputModels.QuotesInput input) {
 			if (ModelState.IsValid) {
@@ -55,7 +55,7 @@ namespace Forum.Controllers {
 			}
 		}
 
-		[Authorize(Roles = "Admin")]
+		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
 		public async Task<IActionResult> Delete(int id) {
 			if (ModelState.IsValid) {

@@ -161,11 +161,11 @@ namespace Forum.Controllers {
 			}
 		}
 
-		[Authorize(Roles = "Admin")]
+		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
 		public IActionResult Admin(InputModels.Continue input = null) => ForumViewResult.ViewResult(this);
 
-		[Authorize(Roles = "Admin")]
+		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
 		public async Task<IActionResult> ProcessMessages(InputModels.Continue input) {
 			if (string.IsNullOrEmpty(input.Stage)) {
@@ -197,7 +197,7 @@ namespace Forum.Controllers {
 			return ForumViewResult.ViewResult(this, "Delay", viewModel);
 		}
 
-		[Authorize(Roles = "Admin")]
+		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
 		public async Task<IActionResult> ReprocessMessages(InputModels.Continue input) {
 			if (string.IsNullOrEmpty(input.Stage)) {
@@ -229,7 +229,7 @@ namespace Forum.Controllers {
 			return ForumViewResult.ViewResult(this, "Delay", viewModel);
 		}
 
-		[Authorize(Roles="Admin")]
+		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
 		public IActionResult RecountReplies(InputModels.Continue input) {
 			if (string.IsNullOrEmpty(input.Stage)) {
@@ -260,7 +260,7 @@ namespace Forum.Controllers {
 			return ForumViewResult.ViewResult(this, "Delay", viewModel);
 		}
 
-		[Authorize(Roles = "Admin")]
+		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
 		public IActionResult RebuildParticipants(InputModels.Continue input) {
 			if (string.IsNullOrEmpty(input.Stage)) {

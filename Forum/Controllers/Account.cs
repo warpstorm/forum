@@ -423,7 +423,7 @@ namespace Forum.Controllers {
 			return RedirectToAction(nameof(Home.FrontPage), nameof(Home));
 		}
 
-		[Authorize(Roles = "Admin")]
+		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
 		public IActionResult Merge(string userId) {
 			var viewModel = new ViewModels.Account.MergePage {
@@ -446,7 +446,7 @@ namespace Forum.Controllers {
 			return ForumViewResult.ViewResult(this, viewModel);
 		}
 
-		[Authorize(Roles = "Admin")]
+		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
 		public async Task<IActionResult> ConfirmMerge(string sourceId, string targetId) {
 			await AccountRepository.MergeAccounts(sourceId, targetId, false);

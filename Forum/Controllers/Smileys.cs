@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace Forum.Controllers {
 	using ViewModels = Models.ViewModels.Smileys;
 
-	[Authorize(Roles="Admin")]
+	[Authorize(Roles = Constants.InternalKeys.Admin)]
 	public class Smileys : Controller {
 		ApplicationDbContext DbContext { get; }
 		SmileyRepository SmileyRepository { get; }

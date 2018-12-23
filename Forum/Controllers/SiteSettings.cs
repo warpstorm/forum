@@ -13,7 +13,7 @@ namespace Forum.Controllers {
 	using InputModels = Models.InputModels;
 	using ViewModels = Models.ViewModels.SiteSettings;
 
-	[Authorize(Roles="Admin")]
+	[Authorize(Roles = Constants.InternalKeys.Admin)]
 	public class SiteSettings : Controller {
 		ApplicationDbContext DbContext { get; }
 		SettingsRepository SettingsRepository { get; }

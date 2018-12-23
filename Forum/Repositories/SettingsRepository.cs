@@ -28,11 +28,11 @@ namespace Forum.Repositories {
 			UserContext = userContext;
 		}
 
-		public bool Installed() => GetBool("Installed", true);
-		public bool ShowFavicons(bool forceGlobal = false) => GetBool("ShowFavicons", forceGlobal);
+		public bool Installed() => GetBool(Constants.Settings.Installed, true);
+		public bool ShowFavicons(bool forceGlobal = false) => GetBool(Constants.Settings.ShowFavicons, forceGlobal);
 
 		public int AvatarSize(bool forceGlobal = false) {
-			var setting = GetInt("AvatarSize", forceGlobal);
+			var setting = GetInt(Constants.Settings.AvatarSize, forceGlobal);
 
 			if (setting == 0) {
 				setting = 100;
@@ -42,7 +42,7 @@ namespace Forum.Repositories {
 		}
 
 		public DateTime HistoryTimeLimit(bool forceGlobal = false) {
-			var setting = GetInt("HistoryTimeLimit", forceGlobal);
+			var setting = GetInt(Constants.Settings.HistoryTimeLimit, forceGlobal);
 
 			if (setting == 0) {
 				setting = -14;
@@ -52,7 +52,7 @@ namespace Forum.Repositories {
 		}
 
 		public int MessagesPerPage(bool forceGlobal = false) {
-			var setting = GetInt("MessagesPerPage", forceGlobal);
+			var setting = GetInt(Constants.Settings.MessagesPerPage, forceGlobal);
 
 			if (setting == 0) {
 				setting = 15;
@@ -62,7 +62,7 @@ namespace Forum.Repositories {
 		}
 
 		public int OnlineTimeLimit(bool forceGlobal = false) {
-			var setting = GetInt("OnlineTimeLimit", forceGlobal);
+			var setting = GetInt(Constants.Settings.OnlineTimeLimit, forceGlobal);
 
 			if (setting == 0) {
 				setting = 5;
@@ -72,7 +72,7 @@ namespace Forum.Repositories {
 		}
 
 		public int PopularityLimit(bool forceGlobal = false) {
-			var setting = GetInt("PopularityLimit", forceGlobal);
+			var setting = GetInt(Constants.Settings.PopularityLimit, forceGlobal);
 
 			if (setting == 0) {
 				setting = 25;
@@ -82,7 +82,7 @@ namespace Forum.Repositories {
 		}
 
 		public int TopicsPerPage(bool forceGlobal = false) {
-			var setting = GetInt("TopicsPerPage", forceGlobal);
+			var setting = GetInt(Constants.Settings.TopicsPerPage, forceGlobal);
 
 			if (setting == 0) {
 				setting = 15;
@@ -92,17 +92,17 @@ namespace Forum.Repositories {
 		}
 
 		public List<string> PoseyUsers(bool forceGlobal = false) {
-			var value = GetSetting("PoseyUsers", forceGlobal);
+			var value = GetSetting(Constants.Settings.PoseyUsers, forceGlobal);
 			return value.Split("|").ToList();
 		}
 
 		public List<string> StrippedUrls(bool forceGlobal = false) {
-			var value = GetSetting("StrippedUrls", forceGlobal);
+			var value = GetSetting(Constants.Settings.StrippedUrls, forceGlobal);
 			return value.Split("|").ToList();
 		}
 
 		public string FrontPage(bool forceGlobal = false) {
-			var setting = GetSetting("FrontPage", forceGlobal);
+			var setting = GetSetting(Constants.Settings.FrontPage, forceGlobal);
 
 			if (string.IsNullOrEmpty(setting)) {
 				setting = "Board List";

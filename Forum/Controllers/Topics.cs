@@ -112,7 +112,7 @@ namespace Forum.Controllers {
 		}
 
 		[HttpGet]
-		[Authorize(Roles = "Admin")]
+		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		public IActionResult Merge(int id) {
 			var record = DbContext.Messages.FirstOrDefault(item => item.Id == id);
 
@@ -143,7 +143,7 @@ namespace Forum.Controllers {
 		}
 
 		[HttpGet]
-		[Authorize(Roles = "Admin")]
+		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		public IActionResult MergeMore(int id, int page = 0) {
 			var record = DbContext.Messages.FirstOrDefault(item => item.Id == id);
 
@@ -172,7 +172,7 @@ namespace Forum.Controllers {
 		}
 
 		[HttpGet]
-		[Authorize(Roles = "Admin")]
+		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		public async Task<IActionResult> FinishMerge(int sourceId, int targetId) {
 			var serviceResponse = TopicRepository.Merge(sourceId, targetId);
 			return await ForumViewResult.RedirectFromService(this, serviceResponse, FailToReferrer);

@@ -18,7 +18,7 @@ namespace Forum.Controllers {
 	using ItemViewModels = Models.ViewModels.Roles.Items;
 	using PageViewModels = Models.ViewModels.Roles.Pages;
 
-	[Authorize(Roles = "Admin")]
+	[Authorize(Roles = Constants.InternalKeys.Admin)]
 	public class Roles : Controller {
 		RoleRepository RoleRepository { get; }
 		UserManager<DataModels.ApplicationUser> UserManager { get; }
@@ -48,11 +48,13 @@ namespace Forum.Controllers {
 				DataModels.ApplicationUser createdBy = null;
 				DataModels.ApplicationUser modifiedBy = null;
 
-				if (role.CreatedById != null)
+				if (role.CreatedById != null) {
 					createdBy = await UserManager.FindByIdAsync(role.CreatedById);
+				}
 
-				if (role.ModifiedById != null)
+				if (role.ModifiedById != null) {
 					modifiedBy = await UserManager.FindByIdAsync(role.ModifiedById);
+				}
 
 				IList<DataModels.ApplicationUser> usersInRole = null;
 
@@ -133,8 +135,9 @@ namespace Forum.Controllers {
 
 		[HttpGet]
 		public async Task<IActionResult> Delete(string id) {
-			if (ModelState.IsValid)
+			if (ModelState.IsValid) {
 				await RoleRepository.Delete(id);
+			}
 
 			return ForumViewResult.RedirectToReferrer(this);
 		}
@@ -178,17 +181,20 @@ namespace Forum.Controllers {
 		public async Task<PageViewModels.EditPage> GetEditPageModel(string id) {
 			var role = await RoleManager.FindByIdAsync(id);
 
-			if (role is null)
+			if (role is null) {
 				throw new HttpNotFoundError();
+			}
 
 			DataModels.ApplicationUser createdBy = null;
 			DataModels.ApplicationUser modifiedBy = null;
 
-			if (role.CreatedById != null)
+			if (role.CreatedById != null) {
 				createdBy = await UserManager.FindByIdAsync(role.CreatedById);
+			}
 
-			if (role.ModifiedById != null)
+			if (role.ModifiedById != null) {
 				modifiedBy = await UserManager.FindByIdAsync(role.ModifiedById);
+			}
 
 			var usersInRole = await UserManager.GetUsersInRoleAsync(role.Name);
 

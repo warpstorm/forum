@@ -55,12 +55,12 @@ namespace Forum.Services {
 			var adminUsersQuery = from user in DbContext.Users
 								  join userRole in DbContext.UserRoles on user.Id equals userRole.UserId
 								  join role in DbContext.Roles on userRole.RoleId equals role.Id
-								  where role.Name == "Admin"
+								  where role.Name == Constants.InternalKeys.Admin
 								  select user.Id;
 
 			userContext.Roles = userRolesQuery.ToList() ?? new List<string>();
 
-			var adminRole = DbContext.Roles.FirstOrDefault(r => r.Name == "Admin");
+			var adminRole = DbContext.Roles.FirstOrDefault(r => r.Name == Constants.InternalKeys.Admin);
 			var anyAdminUsers = adminUsersQuery.Any();
 
 			if (adminRole != null && userContext.Roles.Contains(adminRole.Id)) {
@@ -119,8 +119,8 @@ namespace Forum.Services {
 		DateTime GetHistoryTimeLimit(UserContext userContext) {
 			var historySettingValue = -14;
 
-			var userSetting = DbContext.SiteSettings.FirstOrDefault(r => r.Name == "HistoryTimeLimit" && r.UserId == userContext.ApplicationUser.Id)?.Value;
-			var globalSetting = DbContext.SiteSettings.FirstOrDefault(r => r.Name == "HistoryTimeLimit" && string.IsNullOrEmpty(r.UserId))?.Value;
+			var userSetting = DbContext.SiteSettings.FirstOrDefault(r => r.Name == Constants.Settings.HistoryTimeLimit && r.UserId == userContext.ApplicationUser.Id)?.Value;
+			var globalSetting = DbContext.SiteSettings.FirstOrDefault(r => r.Name == Constants.Settings.HistoryTimeLimit && string.IsNullOrEmpty(r.UserId))?.Value;
 
 			if (!string.IsNullOrEmpty(userSetting)) {
 				historySettingValue = Convert.ToInt32(userSetting);

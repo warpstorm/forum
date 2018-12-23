@@ -7,52 +7,13 @@ namespace Forum {
 	public class BaseSettings : IEnumerable<BaseSetting> {
 		static List<BaseSetting> Values { get; } = new List<BaseSetting> {
 			new BaseSetting {
-				Key = "Installed",
-				Display = "Installed",
-				Description = "Is the forum installed?"
-			},
-			new BaseSetting {
-				Key = "AvatarSize",
-				Display = "Avatar Size",
+				Key = Constants.Settings.AvatarSize,
+				Display = "Avatar size",
 				Description = "Alters the size of the avatars"
 			},
 			new BaseSetting {
-				Key = "HistoryTimeLimit",
-				Display = "History Time Limit",
-				Description = "How many days back to limit viewed topic checks. Should be negative!"
-			},
-			new BaseSetting {
-				Key = "MessagesPerPage",
-				Display = "MessagesPerPage",
-				Description = "How many days back to limit viewed topic checks. Should be negative!"
-			},
-			new BaseSetting {
-				Key = "OnlineTimeLimit",
-				Display = "OnlineTimeLimit",
-				Description = "How long a person can be offline before they're no longer marked as online."
-			},
-			new BaseSetting {
-				Key = "PopularityLimit",
-				Display = "PopularityLimit",
-				Description = "Changes how many posts a topic must have to be considered popular."
-			},
-			new BaseSetting {
-				Key = "TopicsPerPage",
-				Display = "TopicsPerPage",
-				Description = "Limits how many topics per page are displayed in a board."
-			},
-			new BaseSetting {
-				Key = "ShowFavicons",
-				Display = "ShowFavicons",
-				Description = "Show icons by links in post bodies.",
-				Options = new List<string> {
-					"False",
-					"True"
-				}
-			},
-			new BaseSetting {
-				Key = "FrontPage",
-				Display = "Front Page",
+				Key = Constants.Settings.FrontPage,
+				Display = "Front page",
 				Description = "Choose which page is your front page.",
 				Options = new List<string> {
 					"Board List",
@@ -61,14 +22,53 @@ namespace Forum {
 				}
 			},
 			new BaseSetting {
-				Key = "PoseyUsers",
-				Display = "Posey'd Users",
+				Key = Constants.Settings.HistoryTimeLimit,
+				Display = "History time limit",
+				Description = "How many days back to limit viewed topic checks. Should be negative!"
+			},
+			new BaseSetting {
+				Key = Constants.Settings.Installed,
+				Display = "Installed",
+				Description = "Is the forum installed?"
+			},
+			new BaseSetting {
+				Key = Constants.Settings.MessagesPerPage,
+				Display = "Messages per page",
+				Description = "How many days back to limit viewed topic checks. Should be negative!"
+			},
+			new BaseSetting {
+				Key = Constants.Settings.OnlineTimeLimit,
+				Display = "Online time limit",
+				Description = "How long a person can be offline before they're no longer marked as online."
+			},
+			new BaseSetting {
+				Key = Constants.Settings.PopularityLimit,
+				Display = "Popularity limit",
+				Description = "Changes how many posts a topic must have to be considered popular."
+			},
+			new BaseSetting {
+				Key = Constants.Settings.PoseyUsers,
+				Display = "Posey'd users",
 				Description = "Posey's the users. Separate IDs with a pipe."
 			},
 			new BaseSetting {
-				Key = "StrippedUrls",
+				Key = Constants.Settings.ShowFavicons,
+				Display = "Show favicons",
+				Description = "Show icons by links in post bodies.",
+				Options = new List<string> {
+					"False",
+					"True"
+				}
+			},
+			new BaseSetting {
+				Key = Constants.Settings.StrippedUrls,
 				Display = "Site-Stripped URLs",
 				Description = "Strips the site name from these second level domains. Separate domains with a pipe. Do not include the TLD like .com or .org"
+			},
+			new BaseSetting {
+				Key = Constants.Settings.TopicsPerPage,
+				Display = "Topics per page",
+				Description = "Limits how many topics per page are displayed in a board."
 			},
 		};
 
