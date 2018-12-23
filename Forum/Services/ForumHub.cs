@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 
-namespace Forum.Controllers {
+namespace Forum.Services {
 	public class ForumHub : Hub {
 	}
 }
