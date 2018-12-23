@@ -16,6 +16,7 @@ namespace Forum {
 				Display = "Front page",
 				Description = "Choose which page is your front page.",
 				Options = new List<string> {
+					"",
 					"Board List",
 					"All Topics",
 					"Unread Topics"
@@ -56,6 +57,7 @@ namespace Forum {
 				Display = "Show favicons",
 				Description = "Show icons by links in post bodies.",
 				Options = new List<string> {
+					"",
 					"False",
 					"True"
 				}
@@ -65,6 +67,7 @@ namespace Forum {
 				Display = "Enable sideloading",
 				Description = "Enables content management with the server in the background",
 				Options = new List<string> {
+					"",
 					"False",
 					"True"
 				}
