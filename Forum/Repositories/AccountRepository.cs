@@ -141,7 +141,7 @@ namespace Forum.Repositories {
 				Log.LogCritical(message);
 			}
 
-			if (DbContext.Users.Any(r => r.DisplayName == input.DisplayName)) {
+			if (input.DisplayName != userRecord.DisplayName && DbContext.Users.Any(r => r.DisplayName == input.DisplayName)) {
 				var message = $"The display name '{input.DisplayName}' is already taken.";
 				serviceResponse.Error(message);
 				Log.LogWarning(message);

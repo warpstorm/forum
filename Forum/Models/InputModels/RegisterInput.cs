@@ -5,7 +5,7 @@ namespace Forum.Models.InputModels {
 		[Required]
 		[MinLength(3)]
 		[MaxLength(64)]
-		[RegularExpression(@"(^\s+.+|.+\s+$)")]
+		[RegularExpression(@"(^[^\s]+.+[^\s]+$)", ErrorMessage = "The display name cannot have spaces before or after.")]
 		public string DisplayName { get; set; }
 
 		[Required]
