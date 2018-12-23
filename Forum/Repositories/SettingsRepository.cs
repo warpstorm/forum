@@ -30,6 +30,7 @@ namespace Forum.Repositories {
 
 		public bool Installed() => GetBool(Constants.Settings.Installed, true);
 		public bool ShowFavicons(bool forceGlobal = false) => GetBool(Constants.Settings.ShowFavicons, forceGlobal);
+		public bool SideLoading(bool forceGlobal = false) => GetBool(Constants.Settings.SideLoading, forceGlobal);
 
 		public int AvatarSize(bool forceGlobal = false) {
 			var setting = GetInt(Constants.Settings.AvatarSize, forceGlobal);

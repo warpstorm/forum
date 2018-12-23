@@ -1,4 +1,5 @@
-﻿export class TopicDisplayWindow {
+﻿export class TopicDisplaySettings {
+	public sideloading: boolean = false;
 	public topicId: number = 0;
 	public pageActions: string = '';
 	public currentPage: number = 0;

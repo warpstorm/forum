@@ -61,6 +61,15 @@ namespace Forum {
 				}
 			},
 			new BaseSetting {
+				Key = Constants.Settings.SideLoading,
+				Display = "Enable sideloading",
+				Description = "Enables content management with the server in the background",
+				Options = new List<string> {
+					"False",
+					"True"
+				}
+			},
+			new BaseSetting {
 				Key = Constants.Settings.StrippedUrls,
 				Display = "Site-Stripped URLs",
 				Description = "Strips the site name from these second level domains. Separate domains with a pipe. Do not include the TLD like .com or .org"

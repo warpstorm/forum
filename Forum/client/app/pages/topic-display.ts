@@ -4,15 +4,15 @@ import { postToPath, throwIfNull, hide, show, queryify } from "../helpers";
 import { Xhr } from "../services/xhr";
 import { XhrOptions } from "../models/xhr-options";
 import { NewReply } from "../models/new-reply";
-import { TopicDisplayWindow } from "../models/topic-display-window";
+import { TopicDisplaySettings } from "../models/topic-display-settings";
 
 import * as SignalR from "@aspnet/signalr";
 import { HttpMethod } from "../definitions/http-method";
 import { ResponseToken } from "../models/response-token";
 
 export class TopicDisplay {
-	private hub!: SignalR.HubConnection;
-	private topicWindow: TopicDisplayWindow;
+	private hub?: SignalR.HubConnection = undefined;
+	private settings: TopicDisplaySettings;
 	private thoughtSelectorMessageId: string = "";
 	private assignedBoards: string[] = [];
 	private submitting: boolean = false;
@@ -22,13 +22,15 @@ export class TopicDisplay {
 		throwIfNull(app, 'app');
 		throwIfNull(app.smileySelector, 'app.smileySelector');
 
-		this.topicWindow = new TopicDisplayWindow(window);
+		this.settings = new TopicDisplaySettings(window);
 	}
 
 	init() {
-		this.establishHubConnection();
+		if (this.settings.sideloading) {
+			this.establishHubConnection();
+		}
 
-		let incomingBoards: string[] = this.topicWindow.assignedBoards;
+		let incomingBoards: string[] = this.settings.assignedBoards;
 
 		if (incomingBoards && incomingBoards.length > 0) {
 			this.assignedBoards = incomingBoards;
@@ -51,7 +53,12 @@ export class TopicDisplay {
 	}
 
 	finalizeHubConnection = () => {
-		console.log('Hub connection established');
+		if (!this.hub) {
+			console.log('Hub not defined.');
+			return;
+		}
+
+		console.log('Hub connection established.');
 
 		this.hub.on('newreply', this.hubNewReply);
 
@@ -78,7 +85,7 @@ export class TopicDisplay {
 	}
 
 	hideFavIcons() {
-		if (!this.topicWindow.showFavicons) {
+		if (!this.settings.showFavicons) {
 			this.doc.querySelectorAll('.link-favicon').forEach(element => {
 				hide(element);
 			});
@@ -86,7 +93,7 @@ export class TopicDisplay {
 	}
 
 	hubNewReply = (data: NewReply) => {
-		if (data.topicId == this.topicWindow.topicId) {
+		if (data.topicId == this.settings.topicId) {
 			let request = Xhr.request(new XhrOptions({
 				method: HttpMethod.Get,
 				url: `/Topics/MessagePartial/${data.messageId}`,

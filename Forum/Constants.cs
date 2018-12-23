@@ -2,7 +2,7 @@
 	public class Constants {
 		public class Versions {
 			public const string Theme = "12";
-			public const string Code = "4.5.0";
+			public const string Code = "4.6.0";
 		}
 
 		public class InternalKeys {
@@ -28,6 +28,7 @@
 			public const string PopularityLimit = "PopularityLimit";
 			public const string PoseyUsers = "PoseyUsers";
 			public const string ShowFavicons = "ShowFavicons";
+			public const string SideLoading = "SideLoading";
 			public const string StrippedUrls = "StrippedUrls";
 			public const string TopicsPerPage = "TopicsPerPage";
 		}

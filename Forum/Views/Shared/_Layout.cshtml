@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@inject Forum.Repositories.SettingsRepository Settings
+<!DOCTYPE html>
 <html lang="en">
 <head>
 	<title>@Html.Raw(ViewData["Title"])</title>
@@ -71,6 +72,10 @@
 	</environment>
 
 	<script src="~/scripts/app.js" asp-append-version="true"></script>
+
+	<script>
+		window.sideloading = ('@Settings.SideLoading()' == 'True');
+	</script>
 
 	@await RenderSectionAsync("Scripts", required: false)
 
