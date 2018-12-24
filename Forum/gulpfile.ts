@@ -45,13 +45,15 @@ var browserifySettings = {
 	basedir: 'client',
 	debug: true,
 	entries: ['app/app.ts'],
+	plugin: [tsify],
 	cache: {},
 	packageCache: {}
 };
 
 gulp.task('scripts', function () {
+	process.env.NODE_ENV = 'production';
+
 	return browserify(browserifySettings)
-		.plugin(tsify)
 		.bundle()
 		.pipe(source('app.js'))
 		.pipe(buffer())
@@ -63,9 +65,10 @@ gulp.task('scripts', function () {
 		.pipe(gulp.dest('wwwroot/scripts'));
 });
 
-gulp.task('scriptsUncompressed', function () {
+gulp.task('scripts-dev', function () {
+	process.env.NODE_ENV = 'development';
+
 	return browserify(browserifySettings)
-		.plugin(tsify)
 		.bundle()
 		.pipe(source('app.js'))
 		.pipe(buffer())
