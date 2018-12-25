@@ -42,5 +42,9 @@ export module Xhr {
 		}
 	}
 
+	export function onIsRejected(reason: any) {
+		console.log('Xhr was rejected: ' + reason);
+	}
+
 	export function isFormMethod(method: HttpMethod): boolean { return [HttpMethod.Post, HttpMethod.Post].includes(method); }
 }

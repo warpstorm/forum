@@ -9,6 +9,7 @@ import { TopicDisplaySettings } from "../models/topic-display-settings";
 import * as SignalR from "@aspnet/signalr";
 import { HttpMethod } from "../definitions/http-method";
 import { TokenRequestResponse } from "../models/token-request-response";
+import { XhrResult } from "../models/xhr-result";
 
 export class TopicDisplay {
 	private hub?: SignalR.HubConnection = undefined;
@@ -168,7 +169,7 @@ export class TopicDisplay {
 		let self = this;
 
 		Xhr.request(submitRequestOptions)
-			.then(() => {
+			.then((xhrResult: XhrResult) => {
 				let tokenRequest = Xhr.request(new XhrOptions({
 					url: '/Home/Token'
 				}));
@@ -181,15 +182,15 @@ export class TopicDisplay {
 
 				self.doc.querySelectorAll('.reply-form').forEach(element => { hide(element); });
 
-				tokenRequest.then((xhrResult) => {
+				tokenRequest.then((xhrResult: XhrResult) => {
 					let tokenRequestResponse: TokenRequestResponse = JSON.parse(xhrResult.responseText);
 					tokenElement.value = tokenRequestResponse.token;
 					target.removeAttribute('disabled');
 					target.innerHTML = target.textContent || "";
 
 					self.submitting = false;
-				});
-			});
+				}, Xhr.onIsRejected);
+			}, Xhr.onIsRejected);
 	}
 
 	eventShowReplyForm = (event: Event) => {
