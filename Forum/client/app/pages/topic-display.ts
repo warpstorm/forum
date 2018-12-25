@@ -8,7 +8,7 @@ import { TopicDisplaySettings } from "../models/topic-display-settings";
 
 import * as SignalR from "@aspnet/signalr";
 import { HttpMethod } from "../definitions/http-method";
-import { ResponseToken } from "../models/response-token";
+import { TokenRequestResponse } from "../models/token-request-response";
 
 export class TopicDisplay {
 	private hub?: SignalR.HubConnection = undefined;
@@ -42,29 +42,28 @@ export class TopicDisplay {
 			element.addEventListener('click', this.eventToggleBoard);
 		});
 
+		this.doc.querySelectorAll('.message-form .save-button').forEach(element => {
+			element.addEventListener('click', this.eventSaveMessage);
+		});
+
 		this.hideFavIcons();
 	}
 
 	establishHubConnection = () => {
 		this.hub = new SignalR.HubConnectionBuilder().withUrl('/hub').build();
 		this.hub.start()
-			.then(this.finalizeHubConnection)
+			.then(this.bindHubActions)
 			.catch(err => console.log('Error while starting connection: ' + err));
-	}
-
-	finalizeHubConnection = () => {
-		if (!this.hub) {
-			console.log('Hub not defined.');
-			return;
-		}
 
 		console.log('Hub connection established.');
+	}
+
+	bindHubActions = () => {
+		if (!this.hub) {
+			throw new Error('Hub not defined.');
+		}
 
 		this.hub.on('newreply', this.hubNewReply);
-
-		this.doc.querySelectorAll('.message-form .save-button').forEach(element => {
-			element.addEventListener('click', this.eventSaveMessage);
-		});
 	}
 
 	bindMessageEventListeners() {
@@ -125,6 +124,11 @@ export class TopicDisplay {
 	}
 
 	eventSaveMessage = (event: Event) => {
+		// make sure the user has chosen to enable the hub connection.
+		if (!this.hub) {
+			return;
+		}
+
 		event.preventDefault();
 
 		if (this.submitting) {
@@ -143,48 +147,49 @@ export class TopicDisplay {
 		let idElement = form.querySelector('[name=Id]') as HTMLInputElement;
 		let bodyElement = form.querySelector('[name=body]') as HTMLTextAreaElement;
 
-		let formBody = {
+		let requestBodyValues = {
 			id: idElement ? idElement.value : '',
 			body: bodyElement ? bodyElement.value : ''
 		};
 
+		if (bodyElement) {
+			bodyElement.value = '';
+		}
+
 		let submitRequestOptions = new XhrOptions({
 			method: HttpMethod.Post,
 			url: form.action,
-			body: queryify(formBody)
+			body: queryify(requestBodyValues)
 		});
 
 		submitRequestOptions.headers['Content-Type'] = 'application/x-www-form-urlencoded;charset=UTF-8';
 		submitRequestOptions.headers['RequestVerificationToken'] = tokenElement ? tokenElement.value : '';
 
-		let submitRequest = Xhr.request(submitRequestOptions);
+		let self = this;
 
-		submitRequest.then(() => {
-			let tokenRequest = Xhr.request(new XhrOptions({
-				url: '/Home/Token'
-			}));
+		Xhr.request(submitRequestOptions)
+			.then(() => {
+				let tokenRequest = Xhr.request(new XhrOptions({
+					url: '/Home/Token'
+				}));
 
-			if (bodyElement) {
-				bodyElement.value = '';
-			}
+				self.doc.querySelectorAll('.reply-button').forEach(element => {
+					element.removeEventListener('click', self.eventHideReplyForm);
+					element.removeEventListener('click', self.eventShowReplyForm);
+					element.addEventListener('click', self.eventShowReplyForm);
+				});
 
-			this.doc.querySelectorAll('.reply-button').forEach(element => {
-				element.removeEventListener('click', this.eventHideReplyForm);
-				element.removeEventListener('click', this.eventShowReplyForm);
-				element.addEventListener('click', this.eventShowReplyForm);
+				self.doc.querySelectorAll('.reply-form').forEach(element => { hide(element); });
+
+				tokenRequest.then((xhrResult) => {
+					let tokenRequestResponse: TokenRequestResponse = JSON.parse(xhrResult.responseText);
+					tokenElement.value = tokenRequestResponse.token;
+					target.removeAttribute('disabled');
+					target.innerHTML = target.textContent || "";
+
+					self.submitting = false;
+				});
 			});
-
-			this.doc.querySelectorAll('.reply-form').forEach(element => { hide(element); });
-
-			tokenRequest.then((xhrResult) => {
-				var responseToken: ResponseToken = JSON.parse(xhrResult.responseText);
-				tokenElement.value = responseToken.token;
-				target.removeAttribute('disabled');
-				target.innerHTML = target.textContent || "";
-
-				this.submitting = false;
-			});
-		});
 	}
 
 	eventShowReplyForm = (event: Event) => {
