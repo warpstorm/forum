@@ -31,13 +31,13 @@ select {
 	color: #e1edf3;
 }
 
-:focus::placeholder {
-	color: transparent;
-}
-
-:focus::-ms-input-placeholder {
-	color: transparent;
-}
+	input:disabled,
+	textarea:disabled,
+	select:disabled {
+		border-color: #707070;
+		box-shadow: none;
+		background: #121212;
+	}
 
 textarea {
 	min-width: 200px;
@@ -46,14 +46,18 @@ textarea {
 	height: 200px;
 }
 
-	input:disabled, textarea:disabled {
-		background-color: #121822;
-	}
+:focus::placeholder {
+	color: transparent;
+}
 
-	.small-input {
-		width: 60px;
-	}
+:focus::-ms-input-placeholder {
+	color: transparent;
+}
 
-	.long-input {
-		width: 300px;
-	}
+.small-input {
+	width: 60px;
+}
+
+.long-input {
+	width: 300px;
+}

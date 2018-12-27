@@ -87,8 +87,9 @@
 	@for (var i = 0; i < Model.Messages.Count(); i++) {
 		<partial name="_DisplayItem" for="@Model.Messages[i]" />
 	}
-	<p id="loading-message" class="hidden"><img src="~/images/loadingDots.gif" alt="Loading new message" title="Loading new message" /></p>
 </div>
+
+<div id="loading-message" class="hidden small-pad-bottom"><img src="~/images/loadingDots.gif" alt="Loading new message" title="Loading new message" /></div>
 
 <footer>
 	<ul class="inline pages">

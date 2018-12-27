@@ -8,6 +8,10 @@
 	background-image: url("../../images/poseys.png")
 }
 
+#topic-header, main > header, .message-container, #loading-message {
+	margin-left: 115px;
+}
+
 .user-avatar {
 	padding: 12px 0;
 	width: 115px;
@@ -29,16 +33,7 @@
 }
 
 #topic-header {
-	margin-left: 115px;
 	border: 2px solid #2a3951;
-}
-
-main > header {
-	margin-left: 115px;
-}
-
-.message-container {
-	margin-left: 115px;
 }
 
 @media only screen and (max-width: 480px) {

@@ -11,10 +11,6 @@ button,
 	font: 96%/1.4em "Segoe UI", "Segoe UI Web Regular", "Segoe UI Symbol", "Helvetica Neue", Arial, "sans-serif";
 }
 
-	button:disabled {
-		background-color: #121212;
-	}
-
 a.button {
 	border-bottom-width: 0;
 }
@@ -45,13 +41,6 @@ a.small-button {
 	border: 1px solid #253248;
 	border-radius: 2px;
 	box-shadow: none;
-}
-
-button,
-.button,
-a.button,
-.small-button,
-a.small-button {
 	color: #e1edf3 !important;
 }
 
@@ -73,4 +62,14 @@ a.small-button {
 	a.small-button:hover {
 		border-color: #7090c6;
 		box-shadow: none;
+	}
+
+	button:disabled,
+	.button:disabled,
+	a.button:disabled,
+	.small-button:disabled,
+	a.small-button:disabled {
+		border-color: #707070;
+		box-shadow: none;
+		background: #121212;
 	}

@@ -94,33 +94,45 @@ export class TopicDisplay {
 
 	hubNewReply = (data: NewReply) => {
 		if (data.topicId == this.settings.topicId) {
-			let request = Xhr.request(new XhrOptions({
+			show(this.doc.querySelector('#loading-message'));
+
+			let requestOptions = new XhrOptions({
 				method: HttpMethod.Get,
 				url: `/Topics/MessagePartial/${data.messageId}`,
 				responseType: 'document'
-			}));
-
-			request.then((xhrResult) => {
-				let resultDocument = <HTMLElement>(<Document>xhrResult.response).documentElement;
-				let resultBody = <HTMLBodyElement>resultDocument.querySelector('body');
-				let resultBodyElements = resultBody.childNodes;
-
-				resultBodyElements.forEach(node => {
-					let element = <Element>node;
-
-					if (element.tagName.toLowerCase() == 'script') {
-						eval(element.textContent || '');
-					}
-					else {
-						let messageList = <Element>this.doc.querySelector('#message-list');
-						messageList.insertAdjacentElement('beforeend', element);
-					}
-				});
-
-				this.bindMessageEventListeners();
-
-				window.location.hash = `message${data.messageId}`;
 			});
+
+			let self = this;
+
+			Xhr.request(requestOptions)
+				.then((xhrResult) => {
+					hide(self.doc.querySelector('#loading-message'));
+
+					let resultDocument = <HTMLElement>(<Document>xhrResult.response).documentElement;
+					let resultBody = <HTMLBodyElement>resultDocument.querySelector('body');
+					let resultBodyElements = resultBody.childNodes;
+
+					resultBodyElements.forEach(node => {
+						let element = <Element>node;
+
+						if (element.tagName.toLowerCase() == 'script') {
+							eval(element.textContent || '');
+						}
+						else {
+							let messageList = <Element>self.doc.querySelector('#message-list');
+							messageList.insertAdjacentElement('beforeend', element);
+						}
+					});
+
+					self.bindMessageEventListeners();
+
+					window.location.hash = `message${data.messageId}`;
+				})
+				.catch((reason) => {
+					console.log('Xhr was rejected: ' + reason);
+
+					hide(self.doc.querySelector('#loading-message'));
+				});
 		}
 	}
 
@@ -138,6 +150,8 @@ export class TopicDisplay {
 
 		this.submitting = true;
 
+		show(this.doc.querySelector('#loading-message'));
+
 		let target = <HTMLElement>event.currentTarget;
 		target.innerHTML = target.textContent + ' <img src="/images/loadingDots.gif" style="vertical-align: middle" />';
 		target.setAttribute('disabled', 'disabled');
@@ -148,14 +162,12 @@ export class TopicDisplay {
 		let idElement = form.querySelector('[name=Id]') as HTMLInputElement;
 		let bodyElement = form.querySelector('[name=body]') as HTMLTextAreaElement;
 
+		bodyElement.setAttribute('disabled', 'disabled');
+
 		let requestBodyValues = {
 			id: idElement ? idElement.value : '',
 			body: bodyElement ? bodyElement.value : ''
 		};
-
-		if (bodyElement) {
-			bodyElement.value = '';
-		}
 
 		let submitRequestOptions = new XhrOptions({
 			method: HttpMethod.Post,
@@ -169,10 +181,26 @@ export class TopicDisplay {
 		let self = this;
 
 		Xhr.request(submitRequestOptions)
-			.then((xhrResult: XhrResult) => {
-				let tokenRequest = Xhr.request(new XhrOptions({
+			.then(() => {
+				let tokenRequestOptions = new XhrOptions({
 					url: '/Home/Token'
-				}));
+				});
+
+				Xhr.request(tokenRequestOptions)
+					.then((xhrResult: XhrResult) => {
+						let tokenRequestResponse: TokenRequestResponse = JSON.parse(xhrResult.responseText);
+						tokenElement.value = tokenRequestResponse.token;
+						target.removeAttribute('disabled');
+						target.innerHTML = target.textContent || "";
+
+						self.submitting = false;
+					})
+					.catch(Xhr.logRejected);
+
+				if (bodyElement) {
+					bodyElement.value = '';
+					bodyElement.removeAttribute('disabled');
+				}
 
 				self.doc.querySelectorAll('.reply-button').forEach(element => {
 					element.removeEventListener('click', self.eventHideReplyForm);
@@ -181,16 +209,8 @@ export class TopicDisplay {
 				});
 
 				self.doc.querySelectorAll('.reply-form').forEach(element => { hide(element); });
-
-				tokenRequest.then((xhrResult: XhrResult) => {
-					let tokenRequestResponse: TokenRequestResponse = JSON.parse(xhrResult.responseText);
-					tokenElement.value = tokenRequestResponse.token;
-					target.removeAttribute('disabled');
-					target.innerHTML = target.textContent || "";
-
-					self.submitting = false;
-				}, Xhr.onIsRejected);
-			}, Xhr.onIsRejected);
+			})
+			.catch(Xhr.logRejected);
 	}
 
 	eventShowReplyForm = (event: Event) => {
@@ -290,13 +310,14 @@ export class TopicDisplay {
 
 		boardFlag.setAttribute('src', imgSrc);
 
-		let request = Xhr.request(new XhrOptions({
-			url: `${(<any>window).togglePath}&BoardId=${boardId}`			
-		}));
-
-		request.then(() => {
-			target.removeAttribute('toggling');
+		let requestOptions = new XhrOptions({
+			url: `${(<any>window).togglePath}&BoardId=${boardId}`
 		});
+
+		Xhr.request(requestOptions)
+			.then(() => {
+				target.removeAttribute('toggling');
+			});
 	}
 
 	eventAddThought = (event: Event): void => {

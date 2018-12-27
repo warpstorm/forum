@@ -32,38 +32,40 @@ export class TopicIndex {
 			this.moreTopicsButton.textContent = 'Loading...';
 		}
 
-		let request = Xhr.request(new XhrOptions({
+		let requestOptions = new XhrOptions({
 			method: HttpMethod.Get,
 			url: `/topics/${(<any>window).moreAction}/${(<any>window).boardId}/?page=${(<any>window).page + 1}`,
 			responseType: 'document'
-		}));
-
-		request.then((xhrResult) => {
-			let resultDocument = <HTMLElement>(<Document>xhrResult.response).documentElement;
-			let resultBody = <HTMLBodyElement>resultDocument.querySelector('body');
-			let resultBodyElements = resultBody.childNodes;
-
-			resultBodyElements.forEach(node => {
-				let element = <Element>node;
-
-				if (element.tagName.toLowerCase() == 'script') {
-					eval(element.textContent || '');
-					new Navigation(self.doc).addListenerClickableLinkParent();
-				}
-				else {
-					let topicList = <Element>self.doc.querySelector('#topic-list');
-					topicList.insertAdjacentElement('beforeend', element);
-				}
-			});
-
-			if (this.moreTopicsButton) {
-				if ((<any>window).moreTopics) {
-					this.moreTopicsButton.textContent = originalText;
-				}
-				else {
-					hide(this.moreTopicsButton);
-				}
-			}
 		});
+
+		Xhr.request(requestOptions)
+			.then((xhrResult) => {
+				let resultDocument = <HTMLElement>(<Document>xhrResult.response).documentElement;
+				let resultBody = <HTMLBodyElement>resultDocument.querySelector('body');
+				let resultBodyElements = resultBody.childNodes;
+
+				resultBodyElements.forEach(node => {
+					let element = <Element>node;
+
+					if (element.tagName.toLowerCase() == 'script') {
+						eval(element.textContent || '');
+						new Navigation(self.doc).addListenerClickableLinkParent();
+					}
+					else {
+						let topicList = <Element>self.doc.querySelector('#topic-list');
+						topicList.insertAdjacentElement('beforeend', element);
+					}
+				});
+
+				if (this.moreTopicsButton) {
+					if ((<any>window).moreTopics) {
+						this.moreTopicsButton.textContent = originalText;
+					}
+					else {
+						hide(this.moreTopicsButton);
+					}
+				}
+			})
+			.catch(Xhr.logRejected);
 	}
 }

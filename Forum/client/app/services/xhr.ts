@@ -4,7 +4,7 @@ import { throwIfNull } from "../helpers";
 import { HttpMethod } from "../definitions/http-method";
 
 export module Xhr {
-	export function request(options: XhrOptions) {
+	export function request(options: XhrOptions): Promise<XhrResult> {
 		throwIfNull(options, "options");
 
 		return new Promise<XhrResult>((resolve, reject) => {
@@ -42,7 +42,7 @@ export module Xhr {
 		}
 	}
 
-	export function onIsRejected(reason: any) {
+	export function logRejected(reason: any) {
 		console.log('Xhr was rejected: ' + reason);
 	}
 
