@@ -3,7 +3,8 @@
 		"test": "mocha --require ts-node/register client/spec/*.spec.ts"
 	},
 	"dependencies": {
-		"@aspnet/signalr": "^1.1.0"
+		"@aspnet/signalr": "^1.1.0",
+		"mustache": "^3.0.1"
 	},
 	"devDependencies": {
 		"@types/chai": "^4.1.7",
