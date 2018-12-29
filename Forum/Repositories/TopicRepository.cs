@@ -565,7 +565,7 @@ namespace Forum.Repositories {
 			});
 
 			foreach (var messageId in pageMessageIds) {
-				foreach (var notification in NotificationRepository.ForCurrentUser.Where(item => item.MessageId == messageId)) {
+				foreach (var notification in NotificationRepository.ForCurrentUser.Where(item => item.Type != ENotificationType.Thought && item.MessageId == messageId)) {
 					notification.Unread = false;
 					DbContext.Update(notification);
 				}
