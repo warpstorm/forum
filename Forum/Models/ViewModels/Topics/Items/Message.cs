@@ -15,7 +15,7 @@ namespace Forum.Models.ViewModels.Topics.Items {
 		public bool Processed { get; set; }
 		public bool Poseys { get; set; }
 		public bool Birthday { get; set; }
-		public int Id { get; set; }
+		public string Id { get; set; }
 		public int ParentId { get; set; }
 		public int ReplyId { get; set; }
 		public string PostedById { get; set; }

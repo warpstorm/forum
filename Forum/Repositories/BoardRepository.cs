@@ -58,7 +58,7 @@ namespace Forum.Repositories {
 
 			foreach (var categoryRecord in categories) {
 				var indexCategory = new ItemViewModels.IndexCategory {
-					Id = categoryRecord.Id,
+					Id = categoryRecord.Id.ToString(),
 					Name = categoryRecord.Name,
 					DisplayOrder = categoryRecord.DisplayOrder
 				};
@@ -68,8 +68,9 @@ namespace Forum.Repositories {
 
 					var authorized = UserContext.IsAdmin || !thisBoardRoles.Any() || (UserContext.Roles?.Any(userRole => thisBoardRoles.Any(boardRole => boardRole.RoleId == userRole)) ?? false);
 
-					if (!authorized)
+					if (!authorized) {
 						continue;
+					}
 
 					var indexBoard = GetIndexBoard(board, includeReplies);
 
@@ -77,8 +78,9 @@ namespace Forum.Repositories {
 				}
 
 				// Don't index the category if there's no boards available to the user
-				if (indexCategory.Boards.Any())
+				if (indexCategory.Boards.Any()) {
 					indexCategories.Add(indexCategory);
+				}
 			}
 
 			return indexCategories;
@@ -86,7 +88,7 @@ namespace Forum.Repositories {
 
 		public ItemViewModels.IndexBoard GetIndexBoard(DataModels.Board boardRecord, bool includeReplies = false) {
 			var indexBoard = new ItemViewModels.IndexBoard {
-				Id = boardRecord.Id,
+				Id = boardRecord.Id.ToString(),
 				Name = boardRecord.Name,
 				Description = boardRecord.Description,
 				DisplayOrder = boardRecord.DisplayOrder,
@@ -135,13 +137,15 @@ namespace Forum.Repositories {
 		public ServiceModels.ServiceResponse AddBoard(InputModels.CreateBoardInput input) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
-			if (Records.Any(b => b.Name == input.Name))
+			if (Records.Any(b => b.Name == input.Name)) {
 				serviceResponse.Error(nameof(input.Name), "A board with that name already exists");
+			}
 
 			DataModels.Category categoryRecord = null;
 
-			if (!string.IsNullOrEmpty(input.NewCategory))
+			if (!string.IsNullOrEmpty(input.NewCategory)) {
 				input.NewCategory = input.NewCategory.Trim();
+			}
 
 			if (!string.IsNullOrEmpty(input.NewCategory)) {
 				categoryRecord = Categories.FirstOrDefault(c => c.Name == input.NewCategory);
@@ -162,30 +166,36 @@ namespace Forum.Repositories {
 					var categoryId = Convert.ToInt32(input.Category);
 					categoryRecord = Categories.First(c => c.Id == categoryId);
 
-					if (categoryRecord is null)
+					if (categoryRecord is null) {
 						serviceResponse.Error(nameof(input.Category), "No category was found with this ID.");
+					}
 				}
 				catch (FormatException) {
 					serviceResponse.Error(nameof(input.Category), "Invalid category ID");
 				}
 			}
 
-			if (!string.IsNullOrEmpty(input.Name))
+			if (!string.IsNullOrEmpty(input.Name)) {
 				input.Name = input.Name.Trim();
+			}
 
-			if (string.IsNullOrEmpty(input.Name))
+			if (string.IsNullOrEmpty(input.Name)) {
 				serviceResponse.Error(nameof(input.Name), "Name is a required field.");
+			}
 
-			if (!string.IsNullOrEmpty(input.Description))
+			if (!string.IsNullOrEmpty(input.Description)) {
 				input.Description = input.Description.Trim();
+			}
 
 			var existingRecord = Records.FirstOrDefault(b => b.Name == input.Name);
 
-			if (existingRecord != null)
+			if (existingRecord != null) {
 				serviceResponse.Error(nameof(input.Name), "A board with that name already exists");
+			}
 
-			if (!serviceResponse.Success)
+			if (!serviceResponse.Success) {
 				return serviceResponse;
+			}
 
 			DbContext.SaveChanges();
 
@@ -209,13 +219,15 @@ namespace Forum.Repositories {
 
 			var record = Records.FirstOrDefault(b => b.Id == input.Id);
 
-			if (record is null)
+			if (record is null) {
 				serviceResponse.Error($"A record does not exist with ID '{input.Id}'");
+			}
 
 			DataModels.Category newCategoryRecord = null;
 
-			if (!string.IsNullOrEmpty(input.NewCategory))
+			if (!string.IsNullOrEmpty(input.NewCategory)) {
 				input.NewCategory = input.NewCategory.Trim();
+			}
 
 			if (!string.IsNullOrEmpty(input.NewCategory)) {
 				newCategoryRecord = Categories.FirstOrDefault(c => c.Name == input.NewCategory);
@@ -237,25 +249,30 @@ namespace Forum.Repositories {
 					var newCategoryId = Convert.ToInt32(input.Category);
 					newCategoryRecord = Categories.FirstOrDefault(c => c.Id == newCategoryId);
 
-					if (newCategoryRecord is null)
+					if (newCategoryRecord is null) {
 						serviceResponse.Error(nameof(input.Category), "No category was found with this ID.");
+					}
 				}
 				catch (FormatException) {
 					serviceResponse.Error(nameof(input.Category), "Invalid category ID");
 				}
 			}
 
-			if (!string.IsNullOrEmpty(input.Name))
+			if (!string.IsNullOrEmpty(input.Name)) {
 				input.Name = input.Name.Trim();
+			}
 
-			if (string.IsNullOrEmpty(input.Name))
+			if (string.IsNullOrEmpty(input.Name)) {
 				serviceResponse.Error(nameof(input.Name), "Name is a required field.");
+			}
 
-			if (!string.IsNullOrEmpty(input.Description))
+			if (!string.IsNullOrEmpty(input.Description)) {
 				input.Description = input.Description.Trim();
+			}
 
-			if (!serviceResponse.Success)
+			if (!serviceResponse.Success) {
 				return serviceResponse;
+			}
 
 			record.Name = input.Name;
 			record.Description = input.Description;
@@ -265,16 +282,18 @@ namespace Forum.Repositories {
 			if (record.CategoryId != newCategoryRecord.Id) {
 				var categoryBoards = Records.Where(r => r.CategoryId == record.CategoryId).ToList();
 
-				if (categoryBoards.Count() <= 1)
+				if (categoryBoards.Count() <= 1) {
 					oldCategoryId = record.CategoryId;
+				}
 
 				record.CategoryId = newCategoryRecord.Id;
 			}
 
 			var boardRoles = RoleRepository.BoardRoles.Where(r => r.BoardId == record.Id).ToList();
 
-			foreach (var boardRole in boardRoles)
+			foreach (var boardRole in boardRoles) {
 				DbContext.BoardRoles.Remove(boardRole);
+			}
 
 			if (input.Roles != null) {
 				var roleIds = RoleRepository.SiteRoles.Select(r => r.Id).ToList();
@@ -286,13 +305,15 @@ namespace Forum.Repositories {
 							RoleId = inputRole
 						});
 					}
-					else
+					else {
 						serviceResponse.Error($"Role does not exist with id '{inputRole}'");
+					}
 				}
 			}
 
-			if (!serviceResponse.Success)
+			if (!serviceResponse.Success) {
 				return serviceResponse;
+			}
 
 			DbContext.Update(record);
 			DbContext.SaveChanges();
@@ -317,14 +338,17 @@ namespace Forum.Repositories {
 			var fromBoard = Records.FirstOrDefault(b => b.Id == input.FromId);
 			var toBoard = Records.FirstOrDefault(b => b.Id == input.ToId);
 
-			if (fromBoard is null)
+			if (fromBoard is null) {
 				serviceResponse.Error($"A record does not exist with ID '{input.FromId}'");
+			}
 
-			if (toBoard is null)
+			if (toBoard is null) {
 				serviceResponse.Error($"A record does not exist with ID '{input.ToId}'");
+			}
 
-			if (!serviceResponse.Success)
+			if (!serviceResponse.Success) {
 				return serviceResponse;
+			}
 
 			var messageBoards = DbContext.MessageBoards.Where(m => m.BoardId == fromBoard.Id).ToList();
 
@@ -362,14 +386,17 @@ namespace Forum.Repositories {
 			var fromCategory = Categories.FirstOrDefault(b => b.Id == input.FromId);
 			var toCategory = Categories.FirstOrDefault(b => b.Id == input.ToId);
 
-			if (fromCategory is null)
+			if (fromCategory is null) {
 				serviceResponse.Error($"A record does not exist with ID '{input.FromId}'");
+			}
 
-			if (toCategory is null)
+			if (toCategory is null) {
 				serviceResponse.Error($"A record does not exist with ID '{input.ToId}'");
+			}
 
-			if (!serviceResponse.Success)
+			if (!serviceResponse.Success) {
 				return serviceResponse;
+			}
 
 			var displacedBoards = Records.Where(b => b.CategoryId == fromCategory.Id).ToList();
 
@@ -423,8 +450,9 @@ namespace Forum.Repositories {
 
 				DbContext.SaveChanges();
 			}
-			else
+			else {
 				targetBoard.DisplayOrder = 2;
+			}
 
 			return serviceResponse;
 		}

@@ -66,7 +66,7 @@ namespace Forum.Repositories {
 							   join u in DbContext.Users on mt.UserId equals u.Id
 							   where messageIds.Contains(mt.MessageId)
 							   select new ItemModels.MessageThought {
-								   MessageId = mt.MessageId,
+								   MessageId = mt.MessageId.ToString(),
 								   Path = s.Path,
 								   Thought = s.Thought.Replace("{user}", u.DisplayName)
 							   };
@@ -76,7 +76,7 @@ namespace Forum.Repositories {
 			var messageQuery = from message in DbContext.Messages
 							   where messageIds.Contains(message.Id)
 							   select new ItemModels.Message {
-								   Id = message.Id,
+								   Id = message.Id.ToString(),
 								   ParentId = message.ParentId,
 								   ReplyId = message.ReplyId,
 								   Body = message.DisplayBody,

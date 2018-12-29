@@ -380,7 +380,7 @@ namespace Forum.Controllers {
 				CurrentPage = pageId,
 				ShowFavicons = showFavicons,
 				ReplyForm = new ItemModels.ReplyForm {
-					Id = record.Id
+					Id = record.Id.ToString()
 				}
 			};
 
@@ -396,8 +396,6 @@ namespace Forum.Controllers {
 			return viewModel;
 		}
 
-		async Task<IActionResult> FailToReferrer() {
-			return await Task.Run(() => { return ForumViewResult.RedirectToReferrer(this); });
-		}
+		async Task<IActionResult> FailToReferrer() => await Task.Run(() => { return ForumViewResult.RedirectToReferrer(this); });
 	}
 }

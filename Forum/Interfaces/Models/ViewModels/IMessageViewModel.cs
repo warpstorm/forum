@@ -2,9 +2,9 @@
 
 namespace Forum.Interfaces.Models.ViewModels {
 	public interface IMessageViewModel {
-		int Id { get; }
+		string Id { get; }
 
-		int? BoardId { get; }
+		string BoardId { get; }
 
 		[Required]
 		[DataType(DataType.MultilineText)]
