@@ -193,8 +193,33 @@ namespace Forum.Controllers {
 		}
 
 		[HttpGet]
-		public IActionResult MessagePartial(int id) {
-			var viewModelList = TopicRepository.GetMessages(new List<int> { id });
+		public IActionResult DisplayPartial(int id) {
+			var record = DbContext.Messages.Find(id);
+
+			if (record is null) {
+				throw new HttpNotFoundError();
+			}
+
+			var parentId = id;
+
+			if (record.ParentId > 0) {
+				parentId = record.ParentId;
+			}
+
+			var assignedBoardsQuery = from messageBoard in DbContext.MessageBoards
+									  join board in DbContext.Boards on messageBoard.BoardId equals board.Id
+									  where messageBoard.MessageId == record.Id
+									  select board;
+
+			var assignedBoards = assignedBoardsQuery.ToList();
+
+			if (!RoleRepository.CanAccessBoards(assignedBoards)) {
+				throw new HttpForbiddenError();
+			}
+
+			var messageIds = new List<int> { record.Id };
+
+			var viewModelList = TopicRepository.GetMessages(messageIds);
 
 			if (!viewModelList.Any()) {
 				throw new HttpNotFoundError();

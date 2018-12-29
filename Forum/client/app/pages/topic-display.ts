@@ -98,7 +98,7 @@ export class TopicDisplay {
 
 			let requestOptions = new XhrOptions({
 				method: HttpMethod.Get,
-				url: `/Topics/MessagePartial/${data.messageId}`,
+				url: `/Topics/DisplayPartial/${data.topicId}`,
 				responseType: 'document'
 			});
 
