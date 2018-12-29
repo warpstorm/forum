@@ -292,7 +292,7 @@ namespace Forum.Controllers {
 			return UrlHelper.Action(nameof(Topics.Display), nameof(Topics), routeValues) + "#message" + messageId;
 		}
 
-		public PageModels.TopicDisplayPage GetDisplayPageModel(int id, int pageId = 1, int target = 0) {
+		public PageModels.TopicDisplayPage GetDisplayPageModel(int id, int pageId = 1, int targetId = -1) {
 			var viewModel = new PageModels.TopicDisplayPage();
 
 			var record = DbContext.Messages.Find(id);
@@ -307,91 +307,84 @@ namespace Forum.Controllers {
 				parentId = record.ParentId;
 			}
 
-			var messageIdQuery = from message in DbContext.Messages
-								 where message.Id == parentId || message.ParentId == parentId
-								 select message.Id;
-
-			var messageIds = messageIdQuery.ToList();
+			var messageIds = MessageRepository.GetMessageIds(parentId);
 
 			if (parentId != id) {
 				viewModel.RedirectPath = GetRedirectPath(id, record.ParentId, messageIds);
-				return viewModel;
 			}
-
-			if (target > 0) {
-				var targetPage = MessageRepository.GetPageNumber(target, messageIds);
+			else if (targetId >= 0) {
+				var targetPage = MessageRepository.GetPageNumber(targetId, messageIds);
 
 				if (targetPage != pageId) {
-					viewModel.RedirectPath = GetRedirectPath(target, id, messageIds);
-					return viewModel;
+					viewModel.RedirectPath = GetRedirectPath(targetId, id, messageIds);
 				}
 			}
 
-			var assignedBoardsQuery = from messageBoard in DbContext.MessageBoards
-									  join board in DbContext.Boards on messageBoard.BoardId equals board.Id
-									  where messageBoard.MessageId == record.Id
-									  select board;
+			if (string.IsNullOrEmpty(viewModel.RedirectPath)) {
+				var assignedBoardsQuery = from messageBoard in DbContext.MessageBoards
+										  join board in DbContext.Boards on messageBoard.BoardId equals board.Id
+										  where messageBoard.MessageId == record.Id
+										  select board;
 
-			var assignedBoards = assignedBoardsQuery.ToList();
+				var assignedBoards = assignedBoardsQuery.ToList();
 
-			var boardRoles = RoleRepository.BoardRoles.Where(r => assignedBoards.Any(b => b.Id == r.BoardId)).Select(r => r.RoleId).ToList();
-
-			if (!UserContext.IsAdmin && boardRoles.Any() && !boardRoles.Intersect(UserContext.Roles).Any()) {
-				throw new HttpForbiddenError();
-			}
-
-			if (pageId < 1) {
-				pageId = 1;
-			}
-
-			var take = SettingsRepository.MessagesPerPage();
-			var skip = take * (pageId - 1);
-			var totalPages = Convert.ToInt32(Math.Ceiling(1.0 * messageIds.Count / take));
-
-			var pageMessageIds = messageIds.Skip(skip).Take(take).ToList();
-
-			record.ViewCount++;
-			DbContext.Update(record);
-			DbContext.SaveChanges();
-
-			var messages = TopicRepository.GetMessages(pageMessageIds);
-
-			if (string.IsNullOrEmpty(record.ShortPreview)) {
-				record.ShortPreview = "No subject";
-			}
-
-			var showFavicons = SettingsRepository.ShowFavicons();
-
-			viewModel = new PageModels.TopicDisplayPage {
-				Id = record.Id,
-				TopicHeader = new ItemModels.TopicHeader {
-					StartedById = record.PostedById,
-					Subject = record.ShortPreview,
-					Views = record.ViewCount,
-				},
-				Messages = messages,
-				Categories = BoardRepository.CategoryIndex(),
-				AssignedBoards = new List<ViewModels.Boards.Items.IndexBoard>(),
-				IsAuthenticated = UserContext.IsAuthenticated,
-				CanManage = UserContext.IsAdmin || record.PostedById == UserContext.ApplicationUser?.Id,
-				TotalPages = totalPages,
-				ReplyCount = record.ReplyCount,
-				ViewCount = record.ViewCount,
-				CurrentPage = pageId,
-				ShowFavicons = showFavicons,
-				ReplyForm = new ItemModels.ReplyForm {
-					Id = record.Id.ToString()
+				if (!RoleRepository.CanAccessBoards(assignedBoards)) {
+					throw new HttpForbiddenError();
 				}
-			};
 
-			foreach (var assignedBoard in assignedBoards) {
-				var indexBoard = BoardRepository.GetIndexBoard(assignedBoard);
-				viewModel.AssignedBoards.Add(indexBoard);
+				if (pageId < 1) {
+					pageId = 1;
+				}
+
+				var take = SettingsRepository.MessagesPerPage();
+				var skip = take * (pageId - 1);
+				var totalPages = Convert.ToInt32(Math.Ceiling(1.0 * messageIds.Count / take));
+
+				var pageMessageIds = messageIds.Skip(skip).Take(take).ToList();
+
+				record.ViewCount++;
+				DbContext.Update(record);
+				DbContext.SaveChanges();
+
+				var messages = TopicRepository.GetMessages(pageMessageIds);
+
+				if (string.IsNullOrEmpty(record.ShortPreview)) {
+					record.ShortPreview = "No subject";
+				}
+
+				var showFavicons = SettingsRepository.ShowFavicons();
+
+				viewModel = new PageModels.TopicDisplayPage {
+					Id = record.Id,
+					TopicHeader = new ItemModels.TopicHeader {
+						StartedById = record.PostedById,
+						Subject = record.ShortPreview,
+						Views = record.ViewCount,
+					},
+					Messages = messages,
+					Categories = BoardRepository.CategoryIndex(),
+					AssignedBoards = new List<ViewModels.Boards.Items.IndexBoard>(),
+					IsAuthenticated = UserContext.IsAuthenticated,
+					CanManage = UserContext.IsAdmin || record.PostedById == UserContext.ApplicationUser?.Id,
+					TotalPages = totalPages,
+					ReplyCount = record.ReplyCount,
+					ViewCount = record.ViewCount,
+					CurrentPage = pageId,
+					ShowFavicons = showFavicons,
+					ReplyForm = new ItemModels.ReplyForm {
+						Id = record.Id.ToString()
+					}
+				};
+
+				foreach (var assignedBoard in assignedBoards) {
+					var indexBoard = BoardRepository.GetIndexBoard(assignedBoard);
+					viewModel.AssignedBoards.Add(indexBoard);
+				}
+
+				var latestMessageTime = messages.Max(r => r.RecordTime);
+
+				TopicRepository.MarkRead(record.Id, latestMessageTime, pageMessageIds);
 			}
-
-			var latestMessageTime = messages.Max(r => r.RecordTime);
-
-			TopicRepository.MarkRead(record.Id, latestMessageTime, pageMessageIds);
 
 			return viewModel;
 		}

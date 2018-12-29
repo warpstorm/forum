@@ -72,6 +72,24 @@ namespace Forum.Repositories {
 			YouTubeClient = youTubeClient;
 		}
 
+		public List<int> GetMessageIds(int parentId, DateTime? fromTime = null) {
+			IQueryable<int> messageIdQuery;
+
+			if (fromTime is null) {
+				messageIdQuery = from message in DbContext.Messages
+								 where message.Id == parentId || message.ParentId == parentId
+								 select message.Id;
+			}
+			else {
+				messageIdQuery = from message in DbContext.Messages
+								 where message.Id == parentId || message.ParentId == parentId
+								 where message.TimePosted >= fromTime
+								 select message.Id;
+			}
+
+			return messageIdQuery.ToList();
+		}
+
 		public int GetPageNumber(int messageId, List<int> messageIds) {
 			var index = (double)messageIds.FindIndex(id => id == messageId);
 			index++;

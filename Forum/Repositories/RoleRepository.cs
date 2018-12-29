@@ -265,5 +265,15 @@ namespace Forum.Repositories {
 
 			return serviceResponse;
 		}
+
+		public bool CanAccessBoards(IEnumerable<DataModels.Board> boards) {
+			var boardRoles = BoardRoles.Where(r => boards.Any(b => b.Id == r.BoardId)).Select(r => r.RoleId).ToList();
+
+			if (!UserContext.IsAdmin && boardRoles.Any() && !boardRoles.Intersect(UserContext.Roles).Any()) {
+				return false;
+			}
+
+			return true;
+		}
 	}
 }
