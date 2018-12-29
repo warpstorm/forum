@@ -58,6 +58,9 @@ namespace Forum.Repositories {
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
+		/// <summary>
+		/// Builds a collection of Message objects. The message ids should already have been filtered by permissions.
+		/// </summary>
 		public List<ItemModels.Message> GetMessages(List<int> messageIds) {
 			var poseyUsers = SettingsRepository.PoseyUsers();
 
