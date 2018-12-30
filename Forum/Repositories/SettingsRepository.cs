@@ -161,7 +161,12 @@ namespace Forum.Repositories {
 				return default(int);
 			}
 
-			return Convert.ToInt32(setting);
+			try {
+				return Convert.ToInt32(setting);
+			}
+			catch (FormatException) {
+				return default(int);
+			}
 		}
 
 		public bool GetBool(string name, bool forceGlobal) {
