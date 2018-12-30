@@ -1,5 +1,7 @@
 @model ViewModels.Messages.CreateTopicPage
 
+<div class="error" asp-validation-summary="All"></div>
+
 <div id="board-selector" class="float-right content-box pad">
 	<ul>
 		@if (ViewData["Categories"] is List<ViewModels.Boards.Items.IndexCategory>) {

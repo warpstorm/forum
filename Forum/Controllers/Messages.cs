@@ -53,6 +53,7 @@ namespace Forum.Controllers {
 			}
 
 			var viewModel = new ViewModels.Messages.CreateTopicPage {
+				Id = "0",
 				BoardId = id.ToString()
 			};
 
@@ -85,6 +86,7 @@ namespace Forum.Controllers {
 
 			async Task<IActionResult> FailureCallback() {
 				var viewModel = new ViewModels.Messages.CreateTopicPage() {
+					Id = "0",
 					BoardId = input.BoardId.ToString(),
 					Body = input.Body
 				};
@@ -124,6 +126,7 @@ namespace Forum.Controllers {
 
 			async Task<IActionResult> FailureCallback() {
 				var viewModel = new ViewModels.Messages.CreateTopicPage {
+					Id = "0",
 					Body = input.Body
 				};
 
