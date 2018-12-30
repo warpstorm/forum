@@ -83,7 +83,7 @@ export class Navigation {
 	}
 
 	updateMorePageBeforeAfterControlsVisibility(pageNavigatorElement: Element, currentPage: number): void {
-		let totalPages = (<any>this.doc).totalPages;
+		let totalPages = (<any>this.win).totalPages;
 
 		if (currentPage - 2 > 1) {
 			pageNavigatorElement.querySelectorAll('.more-pages-before').forEach(element => {
@@ -93,7 +93,7 @@ export class Navigation {
 
 		if (currentPage + 2 < totalPages) {
 			pageNavigatorElement.querySelectorAll('.more-pages-after').forEach(element => {
-				hide(element);
+				show(element);
 			});
 		}
 	}
