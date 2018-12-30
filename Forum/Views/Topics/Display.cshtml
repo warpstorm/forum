@@ -107,10 +107,12 @@
 	</ul>
 </footer>
 
-<p class="gap-top">Reply to Thread:</p>
-<div class="content-box pad">
-	<partial name="_MessageForm" for="@Model.ReplyForm" />
-</div>
+@if (Model.TotalPages == Model.CurrentPage) {
+	<p class="gap-top">Reply to Thread:</p>
+	<div class="content-box pad">
+		<partial name="_MessageForm" for="@Model.ReplyForm" />
+	</div>
+}
 
 @{ViewData["Title"] = Html.Raw(Model.TopicHeader.Subject);}
 
