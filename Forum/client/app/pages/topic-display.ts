@@ -92,7 +92,7 @@ export class TopicDisplay {
 		}
 	}
 
-	getLatestReplies() {
+	getLatestReplies(): void {
 		console.log('Getting latest replies');
 
 		let self = this;
@@ -143,50 +143,65 @@ export class TopicDisplay {
 			});
 	}
 
+	getToken(form: HTMLFormElement): string {
+		let tokenElement = form.querySelector('[name=__RequestVerificationToken]') as HTMLInputElement;
+		let returnToken = tokenElement ? tokenElement.value : '';
+
+		let tokenRequestOptions = new XhrOptions({
+			url: '/Home/Token'
+		});
+
+		Xhr.request(tokenRequestOptions)
+			.then((xhrResult: XhrResult) => {
+				let tokenRequestResponse: TokenRequestResponse = JSON.parse(xhrResult.responseText);
+				tokenElement.value = tokenRequestResponse.token;
+			})
+			.catch(Xhr.logRejected);
+
+		return returnToken;
+	}
+
 	hubNewReply = (data: NewReply) => {
 		let self = this;
 
-		if (data.topicId == self.settings.topicId) {
-			if (this.submitting) {
-				return;
-			}
-
+		if (data.topicId == self.settings.topicId
+		&& self.settings.currentPage == self.settings.totalPages) {
 			this.getLatestReplies();
 		}
 	}
 
 	eventSaveMessage = (event: Event): void => {
+		let self = this;
+
 		// make sure the user has chosen to enable the hub connection.
-		if (!this.hub) {
+		if (!self.hub) {
 			return;
 		}
 
 		event.preventDefault();
 
-		if (this.submitting) {
+		if (self.submitting) {
 			return;
 		}
 
-		this.submitting = true;
-
-		show(this.doc.querySelector('#loading-message'));
-
-		let target = <HTMLElement>event.currentTarget;
-		target.innerHTML = target.textContent + ' <img src="/images/loadingDots.gif" style="vertical-align: middle" />';
-		target.setAttribute('disabled', 'disabled');
-
-		let form = <HTMLFormElement>target.closest('form');
-
-		let tokenElement = form.querySelector('[name=__RequestVerificationToken]') as HTMLInputElement;
+		let saveButton = <HTMLElement>event.currentTarget;
+		let form = <HTMLFormElement>saveButton.closest('form');
 		let idElement = form.querySelector('[name=Id]') as HTMLInputElement;
 		let bodyElement = form.querySelector('[name=body]') as HTMLTextAreaElement;
 
+		saveButton.setAttribute('disabled', 'disabled');
 		bodyElement.setAttribute('disabled', 'disabled');
 
 		let requestBodyValues = {
 			id: idElement ? idElement.value : '',
 			body: bodyElement ? bodyElement.value : ''
 		};
+
+		if (requestBodyValues.body == '') {
+			return;
+		}
+
+		self.submitting = true;
 
 		let submitRequestOptions = new XhrOptions({
 			method: HttpMethod.Post,
@@ -195,41 +210,30 @@ export class TopicDisplay {
 		});
 
 		submitRequestOptions.headers['Content-Type'] = 'application/x-www-form-urlencoded;charset=UTF-8';
-		submitRequestOptions.headers['RequestVerificationToken'] = tokenElement ? tokenElement.value : '';
+		submitRequestOptions.headers['RequestVerificationToken'] = self.getToken(form);
 
-		let self = this;
+		show(self.doc.querySelector('#loading-message'));
 
 		Xhr.request(submitRequestOptions)
 			.then(() => {
-				self.getLatestReplies();
-
-				let tokenRequestOptions = new XhrOptions({
-					url: '/Home/Token'
-				});
-
-				Xhr.request(tokenRequestOptions)
-					.then((xhrResult: XhrResult) => {
-						let tokenRequestResponse: TokenRequestResponse = JSON.parse(xhrResult.responseText);
-						tokenElement.value = tokenRequestResponse.token;
-						target.removeAttribute('disabled');
-						target.innerHTML = target.textContent || "";
-
-						self.submitting = false;
-					})
-					.catch(Xhr.logRejected);
-
 				if (bodyElement) {
 					bodyElement.value = '';
 					bodyElement.removeAttribute('disabled');
 				}
 
-				self.doc.querySelectorAll('.reply-button').forEach(element => {
-					element.removeEventListener('click', self.eventHideReplyForm);
-					element.removeEventListener('click', self.eventShowReplyForm);
-					element.addEventListener('click', self.eventShowReplyForm);
-				});
+				new Promise(() => {
+					self.doc.querySelectorAll('.reply-button').forEach(element => {
+						element.removeEventListener('click', self.eventHideReplyForm);
+						element.removeEventListener('click', self.eventShowReplyForm);
+						element.addEventListener('click', self.eventShowReplyForm);
+					});
 
-				self.doc.querySelectorAll('.reply-form').forEach(element => { hide(element); });
+					self.doc.querySelectorAll('.reply-form').forEach(element => { hide(element); });
+
+					saveButton.removeAttribute('disabled');
+
+					self.submitting = false;
+				});
 			})
 			.catch(Xhr.logRejected);
 	}
