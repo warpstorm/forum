@@ -179,7 +179,7 @@ namespace Forum.Controllers {
 		}
 
 		[HttpGet]
-		public IActionResult Display(int id, int pageId = 1, int target = 0) {
+		public IActionResult Display(int id, int pageId = 1, int target = -1) {
 			ViewData["Smileys"] = SmileyRepository.GetSelectorList();
 
 			var viewModel = GetDisplayPageModel(id, pageId, target);
