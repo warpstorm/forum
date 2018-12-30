@@ -1,16 +1,16 @@
-﻿import { App } from "../app";
-import { postToPath, throwIfNull, hide, show, queryify } from "../helpers";
-
+﻿import { postToPath, throwIfNull, hide, show, queryify } from "../helpers";
+import { App } from "../app";
+import { HttpMethod } from "../definitions/http-method";
 import { Xhr } from "../services/xhr";
-import { XhrOptions } from "../models/xhr-options";
-import { NewReply } from "../models/new-reply";
+
+import { HubMessage } from "../models/hub-message";
+import { ModelErrorResponse } from "../models/model-error-response";
 import { TopicDisplaySettings } from "../models/topic-display-settings";
+import { TokenRequestResponse } from "../models/token-request-response";
+import { XhrOptions } from "../models/xhr-options";
+import { XhrResult } from "../models/xhr-result";
 
 import * as SignalR from "@aspnet/signalr";
-import { HttpMethod } from "../definitions/http-method";
-import { TokenRequestResponse } from "../models/token-request-response";
-import { XhrResult } from "../models/xhr-result";
-import { ModelErrorResponse } from "../models/model-error-response";
 
 export class TopicDisplay {
 	private hub?: SignalR.HubConnection = undefined;
@@ -65,7 +65,8 @@ export class TopicDisplay {
 			throw new Error('Hub not defined.');
 		}
 
-		this.hub.on('newreply', this.hubNewReply);
+		this.hub.on('new-reply', this.hubNewReply);
+		this.hub.on('updated-message', this.hubUpdatedMessage);
 	}
 
 	bindMessageEventListeners(): void {
@@ -126,7 +127,6 @@ export class TopicDisplay {
 
 				self.settings.latest = (<any>window).latest;
 				let firstMessageId = (<any>window).firstMessageId;
-				let newMessageCount = (<any>window).newMessageCount;
 
 				self.bindMessageEventListeners();
 
@@ -156,12 +156,19 @@ export class TopicDisplay {
 		return returnToken;
 	}
 
-	hubNewReply = (data: NewReply) => {
+	hubNewReply = (data: HubMessage) => {
 		let self = this;
 
 		if (data.topicId == self.settings.topicId
 		&& self.settings.currentPage == self.settings.totalPages) {
 			self.getLatestReplies();
+		}
+	}
+
+	hubUpdatedMessage = (data: HubMessage) => {
+		let self = this;
+
+		if (data.topicId == self.settings.topicId) {
 		}
 	}
 

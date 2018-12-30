@@ -153,18 +153,16 @@ namespace Forum.Repositories {
 
 			var processedMessage = await ProcessMessageInput(serviceResponse, input.Body);
 
-			if (!serviceResponse.Success) {
-				return serviceResponse;
+			if (serviceResponse.Success) {
+				var record = CreateMessageRecord(processedMessage, replyRecord);
+				serviceResponse.RedirectPath = UrlHelper.DirectMessage(record.Id);
+
+				await ForumHub.Clients.All.SendAsync("new-reply", new HubModels.Message {
+					TopicId = record.ParentId,
+					MessageId = record.Id
+				});
 			}
 
-			var record = CreateMessageRecord(processedMessage, replyRecord);
-
-			await ForumHub.Clients.All.SendAsync("newreply", new HubModels.NewReply {
-				TopicId = record.ParentId,
-				MessageId = record.Id
-			});
-
-			serviceResponse.RedirectPath = UrlHelper.DirectMessage(record.Id);
 			return serviceResponse;
 		}
 
@@ -184,8 +182,13 @@ namespace Forum.Repositories {
 			var processedMessage = await ProcessMessageInput(serviceResponse, input.Body);
 
 			if (serviceResponse.Success) {
-				serviceResponse.RedirectPath = UrlHelper.DirectMessage(record.Id);
 				UpdateMessageRecord(processedMessage, record);
+				serviceResponse.RedirectPath = UrlHelper.DirectMessage(record.Id);
+
+				await ForumHub.Clients.All.SendAsync("updated-message", new HubModels.Message {
+					TopicId = record.ParentId,
+					MessageId = record.Id
+				});
 			}
 
 			return serviceResponse;
