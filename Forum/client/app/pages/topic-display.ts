@@ -11,6 +11,7 @@ import { XhrOptions } from "../models/xhr-options";
 import { XhrResult } from "../models/xhr-result";
 
 import * as SignalR from "@aspnet/signalr";
+import { TopicDisplayPartialSettings } from "../models/topic-display-partial-settings";
 
 export class TopicDisplay {
 	private hub?: SignalR.HubConnection = undefined;
@@ -125,8 +126,17 @@ export class TopicDisplay {
 					}
 				});
 
-				self.settings.latest = (<any>window).latest;
-				let firstMessageId = (<any>window).firstMessageId;
+				let partialSettings = new TopicDisplayPartialSettings(window);
+
+				self.settings.latest = partialSettings.latest;
+				let firstMessageId = partialSettings.firstMessageId;
+				let newMessages = partialSettings.newMessages;
+
+				for (let i = 0; i < newMessages.length; i++) {
+					self.settings.messages.push(newMessages[i]);
+				}
+
+				console.log(self.settings.messages);
 
 				self.bindMessageEventListeners();
 

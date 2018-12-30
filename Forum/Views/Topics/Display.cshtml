@@ -127,7 +127,8 @@
 		window.totalPages = @Model.TotalPages;
 		window.showFavicons = @Model.ShowFavicons.ToString().ToLower();
 		window.togglePath = '@Url.Action(nameof(Topics.ToggleBoard), nameof(Topics), new { MessageId = Model.Id })';
-		window.assignedBoards = ['@(String.Join("', '", Model.AssignedBoards.Select(b => b.Id)))'];
+		window.assignedBoards = ['@(string.Join("', '", Model.AssignedBoards.Select(b => b.Id)))'];
+		window.messages = [@(string.Join(", ", Model.Messages.Select(b => b.Id)))];
 	</script>
 }
 

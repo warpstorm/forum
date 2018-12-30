@@ -1,5 +1,6 @@
 ﻿export class TopicDisplaySettings {
 	public assignedBoards: string[] = [];
+	public messages: number[] = [];
 	public currentPage: number = 0;
 	public latest: number = 0;
 	public pageActions: string = '';
