@@ -223,10 +223,6 @@ namespace Forum.Controllers {
 
 			var messageList = TopicRepository.GetMessages(messageIds);
 
-			if (!messageList.Any()) {
-				throw new HttpNotFoundError();
-			}
-
 			ViewData[Constants.InternalKeys.Layout] = "_LayoutEmpty";
 
 			var viewModel = new PageModels.TopicDisplayPartialPage {
