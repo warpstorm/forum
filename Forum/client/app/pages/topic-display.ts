@@ -10,6 +10,7 @@ import * as SignalR from "@aspnet/signalr";
 import { HttpMethod } from "../definitions/http-method";
 import { TokenRequestResponse } from "../models/token-request-response";
 import { XhrResult } from "../models/xhr-result";
+import { ModelErrorResponse } from "../models/model-error-response";
 
 export class TopicDisplay {
 	private hub?: SignalR.HubConnection = undefined;
@@ -93,8 +94,6 @@ export class TopicDisplay {
 	}
 
 	getLatestReplies(): void {
-		console.log('Getting latest replies');
-
 		let self = this;
 
 		show(self.doc.querySelector('#loading-message'));
@@ -132,12 +131,8 @@ export class TopicDisplay {
 				self.bindMessageEventListeners();
 
 				window.location.hash = `message${firstMessageId}`;
-
-				console.log(`Xhr received ${newMessageCount} new messages.`);
 			})
-			.catch((reason) => {
-				console.log(`Xhr was rejected: ${reason}`);
-			})
+			.catch(Xhr.logRejected)
 			.then(() => {
 				hide(self.doc.querySelector('#loading-message'));
 			});
@@ -194,7 +189,8 @@ export class TopicDisplay {
 
 		let requestBodyValues = {
 			id: idElement ? idElement.value : '',
-			body: bodyElement ? bodyElement.value : ''
+			body: bodyElement ? bodyElement.value : '',
+			sideload: true
 		};
 
 		if (requestBodyValues.body == '') {
@@ -213,6 +209,17 @@ export class TopicDisplay {
 		submitRequestOptions.headers['RequestVerificationToken'] = self.getToken(form);
 
 		Xhr.request(submitRequestOptions)
+			.then((xhrResult) => {
+				let modelErrors: ModelErrorResponse[] = JSON.parse(xhrResult.responseText);
+
+				for (let i = 0; i < modelErrors.length; i++) {
+					let modelErrorField = form.querySelector(`[data-valmsg-for="${modelErrors[i].propertyName.toLowerCase()}"]`);
+
+					if (modelErrorField) {
+						modelErrorField.textContent = modelErrors[i].errorMessage;
+					}
+				}
+			})
 			.catch(Xhr.logRejected)
 			.then(() => {
 				if (bodyElement) {

@@ -10,6 +10,8 @@ namespace Forum.Models.InputModels {
 
 		public int? BoardId { get; set; }
 
+		public bool SideLoad { get; set; }
+
 		public List<int> SelectedBoards { get; set; } = new List<int>();
 	}
 }

@@ -292,10 +292,24 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> TopicReply(InputModels.MessageInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await MessageRepository.CreateReply(input);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+
+				if (input.SideLoad) {
+					foreach (var kvp in serviceResponse.Errors) {
+						ModelState.AddModelError(kvp.Key, kvp.Value);
+					}
+				}
+				else {
+					return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				}
 			}
 
-			return await FailureCallback();
+			if (input.SideLoad) {
+				var errors = ModelState.Keys.Where(k => ModelState[k].Errors.Count > 0).Select(k => new { propertyName = k, errorMessage = ModelState[k].Errors[0].ErrorMessage });
+				return new JsonResult(errors);
+			}
+			else {
+				return await FailureCallback();
+			}
 
 			async Task<IActionResult> FailureCallback() {
 				var viewModel = GetDisplayPageModel(input.Id);
