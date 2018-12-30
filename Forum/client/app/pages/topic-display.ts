@@ -166,7 +166,7 @@ export class TopicDisplay {
 
 		if (data.topicId == self.settings.topicId
 		&& self.settings.currentPage == self.settings.totalPages) {
-			this.getLatestReplies();
+			self.getLatestReplies();
 		}
 	}
 
@@ -212,9 +212,8 @@ export class TopicDisplay {
 		submitRequestOptions.headers['Content-Type'] = 'application/x-www-form-urlencoded;charset=UTF-8';
 		submitRequestOptions.headers['RequestVerificationToken'] = self.getToken(form);
 
-		show(self.doc.querySelector('#loading-message'));
-
 		Xhr.request(submitRequestOptions)
+			.catch(Xhr.logRejected)
 			.then(() => {
 				if (bodyElement) {
 					bodyElement.value = '';
@@ -234,8 +233,7 @@ export class TopicDisplay {
 
 					self.submitting = false;
 				});
-			})
-			.catch(Xhr.logRejected);
+			});
 	}
 
 	eventShowReplyForm = (event: Event) => {
