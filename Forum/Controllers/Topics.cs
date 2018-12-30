@@ -220,14 +220,16 @@ namespace Forum.Controllers {
 			}
 
 			var messageIds = MessageRepository.GetMessageIds(topicId, latestTime);
+			var messages = TopicRepository.GetMessages(messageIds);
 
-			var messageList = TopicRepository.GetMessages(messageIds);
+			var latestMessageTime = messages.Max(r => r.RecordTime);
+			TopicRepository.MarkRead(record.Id, latestMessageTime, messageIds);
 
 			ViewData[Constants.InternalKeys.Layout] = "_LayoutEmpty";
 
 			var viewModel = new PageModels.TopicDisplayPartialPage {
 				Latest = DateTime.Now.Ticks,
-				Messages = messageList
+				Messages = messages
 			};
 
 			return ForumViewResult.ViewResult(this, "DisplayPartial", viewModel);
