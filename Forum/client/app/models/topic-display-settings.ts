@@ -1,12 +1,13 @@
 ﻿export class TopicDisplaySettings {
-	public sideloading: boolean = false;
-	public topicId: number = 0;
-	public pageActions: string = '';
-	public currentPage: number = 0;
-	public totalPages: number = 0;
-	public showFavicons: boolean = false;
-	public togglePath: string = '';
 	public assignedBoards: string[] = [];
+	public currentPage: number = 0;
+	public latest: number = 0;
+	public pageActions: string = '';
+	public showFavicons: boolean = false;
+	public sideloading: boolean = false;
+	public togglePath: string = '';
+	public topicId: number = 0;
+	public totalPages: number = 0;
 
 	public constructor(init?: Partial<Window>) {
 		Object.assign(this, init);

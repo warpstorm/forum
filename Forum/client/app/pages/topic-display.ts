@@ -26,7 +26,7 @@ export class TopicDisplay {
 		this.settings = new TopicDisplaySettings(window);
 	}
 
-	init() {
+	init(): void {
 		if (this.settings.sideloading) {
 			this.establishHubConnection();
 		}
@@ -67,7 +67,7 @@ export class TopicDisplay {
 		this.hub.on('newreply', this.hubNewReply);
 	}
 
-	bindMessageEventListeners() {
+	bindMessageEventListeners(): void {
 		this.doc.querySelectorAll('.reply-button').forEach(element => {
 			element.removeEventListener('click', this.eventShowReplyForm)
 			element.addEventListener('click', this.eventShowReplyForm)
@@ -84,7 +84,7 @@ export class TopicDisplay {
 		});
 	}
 
-	hideFavIcons() {
+	hideFavIcons(): void {
 		if (!this.settings.showFavicons) {
 			this.doc.querySelectorAll('.link-favicon').forEach(element => {
 				hide(element);
@@ -92,51 +92,70 @@ export class TopicDisplay {
 		}
 	}
 
-	hubNewReply = (data: NewReply) => {
-		if (data.topicId == this.settings.topicId) {
-			show(this.doc.querySelector('#loading-message'));
+	getLatestReplies() {
+		console.log('Getting latest replies');
 
-			let requestOptions = new XhrOptions({
-				method: HttpMethod.Get,
-				url: `/Topics/DisplayPartial/${data.topicId}`,
-				responseType: 'document'
-			});
+		let self = this;
 
-			let self = this;
+		show(self.doc.querySelector('#loading-message'));
 
-			Xhr.request(requestOptions)
-				.then((xhrResult) => {
-					hide(self.doc.querySelector('#loading-message'));
+		let requestOptions = new XhrOptions({
+			method: HttpMethod.Get,
+			url: `/Topics/DisplayPartial/${self.settings.topicId}?latest=${self.settings.latest}`,
+			responseType: 'document'
+		});
 
-					let resultDocument = <HTMLElement>(<Document>xhrResult.response).documentElement;
-					let resultBody = <HTMLBodyElement>resultDocument.querySelector('body');
-					let resultBodyElements = resultBody.childNodes;
+		Xhr.request(requestOptions)
+			.then((xhrResult) => {
+				let resultDocument = <HTMLElement>(<Document>xhrResult.response).documentElement;
+				let resultBody = <HTMLBodyElement>resultDocument.querySelector('body');
+				let resultBodyElements = resultBody.childNodes;
+				let messageList = <Element>self.doc.querySelector('#message-list');
 
-					resultBodyElements.forEach(node => {
-						let element = <Element>node;
+				resultBodyElements.forEach(node => {
+					let element = node as Element;
 
+					if (element && element.tagName) {
 						if (element.tagName.toLowerCase() == 'script') {
 							eval(element.textContent || '');
 						}
 						else {
-							let messageList = <Element>self.doc.querySelector('#message-list');
 							messageList.insertAdjacentElement('beforeend', element);
 						}
-					});
-
-					self.bindMessageEventListeners();
-
-					window.location.hash = `message${data.messageId}`;
-				})
-				.catch((reason) => {
-					console.log('Xhr was rejected: ' + reason);
-
-					hide(self.doc.querySelector('#loading-message'));
+					}
 				});
+
+				self.settings.latest = (<any>window).latest;
+				let firstMessageId = (<any>window).firstMessageId;
+				let newMessageCount = (<any>window).newMessageCount;
+
+				self.bindMessageEventListeners();
+
+				window.location.hash = `message${firstMessageId}`;
+
+				console.log(`Xhr received ${newMessageCount} new messages.`);
+			})
+			.catch((reason) => {
+				console.log(`Xhr was rejected: ${reason}`);
+			})
+			.then(() => {
+				hide(self.doc.querySelector('#loading-message'));
+			});
+	}
+
+	hubNewReply = (data: NewReply) => {
+		let self = this;
+
+		if (data.topicId == self.settings.topicId) {
+			if (this.submitting) {
+				return;
+			}
+
+			this.getLatestReplies();
 		}
 	}
 
-	eventSaveMessage = (event: Event) => {
+	eventSaveMessage = (event: Event): void => {
 		// make sure the user has chosen to enable the hub connection.
 		if (!this.hub) {
 			return;
@@ -182,6 +201,8 @@ export class TopicDisplay {
 
 		Xhr.request(submitRequestOptions)
 			.then(() => {
+				self.getLatestReplies();
+
 				let tokenRequestOptions = new XhrOptions({
 					url: '/Home/Token'
 				});

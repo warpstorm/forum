@@ -100,7 +100,7 @@ namespace Forum.Controllers {
 
 			var topicPreviews = TopicRepository.GetPreviews(id, page, unread);
 
-			ViewData[Constants.InternalKeys.Layout] = null;
+			ViewData[Constants.InternalKeys.Layout] = "_LayoutEmpty";
 
 			var viewModel = new PageModels.TopicIndexMorePage {
 				More = topicPreviews.Any(),
@@ -193,22 +193,24 @@ namespace Forum.Controllers {
 		}
 
 		[HttpGet]
-		public IActionResult DisplayPartial(int id) {
+		public IActionResult DisplayPartial(int id, long latest) {
+			var latestTime = new DateTime(latest);
+
 			var record = DbContext.Messages.Find(id);
 
 			if (record is null) {
 				throw new HttpNotFoundError();
 			}
 
-			var parentId = id;
+			var topicId = id;
 
 			if (record.ParentId > 0) {
-				parentId = record.ParentId;
+				topicId = record.ParentId;
 			}
 
 			var assignedBoardsQuery = from messageBoard in DbContext.MessageBoards
 									  join board in DbContext.Boards on messageBoard.BoardId equals board.Id
-									  where messageBoard.MessageId == record.Id
+									  where messageBoard.MessageId == topicId
 									  select board;
 
 			var assignedBoards = assignedBoardsQuery.ToList();
@@ -217,18 +219,22 @@ namespace Forum.Controllers {
 				throw new HttpForbiddenError();
 			}
 
-			var messageIds = new List<int> { record.Id };
+			var messageIds = MessageRepository.GetMessageIds(topicId, latestTime);
 
-			var viewModelList = TopicRepository.GetMessages(messageIds);
+			var messageList = TopicRepository.GetMessages(messageIds);
 
-			if (!viewModelList.Any()) {
+			if (!messageList.Any()) {
 				throw new HttpNotFoundError();
 			}
 
-			ViewData[Constants.InternalKeys.Layout] = null;
+			ViewData[Constants.InternalKeys.Layout] = "_LayoutEmpty";
 
-			var viewModel = viewModelList.First();
-			return ForumViewResult.ViewResult(this, "_DisplayItem", viewModel);
+			var viewModel = new PageModels.TopicDisplayPartialPage {
+				Latest = DateTime.Now.Ticks,
+				Messages = messageList
+			};
+
+			return ForumViewResult.ViewResult(this, "DisplayPartial", viewModel);
 		}
 
 		[HttpGet]

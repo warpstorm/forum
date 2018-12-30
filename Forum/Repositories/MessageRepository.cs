@@ -72,17 +72,17 @@ namespace Forum.Repositories {
 			YouTubeClient = youTubeClient;
 		}
 
-		public List<int> GetMessageIds(int parentId, DateTime? fromTime = null) {
+		public List<int> GetMessageIds(int topicId, DateTime? fromTime = null) {
 			IQueryable<int> messageIdQuery;
 
 			if (fromTime is null) {
 				messageIdQuery = from message in DbContext.Messages
-								 where message.Id == parentId || message.ParentId == parentId
+								 where message.Id == topicId || message.ParentId == topicId
 								 select message.Id;
 			}
 			else {
 				messageIdQuery = from message in DbContext.Messages
-								 where message.Id == parentId || message.ParentId == parentId
+								 where message.Id == topicId || message.ParentId == topicId
 								 where message.TimePosted >= fromTime
 								 select message.Id;
 			}

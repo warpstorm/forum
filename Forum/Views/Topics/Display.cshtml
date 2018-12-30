@@ -89,7 +89,7 @@
 	}
 </div>
 
-<div id="loading-message" class="hidden small-pad-bottom"><img src="~/images/loadingDots.gif" alt="Loading new message" title="Loading new message" /></div>
+<div id="loading-message" class="hidden pad-bottom note"><img src="~/images/loadingDots.gif" alt="Loading new message" title="Loading new message" /> Loading messages...</div>
 
 <footer>
 	<ul class="inline pages">
@@ -118,6 +118,7 @@
 
 @section scripts {
 	<script>
+		window.latest = @DateTime.Now.Ticks;
 		window.topicId = @Model.Id;
 		window.pageActions = 'topic-display';
 		window.currentPage = @Model.CurrentPage;
