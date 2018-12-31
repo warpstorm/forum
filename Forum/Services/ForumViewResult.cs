@@ -168,6 +168,9 @@ namespace Forum.Services {
 			var christmasEve = new DateTime(year, 12, 24).Date;
 			var christmasDay = new DateTime(year, 12, 25).Date;
 
+			//NEW YEARS EVE
+			var newYearsEveDate = new DateTime(year, 12, 31).Date;
+
 			holidays.Add(newYearsDate, "Logo_NewYears.png");
 			holidays.Add(valentinesDay, "Logo_Valentines.png");
 			//holidays.Add(memorialDay.Date, "Logo.png");
@@ -181,6 +184,7 @@ namespace Forum.Services {
 			holidays.Add(thanksgivingDay.Date, "Logo_Thanksgiving.png");
 			holidays.Add(christmasEve, "Logo_Christmas.png");
 			holidays.Add(christmasDay, "Logo_Christmas.png");
+			holidays.Add(newYearsEveDate, "Logo_NewYears.png");
 
 			return holidays;
 		}
