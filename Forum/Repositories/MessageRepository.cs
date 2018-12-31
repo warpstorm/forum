@@ -333,6 +333,11 @@ namespace Forum.Repositories {
 
 			DbContext.SaveChanges();
 
+			await ForumHub.Clients.All.SendAsync("updated-message", new HubModels.Message {
+				TopicId = messageRecord.ParentId,
+				MessageId = messageRecord.Id
+			});
+
 			serviceResponse.RedirectPath = UrlHelper.DirectMessage(input.MessageId);
 			return serviceResponse;
 		}
