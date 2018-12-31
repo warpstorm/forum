@@ -192,6 +192,41 @@ namespace Forum.Controllers {
 			}
 		}
 
+		/// <summary>
+		/// Retrieves a specific message. Useful for API calls.
+		/// </summary>
+		[HttpGet]
+		public IActionResult DisplayOne(int id) {
+			var record = DbContext.Messages.Find(id);
+
+			if (record is null) {
+				throw new HttpNotFoundError();
+			}
+
+			var topicId = id;
+
+			if (record.ParentId > 0) {
+				topicId = record.ParentId;
+			}
+
+			LoadTopicBoards(topicId);
+
+			var messageIds = new List<int> { id };
+			var messages = TopicRepository.GetMessages(messageIds);
+
+			ViewData[Constants.InternalKeys.Layout] = "_LayoutEmpty";
+
+			var viewModel = new PageModels.TopicDisplayPartialPage {
+				Latest = DateTime.Now.Ticks,
+				Messages = messages
+			};
+
+			return ForumViewResult.ViewResult(this, "DisplayPartial", viewModel);
+		}
+
+		/// <summary>
+		/// Retrieves all of the latest messages in a topic. Useful for API calls.
+		/// </summary>
 		[HttpGet]
 		public IActionResult DisplayPartial(int id, long latest) {
 			var latestTime = new DateTime(latest);
@@ -208,22 +243,13 @@ namespace Forum.Controllers {
 				topicId = record.ParentId;
 			}
 
-			var assignedBoardsQuery = from messageBoard in DbContext.MessageBoards
-									  join board in DbContext.Boards on messageBoard.BoardId equals board.Id
-									  where messageBoard.MessageId == topicId
-									  select board;
-
-			var assignedBoards = assignedBoardsQuery.ToList();
-
-			if (!RoleRepository.CanAccessBoards(assignedBoards)) {
-				throw new HttpForbiddenError();
-			}
+			LoadTopicBoards(topicId);
 
 			var messageIds = MessageRepository.GetMessageIds(topicId, latestTime);
 			var messages = TopicRepository.GetMessages(messageIds);
 
 			var latestMessageTime = messages.Max(r => r.RecordTime);
-			TopicRepository.MarkRead(record.Id, latestMessageTime, messageIds);
+			TopicRepository.MarkRead(topicId, latestMessageTime, messageIds);
 
 			ViewData[Constants.InternalKeys.Layout] = "_LayoutEmpty";
 
@@ -344,15 +370,15 @@ namespace Forum.Controllers {
 				throw new HttpNotFoundError();
 			}
 
-			var parentId = id;
+			var topicId = id;
 
 			if (record.ParentId > 0) {
-				parentId = record.ParentId;
+				topicId = record.ParentId;
 			}
 
-			var messageIds = MessageRepository.GetMessageIds(parentId);
+			var messageIds = MessageRepository.GetMessageIds(topicId);
 
-			if (parentId != id) {
+			if (topicId != id) {
 				viewModel.RedirectPath = GetRedirectPath(id, record.ParentId, messageIds);
 			}
 			else if (targetId >= 0) {
@@ -364,16 +390,7 @@ namespace Forum.Controllers {
 			}
 
 			if (string.IsNullOrEmpty(viewModel.RedirectPath)) {
-				var assignedBoardsQuery = from messageBoard in DbContext.MessageBoards
-										  join board in DbContext.Boards on messageBoard.BoardId equals board.Id
-										  where messageBoard.MessageId == record.Id
-										  select board;
-
-				var assignedBoards = assignedBoardsQuery.ToList();
-
-				if (!RoleRepository.CanAccessBoards(assignedBoards)) {
-					throw new HttpForbiddenError();
-				}
+				var assignedBoards = LoadTopicBoards(topicId);
 
 				if (pageId < 1) {
 					pageId = 1;
@@ -426,10 +443,25 @@ namespace Forum.Controllers {
 
 				var latestMessageTime = messages.Max(r => r.RecordTime);
 
-				TopicRepository.MarkRead(record.Id, latestMessageTime, pageMessageIds);
+				TopicRepository.MarkRead(topicId, latestMessageTime, pageMessageIds);
 			}
 
 			return viewModel;
+		}
+
+		public List<Models.DataModels.Board> LoadTopicBoards(int topicId) {
+			var assignedBoardsQuery = from messageBoard in DbContext.MessageBoards
+									  join board in DbContext.Boards on messageBoard.BoardId equals board.Id
+									  where messageBoard.MessageId == topicId
+									  select board;
+
+			var assignedBoards = assignedBoardsQuery.ToList();
+
+			if (!RoleRepository.CanAccessBoards(assignedBoards)) {
+				throw new HttpForbiddenError();
+			}
+
+			return assignedBoards;
 		}
 
 		async Task<IActionResult> FailToReferrer() => await Task.Run(() => { return ForumViewResult.RedirectToReferrer(this); });

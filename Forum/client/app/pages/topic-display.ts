@@ -136,8 +136,6 @@ export class TopicDisplay {
 					self.settings.messages.push(newMessages[i]);
 				}
 
-				console.log(self.settings.messages);
-
 				self.bindMessageEventListeners();
 
 				window.location.hash = `message${firstMessageId}`;
@@ -170,7 +168,8 @@ export class TopicDisplay {
 		let self = this;
 
 		if (data.topicId == self.settings.topicId
-		&& self.settings.currentPage == self.settings.totalPages) {
+			&& self.settings.currentPage == self.settings.totalPages) {
+
 			self.getLatestReplies();
 		}
 	}
@@ -178,7 +177,33 @@ export class TopicDisplay {
 	hubUpdatedMessage = (data: HubMessage) => {
 		let self = this;
 
-		if (data.topicId == self.settings.topicId) {
+		if (data.topicId == self.settings.topicId
+			&& self.settings.messages.indexOf(data.messageId) >= 0) {
+
+			let requestOptions = new XhrOptions({
+				method: HttpMethod.Get,
+				url: `/Topics/DisplayOne/${data.messageId}`,
+				responseType: 'document'
+			});
+
+			Xhr.request(requestOptions)
+				.then((xhrResult) => {
+					let resultDocument = <HTMLElement>(<Document>xhrResult.response).documentElement;
+					let resultBody = <HTMLBodyElement>resultDocument.querySelector('body');
+					let resultBodyElements = resultBody.childNodes;
+					let targetArticle = <Element>self.doc.querySelector(`article[message="${data.messageId}"]`);
+
+					resultBodyElements.forEach(node => {
+						let element = node as Element;
+
+						if (element && element.tagName && element.tagName.toLowerCase() == 'article') {
+							targetArticle.innerHTML = element.innerHTML;
+						}
+					});
+
+					self.bindMessageEventListeners();
+				})
+				.catch(Xhr.logRejected);
 		}
 	}
 

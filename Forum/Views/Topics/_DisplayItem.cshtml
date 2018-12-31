@@ -1,6 +1,6 @@
 ﻿@model Message
 
-<article class="gap-bottom">
+<article class="gap-bottom" message="@Model.Id">
 	<aside class="user-avatar align-center float-left mobile-hide">
 		@if (string.IsNullOrEmpty(Model.PostedByAvatarPath)) {
 			<img identicon-value="@Model.PostedById" width="80" height="80" alt="Identicon" />
