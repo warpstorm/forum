@@ -45,15 +45,17 @@ export class TopicIndex {
 				let resultBodyElements = resultBody.childNodes;
 
 				resultBodyElements.forEach(node => {
-					let element = <Element>node;
+					let element = node as Element;
 
-					if (element.tagName.toLowerCase() == 'script') {
-						eval(element.textContent || '');
-						new Navigation(self.doc).addListenerClickableLinkParent();
-					}
-					else {
-						let topicList = <Element>self.doc.querySelector('#topic-list');
-						topicList.insertAdjacentElement('beforeend', element);
+					if (element && element.tagName) {
+						if (element.tagName.toLowerCase() == 'script') {
+							eval(element.textContent || '');
+							new Navigation(self.doc).addListenerClickableLinkParent();
+						}
+						else {
+							let topicList = <Element>self.doc.querySelector('#topic-list');
+							topicList.insertAdjacentElement('beforeend', element);
+						}
 					}
 				});
 
