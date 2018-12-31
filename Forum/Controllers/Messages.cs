@@ -148,12 +148,10 @@ namespace Forum.Controllers {
 			}
 		}
 
-		[HttpPost]
-		[ValidateAntiForgeryToken]
-		[PreventRapidRequests]
-		public async Task<IActionResult> AddThought(InputModels.ThoughtInput input) {
+		[HttpGet]
+		public async Task<IActionResult> AddThought(int id, int smiley) {
 			if (ModelState.IsValid) {
-				var serviceResponse = await MessageRepository.AddThought(input);
+				var serviceResponse = await MessageRepository.AddThought(id, smiley);
 				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 

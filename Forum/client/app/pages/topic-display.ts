@@ -1,4 +1,4 @@
-﻿import { postToPath, throwIfNull, hide, show, queryify } from "../helpers";
+﻿import { throwIfNull, hide, show, queryify } from "../helpers";
 import { App } from "../app";
 import { HttpMethod } from "../definitions/http-method";
 import { Xhr } from "../services/xhr";
@@ -14,11 +14,12 @@ import * as SignalR from "@aspnet/signalr";
 import { TopicDisplayPartialSettings } from "../models/topic-display-partial-settings";
 
 export class TopicDisplay {
+	private assignedBoards: string[] = [];
 	private hub?: SignalR.HubConnection = undefined;
 	private settings: TopicDisplaySettings;
-	private thoughtSelectorMessageId: string = "";
-	private assignedBoards: string[] = [];
 	private submitting: boolean = false;
+	private thoughtSelectorMessageId: string = "";
+	private thoughtTarget?: HTMLElement = undefined;
 
 	constructor(private doc: Document, private app: App) {
 		throwIfNull(doc, 'doc');
@@ -197,7 +198,8 @@ export class TopicDisplay {
 						let element = node as Element;
 
 						if (element && element.tagName && element.tagName.toLowerCase() == 'article') {
-							targetArticle.innerHTML = element.innerHTML;
+							targetArticle.after(element);
+							targetArticle.remove();
 						}
 					});
 
@@ -226,6 +228,7 @@ export class TopicDisplay {
 		let idElement = form.querySelector('[name=Id]') as HTMLInputElement;
 		let bodyElement = form.querySelector('[name=body]') as HTMLTextAreaElement;
 
+		form.classList.add('faded');
 		saveButton.setAttribute('disabled', 'disabled');
 		bodyElement.setAttribute('disabled', 'disabled');
 
@@ -264,6 +267,8 @@ export class TopicDisplay {
 			})
 			.catch(Xhr.logRejected)
 			.then(() => {
+				form.classList.remove('faded');
+
 				if (bodyElement) {
 					bodyElement.value = '';
 					bodyElement.removeAttribute('disabled');
@@ -315,6 +320,7 @@ export class TopicDisplay {
 	eventShowThoughtSelector = (event: Event) => {
 		event.preventDefault();
 		let target = <HTMLElement>event.currentTarget;
+		this.thoughtTarget = <HTMLElement>target.closest('article');
 		this.thoughtSelectorMessageId = target.getAttribute('message-id') || '';
 		this.app.smileySelector.showSmileySelectorNearElement(target, this.eventAddThought);
 	}
@@ -393,12 +399,26 @@ export class TopicDisplay {
 	}
 
 	eventAddThought = (event: Event): void => {
+		if (this.thoughtTarget) {
+			this.thoughtTarget.classList.add('faded');
+		}
+
 		let smileyImg = <HTMLElement>event.currentTarget;
 		let smileyId = smileyImg.getAttribute('smiley-id');
 
-		postToPath('/Messages/AddThought', {
-			'MessageId': this.thoughtSelectorMessageId,
-			'SmileyId': smileyId
-		});
+		// Only send an XHR if we anticipate the thought will be returned via the hub.
+		if (this.hub) {
+			let requestOptions = new XhrOptions({
+				method: HttpMethod.Get,
+				url: `/Messages/AddThought/${this.thoughtSelectorMessageId}?smiley=${smileyId}`
+			});
+
+			Xhr.request(requestOptions).catch(Xhr.logRejected);
+
+			this.app.smileySelector.eventCloseSmileySelector();
+		}
+		else {
+			window.location.href = `/Messages/AddThought/${this.thoughtSelectorMessageId}?smiley=${smileyId}`;
+		}
 	}
 }

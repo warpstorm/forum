@@ -164,6 +164,10 @@ a.borderless * {
 	color: #92abba;
 }
 
+.faded {
+	opacity: 0.5;
+}
+
 .hidden {
 	display: none !important;
 }

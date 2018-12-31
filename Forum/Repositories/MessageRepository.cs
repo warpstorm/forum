@@ -274,19 +274,19 @@ namespace Forum.Repositories {
 			DbContext.Messages.Remove(record);
 		}
 
-		public async Task<ServiceModels.ServiceResponse> AddThought(InputModels.ThoughtInput input) {
+		public async Task<ServiceModels.ServiceResponse> AddThought(int messageId, int smileyId) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
-			var messageRecord = DbContext.Messages.Find(input.MessageId);
+			var messageRecord = DbContext.Messages.Find(messageId);
 
 			if (messageRecord is null) {
-				serviceResponse.Error($@"No message was found with the id '{input.MessageId}'");
+				serviceResponse.Error($@"No message was found with the id '{messageId}'");
 			}
 
-			var smileyRecord = await DbContext.Smileys.FindAsync(input.SmileyId);
+			var smileyRecord = await DbContext.Smileys.FindAsync(smileyId);
 
 			if (messageRecord is null) {
-				serviceResponse.Error($@"No smiley was found with the id '{input.SmileyId}'");
+				serviceResponse.Error($@"No smiley was found with the id '{smileyId}'");
 			}
 
 			if (!serviceResponse.Success) {
@@ -338,7 +338,7 @@ namespace Forum.Repositories {
 				MessageId = messageRecord.Id
 			});
 
-			serviceResponse.RedirectPath = UrlHelper.DirectMessage(input.MessageId);
+			serviceResponse.RedirectPath = UrlHelper.DirectMessage(messageId);
 			return serviceResponse;
 		}
 
