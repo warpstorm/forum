@@ -10,6 +10,7 @@ namespace Forum.TagHelpers {
 			output.TagName = "time";
 			output.TagMode = TagMode.StartTagAndEndTag;
 			output.Attributes.SetAttribute("datetime", Time.ToHtmlLocalTimeString());
+			output.Attributes.SetAttribute("title", Time.ToHtmlLocalTimeString());
 
 			if (string.IsNullOrEmpty(output.Content.GetContent())) {
 				output.Content.SetContent(Time.ToPassedTimeString());

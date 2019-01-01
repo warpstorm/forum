@@ -3,7 +3,8 @@
 namespace Forum.Extensions {
 	public static class ToPassedTimeStringExtension {
 		public static string ToPassedTimeString(this DateTime date) {
-			var now = DateTime.Now;
+			date = date.ToUniversalTime();
+			var now = DateTime.Now.ToUniversalTime();
 
 			var difference = now - date;
 
@@ -45,12 +46,15 @@ namespace Forum.Extensions {
 			else if (difference.TotalMinutes >= 2) {
 				returnText = Math.Round(difference.TotalMinutes) + " minutes ago";
 			}
-			else if (difference.TotalSeconds >= 1 && difference.TotalSeconds < 2) {
-				returnText = "1 second ago";
-			}
-			else if (difference.TotalSeconds >= 2) {
-				returnText = Math.Round(difference.TotalSeconds) + " seconds ago";
-			}
+			
+			// I decided I don't need this level of fidelity.
+			//
+			//else if (difference.TotalSeconds >= 1 && difference.TotalSeconds < 2) {
+			//	returnText = "1 second ago";
+			//}
+			//else if (difference.TotalSeconds >= 2) {
+			//	returnText = Math.Round(difference.TotalSeconds) + " seconds ago";
+			//}
 
 			return returnText;
 		}
