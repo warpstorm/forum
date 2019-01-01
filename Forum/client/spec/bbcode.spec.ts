@@ -1,4 +1,4 @@
-﻿import { BBCode } from '../app/bbcode';
+﻿import { BBCode } from '../app/services/bbcode';
 import { HtmlHelper } from './html-helper';
 import * as chai from 'chai';
 

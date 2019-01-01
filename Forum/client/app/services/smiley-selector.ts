@@ -1,4 +1,4 @@
-﻿import { insertAtCaret, show, hide } from './helpers';
+﻿import { insertAtCaret, show, hide } from '../helpers';
 
 export class SmileySelector {
 	private win: Window;

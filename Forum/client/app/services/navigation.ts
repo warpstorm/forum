@@ -1,4 +1,4 @@
-﻿import { isFirefox, hide, show } from './helpers';
+﻿import { isFirefox, hide, show } from '../helpers';
 
 export class Navigation {
 	private win: Window;

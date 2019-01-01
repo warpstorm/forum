@@ -1,5 +1,5 @@
 import { App } from '../app';
-import { Navigation } from '../navigation';
+import { Navigation } from '../services/navigation';
 
 import { Xhr } from '../services/xhr';
 import { XhrOptions } from '../models/xhr-options';

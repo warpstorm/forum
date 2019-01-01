@@ -1,4 +1,4 @@
-﻿import { show, hide } from "./helpers";
+﻿import { show, hide } from "../helpers";
 
 export class EasterEgg {
 	constructor(private doc: Document) {}

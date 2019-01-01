@@ -1,7 +1,7 @@
-﻿import { BBCode } from './bbcode';
-import { EasterEgg } from './easter-egg';
-import { Navigation } from './navigation';
-import { SmileySelector } from './smiley-selector';
+﻿import { BBCode } from './services/bbcode';
+import { EasterEgg } from './services/easter-egg';
+import { Navigation } from './services/navigation';
+import { SmileySelector } from './services/smiley-selector';
 
 import { TopicIndex } from './pages/topic-index';
 import { TopicDisplay } from './pages/topic-display';

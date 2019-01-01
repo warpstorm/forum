@@ -1,4 +1,4 @@
-﻿import { insertAtCaret, throwIfNull } from './helpers'
+﻿import { insertAtCaret, throwIfNull } from '../helpers'
 
 let bbCodes: { [key: string]: string } = {
 	'bold': '[b]  [/b]',
