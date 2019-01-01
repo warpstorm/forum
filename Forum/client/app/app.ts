@@ -3,6 +3,7 @@ import { EasterEgg } from './services/easter-egg';
 import { Navigation } from './services/navigation';
 import { PassedTimeMonitor } from './services/passed-time-monitor';
 import { SmileySelector } from './services/smiley-selector';
+import { WhosOnlineMonitor } from './services/whos-online-monitor';
 
 import { TopicIndex } from './pages/topic-index';
 import { TopicDisplay } from './pages/topic-display';
@@ -23,25 +24,29 @@ export class App {
 	navigation: Navigation;
 	passedTimeMonitor: PassedTimeMonitor;
 	smileySelector: SmileySelector;
+	whosOnlineMonitor: WhosOnlineMonitor;
 
 	constructor() {
 		this.bbCode = new BBCode(document);
 		this.easterEgg = new EasterEgg(document);
 		this.navigation = new Navigation(document);
-		this.passedTimeMonitor = new PassedTimeMonitor(document);
 		this.smileySelector = new SmileySelector(document);
+
+		this.passedTimeMonitor = new PassedTimeMonitor(document, this);
+		this.whosOnlineMonitor = new WhosOnlineMonitor(document, this);
 	}
 
 	boot() {
 		if ((<any>window).sideloading) {
 			this.establishHubConnection();
+			this.whosOnlineMonitor.init();
 		}
 
 		this.bbCode.init();
 		this.easterEgg.init();
 		this.navigation.addListeners();
-		this.passedTimeMonitor.init();
 		this.smileySelector.init();
+		this.passedTimeMonitor.init();
 
 		let pageActions = (<any>window).pageActions;
 

@@ -10,21 +10,24 @@ namespace Forum.Controllers {
 	using ViewModels = Models.ViewModels;
 
 	public class Home : Controller {
+		AccountRepository AccountRepository { get; }
 		SettingsRepository SettingsRepository { get; }
 		IForumViewResult ForumViewResult { get; }
 		IHttpContextAccessor HttpContextAccessor { get; }
 		IAntiforgery Xsrf { get; }
 
 		public Home(
-			IForumViewResult forumViewResult,
+			AccountRepository accountRepository,
 			SettingsRepository settingsRepository,
+			IForumViewResult forumViewResult,
 			IHttpContextAccessor httpContextAccessor,
 			IAntiforgery xsrf
 		) {
-			ForumViewResult = forumViewResult;
+			AccountRepository = accountRepository;
 			SettingsRepository = settingsRepository;
-			Xsrf = xsrf;
+			ForumViewResult = forumViewResult;
 			HttpContextAccessor = httpContextAccessor;
+			Xsrf = xsrf;
 		}
 
 		[HttpGet]
@@ -53,7 +56,17 @@ namespace Forum.Controllers {
 			return ForumViewResult.ViewResult(this, viewModel);
 		}
 
-		public JsonResult Token() => Json(new {
+		[HttpGet]
+		public IActionResult WhosOnline() {
+			var viewModel = AccountRepository.GetOnlineList();
+
+			ViewData[Constants.InternalKeys.Layout] = "_LayoutEmpty";
+
+			return ForumViewResult.ViewResult(this, "Sidebar/_OnlineUsersList", viewModel);
+		}
+
+		[HttpGet]
+		public IActionResult Token() => Json(new {
 			token = Xsrf.GetAndStoreTokens(HttpContextAccessor.HttpContext).RequestToken
 		});
 	}
