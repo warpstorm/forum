@@ -29,10 +29,10 @@
 		</ul>
 	</form>
 
-	<div class="note">
+	<div class="font-small subdued-text">
 		<p>@Model.NumberOfUsers users in this role</p>
-		<p>Created by @Model.CreatedBy, @Model.Created</p>
-		<p>Last modified by @Model.ModifiedBy, @Model.Modified</p>
+		<p>Created by @Model.CreatedBy, <passed-time time="@Model.Created" /></p>
+		<p>Last modified by @Model.ModifiedBy, <passed-time time="@Model.Modified" /></p>
 	</div>
 </section>
 

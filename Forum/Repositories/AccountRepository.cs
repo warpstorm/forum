@@ -84,13 +84,10 @@ namespace Forum.Repositories {
 								   };
 
 			var onlineUsers = onlineUsersQuery.ToList();
+			var birthdayUsers = onlineUsers.Where(u => DateTime.Now.Date == new DateTime(DateTime.Now.Year, u.Birthday.Month, u.Birthday.Day).Date);
 
-			foreach (var onlineUser in onlineUsers) {
-				onlineUser.LastOnlineString = onlineUser.LastOnline.ToPassedTimeString();
-
-				if (DateTime.Now.Date == new DateTime(DateTime.Now.Year, onlineUser.Birthday.Month, onlineUser.Birthday.Day).Date) {
-					onlineUser.IsBirthday = true;
-				}
+			foreach (var user in birthdayUsers) {
+				user.IsBirthday = true;
 			}
 
 			return onlineUsers;

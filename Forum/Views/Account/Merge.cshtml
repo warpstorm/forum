@@ -11,15 +11,15 @@
 		<tr>
 			<td class="pad">
 				<p><a asp-controller="@nameof(Account)" asp-action="@nameof(Account.ConfirmMerge)" asp-route-sourceid="@Model.SourceId" asp-route-targetid="@item.Id" onclick="return confirm('Are you sure?');">@item.DisplayName</a></p>
-				<p class="note">@item.Email</p>
+				<p class="font-small subdued-text">@item.Email</p>
 			</td>
 			<td class="pad">
 				<p>@item.Registered</p>
-				<p class="note">@item.Registered</p>
+				<p class="font-small subdued-text">@item.Registered</p>
 			</td>
 			<td class="pad">
 				<p>@item.LastOnline</p>
-				<p class="note">@item.LastOnline</p>
+				<p class="font-small subdued-text">@item.LastOnline</p>
 			</td>
 		</tr>
 	}

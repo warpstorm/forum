@@ -2,6 +2,7 @@
 content box			#121822
 text				#e1edf3
 subdued text		#92abba
+dark text			#516169
 border				#253248
 border highlight	#7090c6
 button				#35568e - #4d6690

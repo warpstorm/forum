@@ -24,11 +24,9 @@ namespace Forum.Models.ViewModels.Topics.Items {
 		public string ReplyBody { get; set; }
 		public string ReplyPostedBy { get; set; }
 		public string ReplyPreview { get; set; }
-		public string TimeEdited { get; set; }
-		public string TimePosted { get; set; }
 		public DateTime RecordTime { get; set; }
-		public DateTime TimePostedDT { get; set; }
-		public DateTime TimeEditedDT { get; set; }
+		public DateTime TimePosted { get; set; }
+		public DateTime TimeEdited { get; set; }
 		public IMessageViewModel ReplyForm { get; set; }
 		public List<MessageThought> Thoughts { get; set; }
 	}

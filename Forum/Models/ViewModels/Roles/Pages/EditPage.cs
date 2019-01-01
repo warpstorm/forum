@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace Forum.Models.ViewModels.Roles.Pages {
 	public class EditPage {
@@ -13,10 +14,10 @@ namespace Forum.Models.ViewModels.Roles.Pages {
 		public string Description { get; set; }
 
 		public string CreatedBy { get; set; }
-		public string Created { get; set; }
+		public DateTime Created { get; set; }
 
 		public string ModifiedBy { get; set; }
-		public string Modified { get; set; }
+		public DateTime Modified { get; set; }
 
 		public int NumberOfUsers { get; set; }
 	}

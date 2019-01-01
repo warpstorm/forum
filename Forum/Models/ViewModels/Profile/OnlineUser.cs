@@ -6,7 +6,6 @@ namespace Forum.Models.ViewModels.Profile {
 		public string Name { get; set; }
 		public bool Online { get; set; }
 		public bool IsBirthday { get; set; }
-		public string LastOnlineString { get; set; }
 		public DateTime Birthday { get; set; }
 		public DateTime LastOnline { get; set; }
 	}

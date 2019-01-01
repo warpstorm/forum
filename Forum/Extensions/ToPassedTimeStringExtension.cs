@@ -1,7 +1,7 @@
 ﻿using System;
 
 namespace Forum.Extensions {
-	public static class PassedTimeExtension {
+	public static class ToPassedTimeStringExtension {
 		public static string ToPassedTimeString(this DateTime date) {
 			var now = DateTime.Now;
 

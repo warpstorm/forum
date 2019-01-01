@@ -66,7 +66,7 @@
 							@for (int i = 0; i < Model.Settings.Count; i++) {
 								<li>
 									<input asp-for="@Model.Settings[i].Key" type="hidden" />
-									<span class="note">@Model.Settings[i].Display</span>
+									<span class="font-small subdued-text">@Model.Settings[i].Display</span>
 
 									@if (Model.Settings[i].Options.Any()) {
 										<select asp-for="@Model.Settings[i].Value" asp-items="@Model.Settings[i].Options"></select>
@@ -85,13 +85,13 @@
 			}
 
 			<dl>
-				<dt>New Password <span class="note">(Optional)</span></dt>
+				<dt>New Password <span class="font-small subdued-text">(Optional)</span></dt>
 				<dd><input asp-for="@Model.NewPassword" /></dd>
 				<dd><span asp-validation-for="@Model.NewPassword" class="error"></span></dd>
 			</dl>
 
 			<dl>
-				<dt>Current Password <span class="note">(Required for all changes)</span></dt>
+				<dt>Current Password <span class="font-small subdued-text">(Required for all changes)</span></dt>
 				<dd><input asp-for="@Model.Password" /></dd>
 				<dd><span asp-validation-for="@Model.Password" class="error"></span></dd>
 			</dl>
@@ -106,7 +106,7 @@
 			</ul>
 		</form>
 
-		<p class="gap-top"><a class="note" asp-action="@nameof(Account.Delete)" asp-route-userId="@Model.Id" onclick="return confirm('Delete your account? Are you really sure??');">Delete Account</a></p>
+		<p class="gap-top"><a class="font-small subdued-text" asp-action="@nameof(Account.Delete)" asp-route-userId="@Model.Id" onclick="return confirm('Delete your account? Are you really sure??');">Delete Account</a></p>
 	</div>
 </div>
 

@@ -203,9 +203,9 @@ namespace Forum.Controllers {
 				Description = role.Description,
 				Name = role.Name,
 				CreatedBy = createdBy?.DisplayName,
-				Created = role.CreatedDate.ToPassedTimeString(),
+				Created = role.CreatedDate,
 				ModifiedBy = modifiedBy?.DisplayName,
-				Modified = role.ModifiedDate.ToPassedTimeString(),
+				Modified = role.ModifiedDate,
 				NumberOfUsers = usersInRole.Count()
 			};
 

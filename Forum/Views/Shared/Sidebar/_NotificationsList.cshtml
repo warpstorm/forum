@@ -1,7 +1,7 @@
 ﻿@model List<ViewModels.Notifications.Items.IndexItem>
 
 <h4><a asp-controller="@nameof(Notifications)" asp-action="@nameof(Notifications.Index)">Notifications</a></h4>
-<ul class="gap-bottom note">
+<ul class="gap-bottom font-small subdued-text">
 	@if (Model.Any()) {
 		@foreach (var notification in Model) {
 			<li class="glow-left pointer small-gap-bottom small-pad" clickable-link-parent>
@@ -11,7 +11,7 @@
 					}
 					<a asp-controller="@nameof(Notifications)" asp-action="@nameof(Notifications.Open)" asp-route-id="@notification.Id">@notification.Text</a>
 				</p>
-				<p><time>@notification.Time</time></p>
+				<p><passed-time time="@notification.Time" /></p>
 			</li>
 		}
 	}

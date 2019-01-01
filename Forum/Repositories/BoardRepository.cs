@@ -122,7 +122,7 @@ namespace Forum.Repositories {
 											ShortPreview = item.TopicPreview,
 											LastReplyByName = lastReplyBy.DisplayName,
 											LastReplyId = message.LastReplyId,
-											LastReplyPosted = message.LastReplyPosted.ToPassedTimeString(),
+											LastReplyPosted = message.LastReplyPosted,
 										};
 
 						indexBoard.LastMessage = lastReply.FirstOrDefault();

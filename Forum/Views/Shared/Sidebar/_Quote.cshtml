@@ -3,12 +3,12 @@
 @if (Model is ViewModels.Quotes.DisplayQuote) {
 	<h4>Quote of the Moment:</h4>
 	<div class="gap-bottom">
-		<div class="content-box small-pad note pointer" clickable-link-parent>
+		<div class="content-box small-pad font-small subdued-text pointer" clickable-link-parent>
 			<p id="qotm">
 				@Html.Raw(Model.DisplayBody)
 				<a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Display)" asp-route-id="@Model.Id"></a>
 			</p>
 		</div>
-		<p class="note align-right">- @Model.PostedBy</p>
+		<p class="font-small subdued-text align-right">- @Model.PostedBy</p>
 	</div>
 }

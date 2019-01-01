@@ -28,9 +28,7 @@ namespace Forum.Models.ViewModels.Topics.Items {
 		public string LastReplyByName { get; set; }
 		public bool LastReplyByBirthday { get; set; }
 
-		public string TimePosted { get; set; }
-		public DateTime TimePostedDT { get; set; }
-		public string LastReplyPosted { get; set; }
-		public DateTime LastReplyPostedDT { get; set; }
+		public DateTime TimePosted { get; set; }
+		public DateTime LastReplyPosted { get; set; }
 	}
 }

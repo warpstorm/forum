@@ -7,7 +7,7 @@
 		@if (ViewData["Categories"] is List<ViewModels.Boards.Items.IndexCategory>) {
 			foreach (var category in ViewData["Categories"] as List<ViewModels.Boards.Items.IndexCategory>) {
 				<li class="gap-bottom">
-					<span class="note">@category.Name</span>
+					<span class="font-small subdued-text">@category.Name</span>
 					<ul>
 						@for (var i = 0; i < category.Boards.Count; i++) {
 							var checkbox = Model.BoardId == category.Boards[i].Id ? "checked" : "unchecked";
@@ -23,7 +23,7 @@
 		}
 	</ul>
 	<hr />
-	<p class="note">Select which boards your topic will appear in.</p>
+	<p class="font-small subdued-text">Select which boards your topic will appear in.</p>
 </div>
 
 <div id="message-form" class="content-box pad">

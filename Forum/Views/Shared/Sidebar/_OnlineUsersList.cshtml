@@ -1,10 +1,10 @@
 ﻿@model List<ViewModels.Profile.OnlineUser>
 
-<h4>Who's online <span class="note">(@Model.Count)</span></h4>
+<h4>Who's online <span class="font-small subdued-text">(@Model.Count)</span></h4>
 <ul id="whos-online">
-	<li class="note"><a asp-controller="@nameof(Account)" asp-action="@nameof(Account.Index)">View All Users</a></li>
+	<li class="font-small subdued-text"><a asp-controller="@nameof(Account)" asp-action="@nameof(Account.Index)">View All Users</a></li>
 	@foreach (var onlineUser in Model) {
-		<li class="note nowrap small-pad-top">
+		<li class="font-small subdued-text nowrap small-pad-top">
 			@if (onlineUser.Online) {
 				<span class="chiclet chiclet-green"></span>
 			}
@@ -14,7 +14,7 @@
 				}
 				@onlineUser.Name
 			</span>
-			<time>@onlineUser.LastOnlineString</time>
+			<passed-time class="font-tiny dark-text" time="@onlineUser.LastOnline" />
 		</li>
 	}
 </ul>

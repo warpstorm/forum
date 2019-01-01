@@ -14,7 +14,7 @@
 							<ul class="drop-down-menu content-box">
 								@foreach (var category in Model.Categories) {
 									<li class="small-pad-bottom">
-										<p class="note small-pad-bottom">@category.Name</p>
+										<p class="font-small subdued-text small-pad-bottom">@category.Name</p>
 										<ul>
 											@foreach (var board in category.Boards) {
 												<li class="hover-highlight" toggle-board board-id="@board.Id">
@@ -39,7 +39,7 @@
 	}
 
 	<section>
-		<p class="note">
+		<p class="font-small subdued-text">
 			<span>
 				@Model.ViewCount views
 			</span>
@@ -64,7 +64,6 @@
 			</span>
 		</p>
 		<ul class="inline pages">
-			<li class="note pointer unhide-pages">Pages: </li>
 			<li class="hidden pointer unhide-pages more-pages-before">&#8230;</li>
 			@for (var i = 1; i <= Model.TotalPages; i++) {
 				if (Model.CurrentPage == i) {
@@ -89,11 +88,10 @@
 	}
 </div>
 
-<div id="loading-message" class="hidden pad-bottom note"><img src="~/images/loadingDots.gif" alt="Loading new message" title="Loading new message" /> Loading messages...</div>
+<div id="loading-message" class="hidden pad-bottom font-small"><img src="~/images/loadingDots.gif" alt="Loading new message" title="Loading new message" /> Loading messages...</div>
 
 <footer>
 	<ul class="inline pages">
-		<li class="note pointer unhide-pages">Pages: </li>
 		<li class="hidden pointer unhide-pages more-pages-before">&#8230;</li>
 		@for (var i = 1; i <= Model.TotalPages; i++) {
 			if (Model.CurrentPage == i) {

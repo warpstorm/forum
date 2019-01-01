@@ -8,7 +8,7 @@
 				@foreach (var notification in Model.Notifications.Where(n => n.Type == ENotificationType.Mention)) {
 					<li>
 						<a asp-action="@nameof(Notifications.Open)" asp-route-id="@notification.Id">@notification.Text</a>
-						<time>@notification.Time</time>
+						<passed-time time="@notification.Time" />
 					</li>
 				}
 			</ul>
@@ -20,7 +20,7 @@
 				@foreach (var notification in Model.Notifications.Where(n => n.Type == ENotificationType.Thought)) {
 					<li>
 						<a asp-action="@nameof(Notifications.Open)" asp-route-id="@notification.Id">@notification.Text</a>
-						<time>@notification.Time</time>
+						<passed-time time="@notification.Time" />
 					</li>
 				}
 			</ul>
@@ -30,16 +30,16 @@
 			<h3>Quotes & Replies</h3>
 			<ul>
 				@foreach (var notification in Model.Notifications.Where(n => n.Type == ENotificationType.Quote)) {
-					<li>
-						<a asp-action="@nameof(Notifications.Open)" asp-route-id="@notification.Id">@notification.Text</a>
-						<time>@notification.Time</time>
-					</li>
+				<li>
+					<a asp-action="@nameof(Notifications.Open)" asp-route-id="@notification.Id">@notification.Text</a>
+					<passed-time time="@notification.Time" />
+				</li>
 				}
 				@foreach (var notification in Model.Notifications.Where(n => n.Type == ENotificationType.Reply)) {
-					<li>
-						<a asp-action="@nameof(Notifications.Open)" asp-route-id="@notification.Id">@notification.Text</a>
-						<time>@notification.Time</time>
-					</li>
+				<li>
+					<a asp-action="@nameof(Notifications.Open)" asp-route-id="@notification.Id">@notification.Text</a>
+					<passed-time time="@notification.Time" />
+				</li>
 				}
 			</ul>
 		}

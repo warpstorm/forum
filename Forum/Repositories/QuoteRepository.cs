@@ -47,9 +47,9 @@ namespace Forum.Repositories {
 					OriginalBody = record.OriginalBody,
 					DisplayBody = record.DisplayBody,
 					PostedBy = postedBy?.DisplayName ?? "Missing User",
-					PostedTime = originalMessage.TimePosted.ToPassedTimeString(),
+					PostedTime = originalMessage.TimePosted,
 					SubmittedBy = submittedBy?.DisplayName ?? "Missing User",
-					SubmittedTime = record.SubmittedTime.ToPassedTimeString(),
+					SubmittedTime = record.SubmittedTime,
 					Approved = record.Approved
 				});
 			}

@@ -86,8 +86,8 @@ namespace Forum.Repositories {
 								   Cards = message.Cards,
 								   OriginalBody = message.OriginalBody,
 								   PostedById = message.PostedById,
-								   TimePostedDT = message.TimePosted,
-								   TimeEditedDT = message.TimeEdited,
+								   TimePosted = message.TimePosted,
+								   TimeEdited = message.TimeEdited,
 								   RecordTime = message.TimeEdited,
 								   Processed = message.Processed
 							   };
@@ -110,9 +110,6 @@ namespace Forum.Repositories {
 						message.ReplyPostedBy = replyPostedBy?.DisplayName;
 					}
 				}
-
-				message.TimePosted = message.TimePostedDT.ToPassedTimeString();
-				message.TimeEdited = message.TimeEditedDT.ToPassedTimeString();
 
 				message.CanEdit = UserContext.IsAdmin || (UserContext.IsAuthenticated && UserContext.ApplicationUser.Id == message.PostedById);
 				message.CanDelete = UserContext.IsAdmin || (UserContext.IsAuthenticated && UserContext.ApplicationUser.Id == message.PostedById);
@@ -250,8 +247,7 @@ namespace Forum.Repositories {
 					LastReplyId = message.Id,
 					Popular = message.ReplyCount > popularityLimit,
 					Pinned = PinRepository.Any(item => item.MessageId == message.Id),
-					TimePostedDT = message.TimePosted,
-					TimePosted = message.TimePosted.ToPassedTimeString(),
+					TimePosted = message.TimePosted,
 					PostedById = message.PostedById,
 					PostedByName = message.DisplayName,
 					PostedByBirthday = DateTime.Now.Date == new DateTime(DateTime.Now.Year, message.Birthday.Month, message.Birthday.Day).Date
@@ -277,8 +273,7 @@ namespace Forum.Repositories {
 						messagePreview.LastReplyByName = lastReply.DisplayName;
 						messagePreview.LastReplyById = message.LastReplyById;
 						messagePreview.LastReplyByBirthday = DateTime.Now.Date == new DateTime(DateTime.Now.Year, lastReply.Birthday.Month, lastReply.Birthday.Day).Date;
-						messagePreview.LastReplyPosted = message.LastReplyPosted.ToPassedTimeString();
-						messagePreview.LastReplyPostedDT = message.LastReplyPosted;
+						messagePreview.LastReplyPosted = message.LastReplyPosted;
 						lastMessageTime = message.LastReplyPosted;
 					}
 				}

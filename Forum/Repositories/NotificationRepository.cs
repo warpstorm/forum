@@ -65,7 +65,7 @@ namespace Forum.Repositories {
 										Id = n.Id,
 										Type = n.Type,
 										Recent = n.Time > recentTimeLimit,
-										Time = n.Time.ToPassedTimeString(),
+										Time = n.Time,
 										TargetUser = targetUser == null ? "User" : targetUser.DisplayName
 									};
 

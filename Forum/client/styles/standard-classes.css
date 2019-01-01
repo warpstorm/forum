@@ -96,12 +96,12 @@ a.borderless * {
 	clear: both;
 }
 
-	br.clear {
-		font-size: 1px;
-		line-height: 1px;
-		margin: 0;
-		padding: 0;
-	}
+br.clear {
+	font-size: 1px;
+	line-height: 1px;
+	margin: 0;
+	padding: 0;
+}
 
 .float-right {
 	float: right;
@@ -148,27 +148,32 @@ a.borderless * {
 	text-align: justify;
 }
 
-.note, a.note {
-	border: 0;
-	font-size: 10pt;
-	line-height: 1.2em;
-}
-
-.note-large {
-	padding: 0 10px;
-	font-size: 1em;
-	line-height: 2em;
-}
-
-.note, a.note, .note a, .note-large {
+.subdued-text, .subdued-text a {
 	color: #92abba;
 }
+
+	.subdued-text a:hover {
+		color: #e1edf3;
+	}
+
+.dark-text, .dark-text a {
+	color: #516169;
+}
+
+	.dark-text a:hover {
+		color: #92abba;
+	}
 
 .font-small {
 	line-height: 12pt;
-	font-size: .7em;
+	font-size: 10pt;
+}
+
+.font-tiny {
+	line-height: 10pt;
+	font-size: 7pt;
 	font-weight: bold;
-	color: #92abba;
+	font-family: Verdana;
 }
 
 .faded {

@@ -4,10 +4,10 @@
 	<p>
 		<a asp-controller="@nameof(Roles)" asp-action="@nameof(Roles.Edit)" asp-route-id="@Model.Id">@Model.Name</a>
 	</p>
-	<div class="small-pad-left">
-		<p class="note">@Model.Description</p>
-		<p class="note">Added by @Model.CreatedBy, @Model.Created</p>
-		<p class="note">Last modified by @Model.ModifiedBy, @Model.Modified</p>
-		<p class="note">@Model.NumberOfUsers users</p>
+	<div class="small-pad-left font-small subdued-text">
+		<p>@Model.Description</p>
+		<p>Added by @Model.CreatedBy, @Model.Created</p>
+		<p>Last modified by @Model.ModifiedBy, @Model.Modified</p>
+		<p>@Model.NumberOfUsers users</p>
 	</div>
 </li>
