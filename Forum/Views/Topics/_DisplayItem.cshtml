@@ -70,12 +70,13 @@
 				}
 
 				@Model.PostedByName
-				<time>
-					posted @Model.TimePosted
+
+				<span class="time">
+					<span>posted <time timestamp="@Model.TimePostedDT.Ticks">@Model.TimePosted</time></span>
 					@if (Model.TimeEdited != Model.TimePosted) {
-						<span>| edited @Model.TimeEdited</span>
+						<span>| edited <time timestamp="@Model.TimeEditedDT.Ticks">@Model.TimeEdited</time></span>
 					}
-				</time>
+				</span>
 			</header>
 
 			<br class="clear mobile-show" />

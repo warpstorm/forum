@@ -1,4 +1,11 @@
-﻿.details {
+﻿time {
+	color: #516169;
+	font-size: .85em;
+	line-height: 1em;
+	font-weight: bold;
+}
+
+.details {
 	width: 100%;
 	margin-right: 20px;
 }

@@ -58,3 +58,7 @@
 		<a asp-action="@nameof(Notifications.MarkAllRead)" class="button" onclick="return confirm('Are you sure you want to mark all notifications as read?');">Mark All Read</a>
 	</p>
 }
+
+@section styles {
+	<link rel="stylesheet" href="~/styles/notification-index.css" asp-append-version="true" />
+}

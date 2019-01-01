@@ -96,6 +96,13 @@ a.borderless * {
 	clear: both;
 }
 
+	br.clear {
+		font-size: 1px;
+		line-height: 1px;
+		margin: 0;
+		padding: 0;
+	}
+
 .float-right {
 	float: right;
 }

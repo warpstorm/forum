@@ -1,4 +1,11 @@
-﻿#categories {
+﻿time {
+	color: #516169;
+	font-size: .85em;
+	line-height: 1em;
+	font-weight: bold;
+}
+
+#categories {
 	margin-right: 20%;
 }
 

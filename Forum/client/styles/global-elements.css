@@ -60,14 +60,6 @@ p, blockquote {
 	padding: 0;
 }
 
-br.clear {
-	clear: both;
-	font-size: 1px;
-	line-height: 1px;
-	margin: 0;
-	padding: 0;
-}
-
 fieldset {
 	border: 0;
 	margin: 0 0 20px 0;
@@ -85,11 +77,4 @@ img {
 video {
 	max-width: 100%;
 	height: auto;
-}
-
-time {
-	color: #516169;
-	font-size: .85em;
-	line-height: 1em;
-	font-weight: bold;
 }
