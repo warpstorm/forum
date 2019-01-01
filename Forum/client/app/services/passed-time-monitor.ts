@@ -16,7 +16,7 @@ export class PassedTimeMonitor {
 			element.textContent = passedTime;
 		});
 
-		setTimeout(this.updateTags, 30000);
+		setTimeout(this.updateTags, 10000);
 	}
 
 	convertToPassedTime(date: Date): string {
@@ -78,13 +78,12 @@ export class PassedTimeMonitor {
 		else if (differenceMinutes >= 2) {
 			returnText = Math.round(differenceMinutes) + " minutes ago";
 		}
-
-		//else if (differenceSeconds >= 1 && differenceSeconds < 2) {
-		//	returnText = "1 second ago";
-		//}
-		//else if (differenceSeconds >= 2) {
-		//	returnText = Math.Round(differenceSeconds) + " seconds ago";
-		//}
+		else if (differenceSeconds >= 1 && differenceSeconds < 2) {
+			returnText = "1 second ago";
+		}
+		else if (differenceSeconds >= 2) {
+			returnText = Math.round(differenceSeconds) + " seconds ago";
+		}
 
 		return returnText;
 	}

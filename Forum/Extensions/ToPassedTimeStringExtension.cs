@@ -46,15 +46,12 @@ namespace Forum.Extensions {
 			else if (difference.TotalMinutes >= 2) {
 				returnText = Math.Round(difference.TotalMinutes) + " minutes ago";
 			}
-			
-			// I decided I don't need this level of fidelity.
-			//
-			//else if (difference.TotalSeconds >= 1 && difference.TotalSeconds < 2) {
-			//	returnText = "1 second ago";
-			//}
-			//else if (difference.TotalSeconds >= 2) {
-			//	returnText = Math.Round(difference.TotalSeconds) + " seconds ago";
-			//}
+			else if (difference.TotalSeconds >= 1 && difference.TotalSeconds < 2) {
+				returnText = "1 second ago";
+			}
+			else if (difference.TotalSeconds >= 2) {
+				returnText = Math.Round(difference.TotalSeconds) + " seconds ago";
+			}
 
 			return returnText;
 		}
