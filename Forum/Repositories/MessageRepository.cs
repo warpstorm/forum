@@ -334,7 +334,7 @@ namespace Forum.Repositories {
 			DbContext.SaveChanges();
 
 			await ForumHub.Clients.All.SendAsync("updated-message", new HubModels.Message {
-				TopicId = messageRecord.ParentId,
+				TopicId = messageRecord.ParentId > 0 ? messageRecord.ParentId : messageRecord.Id,
 				MessageId = messageRecord.Id
 			});
 
