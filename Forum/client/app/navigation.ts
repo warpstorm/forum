@@ -19,11 +19,11 @@ export class Navigation {
 		});
 	}
 
-    addListenerUnhidePages(pageNavigatorElement: Element): void {
-        pageNavigatorElement.querySelectorAll('.unhide-pages').forEach(element => {
+	addListenerUnhidePages(pageNavigatorElement: Element): void {
+		pageNavigatorElement.querySelectorAll('.unhide-pages').forEach(element => {
 			element.removeEventListener('click', this.eventUnhidePages);
 			element.addEventListener('click', this.eventUnhidePages);
-        });
+		});
 	}
 
 	addListenerClickableLinkParent(): void {
@@ -130,15 +130,15 @@ export class Navigation {
 			switch ((<KeyboardEvent>event).which) {
 				case 1:
 					if ((<KeyboardEvent>event).shiftKey) {
-						window.open(url, '_blank');
+						this.win.open(url, '_blank');
 					}
 					else {
-						window.location.href = url;
+						this.win.location.href = url;
 					}
 					break;
 
 				case 2:
-					window.open(url, '_blank');
+					this.win.open(url, '_blank');
 					break;
 			}
 		}
@@ -147,21 +147,41 @@ export class Navigation {
 	}
 
 	eventOpenMenu = (event: Event) => {
+		event.stopPropagation();
+
+		let self = this;
+
 		this.eventCloseMenu(event);
 
 		let targetElement = <HTMLElement>event.currentTarget;
 
-		targetElement.removeEventListener('click', this.eventOpenMenu);
-		targetElement.addEventListener('click', this.eventCloseMenu);
+		targetElement.removeEventListener('click', self.eventOpenMenu);
+		targetElement.addEventListener('click', self.eventCloseMenu);
+		
+		targetElement.querySelectorAll('.menu-wrapper').forEach(menuWrapperElement => {
+			show(menuWrapperElement);
 
-		targetElement.querySelectorAll('.menu-wrapper').forEach(element => {
-			show(element);
+			let dropDownMenuElement = menuWrapperElement.querySelector('.drop-down-menu') as HTMLElement;
+
+			if (dropDownMenuElement) {
+				var rect = targetElement.getBoundingClientRect();
+				var targetLeft = rect.left + self.win.pageXOffset - (<HTMLElement>self.doc.documentElement).clientLeft;
+
+				let selectorLeftOffset = 0;
+				var screenFalloff = targetLeft + dropDownMenuElement.clientWidth + 20 - self.win.innerWidth;
+
+				if (screenFalloff > 0) {
+					selectorLeftOffset -= screenFalloff;
+				}
+
+				dropDownMenuElement.style.left = selectorLeftOffset + (selectorLeftOffset == 0 ? '' : 'px');
+			}
 		});
 
-		let body: Element = this.doc.getElementsByTagName('body')[0];
+		let body: Element = self.doc.getElementsByTagName('body')[0];
 
 		setTimeout(() => {
-			body.addEventListener('click', this.eventCloseMenu);
+			body.addEventListener('click', self.eventCloseMenu);
 		}, 50);
 	}
 
