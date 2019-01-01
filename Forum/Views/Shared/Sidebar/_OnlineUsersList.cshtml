@@ -1,20 +1,22 @@
 ﻿@model List<ViewModels.Profile.OnlineUser>
 
-<h4>Who's online <span class="font-small subdued-text">(@Model.Count)</span></h4>
-<ul id="whos-online">
-	<li class="font-small subdued-text"><a asp-controller="@nameof(Account)" asp-action="@nameof(Account.Index)">View All Users</a></li>
-	@foreach (var onlineUser in Model) {
-		<li class="font-small subdued-text nowrap small-pad-top">
-			@if (onlineUser.Online) {
-				<span class="chiclet chiclet-green"></span>
-			}
-			<span>
-				@if (onlineUser.IsBirthday) {
-					<img src="~/images/hbd.png" alt="Happy birthday!" title="Happy birthday!" />
+<div sidebar="whos-online">
+	<h4>Who's online <span class="font-small subdued-text">(@Model.Count)</span></h4>
+	<ul id="whos-online">
+		<li class="font-small subdued-text"><a asp-controller="@nameof(Account)" asp-action="@nameof(Account.Index)">View All Users</a></li>
+		@foreach (var onlineUser in Model) {
+			<li class="font-small subdued-text nowrap small-pad-top">
+				@if (onlineUser.Online) {
+					<span class="chiclet chiclet-green"></span>
 				}
-				@onlineUser.Name
-			</span>
-			<passed-time class="font-tiny dark-text" time="@onlineUser.LastOnline" />
-		</li>
-	}
-</ul>
+				<span>
+					@if (onlineUser.IsBirthday) {
+						<img src="~/images/hbd.png" alt="Happy birthday!" title="Happy birthday!" />
+					}
+					@onlineUser.Name
+				</span>
+				<passed-time class="font-tiny dark-text" time="@onlineUser.LastOnline" />
+			</li>
+		}
+	</ul>
+</div>
