@@ -14,7 +14,6 @@ namespace Forum.Services {
 	public class UserContextLoader {
 		ApplicationDbContext DbContext { get; }
 		UserContext UserContext { get; }
-		IHubContext<ForumHub> ForumHub { get; }
 		SignInManager<DataModels.ApplicationUser> SignInManager { get; }
 		UserManager<DataModels.ApplicationUser> UserManager { get; }
 		IHttpContextAccessor HttpContextAccessor { get; }
@@ -22,14 +21,12 @@ namespace Forum.Services {
 		public UserContextLoader(
 			ApplicationDbContext dbContext,
 			UserContext userContext,
-			IHubContext<ForumHub> forumHub,
 			SignInManager<DataModels.ApplicationUser> signInManager,
 			UserManager<DataModels.ApplicationUser> userManager,
 			IHttpContextAccessor httpContextAccessor
 		) {
 			DbContext = dbContext;
 			UserContext = userContext;
-			ForumHub = forumHub;
 			SignInManager = signInManager;
 			UserManager = userManager;
 			HttpContextAccessor = httpContextAccessor;
@@ -45,7 +42,6 @@ namespace Forum.Services {
 				else {
 					await LoadUserRoles(UserContext);
 					LoadViewLogs(UserContext);
-					await UpdateLastOnline(UserContext);
 				}
 			}
 		}
@@ -78,13 +74,6 @@ namespace Forum.Services {
 			}
 
 			userContext.IsAuthenticated = true;
-		}
-
-		async Task UpdateLastOnline(UserContext userContext) {
-			userContext.ApplicationUser.LastOnline = DateTime.Now;
-			DbContext.Update(userContext.ApplicationUser);
-			DbContext.SaveChanges();
-			await ForumHub.Clients.All.SendAsync("whos-online");
 		}
 
 		void LoadViewLogs(UserContext userContext) {

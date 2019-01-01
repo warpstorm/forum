@@ -64,7 +64,7 @@ namespace Forum.Controllers {
 		}
 
 		[HttpGet]
-		public IActionResult Index(int id = 0, int unread = 0) {
+		public async Task<IActionResult> Index(int id = 0, int unread = 0) {
 			var boardRoles = RoleRepository.BoardRoles.Where(r => r.BoardId == id).Select(r => r.RoleId).ToList();
 
 			if (!UserContext.IsAdmin && boardRoles.Any() && !boardRoles.Intersect(UserContext.Roles).Any()) {
@@ -87,11 +87,11 @@ namespace Forum.Controllers {
 				Sidebar = sidebar
 			};
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpGet]
-		public IActionResult IndexMore(int id = 0, int page = 0, int unread = 0) {
+		public async Task<IActionResult> IndexMore(int id = 0, int page = 0, int unread = 0) {
 			var boardRoles = RoleRepository.BoardRoles.Where(r => r.BoardId == id).Select(r => r.RoleId).ToList();
 
 			if (!UserContext.IsAdmin && boardRoles.Any() && !boardRoles.Intersect(UserContext.Roles).Any()) {
@@ -108,12 +108,12 @@ namespace Forum.Controllers {
 				Topics = topicPreviews
 			};
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpGet]
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
-		public IActionResult Merge(int id) {
+		public async Task<IActionResult> Merge(int id) {
 			var record = DbContext.Messages.FirstOrDefault(item => item.Id == id);
 
 			if (record is null) {
@@ -139,12 +139,12 @@ namespace Forum.Controllers {
 				Topics = topicPreviews,
 			};
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpGet]
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
-		public IActionResult MergeMore(int id, int page = 0) {
+		public async Task<IActionResult> MergeMore(int id, int page = 0) {
 			var record = DbContext.Messages.FirstOrDefault(item => item.Id == id);
 
 			if (record is null) {
@@ -168,7 +168,7 @@ namespace Forum.Controllers {
 				Topics = topicPreviews
 			};
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpGet]
@@ -179,13 +179,13 @@ namespace Forum.Controllers {
 		}
 
 		[HttpGet]
-		public IActionResult Display(int id, int pageId = 1, int target = -1) {
+		public async Task<IActionResult> Display(int id, int pageId = 1, int target = -1) {
 			ViewData["Smileys"] = SmileyRepository.GetSelectorList();
 
 			var viewModel = GetDisplayPageModel(id, pageId, target);
 
 			if (string.IsNullOrEmpty(viewModel.RedirectPath)) {
-				return ForumViewResult.ViewResult(this, viewModel);
+				return await ForumViewResult.ViewResult(this, viewModel);
 			}
 			else {
 				return Redirect(viewModel.RedirectPath);
@@ -196,7 +196,7 @@ namespace Forum.Controllers {
 		/// Retrieves a specific message. Useful for API calls.
 		/// </summary>
 		[HttpGet]
-		public IActionResult DisplayOne(int id) {
+		public async Task<IActionResult> DisplayOne(int id) {
 			var record = DbContext.Messages.Find(id);
 
 			if (record is null) {
@@ -221,14 +221,14 @@ namespace Forum.Controllers {
 				Messages = messages
 			};
 
-			return ForumViewResult.ViewResult(this, "DisplayPartial", viewModel);
+			return await ForumViewResult.ViewResult(this, "DisplayPartial", viewModel);
 		}
 
 		/// <summary>
 		/// Retrieves all of the latest messages in a topic. Useful for API calls.
 		/// </summary>
 		[HttpGet]
-		public IActionResult DisplayPartial(int id, long latest) {
+		public async Task<IActionResult> DisplayPartial(int id, long latest) {
 			var latestTime = new DateTime(latest);
 
 			var record = DbContext.Messages.Find(id);
@@ -258,7 +258,7 @@ namespace Forum.Controllers {
 				Messages = messages
 			};
 
-			return ForumViewResult.ViewResult(this, "DisplayPartial", viewModel);
+			return await ForumViewResult.ViewResult(this, "DisplayPartial", viewModel);
 		}
 
 		[HttpGet]
@@ -343,7 +343,7 @@ namespace Forum.Controllers {
 				var viewModel = GetDisplayPageModel(input.Id);
 				viewModel.ReplyForm.Body = input.Body;
 
-				return await Task.Run(() => { return ForumViewResult.ViewResult(this, nameof(Display), viewModel); });
+				return await ForumViewResult.ViewResult(this, nameof(Display), viewModel);
 			}
 		}
 

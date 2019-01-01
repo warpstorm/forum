@@ -27,7 +27,7 @@ namespace Forum.Controllers {
 		}
 
 		[HttpGet]
-		public IActionResult Index() {
+		public async Task<IActionResult> Index() {
 			var viewModel = new ViewModels.IndexPage();
 
 			foreach (var smiley in SmileyRepository) {
@@ -44,13 +44,13 @@ namespace Forum.Controllers {
 				});
 			}
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpGet]
-		public IActionResult Create() {
+		public async Task<IActionResult> Create() {
 			var viewModel = new ViewModels.CreatePage();
-			return ForumViewResult.ViewResult(this, viewModel);
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpPost]
@@ -70,7 +70,7 @@ namespace Forum.Controllers {
 					Thought = input.Thought
 				};
 
-				return await Task.Run(() => { return ForumViewResult.ViewResult(this, viewModel); });
+				return await ForumViewResult.ViewResult(this, viewModel);
 			}
 		}
 

@@ -30,7 +30,7 @@ namespace Forum.Controllers {
 		}
 
 		[HttpGet]
-		public IActionResult Index() {
+		public async Task<IActionResult> Index() {
 			var settings = new BaseSettings();
 
 			var settingsRecords = SettingsRepository.Where(record => string.IsNullOrEmpty(record.UserId)).ToList();
@@ -67,7 +67,7 @@ namespace Forum.Controllers {
 				Settings = settingsList
 			};
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpPost]

@@ -29,7 +29,7 @@ namespace Forum.Controllers {
 		}
 
 		[HttpGet]
-		public IActionResult Index() {
+		public async Task<IActionResult> Index() {
 			var sidebar = Sidebar.Generate();
 
 			var viewModel = new PageViewModels.IndexPage {
@@ -41,27 +41,27 @@ namespace Forum.Controllers {
 				return RedirectToAction(nameof(Setup.Initialize), nameof(Setup));
 			}
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
-		public IActionResult Manage() {
+		public async Task<IActionResult> Manage() {
 			var viewModel = new PageViewModels.IndexPage {
 				Categories = BoardRepository.CategoryIndex()
 			};
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
-		public IActionResult Create() {
+		public async Task<IActionResult> Create() {
 			var viewModel = new PageViewModels.CreatePage() {
 				Categories = BoardRepository.CategoryPickList()
 			};
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
@@ -86,13 +86,13 @@ namespace Forum.Controllers {
 					viewModel.Categories.First(item => item.Value == input.Category).Selected = true;
 				}
 
-				return await Task.Run(() => { return ForumViewResult.ViewResult(this, viewModel); });
+				return await ForumViewResult.ViewResult(this, viewModel);
 			}
 		}
 
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
-		public IActionResult Edit(int id) {
+		public async Task<IActionResult> Edit(int id) {
 			var boardRecord = BoardRepository.First(b => b.Id == id);
 			var category = BoardRepository.Categories.First(item => item.Id == boardRecord.CategoryId);
 
@@ -106,7 +106,7 @@ namespace Forum.Controllers {
 
 			viewModel.Categories.First(item => item.Text == category.Name).Selected = true;
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
@@ -135,7 +135,7 @@ namespace Forum.Controllers {
 					viewModel.Categories.First(item => item.Value == input.Category).Selected = true;
 				}
 
-				return await Task.Run(() => { return ForumViewResult.ViewResult(this, viewModel); });
+				return await ForumViewResult.ViewResult(this, viewModel);
 			}
 		}
 

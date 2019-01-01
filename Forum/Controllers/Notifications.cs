@@ -19,11 +19,12 @@ namespace Forum.Controllers {
 		}
 
 		[HttpGet]
-		public IActionResult Index() {
+		public async Task<IActionResult> Index() {
 			var showRead = false;
 
-			if (Request.Query.ContainsKey("show-read"))
+			if (Request.Query.ContainsKey("show-read")) {
 				showRead = true;
+			}
 
 			var notifications = NotificationRepository.Index(showRead);
 
@@ -31,7 +32,7 @@ namespace Forum.Controllers {
 				Notifications = notifications
 			};
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpGet]

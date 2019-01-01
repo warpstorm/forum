@@ -32,7 +32,7 @@ export class App {
 		this.navigation = new Navigation(document);
 		this.smileySelector = new SmileySelector(document);
 
-		this.passedTimeMonitor = new PassedTimeMonitor(document, this);
+		this.passedTimeMonitor = new PassedTimeMonitor(document);
 		this.whosOnlineMonitor = new WhosOnlineMonitor(document, this);
 	}
 

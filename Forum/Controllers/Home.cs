@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace Forum.Controllers {
 	using ViewModels = Models.ViewModels;
@@ -48,21 +49,21 @@ namespace Forum.Controllers {
 		}
 
 		[AllowAnonymous]
-		public IActionResult Error() {
+		public async Task<IActionResult> Error() {
 			var viewModel = new ViewModels.Error {
 				RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
 			};
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpGet]
-		public IActionResult WhosOnline() {
+		public async Task<IActionResult> WhosOnline() {
 			var viewModel = AccountRepository.GetOnlineList();
 
 			ViewData[Constants.InternalKeys.Layout] = "_LayoutEmpty";
 
-			return ForumViewResult.ViewResult(this, "Sidebar/_OnlineUsersList", viewModel);
+			return await ForumViewResult.ViewResult(this, "Sidebar/_OnlineUsersList", viewModel);
 		}
 
 		[HttpGet]

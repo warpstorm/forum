@@ -77,13 +77,13 @@ namespace Forum.Controllers {
 				});
 			}
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpGet]
-		public IActionResult Create() {
+		public async Task<IActionResult> Create() {
 			var viewModel = new PageViewModels.CreatePage();
-			return ForumViewResult.ViewResult(this, viewModel);
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpPost]
@@ -102,15 +102,14 @@ namespace Forum.Controllers {
 					Description = input.Description
 				};
 
-				return await Task.Run(() => { return ForumViewResult.ViewResult(this, viewModel); });
+				return await ForumViewResult.ViewResult(this, viewModel);
 			}
 		}
 
 		[HttpGet]
 		public async Task<IActionResult> Edit(string id) {
 			var viewModel = await GetEditPageModel(id);
-
-			return ForumViewResult.ViewResult(this, viewModel);
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpPost]
@@ -129,7 +128,7 @@ namespace Forum.Controllers {
 				viewModel.Name = input.Name;
 				viewModel.Description = input.Description;
 
-				return await Task.Run(() => { return ForumViewResult.ViewResult(this, viewModel); });
+				return await ForumViewResult.ViewResult(this, viewModel);
 			}
 		}
 
@@ -145,7 +144,7 @@ namespace Forum.Controllers {
 		[HttpGet]
 		public async Task<IActionResult> UserList(string id) {
 			var viewModel = await RoleRepository.UserList(id);
-			return ForumViewResult.ViewResult(this, viewModel);
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpGet]
@@ -159,7 +158,7 @@ namespace Forum.Controllers {
 
 			async Task<IActionResult> FailureCallback() {
 				var viewModel = await GetEditPageModel(id);
-				return await Task.Run(() => { return ForumViewResult.ViewResult(this, nameof(Edit), viewModel); });
+				return await ForumViewResult.ViewResult(this, nameof(Edit), viewModel);
 			}
 		}
 
@@ -174,7 +173,7 @@ namespace Forum.Controllers {
 
 			async Task<IActionResult> FailureCallback() {
 				var viewModel = await GetEditPageModel(id);
-				return await Task.Run(() => { return ForumViewResult.ViewResult(this, nameof(Edit), viewModel); });
+				return await ForumViewResult.ViewResult(this, nameof(Edit), viewModel);
 			}
 		}
 

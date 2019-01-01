@@ -57,7 +57,7 @@ namespace Forum.Controllers {
 				BoardId = id.ToString()
 			};
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpPost]
@@ -91,7 +91,7 @@ namespace Forum.Controllers {
 					Body = input.Body
 				};
 
-				return await Task.Run(() => { return ForumViewResult.ViewResult(this, viewModel); });
+				return await ForumViewResult.ViewResult(this, viewModel);
 			}
 		}
 
@@ -110,7 +110,7 @@ namespace Forum.Controllers {
 				Body = record.OriginalBody
 			};
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpPost]
@@ -130,7 +130,7 @@ namespace Forum.Controllers {
 					Body = input.Body
 				};
 
-				return await Task.Run(() => { return ForumViewResult.ViewResult(this, viewModel); });
+				return await ForumViewResult.ViewResult(this, viewModel);
 			}
 		}
 
@@ -164,7 +164,7 @@ namespace Forum.Controllers {
 
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
-		public IActionResult Admin(InputModels.Continue input = null) => ForumViewResult.ViewResult(this);
+		public async Task<IActionResult> Admin(InputModels.Continue input = null) => await ForumViewResult.ViewResult(this);
 
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
@@ -195,7 +195,7 @@ namespace Forum.Controllers {
 				viewModel.NextAction = UrlHelper.Action(nameof(Messages.ProcessMessages), nameof(Messages), input);
 			}
 
-			return ForumViewResult.ViewResult(this, "Delay", viewModel);
+			return await ForumViewResult.ViewResult(this, "Delay", viewModel);
 		}
 
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
@@ -227,12 +227,12 @@ namespace Forum.Controllers {
 				viewModel.NextAction = UrlHelper.Action(nameof(Messages.ReprocessMessages), nameof(Messages), input);
 			}
 
-			return ForumViewResult.ViewResult(this, "Delay", viewModel);
+			return await ForumViewResult.ViewResult(this, "Delay", viewModel);
 		}
 
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
-		public IActionResult RecountReplies(InputModels.Continue input) {
+		public async Task<IActionResult> RecountReplies(InputModels.Continue input) {
 			if (string.IsNullOrEmpty(input.Stage)) {
 				var totalSteps = MessageRepository.RecountReplies();
 
@@ -258,12 +258,12 @@ namespace Forum.Controllers {
 				viewModel.NextAction = UrlHelper.Action(nameof(Messages.RecountReplies), nameof(Messages), input);
 			}
 
-			return ForumViewResult.ViewResult(this, "Delay", viewModel);
+			return await ForumViewResult.ViewResult(this, "Delay", viewModel);
 		}
 
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
-		public IActionResult RebuildParticipants(InputModels.Continue input) {
+		public async Task<IActionResult> RebuildParticipants(InputModels.Continue input) {
 			if (string.IsNullOrEmpty(input.Stage)) {
 				var totalSteps = MessageRepository.RebuildParticipants();
 
@@ -289,7 +289,7 @@ namespace Forum.Controllers {
 				viewModel.NextAction = UrlHelper.Action(nameof(Messages.RebuildParticipants), nameof(Messages), input);
 			}
 
-			return ForumViewResult.ViewResult(this, "Delay", viewModel);
+			return await ForumViewResult.ViewResult(this, "Delay", viewModel);
 		}
 	}
 }

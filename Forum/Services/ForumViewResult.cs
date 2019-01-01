@@ -1,10 +1,13 @@
-﻿using Forum.Controllers;
+﻿using Forum.Contexts;
+using Forum.Controllers;
 using Forum.Interfaces.Services;
 using Forum.Repositories;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -16,15 +19,24 @@ namespace Forum.Services {
 	using ServiceModels = Models.ServiceModels;
 
 	public class ForumViewResult : IForumViewResult {
+		ApplicationDbContext DbContext { get; }
+		UserContext UserContext { get; }
 		BoardRepository BoardRepository { get; }
+		IHubContext<ForumHub> ForumHub { get; }
 		IUrlHelper UrlHelper { get; }
 
 		public ForumViewResult(
+			ApplicationDbContext dbContext,
+			UserContext userContext,
 			BoardRepository boardRepository,
+			IHubContext<ForumHub> forumHub,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory
 		) {
+			DbContext = dbContext;
+			UserContext = userContext;
 			BoardRepository = boardRepository;
+			ForumHub = forumHub;
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
@@ -64,7 +76,9 @@ namespace Forum.Services {
 			}
 		}
 
-		public IActionResult ViewResult(Controller controller, string viewName, object model = null) {
+		public async Task<IActionResult> ViewResult(Controller controller, string viewName, object model = null) {
+			await UpdateLastOnline();
+
 			var requestUrl = controller.Request.GetEncodedUrl();
 			controller.ViewData["Url"] = requestUrl;
 
@@ -89,8 +103,15 @@ namespace Forum.Services {
 
 			return controller.View(viewName, model);
 		}
-		public IActionResult ViewResult(Controller controller, object model) => ViewResult(controller, null, model);
-		public IActionResult ViewResult(Controller controller) => ViewResult(controller, null, null);
+		public async Task<IActionResult> ViewResult(Controller controller, object model) => await ViewResult(controller, null, model);
+		public async Task<IActionResult> ViewResult(Controller controller) => await ViewResult(controller, null, null);
+
+		async Task UpdateLastOnline() {
+			UserContext.ApplicationUser.LastOnline = DateTime.Now;
+			DbContext.Update(UserContext.ApplicationUser);
+			DbContext.SaveChanges();
+			await ForumHub.Clients.All.SendAsync("whos-online");
+		}
 
 		string GetReferrer(Controller controller) {
 			controller.Request.Query.TryGetValue("ReturnUrl", out var referrer);
