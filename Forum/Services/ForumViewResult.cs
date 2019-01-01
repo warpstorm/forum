@@ -34,17 +34,20 @@ namespace Forum.Services {
 		}
 
 		public async Task<IActionResult> RedirectFromService(Controller controller, ServiceModels.ServiceResponse serviceResponse, Func<Task<IActionResult>> failureCallback) {
-			if (!string.IsNullOrEmpty(serviceResponse.Message))
+			if (!string.IsNullOrEmpty(serviceResponse.Message)) {
 				controller.TempData[Constants.InternalKeys.StatusMessage] = serviceResponse.Message;
+			}
 
-			foreach (var kvp in serviceResponse.Errors)
+			foreach (var kvp in serviceResponse.Errors) {
 				controller.ModelState.AddModelError(kvp.Key, kvp.Value);
+			}
 
 			if (serviceResponse.Success) {
 				var redirectPath = serviceResponse.RedirectPath;
 
-				if (string.IsNullOrEmpty(redirectPath))
+				if (string.IsNullOrEmpty(redirectPath)) {
 					redirectPath = GetReferrer(controller);
+				}
 
 				return controller.Redirect(redirectPath);
 			}
@@ -53,10 +56,12 @@ namespace Forum.Services {
 		}
 
 		public IActionResult RedirectToLocal(Controller controller, string returnUrl) {
-			if (controller.Url.IsLocalUrl(returnUrl))
+			if (controller.Url.IsLocalUrl(returnUrl)) {
 				return controller.Redirect(returnUrl);
-			else
+			}
+			else {
 				return controller.RedirectToAction(nameof(Home.FrontPage), nameof(Home));
+			}
 		}
 
 		public IActionResult ViewResult(Controller controller, string viewName, object model = null) {
@@ -90,11 +95,13 @@ namespace Forum.Services {
 		string GetReferrer(Controller controller) {
 			controller.Request.Query.TryGetValue("ReturnUrl", out var referrer);
 
-			if (string.IsNullOrEmpty(referrer))
+			if (string.IsNullOrEmpty(referrer)) {
 				controller.Request.Query.TryGetValue("Referer", out referrer);
+			}
 
-			if (string.IsNullOrEmpty(referrer))
+			if (string.IsNullOrEmpty(referrer)) {
 				referrer = UrlHelper.Action(nameof(Home.FrontPage), nameof(Home));
+			}
 
 			return referrer;
 		}
@@ -104,8 +111,9 @@ namespace Forum.Services {
 
 			var logoFile = "Logo.png";
 
-			if (holidayLogos.ContainsKey(DateTime.Now.Date))
+			if (holidayLogos.ContainsKey(DateTime.Now.Date)) {
 				logoFile = holidayLogos[DateTime.Now.Date];
+			}
 
 			return $"/images/logos/{logoFile}";
 		}
