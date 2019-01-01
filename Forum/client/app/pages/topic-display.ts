@@ -165,8 +165,6 @@ export class TopicDisplay {
 	}
 
 	hubUpdatedMessage = (data: HubMessage) => {
-		console.log(data);
-
 		let self = this;
 
 		if (data.topicId == self.settings.topicId

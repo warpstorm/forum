@@ -48,8 +48,6 @@ export class PassedTimeMonitor {
 
 			var months = nowMonth - dateMonth;
 
-			console.log(months);
-
 			if (years == 1) {
 				returnText = "1 year ago";
 			}
