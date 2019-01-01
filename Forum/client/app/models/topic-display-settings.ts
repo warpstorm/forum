@@ -5,7 +5,6 @@
 	public latest: number = 0;
 	public pageActions: string = '';
 	public showFavicons: boolean = false;
-	public sideloading: boolean = false;
 	public togglePath: string = '';
 	public topicId: number = 0;
 	public totalPages: number = 0;

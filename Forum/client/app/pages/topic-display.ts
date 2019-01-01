@@ -10,12 +10,10 @@ import { TokenRequestResponse } from "../models/token-request-response";
 import { XhrOptions } from "../models/xhr-options";
 import { XhrResult } from "../models/xhr-result";
 
-import * as SignalR from "@aspnet/signalr";
 import { TopicDisplayPartialSettings } from "../models/topic-display-partial-settings";
 
 export class TopicDisplay {
 	private assignedBoards: string[] = [];
-	private hub?: SignalR.HubConnection = undefined;
 	private settings: TopicDisplaySettings;
 	private submitting: boolean = false;
 	private thoughtSelectorMessageId: string = "";
@@ -30,8 +28,8 @@ export class TopicDisplay {
 	}
 
 	init(): void {
-		if (this.settings.sideloading) {
-			this.establishHubConnection();
+		if (this.app.hub) {
+			this.bindHubActions();
 		}
 
 		let incomingBoards: string[] = this.settings.assignedBoards;
@@ -53,22 +51,13 @@ export class TopicDisplay {
 		this.hideFavIcons();
 	}
 
-	establishHubConnection = () => {
-		this.hub = new SignalR.HubConnectionBuilder().withUrl('/hub').build();
-		this.hub.start()
-			.then(this.bindHubActions)
-			.catch(err => console.log('Error while starting connection: ' + err));
-
-		console.log('Hub connection established.');
-	}
-
 	bindHubActions = () => {
-		if (!this.hub) {
+		if (!this.app.hub) {
 			throw new Error('Hub not defined.');
 		}
 
-		this.hub.on('new-reply', this.hubNewReply);
-		this.hub.on('updated-message', this.hubUpdatedMessage);
+		this.app.hub.on('new-reply', this.hubNewReply);
+		this.app.hub.on('updated-message', this.hubUpdatedMessage);
 	}
 
 	bindMessageEventListeners(): void {
@@ -176,6 +165,8 @@ export class TopicDisplay {
 	}
 
 	hubUpdatedMessage = (data: HubMessage) => {
+		console.log(data);
+
 		let self = this;
 
 		if (data.topicId == self.settings.topicId
@@ -213,7 +204,7 @@ export class TopicDisplay {
 		let self = this;
 
 		// make sure the user has chosen to enable the hub connection.
-		if (!self.hub) {
+		if (!self.app.hub) {
 			return;
 		}
 
@@ -407,7 +398,7 @@ export class TopicDisplay {
 		let smileyId = smileyImg.getAttribute('smiley-id');
 
 		// Only send an XHR if we anticipate the thought will be returned via the hub.
-		if (this.hub) {
+		if (this.app.hub) {
 			let requestOptions = new XhrOptions({
 				method: HttpMethod.Get,
 				url: `/Messages/AddThought/${this.thoughtSelectorMessageId}?smiley=${smileyId}`

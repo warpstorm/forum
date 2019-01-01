@@ -9,12 +9,15 @@ import { TopicDisplay } from './pages/topic-display';
 import { ManageBoards } from './pages/manage-boards';
 import { MessageCreate } from './pages/message-create';
 
+import * as SignalR from "@aspnet/signalr";
+
 window.onload = function () {
 	let app = new App();
 	app.boot();
 };
 
 export class App {
+	hub?: SignalR.HubConnection = undefined;
 	bbCode: BBCode;
 	easterEgg: EasterEgg;
 	navigation: Navigation;
@@ -30,6 +33,10 @@ export class App {
 	}
 
 	boot() {
+		if ((<any>window).sideloading) {
+			this.establishHubConnection();
+		}
+
 		this.bbCode.init();
 		this.easterEgg.init();
 		this.navigation.addListeners();
@@ -59,5 +66,11 @@ export class App {
 				topicIndex.init();
 				break;
 		}
+	}
+
+	establishHubConnection = () => {
+		this.hub = new SignalR.HubConnectionBuilder().withUrl('/hub').build();
+		this.hub.start().catch(err => console.log('Error while starting connection: ' + err));
+		console.log('Hub connection established.');
 	}
 }
