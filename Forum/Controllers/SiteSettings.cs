@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Forum.Controllers {
 	using InputModels = Models.InputModels;
@@ -30,7 +29,7 @@ namespace Forum.Controllers {
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> Index() {
+		public IActionResult Index() {
 			var settings = new BaseSettings();
 
 			var settingsRecords = SettingsRepository.Where(record => string.IsNullOrEmpty(record.UserId)).ToList();
@@ -67,22 +66,22 @@ namespace Forum.Controllers {
 				Settings = settingsList
 			};
 
-			return await ForumViewResult.ViewResult(this, viewModel);
+			return ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		[PreventRapidRequests]
-		public async Task<IActionResult> Edit(InputModels.EditSettingsInput input) {
+		public IActionResult Edit(InputModels.EditSettingsInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = SettingsRepository.UpdateSiteSettings(input);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				return ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
-			return await FailureCallback();
+			return FailureCallback();
 
-			async Task<IActionResult> FailureCallback() {
-				return await Task.Run(() => { return ForumViewResult.RedirectToReferrer(this); });
+			IActionResult FailureCallback() {
+				return ForumViewResult.RedirectToReferrer(this);
 			}
 		}
 	}

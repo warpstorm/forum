@@ -27,7 +27,7 @@ namespace Forum.Controllers {
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> Index() {
+		public IActionResult Index() {
 			var viewModel = new ViewModels.IndexPage();
 
 			foreach (var smiley in SmileyRepository) {
@@ -44,13 +44,13 @@ namespace Forum.Controllers {
 				});
 			}
 
-			return await ForumViewResult.ViewResult(this, viewModel);
+			return ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> Create() {
+		public IActionResult Create() {
 			var viewModel = new ViewModels.CreatePage();
-			return await ForumViewResult.ViewResult(this, viewModel);
+			return ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpPost]
@@ -59,34 +59,34 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> Create(CreateSmileyInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await SmileyRepository.Create(input);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				return ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
-			return await FailureCallback();
+			return FailureCallback();
 
-			async Task<IActionResult> FailureCallback() {
+			IActionResult FailureCallback() {
 				var viewModel = new ViewModels.CreatePage {
 					Code = input.Code,
 					Thought = input.Thought
 				};
 
-				return await ForumViewResult.ViewResult(this, viewModel);
+				return ForumViewResult.ViewResult(this, viewModel);
 			}
 		}
 
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		[PreventRapidRequests]
-		public async Task<IActionResult> Edit(EditSmileysInput input) {
+		public IActionResult Edit(EditSmileysInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = SmileyRepository.Update(input);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				return ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
-			return await FailureCallback();
+			return FailureCallback();
 
-			async Task<IActionResult> FailureCallback() {
-				return await Task.Run(() => { return RedirectToAction(nameof(Index)); });
+			IActionResult FailureCallback() {
+				return RedirectToAction(nameof(Index));
 			}
 		}
 
@@ -94,13 +94,13 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> Delete(int id) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await SmileyRepository.Delete(id);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				return ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
-			return await FailureCallback();
+			return FailureCallback();
 
-			async Task<IActionResult> FailureCallback() {
-				return await Task.Run(() => { return ForumViewResult.RedirectToReferrer(this); });
+			IActionResult FailureCallback() {
+				return ForumViewResult.RedirectToReferrer(this);
 			}
 		}
 	}

@@ -11,7 +11,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-
 namespace Forum.Controllers {
 	using DataModels = Models.DataModels;
 	using InputModels = Models.InputModels;
@@ -77,13 +76,13 @@ namespace Forum.Controllers {
 				});
 			}
 
-			return await ForumViewResult.ViewResult(this, viewModel);
+			return ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> Create() {
+		public IActionResult Create() {
 			var viewModel = new PageViewModels.CreatePage();
-			return await ForumViewResult.ViewResult(this, viewModel);
+			return ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpPost]
@@ -91,25 +90,25 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> Create(InputModels.CreateRoleInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await RoleRepository.Create(input);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				return ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
-			return await FailureCallback();
+			return FailureCallback();
 
-			async Task<IActionResult> FailureCallback() {
+			IActionResult FailureCallback() {
 				var viewModel = new PageViewModels.CreatePage() {
 					Name = input.Name,
 					Description = input.Description
 				};
 
-				return await ForumViewResult.ViewResult(this, viewModel);
+				return ForumViewResult.ViewResult(this, viewModel);
 			}
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> Edit(string id) {
-			var viewModel = await GetEditPageModel(id);
-			return await ForumViewResult.ViewResult(this, viewModel);
+		public IActionResult Edit(string id) {
+			var viewModel = GetEditPageModel(id);
+			return ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpPost]
@@ -117,18 +116,18 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> Edit(InputModels.EditRoleInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await RoleRepository.Edit(input);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				return ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
-			return await FailureCallback();
+			return FailureCallback();
 
-			async Task<IActionResult> FailureCallback() {
-				var viewModel = await GetEditPageModel(input.Id);
+			IActionResult FailureCallback() {
+				var viewModel = GetEditPageModel(input.Id);
 
 				viewModel.Name = input.Name;
 				viewModel.Description = input.Description;
 
-				return await ForumViewResult.ViewResult(this, viewModel);
+				return ForumViewResult.ViewResult(this, viewModel);
 			}
 		}
 
@@ -144,21 +143,21 @@ namespace Forum.Controllers {
 		[HttpGet]
 		public async Task<IActionResult> UserList(string id) {
 			var viewModel = await RoleRepository.UserList(id);
-			return await ForumViewResult.ViewResult(this, viewModel);
+			return ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpGet]
 		public async Task<IActionResult> AddUser(string id, string user) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await RoleRepository.AddUser(id, user);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				return ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
-			return await FailureCallback();
+			return FailureCallback();
 
-			async Task<IActionResult> FailureCallback() {
-				var viewModel = await GetEditPageModel(id);
-				return await ForumViewResult.ViewResult(this, nameof(Edit), viewModel);
+			IActionResult FailureCallback() {
+				var viewModel = GetEditPageModel(id);
+				return ForumViewResult.ViewResult(this, nameof(Edit), viewModel);
 			}
 		}
 
@@ -166,19 +165,19 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> RemoveUser(string id, string user) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await RoleRepository.RemoveUser(id, user);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				return ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
-			return await FailureCallback();
+			return FailureCallback();
 
-			async Task<IActionResult> FailureCallback() {
-				var viewModel = await GetEditPageModel(id);
-				return await ForumViewResult.ViewResult(this, nameof(Edit), viewModel);
+			IActionResult FailureCallback() {
+				var viewModel = GetEditPageModel(id);
+				return ForumViewResult.ViewResult(this, nameof(Edit), viewModel);
 			}
 		}
 
-		public async Task<PageViewModels.EditPage> GetEditPageModel(string id) {
-			var role = await RoleManager.FindByIdAsync(id);
+		public PageViewModels.EditPage GetEditPageModel(string id) {
+			var role = RoleManager.FindByIdAsync(id).Result;
 
 			if (role is null) {
 				throw new HttpNotFoundError();
@@ -188,14 +187,14 @@ namespace Forum.Controllers {
 			DataModels.ApplicationUser modifiedBy = null;
 
 			if (role.CreatedById != null) {
-				createdBy = await UserManager.FindByIdAsync(role.CreatedById);
+				createdBy = UserManager.FindByIdAsync(role.CreatedById).Result;
 			}
 
 			if (role.ModifiedById != null) {
-				modifiedBy = await UserManager.FindByIdAsync(role.ModifiedById);
+				modifiedBy = UserManager.FindByIdAsync(role.ModifiedById).Result;
 			}
 
-			var usersInRole = await UserManager.GetUsersInRoleAsync(role.Name);
+			var usersInRole = UserManager.GetUsersInRoleAsync(role.Name).Result;
 
 			var viewModel = new PageViewModels.EditPage {
 				Id = role.Id,

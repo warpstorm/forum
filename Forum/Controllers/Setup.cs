@@ -42,7 +42,7 @@ namespace Forum.Controllers {
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> Initialize() {
+		public IActionResult Initialize() {
 			CheckContext();
 
 			var totalPages = 4;
@@ -55,7 +55,7 @@ namespace Forum.Controllers {
 				NextAction = UrlHelper.Action(nameof(Setup.Process), nameof(Setup), new InputModels.Continue { CurrentStep = 1, TotalSteps = totalPages })
 			};
 
-			return await ForumViewResult.ViewResult(this, "Delay", viewModel);
+			return ForumViewResult.ViewResult(this, "Delay", viewModel);
 		}
 
 		public async Task<IActionResult> Process(InputModels.Continue input) {
@@ -99,7 +99,7 @@ namespace Forum.Controllers {
 				viewModel.NextAction = "/";
 			}
 
-			return await ForumViewResult.ViewResult(this, "Delay", viewModel);
+			return ForumViewResult.ViewResult(this, "Delay", viewModel);
 		}
 
 		void CheckContext() {

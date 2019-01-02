@@ -14,6 +14,7 @@ namespace Forum.Services {
 	public class UserContextLoader {
 		ApplicationDbContext DbContext { get; }
 		UserContext UserContext { get; }
+		IHubContext<ForumHub> ForumHub { get; }
 		SignInManager<DataModels.ApplicationUser> SignInManager { get; }
 		UserManager<DataModels.ApplicationUser> UserManager { get; }
 		IHttpContextAccessor HttpContextAccessor { get; }
@@ -21,12 +22,14 @@ namespace Forum.Services {
 		public UserContextLoader(
 			ApplicationDbContext dbContext,
 			UserContext userContext,
+			IHubContext<ForumHub> forumHub,
 			SignInManager<DataModels.ApplicationUser> signInManager,
 			UserManager<DataModels.ApplicationUser> userManager,
 			IHttpContextAccessor httpContextAccessor
 		) {
 			DbContext = dbContext;
 			UserContext = userContext;
+			ForumHub = forumHub;
 			SignInManager = signInManager;
 			UserManager = userManager;
 			HttpContextAccessor = httpContextAccessor;
@@ -41,7 +44,11 @@ namespace Forum.Services {
 				}
 				else {
 					await LoadUserRoles(UserContext);
-					LoadViewLogs(UserContext);
+					LoadViewLogs(UserContext);					
+
+					if (HttpContextAccessor.HttpContext.Request.Headers["X-Requested-With"] != "XMLHttpRequest") {
+						await UpdateLastOnline();
+					}
 				}
 			}
 		}
@@ -125,6 +132,13 @@ namespace Forum.Services {
 
 			var historyTimeLimit = DateTime.Now.AddDays(historySettingValue);
 			return historyTimeLimit;
+		}
+
+		async Task UpdateLastOnline() {
+			UserContext.ApplicationUser.LastOnline = DateTime.Now;
+			DbContext.Update(UserContext.ApplicationUser);
+			DbContext.SaveChanges();
+			await ForumHub.Clients.All.SendAsync("whos-online");
 		}
 	}
 }

@@ -21,22 +21,22 @@ namespace Forum.Controllers {
 
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
-		public async Task<IActionResult> Index() {
+		public IActionResult Index() {
 			var viewModel = QuoteRepository.Index();
-			return await ForumViewResult.ViewResult(this, viewModel);
+			return ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> Create(int id) {
+		public IActionResult Create(int id) {
 			if (ModelState.IsValid) {
 				var serviceResponse = QuoteRepository.Create(id);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				return ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
-			return await FailureCallback();
+			return FailureCallback();
 
-			async Task<IActionResult> FailureCallback() {
-				return await Task.Run(() => { return ForumViewResult.RedirectToReferrer(this); });
+			IActionResult FailureCallback() {
+				return ForumViewResult.RedirectToReferrer(this);
 			}
 		}
 
@@ -45,28 +45,28 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> Edit(InputModels.QuotesInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await QuoteRepository.Edit(input);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				return ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
-			return await FailureCallback();
+			return FailureCallback();
 
-			async Task<IActionResult> FailureCallback() {
-				return await Task.Run(() => { return ForumViewResult.RedirectToReferrer(this); });
+			IActionResult FailureCallback() {
+				return ForumViewResult.RedirectToReferrer(this);
 			}
 		}
 
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
-		public async Task<IActionResult> Delete(int id) {
+		public IActionResult Delete(int id) {
 			if (ModelState.IsValid) {
 				var serviceResponse = QuoteRepository.Delete(id);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				return ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
-			return await FailureCallback();
+			return FailureCallback();
 
-			async Task<IActionResult> FailureCallback() {
-				return await Task.Run(() => { return ForumViewResult.RedirectToReferrer(this); });
+			IActionResult FailureCallback() {
+				return ForumViewResult.RedirectToReferrer(this);
 			}
 		}
 	}
