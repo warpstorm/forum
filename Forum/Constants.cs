@@ -2,7 +2,7 @@
 	public class Constants {
 		public class Versions {
 			public const string Theme = "12";
-			public const string Code = "4.12.1";
+			public const string Code = "4.12.2";
 		}
 
 		public class InternalKeys {

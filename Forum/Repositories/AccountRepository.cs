@@ -322,34 +322,37 @@ namespace Forum.Repositories {
 				Log.LogWarning(message);
 			}
 
-			var user = new DataModels.ApplicationUser {
-				DisplayName = input.DisplayName,
-				Registered = DateTime.Now,
-				LastOnline = DateTime.Now,
-				UserName = input.Email,
-				Email = input.Email,
-				Birthday = birthday
-			};
+			if (serviceResponse.Success) {
+				var user = new DataModels.ApplicationUser {
+					DisplayName = input.DisplayName,
+					Registered = DateTime.Now,
+					LastOnline = DateTime.Now,
+					UserName = input.Email,
+					Email = input.Email,
+					Birthday = birthday
+				};
 
-			var identityResult = await UserManager.CreateAsync(user, input.Password);
+				var identityResult = await UserManager.CreateAsync(user, input.Password);
 
-			if (identityResult.Succeeded) {
-				Log.LogInformation($"User created a new account with password '{input.Email}'.");
+				if (identityResult.Succeeded) {
+					Log.LogInformation($"User created a new account with password '{input.Email}'.");
 
-				var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
-				var callbackUrl = EmailConfirmationLink(user.Id, code);
+					var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
+					var callbackUrl = EmailConfirmationLink(user.Id, code);
 
-				if (!EmailSender.Ready) {
-					serviceResponse.RedirectPath = callbackUrl;
-					return serviceResponse;
+					if (EmailSender.Ready) {
+						await EmailSender.SendEmailConfirmationAsync(input.Email, callbackUrl);
+						serviceResponse.Message = "Please check your email for the activation link.";
+					}
+					else {
+						serviceResponse.RedirectPath = callbackUrl;
+					}
 				}
-
-				await EmailSender.SendEmailConfirmationAsync(input.Email, callbackUrl);
-			}
-			else {
-				foreach (var error in identityResult.Errors) {
-					Log.LogError($"Error registering '{input.Email}'. Message: {error.Description}");
-					serviceResponse.Error(error.Description);
+				else {
+					foreach (var error in identityResult.Errors) {
+						Log.LogError($"Error registering '{input.Email}'. Message: {error.Description}");
+						serviceResponse.Error(error.Description);
+					}
 				}
 			}
 
