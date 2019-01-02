@@ -21,14 +21,16 @@ namespace Forum.TagHelpers {
 		public override void Process(TagHelperContext context, TagHelperOutput output) {
 			output.TagName = "a";
 
-			if (!output.Attributes.ContainsName("class"))
+			if (!output.Attributes.ContainsName("class")) {
 				output.Attributes.SetAttribute("class", "button");
+			}
 
 			var returnUrl = GetReturnUrl();
 			output.Attributes.SetAttribute("href", returnUrl);
 
-			if (string.IsNullOrEmpty(output.Content.GetContent()))
+			if (string.IsNullOrEmpty(output.Content.GetContent())) {
 				output.Content.SetContent("Cancel");
+			}
 
 			output.TagMode = TagMode.StartTagAndEndTag;
 		}
@@ -36,11 +38,13 @@ namespace Forum.TagHelpers {
 		string GetReturnUrl() {
 			HttpContext.Request.Query.TryGetValue("ReturnUrl", out var returnUrl);
 
-			if (string.IsNullOrEmpty(returnUrl))
+			if (string.IsNullOrEmpty(returnUrl)) {
 				HttpContext.Request.Query.TryGetValue("Referer", out returnUrl);
+			}
 
-			if (string.IsNullOrEmpty(returnUrl))
+			if (string.IsNullOrEmpty(returnUrl)) {
 				returnUrl = UrlHelper.Action(nameof(Home.FrontPage), nameof(Home));
+			}
 
 			return returnUrl;
 		}

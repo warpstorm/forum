@@ -1,5 +1,4 @@
 ﻿using Forum.Contexts;
-using Forum.Extensions;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -60,8 +59,9 @@ namespace Forum.Repositories {
 		public ViewModels.Quotes.DisplayQuote Get() {
 			var approvedRecords = Records.Where(r => r.Approved).ToList();
 
-			if (!approvedRecords.Any())
+			if (!approvedRecords.Any()) {
 				return null;
+			}
 
 			var randomQuoteIndex = new Random().Next(0, approvedRecords.Count);
 			var randomQuote = approvedRecords[randomQuoteIndex];
@@ -80,11 +80,13 @@ namespace Forum.Repositories {
 
 			var message = DbContext.Messages.FirstOrDefault(r => r.Id == messageId);
 
-			if (message is null)
+			if (message is null) {
 				serviceResponse.Error($@"No record was found with the id '{messageId}'.");
+			}
 
-			if (Records.Any(r => r.MessageId == messageId))
+			if (Records.Any(r => r.MessageId == messageId)) {
 				serviceResponse.Error($@"A message with the id '{messageId}' has already been submitted.");
+			}
 
 			if (serviceResponse.Success) {
 				DbContext.Quotes.Add(new DataModels.Quote {
@@ -112,8 +114,9 @@ namespace Forum.Repositories {
 			foreach (var quoteInput in input.Quotes) {
 				var record = Records.FirstOrDefault(r => r.Id == quoteInput.Id);
 
-				if (record is null)
+				if (record is null) {
 					serviceResponse.Error($@"No record was found with the id '{quoteInput.Id}'.");
+				}
 
 				if (serviceResponse.Success) {
 					if (quoteInput.Approved != record.Approved) {
@@ -145,8 +148,9 @@ namespace Forum.Repositories {
 
 			var record = Records.FirstOrDefault(r => r.Id == quoteId);
 
-			if (record is null)
+			if (record is null) {
 				serviceResponse.Error($@"No record was found with the id '{quoteId}'.");
+			}
 
 			if (serviceResponse.Success) {
 				DbContext.Quotes.Remove(record);

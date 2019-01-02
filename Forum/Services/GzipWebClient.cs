@@ -31,8 +31,9 @@ namespace Forum.Services {
 		public T DownloadJSObject<T>(string remoteUrl, Dictionary<HttpRequestHeader, string> headers = null) {
 			remoteUrl = CleanUrl(remoteUrl);
 
-			foreach (var header in headers)
+			foreach (var header in headers) {
 				Headers.Set(header.Key, header.Value);
+			}
 
 			var returnObject = default(T);
 			var data = string.Empty;

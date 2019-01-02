@@ -78,26 +78,33 @@ namespace Forum.Repositories {
 		public async Task<ServiceModels.ServiceResponse> Create(InputModels.CreateRoleInput input) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
-			if (input.Name != null)
+			if (input.Name != null) {
 				input.Name = input.Name.Trim();
+			}
 
-			if (string.IsNullOrEmpty(input.Name))
+			if (string.IsNullOrEmpty(input.Name)) {
 				serviceResponse.Error(nameof(InputModels.CreateRoleInput.Name), "Name is required");
+			}
 
-			if (input.Description != null)
+			if (input.Description != null) {
 				input.Description = input.Description.Trim();
+			}
 
-			if (string.IsNullOrEmpty(input.Description))
+			if (string.IsNullOrEmpty(input.Description)) {
 				serviceResponse.Error(nameof(InputModels.CreateRoleInput.Description), "Description is required");
+			}
 
-			if (!serviceResponse.Success)
+			if (!serviceResponse.Success) {
 				return serviceResponse;
+			}
 
-			if (await RoleManager.FindByNameAsync(input.Name) != null)
+			if (await RoleManager.FindByNameAsync(input.Name) != null) {
 				serviceResponse.Error(nameof(InputModels.CreateRoleInput.Name), "A role with this name already exists");
+			}
 
-			if (!serviceResponse.Success)
+			if (!serviceResponse.Success) {
 				return serviceResponse;
+			}
 
 			await CreateRecord(input);
 
@@ -126,31 +133,39 @@ namespace Forum.Repositories {
 
 			var record = await RoleManager.FindByIdAsync(input.Id);
 
-			if (record is null)
+			if (record is null) {
 				serviceResponse.Error(nameof(InputModels.EditRoleInput.Id), $"A record does not exist with ID '{input.Id}'");
+			}
 
-			if (input.Name != null)
+			if (input.Name != null) {
 				input.Name = input.Name.Trim();
+			}
 
-			if (string.IsNullOrEmpty(input.Name))
+			if (string.IsNullOrEmpty(input.Name)) {
 				serviceResponse.Error(nameof(InputModels.EditRoleInput.Name), "Name is required");
+			}
 
-			if (input.Description != null)
+			if (input.Description != null) {
 				input.Description = input.Description.Trim();
+			}
 
-			if (string.IsNullOrEmpty(input.Description))
+			if (string.IsNullOrEmpty(input.Description)) {
 				serviceResponse.Error(nameof(InputModels.EditRoleInput.Description), "Description is required");
+			}
 
-			if (!serviceResponse.Success)
+			if (!serviceResponse.Success) {
 				return serviceResponse;
+			}
 
 			var existingRole = await RoleManager.FindByNameAsync(input.Name);
 
-			if (existingRole != null && existingRole.Id != input.Id)
+			if (existingRole != null && existingRole.Id != input.Id) {
 				serviceResponse.Error(nameof(InputModels.EditRoleInput.Name), "A role with this name already exists");
+			}
 
-			if (!serviceResponse.Success)
+			if (!serviceResponse.Success) {
 				return serviceResponse;
+			}
 
 			var modified = false;
 
@@ -178,15 +193,17 @@ namespace Forum.Repositories {
 		public async Task Delete(string id) {
 			var record = await RoleManager.FindByIdAsync(id);
 
-			if (record != null)
+			if (record != null) {
 				await RoleManager.DeleteAsync(record);
+			}
 		}
 
 		public async Task<PageViewModels.UserListPage> UserList(string id) {
 			var role = await RoleManager.FindByIdAsync(id);
 
-			if (role is null)
+			if (role is null) {
 				throw new HttpNotFoundError();
+			}
 
 			var usersInRole = await UserManager.GetUsersInRoleAsync(role.Name);
 
@@ -197,8 +214,9 @@ namespace Forum.Repositories {
 
 			var existingUsers = new List<ItemViewModels.UserListItem>();
 
-			foreach (var user in usersInRole)
+			foreach (var user in usersInRole) {
 				existingUsers.Add(userRecords.Single(u => u.Id == user.Id));
+			}
 
 			var availableUsers = userRecords.Except(existingUsers).ToList();
 
@@ -215,22 +233,26 @@ namespace Forum.Repositories {
 
 			var roleRecord = await RoleManager.FindByIdAsync(roleId);
 
-			if (roleRecord is null)
+			if (roleRecord is null) {
 				serviceResponse.Error($"A record does not exist with ID '{roleId}'");
+			}
 
 			var userRecord = await UserManager.FindByIdAsync(userId);
 
-			if (userRecord is null)
+			if (userRecord is null) {
 				serviceResponse.Error($"A record does not exist with ID '{roleId}'");
+			}
 
-			if (!serviceResponse.Success)
+			if (!serviceResponse.Success) {
 				return serviceResponse;
+			}
 
 			var result = await UserManager.AddToRoleAsync(userRecord, roleRecord.Name);
 
 			if (result.Succeeded) {
-				if (userId == UserContext.ApplicationUser.Id)
+				if (userId == UserContext.ApplicationUser.Id) {
 					await SignInManager.SignOutAsync();
+				}
 
 				serviceResponse.RedirectPath = UrlHelper.Action(nameof(Roles.Edit), nameof(Roles), new { Id = roleId });
 			}
@@ -243,22 +265,26 @@ namespace Forum.Repositories {
 
 			var roleRecord = await RoleManager.FindByIdAsync(roleId);
 
-			if (roleRecord is null)
+			if (roleRecord is null) {
 				serviceResponse.Error($"A record does not exist with ID '{roleId}'");
+			}
 
 			var userRecord = await UserManager.FindByIdAsync(userId);
 
-			if (userRecord is null)
+			if (userRecord is null) {
 				serviceResponse.Error($"A record does not exist with ID '{roleId}'");
+			}
 
-			if (!serviceResponse.Success)
+			if (!serviceResponse.Success) {
 				return serviceResponse;
+			}
 
 			var result = await UserManager.RemoveFromRoleAsync(userRecord, roleRecord.Name);
 
 			if (result.Succeeded) {
-				if (userId == UserContext.ApplicationUser.Id)
+				if (userId == UserContext.ApplicationUser.Id) {
 					await SignInManager.SignOutAsync();
+				}
 
 				serviceResponse.RedirectPath = UrlHelper.Action(nameof(Roles.Edit), nameof(Roles), new { Id = roleId });
 			}

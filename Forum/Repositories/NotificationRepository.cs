@@ -1,7 +1,6 @@
 ﻿using Forum.Contexts;
 using Forum.Controllers;
 using Forum.Enums;
-using Forum.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
@@ -49,8 +48,9 @@ namespace Forum.Repositories {
 		}
 
 		public List<ViewModels.Items.IndexItem> Index(bool showRead = false) {
-			if (UserContext.ApplicationUser is null)
+			if (UserContext.ApplicationUser is null) {
 				return new List<ViewModels.Items.IndexItem>();
+			}
 
 			var hiddenTimeLimit = DateTime.Now.AddDays(-7);
 			var recentTimeLimit = DateTime.Now.AddMinutes(-30);
@@ -71,8 +71,9 @@ namespace Forum.Repositories {
 
 			var notifications = notificationQuery.ToList();
 
-			foreach (var notification in notifications)
+			foreach (var notification in notifications) {
 				notification.Text = NotificationText(notification);
+			}
 
 			return notifications;
 		}
