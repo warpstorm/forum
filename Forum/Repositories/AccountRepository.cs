@@ -201,7 +201,7 @@ namespace Forum.Repositories {
 					await EmailSender.SendEmailConfirmationAsync(input.NewEmail, callbackUrl);
 
 					if (userRecord.Id == UserContext.ApplicationUser.Id) {
-						await SignOut();
+						SignOut();
 					}
 				}
 				else {
@@ -234,7 +234,7 @@ namespace Forum.Repositories {
 				}
 				else if (userRecord.Id == UserContext.ApplicationUser.Id) {
 					Log.LogInformation($"Password was modified by '{UserContext.ApplicationUser.DisplayName}' for '{userRecord.DisplayName}'.");
-					await SignOut();
+					SignOut();
 					serviceResponse.RedirectPath = UrlHelper.Action(nameof(Login));
 					return serviceResponse;
 				}
@@ -389,7 +389,7 @@ namespace Forum.Repositories {
 				}
 			}
 
-			await SignOut();
+			SignOut();
 
 			return serviceResponse;
 		}
@@ -509,10 +509,10 @@ namespace Forum.Repositories {
 			throw new HttpForbiddenError();
 		}
 
-		public async Task SignOut() {
+		public void SignOut() {
 			HttpContextAccessor.HttpContext.Session.Remove(Constants.InternalKeys.UserId);
 
-			await Task.WhenAll(new[] {
+			Task.WaitAll(new[] {
 				HttpContextAccessor.HttpContext.Session.CommitAsync(),
 				SignInManager.SignOutAsync()
 			});
