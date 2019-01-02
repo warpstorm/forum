@@ -13,6 +13,7 @@ export module Xhr {
 			xhr.timeout = options.timeout;
 			xhr.responseType = options.responseType;
 
+			xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
 			Object.keys(options.headers).forEach(key => xhr.setRequestHeader(key, options.headers[key]));
 
 			xhr.ontimeout = () => reject('Request timed out.');
