@@ -20,15 +20,18 @@ namespace Forum.Middleware {
 				await _next(context);
 			}
 			catch (Exception exception) {
-				if (context.Response.HasStarted)
+				if (context.Response.HasStarted) {
 					throw new Exception($"An exception was caught after the response started.", exception);
+				}
 
 				HttpException error;
 
-				if (exception is HttpException)
+				if (exception is HttpException) {
 					error = exception as HttpException;
-				else
+				}
+				else {
 					error = new HttpInternalServerError(exception);
+				}
 
 				context.Response.Clear();
 

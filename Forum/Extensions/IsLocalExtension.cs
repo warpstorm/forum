@@ -10,8 +10,9 @@ namespace Forum.Extensions {
 			var connection = request.HttpContext.Connection;
 
 			if (connection.RemoteIpAddress != null) {
-				if (IPAddress.IsLoopback(connection.RemoteIpAddress))
+				if (IPAddress.IsLoopback(connection.RemoteIpAddress)) {
 					return true;
+				}
 
 				var remoteAddress = connection.RemoteIpAddress.MapToIPv4();
 
@@ -22,8 +23,9 @@ namespace Forum.Extensions {
 			}
 
 			// for in memory TestServer or when dealing with default connection info
-			if (connection.RemoteIpAddress is null && connection.LocalIpAddress is null)
+			if (connection.RemoteIpAddress is null && connection.LocalIpAddress is null) {
 				return true;
+			}
 
 			return false;
 		}
