@@ -17,6 +17,8 @@ export class WhosOnlineMonitor {
 		if (this.app.hub) {
 			this.bindHubActions();
 		}
+
+		this.bindChicletMonitor();
 	}
 
 	bindHubActions = () => {
@@ -25,6 +27,25 @@ export class WhosOnlineMonitor {
 		}
 
 		this.app.hub.on('whos-online', this.hubWhosOnline);
+	}
+
+	bindChicletMonitor = () => {
+		document.querySelectorAll('.whos-online-chiclet').forEach(element => {
+			let chicletTimeValue = element.getAttribute('time');
+
+			if (chicletTimeValue) {
+				let chicletTime = new Date(chicletTimeValue);
+				
+				// 5 minute expiration
+				let expiration = new Date(chicletTime.getTime() + 5 * 60 * 1000); 
+
+				let difference = expiration.getTime() - new Date().getTime();
+
+				setTimeout(() => {
+					element.classList.add('hidden');
+				}, difference);
+			}
+		});
 	}
 
 	hubWhosOnline = () => {

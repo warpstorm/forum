@@ -7,7 +7,7 @@
 		@foreach (var onlineUser in Model) {
 			<li class="font-small subdued-text nowrap small-pad-top">
 				@if (onlineUser.Online) {
-					<span class="chiclet chiclet-green"></span>
+					<span class="whos-online-chiclet chiclet chiclet-green" time="@onlineUser.LastOnline.ToHtmlLocalTimeString()"></span>
 				}
 				<span>
 					@if (onlineUser.IsBirthday) {
