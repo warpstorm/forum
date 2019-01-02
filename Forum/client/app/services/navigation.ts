@@ -31,6 +31,8 @@ export class Navigation {
 
 		for (var i = 0; i < linkParents.length; i++) {
 			let linkParent = linkParents[i];
+			linkParent.classList.add('pointer');
+
 			let link = linkParent.querySelector('a');
 
 			if (link) {

@@ -539,7 +539,7 @@ namespace Forum.Repositories {
 				returnResult.Title = ogDetails.Title;
 
 				if (!string.IsNullOrEmpty(ogDetails.Description)) {
-					returnResult.Card += "<blockquote class='card pointer hover-highlight' clickable-link-parent>";
+					returnResult.Card += "<blockquote class='card hover-highlight' clickable-link-parent>";
 
 					if (!string.IsNullOrEmpty(ogDetails.Image)) {
 						if (ogDetails.Image.StartsWith("/")) {

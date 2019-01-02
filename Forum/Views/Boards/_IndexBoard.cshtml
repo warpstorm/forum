@@ -1,7 +1,7 @@
 ﻿@model IndexBoard
 
 <div>
-	<div class="board-last-post pad float-right pointer mobile-hide" clickable-link-parent>
+	<div class="board-last-post pad float-right mobile-hide" clickable-link-parent>
 		@if (Model.LastMessage != null) {
 			<p>
 				<a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Latest)" asp-route-id="@Model.LastMessage.Id">
@@ -12,12 +12,12 @@
 		}
 	</div>
 
-	<div class="board-name pad pointer" clickable-link-parent>
+	<div class="board-name pad" clickable-link-parent>
 		<h2><a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)" asp-route-id="@Model.Id">@Model.Name</a></h2>
 		<p class="font-small subdued-text small-pad-left">@Model.Description</p>
 
 		@if (Model.LastMessage != null) {
-			<div class="board-last-post pad pointer mobile-show" clickable-link-parent>
+			<div class="board-last-post pad mobile-show" clickable-link-parent>
 				<p class="font-small subdued-text">Last post by @Model.LastMessage.LastReplyByName, <passed-time time="@Model.LastMessage.LastReplyPosted" />
 				<p>
 					<a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Latest)" asp-route-id="@Model.LastMessage.Id">

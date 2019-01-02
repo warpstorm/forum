@@ -9,7 +9,7 @@
 			<img src="~/images/unpinned.png" />
 		}
 	</div>
-	<div class="details pointer pad" clickable-link-parent>
+	<div class="details pad" clickable-link-parent>
 		<p>
 			<a asp-action="@nameof(Topics.FinishMerge)" asp-route-sourceId="@Model.SourceId" asp-route-targetId="@Model.Id">
 				@Html.Raw(Model.ShortPreview)

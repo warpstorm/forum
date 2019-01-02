@@ -4,7 +4,7 @@
 	<div sidebar="quote">
 		<h4>Quote of the Moment:</h4>
 		<div class="gap-bottom">
-			<div class="content-box small-pad font-small subdued-text pointer" clickable-link-parent>
+			<div class="content-box small-pad font-small subdued-text" clickable-link-parent>
 				<p id="qotm">
 					@Html.Raw(Model.DisplayBody)
 					<a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Display)" asp-route-id="@Model.Id"></a>

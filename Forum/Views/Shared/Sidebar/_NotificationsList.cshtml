@@ -5,7 +5,7 @@
 	<ul class="gap-bottom font-small subdued-text">
 		@if (Model.Any()) {
 			@foreach (var notification in Model) {
-				<li class="glow-left pointer small-gap-bottom small-pad" clickable-link-parent>
+				<li class="glow-left small-gap-bottom small-pad" clickable-link-parent>
 					<p>
 						@if (notification.Recent) {
 							<span class="chiclet chiclet-gold"></span>

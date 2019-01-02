@@ -4,7 +4,7 @@
 	<div class="pin float-right small-pad-top">
 		<a asp-action="@nameof(Topics.Pin)" asp-route-id="@Model.Id"><img src="~/images/pinned.png" /></a>
 	</div>
-	<div class="details pointer small-pad" clickable-link-parent>
+	<div class="details small-pad" clickable-link-parent>
 		<p>
 			<a asp-action="@nameof(Topics.Latest)" asp-route-id="@Model.Id">
 				@Html.Raw(Model.ShortPreview)
