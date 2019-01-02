@@ -253,8 +253,7 @@ namespace Forum.Controllers {
 			return ForumViewResult.ViewResult(this);
 		}
 
-		[HttpPost]
-		[ValidateAntiForgeryToken]
+		[HttpGet]
 		public IActionResult Logout() {
 			AccountRepository.SignOut();
 			return RedirectToAction(nameof(Home.FrontPage), nameof(Home));
