@@ -12,8 +12,9 @@ namespace Forum.Annotations {
 		public override bool IsValid(object value) {
 			var file = value as IFormFile;
 
-			if (file is null)
+			if (file is null) {
 				return false;
+			}
 
 			return file.Length <= MaxFileSize;
 		}

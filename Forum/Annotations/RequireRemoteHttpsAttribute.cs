@@ -10,8 +10,9 @@ namespace Forum.Annotations {
 		public override void OnAuthorization(AuthorizationFilterContext filterContext) {
 			filterContext.ThrowIfNull(nameof(filterContext));
 
-			if (filterContext.HttpContext.Request.IsLocal())
+			if (filterContext.HttpContext.Request.IsLocal()) {
 				return;
+			}
 
 			base.OnAuthorization(filterContext);
 		}
