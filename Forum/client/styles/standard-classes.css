@@ -180,10 +180,6 @@ br.clear {
 	opacity: 0.5;
 }
 
-.hidden {
-	display: none;
-}
-
 .overflow-scroll-x {
 	overflow-x: scroll;
 }
@@ -427,3 +423,7 @@ br.clear {
 		.glow-left:hover time {
 			color: #171f2c;
 		}
+
+.hidden, .hidden *, li.hidden {
+	display: none;
+}
