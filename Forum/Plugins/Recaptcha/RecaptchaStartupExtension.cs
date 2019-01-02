@@ -8,6 +8,10 @@ namespace Forum.Plugins.Recaptcha {
 			services.AddTransient<IRecaptchaValidator, RecaptchaValidator>();
 			services.AddTransient<ValidateRecaptchaActionFilter>();
 
+			services.Configure<Recaptcha3Options>(configuration);
+			services.AddTransient<IRecaptcha3Validator, Recaptcha3Validator>();
+			services.AddTransient<ValidateRecaptcha3ActionFilter>();
+
 			return services;
 		}
 	}

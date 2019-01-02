@@ -1,0 +1,15 @@
+﻿@using Microsoft.Extensions.Options
+@inject IOptions<Forum.Plugins.Recaptcha.Recaptcha3Options> RecaptchaOptions
+
+<environment exclude="Development">
+	<input type="hidden" name="g-recaptcha-response" />
+
+	<script>
+		grecaptcha.ready(function () {
+			grecaptcha.execute('@RecaptchaOptions.Value.Recaptcha3SiteKey', { action: 'login' })
+				.then(function (token) {
+					document.querySelector('input[name="g-recaptcha-response"]').value = token;
+				});
+		});
+	</script>
+</environment>

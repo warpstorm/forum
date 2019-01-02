@@ -217,7 +217,7 @@ namespace Forum.Controllers {
 		[HttpPost]
 		[AllowAnonymous]
 		[ValidateAntiForgeryToken]
-		[ValidateRecaptcha]
+		[ValidateRecaptcha3]
 		public async Task<IActionResult> Login(InputModels.LoginInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await AccountRepository.Login(input);

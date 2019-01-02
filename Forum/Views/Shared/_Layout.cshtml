@@ -14,6 +14,7 @@
 	<link rel="stylesheet" href="~/styles/global.css" asp-append-version="true" />
 
 	@await RenderSectionAsync("Styles", required: false)
+	@await RenderSectionAsync("HeadScripts", required: false);
 </head>
 <body>
 	<header id="page-header" class="margin-center pad">

@@ -1,4 +1,6 @@
-﻿@model LoginPage
+﻿@using Microsoft.Extensions.Options
+@inject IOptions<Forum.Plugins.Recaptcha.Recaptcha3Options> RecaptchaOptions
+@model LoginPage
 
 <section class="content-box pad">
 	<form method="post"
@@ -24,27 +26,23 @@
 			<dt><input asp-for="@Model.RememberMe" /> Remember Me</dt>
 		</dl>
 
-		<partial name="_Recaptcha" />
-
 		<ul>
 			<li><button>Log in</button></li>
 			<li><a class="button" asp-action="@nameof(Account.Register)" asp-route-returnurl="@ViewData["Referrer"]">Register as a new user?</a></li>
 			<li><a class="button" asp-action="@nameof(Account.ForgotPassword)">Forgot your password?</a></li>
 		</ul>
+
+		<partial name="_Recaptcha3" />
 	</form>
 
-	<p class="gap-top">PROBLEMS:</p>
-	<div class="font-small subdued-text">
-		<p>If you know your password is correct and your login keeps failing, try these steps:</p>
-		<ul>
-			<li>If you're on https, try http. If you're on http, try https.</li>
-			<li><a href="https://7labs.io/tips-tricks/clear-site-specific-cookies-cache.html">Delete the cookies for this site.</a></li>
-			<li>One user suggests trying an incorrect password, then the correct password will work on the next attempt.</li>
-			<li>Reset your password</li>
-			<li>Email me at yarbro@outlook.com</li>
-		</ul>
-	</div>
+	<p class="gap-top">Problems? Email me: yarbro@outlook.com</p>
 </section>
 
 @{ViewData["Title"] = "Warpstorm";}
 @section Header {Login}
+
+@section HeadScripts {
+	<environment exclude="Development">
+		<script src="https://www.google.com/recaptcha/api.js?render=@RecaptchaOptions.Value.Recaptcha3SiteKey"></script>
+	</environment>
+}
