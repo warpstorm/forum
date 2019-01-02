@@ -104,7 +104,15 @@ namespace Forum.Repositories {
 			}
 			else if (!result.Succeeded) {
 				Log.LogWarning($"Invalid login attempt for account '{input.Email}'.");
-				serviceResponse.Error("Invalid login attempt.");
+
+				var user = DbContext.Users.FirstOrDefault(u => u.Email == input.Email);
+
+				if (user != null && !user.EmailConfirmed) {
+					serviceResponse.Error("Your account isn't activated. Check your email for the link. Check your spam folder if you didn't get the message after 5 minutes.");
+				}
+				else {
+					serviceResponse.Error("Invalid login attempt.");
+				}
 			}
 			else {
 				Log.LogInformation($"User logged in '{input.Email}'.");
