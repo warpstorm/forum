@@ -15,6 +15,7 @@ export class Navigation {
 
 	addListenerOpenMenu(): void {
 		this.doc.querySelectorAll('.open-menu').forEach(element => {
+			element.classList.remove('open-menu-hover');
 			element.addEventListener('click', this.eventOpenMenu);
 		});
 	}

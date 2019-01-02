@@ -12,7 +12,7 @@
 	<nav class='align-center'>
 		<ul class='inline'>
 			@if (UserContext.IsAuthenticated) {
-				<li class='open-menu'>
+				<li class='open-menu open-menu-hover'>
 					<span class='small-button pointer'>@UserContext.ApplicationUser.DisplayName</span>
 					<div class='menu-wrapper hidden align-left'>
 						<ul class='drop-down-menu content-box'>
@@ -23,7 +23,7 @@
 					</div>
 				</li>
 
-				<li class='open-menu'>
+				<li class='open-menu open-menu-hover'>
 					<span class='small-button pointer'>Boards</span>					
 					<div class='menu-wrapper hidden align-left'>
 						<ul class='drop-down-menu content-box'>
@@ -45,7 +45,7 @@
 					</div>
 				</li>
 
-				<li class='open-menu'>
+				<li class='open-menu open-menu-hover'>
 					<span class='small-button pointer'>Topics</span>
 					<div class='menu-wrapper hidden align-left'>
 						<ul class='drop-down-menu content-box'>
@@ -58,7 +58,7 @@
 				</li>
 
 				@if (UserContext.IsAdmin) {
-					<li class='open-menu'>
+					<li class='open-menu open-menu-hover'>
 						<span class='small-button pointer'>Admin</span>
 						<div class='menu-wrapper hidden align-left'>
 							<ul class='drop-down-menu content-box'>

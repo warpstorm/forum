@@ -181,7 +181,7 @@ br.clear {
 }
 
 .hidden {
-	display: none !important;
+	display: none;
 }
 
 .overflow-scroll-x {
@@ -386,6 +386,10 @@ br.clear {
 
 .menu-wrapper {
 	position: relative;
+}
+
+.open-menu-hover:hover > .hidden {
+	display: block;
 }
 
 .drop-down-menu {
