@@ -92,7 +92,7 @@ namespace Forum {
 
 				routes.MapRoute(
 					name: "default",
-					template: "{controller=Home}/{action=FrontPage}/{id?}/{pageId?}/{target?}");
+					template: "{controller}/{action}/{id?}/{pageId?}/{target?}");
 			});
 		}
 

@@ -30,9 +30,7 @@ namespace Forum.Services {
 		public VirtualPathData GetVirtualPath(VirtualPathContext context) => DefaultRouter.GetVirtualPath(context);
 
 		public async Task RouteAsync(RouteContext context) {
-			var path = context.HttpContext.Request.Path.Value.ToLower();
-
-			var atFrontPage = string.IsNullOrEmpty(path) || path == "/";
+			var atFrontPage = context.HttpContext.Request.Path.Value == "/";
 
 			if (atFrontPage) {
 				ApplicationUser user = null;
