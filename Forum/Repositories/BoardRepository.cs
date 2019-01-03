@@ -20,12 +20,14 @@ namespace Forum.Repositories {
 
 		ApplicationDbContext DbContext { get; }
 		UserContext UserContext { get; }
+		AccountRepository AccountRepository { get; }
 		RoleRepository RoleRepository { get; }
 		IUrlHelper UrlHelper { get; }
 
 		public BoardRepository(
 			ApplicationDbContext dbContext,
 			UserContext userContext,
+			AccountRepository accountRepository,
 			RoleRepository roleRepository,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory,
@@ -33,6 +35,7 @@ namespace Forum.Repositories {
 		) : base(log) {
 			DbContext = dbContext;
 			UserContext = userContext;
+			AccountRepository = accountRepository;
 			RoleRepository = roleRepository;
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
@@ -113,18 +116,18 @@ namespace Forum.Repositories {
 									   select boardRole.RoleId;
 
 					if (UserContext.IsAdmin || !messageRoles.Any() || messageRoles.Intersect(UserContext.Roles).Any()) {
-						var lastReply = from message in DbContext.Messages
-										join lastReplyBy in DbContext.Users on message.PostedById equals lastReplyBy.Id
+						var lastReplyQuery = from message in DbContext.Messages
 										where message.Id == item.LastReplyId
 										select new Models.ViewModels.Topics.Items.MessagePreview {
 											Id = message.Id,
 											ShortPreview = item.TopicPreview,
-											LastReplyByName = lastReplyBy.DisplayName,
 											LastReplyId = message.LastReplyId,
+											LastReplyById = message.LastReplyById,
 											LastReplyPosted = message.LastReplyPosted,
 										};
 
-						indexBoard.LastMessage = lastReply.FirstOrDefault();
+						indexBoard.LastMessage = lastReplyQuery.FirstOrDefault();
+						indexBoard.LastMessage.LastReplyByName = AccountRepository.FirstOrDefault(r => r.Id == indexBoard.LastMessage.LastReplyById)?.DisplayName ?? "User";
 						break;
 					}
 				}

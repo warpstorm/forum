@@ -1,5 +1,6 @@
 ﻿using Forum.Contexts;
 using Forum.Enums;
+using Forum.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
@@ -14,6 +15,8 @@ namespace Forum.Services {
 	public class UserContextLoader {
 		ApplicationDbContext DbContext { get; }
 		UserContext UserContext { get; }
+		RoleRepository RoleRepository { get; }
+		AccountRepository AccountRepository { get; }
 		IHubContext<ForumHub> ForumHub { get; }
 		SignInManager<DataModels.ApplicationUser> SignInManager { get; }
 		UserManager<DataModels.ApplicationUser> UserManager { get; }
@@ -22,6 +25,8 @@ namespace Forum.Services {
 		public UserContextLoader(
 			ApplicationDbContext dbContext,
 			UserContext userContext,
+			AccountRepository accountRepository,
+			RoleRepository roleRepository,
 			IHubContext<ForumHub> forumHub,
 			SignInManager<DataModels.ApplicationUser> signInManager,
 			UserManager<DataModels.ApplicationUser> userManager,
@@ -29,6 +34,8 @@ namespace Forum.Services {
 		) {
 			DbContext = dbContext;
 			UserContext = userContext;
+			RoleRepository = roleRepository;
+			AccountRepository = accountRepository;
 			ForumHub = forumHub;
 			SignInManager = signInManager;
 			UserManager = userManager;
@@ -54,20 +61,20 @@ namespace Forum.Services {
 		}
 
 		async Task LoadUserRoles(UserContext userContext) {
-			var userRolesQuery = from userRole in DbContext.UserRoles
-								 join role in DbContext.Roles on userRole.RoleId equals role.Id
+			var userRolesQuery = from userRole in RoleRepository.UserRoles
+								 join role in RoleRepository.SiteRoles on userRole.RoleId equals role.Id
 								 where userRole.UserId.Equals(userContext.ApplicationUser.Id)
 								 select role.Id;
 
-			var adminUsersQuery = from user in DbContext.Users
-								  join userRole in DbContext.UserRoles on user.Id equals userRole.UserId
-								  join role in DbContext.Roles on userRole.RoleId equals role.Id
+			var adminUsersQuery = from user in AccountRepository
+								  join userRole in RoleRepository.UserRoles on user.Id equals userRole.UserId
+								  join role in RoleRepository.SiteRoles on userRole.RoleId equals role.Id
 								  where role.Name == Constants.InternalKeys.Admin
 								  select user.Id;
 
 			userContext.Roles = userRolesQuery.ToList() ?? new List<string>();
 
-			var adminRole = DbContext.Roles.FirstOrDefault(r => r.Name == Constants.InternalKeys.Admin);
+			var adminRole = RoleRepository.SiteRoles.FirstOrDefault(r => r.Name == Constants.InternalKeys.Admin);
 			var anyAdminUsers = adminUsersQuery.Any();
 
 			if (adminRole != null && userContext.Roles.Contains(adminRole.Id)) {
@@ -84,8 +91,9 @@ namespace Forum.Services {
 		}
 
 		void LoadViewLogs(UserContext userContext) {
-			var historyTimeLimit = GetHistoryTimeLimit(userContext);
+			var historyTimeLimit = DateTime.Now.AddDays(-14);
 
+			// We shouldn't filter by time here because we're going to remove the expired ones below.
 			var viewLogsQuery = from record in DbContext.ViewLogs
 								where record.UserId == userContext.ApplicationUser.Id
 								orderby record.LogTime descending
@@ -112,26 +120,11 @@ namespace Forum.Services {
 					TargetType = EViewLogTargetType.All,
 					UserId = userContext.ApplicationUser.Id
 				});
+
+				DbContext.SaveChanges();
 			}
 
 			userContext.ViewLogs = viewLogsQuery.ToList();
-		}
-
-		DateTime GetHistoryTimeLimit(UserContext userContext) {
-			var historySettingValue = -14;
-
-			var userSetting = DbContext.SiteSettings.FirstOrDefault(r => r.Name == Constants.Settings.HistoryTimeLimit && r.UserId == userContext.ApplicationUser.Id)?.Value;
-			var globalSetting = DbContext.SiteSettings.FirstOrDefault(r => r.Name == Constants.Settings.HistoryTimeLimit && string.IsNullOrEmpty(r.UserId))?.Value;
-
-			if (!string.IsNullOrEmpty(userSetting)) {
-				historySettingValue = Convert.ToInt32(userSetting);
-			}
-			else if (!string.IsNullOrEmpty(globalSetting)) {
-				historySettingValue = Convert.ToInt32(globalSetting);
-			}
-
-			var historyTimeLimit = DateTime.Now.AddDays(historySettingValue);
-			return historyTimeLimit;
 		}
 
 		async Task UpdateLastOnline() {

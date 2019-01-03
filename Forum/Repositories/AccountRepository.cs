@@ -99,7 +99,7 @@ namespace Forum.Repositories {
 			else if (!result.Succeeded) {
 				Log.LogWarning($"Invalid login attempt for account '{input.Email}'.");
 
-				var user = DbContext.Users.FirstOrDefault(u => u.Email == input.Email);
+				var user = Records.FirstOrDefault(u => u.Email == input.Email);
 
 				if (user != null && !user.EmailConfirmed) {
 					serviceResponse.Error("Your account isn't activated. Check your email for the link. Check your spam folder if you didn't get the message after 5 minutes.");
@@ -154,7 +154,7 @@ namespace Forum.Repositories {
 
 			void updateDisplayName() {
 				if (serviceResponse.Success && input.DisplayName != userRecord.DisplayName) {
-					if (DbContext.Users.Any(r => r.DisplayName == input.DisplayName)) {
+					if (Records.Any(r => r.DisplayName == input.DisplayName)) {
 						var message = $"The display name '{input.DisplayName}' is already taken.";
 						serviceResponse.Error(message);
 						Log.LogWarning(message);
@@ -369,7 +369,7 @@ namespace Forum.Repositories {
 				Log.LogWarning(message);
 			}
 
-			if (DbContext.Users.Any(r => r.DisplayName == input.DisplayName)) {
+			if (Records.Any(r => r.DisplayName == input.DisplayName)) {
 				var message = $"The display name '{input.DisplayName}' is already taken.";
 				serviceResponse.Error(message);
 				Log.LogWarning(message);
@@ -504,9 +504,6 @@ namespace Forum.Repositories {
 		public async Task MergeAccounts(string sourceId, string targetId, bool eraseContent) {
 			var sourceAccount = First(item => item.Id == sourceId);
 			var targetAccount = First(item => item.Id == targetId);
-
-			var siteSettings = DbContext.SiteSettings.Where(item => item.UserId == sourceId).ToList();
-			DbContext.RemoveRange(siteSettings);
 
 			var updateTasks = new List<Task>();
 

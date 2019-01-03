@@ -4,6 +4,7 @@ using System;
 namespace Forum.Models.ViewModels.Notifications.Items {
 	public class IndexItem {
 		public int Id { get; set; }
+		public string TargetUserId { get; set; }
 		public string TargetUser { get; set; }
 		public string Text { get; set; }
 		public DateTime Time { get; set; }

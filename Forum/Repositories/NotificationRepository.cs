@@ -42,8 +42,6 @@ namespace Forum.Repositories {
 
 			var notificationQuery = from n in DbContext.Notifications
 									where n.UserId == UserContext.ApplicationUser.Id
-									join targetUser in DbContext.Users on n.TargetUserId equals targetUser.Id into targetUsers
-									from targetUser in targetUsers.DefaultIfEmpty()
 									where n.Time > hiddenTimeLimit
 									where showRead || n.Unread
 									orderby n.Time descending
@@ -52,12 +50,16 @@ namespace Forum.Repositories {
 										Type = n.Type,
 										Recent = n.Time > recentTimeLimit,
 										Time = n.Time,
-										TargetUser = targetUser == null ? "User" : targetUser.DisplayName
+										TargetUserId = n.TargetUserId
 									};
 
 			var notifications = notificationQuery.ToList();
 
 			foreach (var notification in notifications) {
+				if (!string.IsNullOrEmpty(notification.TargetUserId)) {
+					notification.TargetUser = AccountRepository.FirstOrDefault(r => r.Id == notification.TargetUserId)?.DisplayName ?? "User";
+				}
+
 				notification.Text = NotificationText(notification);
 			}
 
