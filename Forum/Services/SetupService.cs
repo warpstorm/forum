@@ -9,20 +9,17 @@ namespace Forum.Services {
 		ApplicationDbContext DbContext { get; }
 		UserContext UserContext { get; }
 		RoleRepository RoleRepository { get; }
-		SettingsRepository SettingsRepository { get; }
 		IForumViewResult ForumViewResult { get; }
 
 		public SetupService(
 			ApplicationDbContext dbContext,
 			UserContext userContext,
 			RoleRepository roleRepository,
-			SettingsRepository settingsRepository,
 			IForumViewResult forumViewResult
 		) {
 			DbContext = dbContext;
 			UserContext = userContext;
 			RoleRepository = roleRepository;
-			SettingsRepository = settingsRepository;
 			ForumViewResult = forumViewResult;
 		}
 

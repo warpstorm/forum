@@ -32,7 +32,7 @@ namespace Forum.Services {
 			return controller.Redirect(referrer);
 		}
 
-		public IActionResult RedirectFromService(Controller controller, ServiceModels.ServiceResponse serviceResponse, Func<IActionResult> failureCallback) {
+		public IActionResult RedirectFromService(Controller controller, ServiceModels.ServiceResponse serviceResponse, Func<IActionResult> failureCallback = null) {
 			if (!string.IsNullOrEmpty(serviceResponse.Message)) {
 				controller.TempData[Constants.InternalKeys.StatusMessage] = serviceResponse.Message;
 			}
@@ -51,7 +51,13 @@ namespace Forum.Services {
 				return controller.Redirect(redirectPath);
 			}
 
-			return failureCallback();
+			if (failureCallback is null) {
+				var redirectPath = GetReferrer(controller);
+				return controller.Redirect(redirectPath);
+			}
+			else {
+				return failureCallback();
+			}
 		}
 
 		public IActionResult RedirectToLocal(Controller controller, string returnUrl) {

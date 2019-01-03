@@ -1,5 +1,4 @@
 ﻿using Forum.Contexts;
-using Forum.Repositories;
 using Microsoft.WindowsAzure.Storage.Blob;
 using System;
 using System.Drawing;
@@ -11,16 +10,13 @@ using System.Threading.Tasks;
 namespace Forum.Plugins.ImageStore {
 	public class ImageStore : IImageStore {
 		UserContext UserContext { get; }
-		SettingsRepository SettingsRepository { get; }
 		CloudBlobClient CloudBlobClient { get; }
 
 		public ImageStore(
 			UserContext userContext,
-			SettingsRepository settingsRepository,
 			CloudBlobClient cloudBlobClient
 		) {
 			UserContext = userContext;
-			SettingsRepository = settingsRepository;
 			CloudBlobClient = cloudBlobClient;
 		}
 
@@ -37,7 +33,7 @@ namespace Forum.Plugins.ImageStore {
 
 			if (exists) {
 				var lastModified = blobReference.Properties.LastModified ?? DateTime.Now;
-				expired = lastModified < SettingsRepository.HistoryTimeLimit(true);
+				expired = lastModified < DateTime.Now.AddDays(-14);
 			}
 
 			if (!exists || options.Overwrite || expired) {

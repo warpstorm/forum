@@ -29,7 +29,6 @@ namespace Forum.Repositories {
 
 		ApplicationDbContext DbContext { get; }
 		UserContext UserContext { get; }
-		SettingsRepository SettingsRepository { get; }
 		UserManager<DataModels.ApplicationUser> UserManager { get; }
 		SignInManager<DataModels.ApplicationUser> SignInManager { get; }
 		IHttpContextAccessor HttpContextAccessor { get; }
@@ -40,7 +39,6 @@ namespace Forum.Repositories {
 		public AccountRepository(
 			ApplicationDbContext dbContext,
 			UserContext userContext,
-			SettingsRepository settingsRepository,
 			UserManager<DataModels.ApplicationUser> userManager,
 			SignInManager<DataModels.ApplicationUser> signInManager,
 			IHttpContextAccessor httpContextAccessor,
@@ -53,8 +51,6 @@ namespace Forum.Repositories {
 			DbContext = dbContext;
 			UserContext = userContext;
 
-			SettingsRepository = settingsRepository;
-
 			UserManager = userManager;
 			SignInManager = signInManager;
 
@@ -66,10 +62,8 @@ namespace Forum.Repositories {
 		}
 
 		public List<ViewModels.Profile.OnlineUser> GetOnlineList() {
-			var onlineTimeLimitSetting = SettingsRepository.OnlineTimeLimit();
-			onlineTimeLimitSetting *= -1;
-
-			var onlineTimeLimit = DateTime.Now.AddMinutes(onlineTimeLimitSetting);
+			// Users are considered "offline" after 5 minutes.
+			var onlineTimeLimit = DateTime.Now.AddMinutes(5);
 			var onlineTodayTimeLimit = DateTime.Now.AddMinutes(-10080);
 
 			var onlineUsersQuery = from user in Records
@@ -140,119 +134,178 @@ namespace Forum.Repositories {
 
 			CanEdit(userRecord.Id);
 
-			if (userRecord is null) {
-				var message = $"No user account found for '{input.DisplayName}'.";
-				serviceResponse.Error(message);
-				Log.LogCritical(message);
+			updateDisplayName();
+			updateBirthday();
+			updateFrontPage();
+			updateMessagesPerPage();
+			updateTopicsPerPage();
+			updatePopularityLimit();
+			updatePoseys();
+			updateShowFavicons();
+
+			if (serviceResponse.Success) {
+				DbContext.SaveChanges();
 			}
 
-			if (input.DisplayName != userRecord.DisplayName && DbContext.Users.Any(r => r.DisplayName == input.DisplayName)) {
-				var message = $"The display name '{input.DisplayName}' is already taken.";
-				serviceResponse.Error(message);
-				Log.LogWarning(message);
-			}
+			await updateEmail();
+			await updatePassword();
 
-			if (!serviceResponse.Success) {
-				return serviceResponse;
-			}
+			return serviceResponse;
 
-			if (input.DisplayName != userRecord.DisplayName) {
-				userRecord.DisplayName = input.DisplayName;
-				DbContext.Update(userRecord);
-
-				Log.LogInformation($"Display name was modified by '{UserContext.ApplicationUser.DisplayName}' for account '{userRecord.DisplayName}'.");
-			}
-
-			var birthday = new DateTime(input.BirthdayYear, input.BirthdayMonth, input.BirthdayDay);
-
-			if (birthday != userRecord.Birthday) {
-				userRecord.Birthday = birthday;
-				DbContext.Update(userRecord);
-
-				Log.LogInformation($"Birthday was modified by '{UserContext.ApplicationUser.DisplayName}' for account '{userRecord.DisplayName}'.");
-			}
-
-			DbContext.SaveChanges();
-
-			if (input.NewEmail != userRecord.Email) {
-				serviceResponse.RedirectPath = UrlHelper.Action(nameof(Account.Details), nameof(Account), new { id = input.DisplayName });
-
-				var identityResult = await UserManager.SetEmailAsync(userRecord, input.NewEmail);
-
-				if (!identityResult.Succeeded) {
-					foreach (var error in identityResult.Errors) {
-						Log.LogError($"Error modifying email by '{UserContext.ApplicationUser.DisplayName}' from '{userRecord.Email}' to '{input.NewEmail}'. Message: {error.Description}");
-						serviceResponse.Error(error.Description);
+			void updateDisplayName() {
+				if (serviceResponse.Success && input.DisplayName != userRecord.DisplayName) {
+					if (DbContext.Users.Any(r => r.DisplayName == input.DisplayName)) {
+						var message = $"The display name '{input.DisplayName}' is already taken.";
+						serviceResponse.Error(message);
+						Log.LogWarning(message);
 					}
+					else {
+						userRecord.DisplayName = input.DisplayName;
+						DbContext.Update(userRecord);
 
-					return serviceResponse;
-				}
-
-				identityResult = await UserManager.SetUserNameAsync(userRecord, input.NewEmail);
-
-				if (!identityResult.Succeeded) {
-					foreach (var error in identityResult.Errors) {
-						Log.LogError($"Error modifying username by '{UserContext.ApplicationUser.DisplayName}' from '{userRecord.Email}' to '{input.NewEmail}'. Message: {error.Description}");
-						serviceResponse.Error(error.Description);
-					}
-
-					return serviceResponse;
-				}
-
-				Log.LogInformation($"Email address was modified by '{UserContext.ApplicationUser.DisplayName}' from '{userRecord.Email}' to '{input.NewEmail}'.");
-
-				var code = await UserManager.GenerateEmailConfirmationTokenAsync(userRecord);
-
-				if (EmailSender.Ready) {
-					var callbackUrl = EmailConfirmationLink(userRecord.Id, code);
-
-					await EmailSender.SendEmailConfirmationAsync(input.NewEmail, callbackUrl);
-
-					if (userRecord.Id == UserContext.ApplicationUser.Id) {
-						SignOut();
+						Log.LogInformation($"Display name was modified by '{UserContext.ApplicationUser.DisplayName}' for account '{userRecord.DisplayName}'.");
 					}
 				}
-				else {
-					identityResult = await UserManager.ConfirmEmailAsync(userRecord, code);
+			}
+
+			void updateBirthday() {
+				if (serviceResponse.Success) {
+					var birthday = new DateTime(input.BirthdayYear, input.BirthdayMonth, input.BirthdayDay);
+
+					if (birthday != userRecord.Birthday) {
+						userRecord.Birthday = birthday;
+						DbContext.Update(userRecord);
+
+						Log.LogInformation($"Birthday was modified by '{UserContext.ApplicationUser.DisplayName}' for account '{userRecord.DisplayName}'.");
+					}
+				}
+			}
+
+			void updateFrontPage() {
+				if (serviceResponse.Success && input.FrontPage != userRecord.FrontPage) {
+					userRecord.FrontPage = input.FrontPage;
+					DbContext.Update(userRecord);
+
+					Log.LogInformation($"FrontPage was modified by '{UserContext.ApplicationUser.DisplayName}' for account '{userRecord.DisplayName}'.");
+				}
+			}
+
+			void updateMessagesPerPage() {
+				if (serviceResponse.Success && input.MessagesPerPage != userRecord.MessagesPerPage) {
+					userRecord.MessagesPerPage = input.MessagesPerPage;
+					DbContext.Update(userRecord);
+
+					Log.LogInformation($"MessagesPerPage was modified by '{UserContext.ApplicationUser.DisplayName}' for account '{userRecord.DisplayName}'.");
+				}
+			}
+
+			void updateTopicsPerPage() {
+				if (serviceResponse.Success && input.TopicsPerPage != userRecord.TopicsPerPage) {
+					userRecord.TopicsPerPage = input.TopicsPerPage;
+					DbContext.Update(userRecord);
+
+					Log.LogInformation($"TopicsPerPage was modified by '{UserContext.ApplicationUser.DisplayName}' for account '{userRecord.DisplayName}'.");
+				}
+			}
+
+			void updatePopularityLimit() {
+				if (serviceResponse.Success && input.PopularityLimit != userRecord.PopularityLimit) {
+					userRecord.PopularityLimit = input.PopularityLimit;
+					DbContext.Update(userRecord);
+
+					Log.LogInformation($"PopularityLimit was modified by '{UserContext.ApplicationUser.DisplayName}' for account '{userRecord.DisplayName}'.");
+				}
+			}
+
+			void updatePoseys() {
+				if (serviceResponse.Success && input.Poseys != userRecord.Poseys) {
+					userRecord.Poseys = input.Poseys;
+					DbContext.Update(userRecord);
+
+					Log.LogInformation($"Poseys was modified by '{UserContext.ApplicationUser.DisplayName}' for account '{userRecord.DisplayName}'.");
+				}
+			}
+
+			void updateShowFavicons() {
+				if (serviceResponse.Success && input.ShowFavicons != userRecord.ShowFavicons) {
+					userRecord.ShowFavicons = input.ShowFavicons;
+					DbContext.Update(userRecord);
+
+					Log.LogInformation($"ShowFavicons was modified by '{UserContext.ApplicationUser.DisplayName}' for account '{userRecord.DisplayName}'.");
+				}
+			}
+
+			async Task updateEmail() {
+				if (input.NewEmail != userRecord.Email) {
+					serviceResponse.RedirectPath = UrlHelper.Action(nameof(Account.Details), nameof(Account), new { id = input.DisplayName });
+
+					var identityResult = await UserManager.SetEmailAsync(userRecord, input.NewEmail);
 
 					if (!identityResult.Succeeded) {
 						foreach (var error in identityResult.Errors) {
-							Log.LogError($"Error confirming '{userRecord.Email}'. Message: {error.Description}");
+							Log.LogError($"Error modifying email by '{UserContext.ApplicationUser.DisplayName}' from '{userRecord.Email}' to '{input.NewEmail}'. Message: {error.Description}");
 							serviceResponse.Error(error.Description);
 						}
 					}
 					else {
-						Log.LogInformation($"User confirmed email '{userRecord.Email}'.");
+						Log.LogInformation($"Email address was modified by '{UserContext.ApplicationUser.DisplayName}' from '{userRecord.Email}' to '{input.NewEmail}'.");
+
+						identityResult = await UserManager.SetUserNameAsync(userRecord, input.NewEmail);
+
+						if (!identityResult.Succeeded) {
+							foreach (var error in identityResult.Errors) {
+								Log.LogError($"Error modifying username by '{UserContext.ApplicationUser.DisplayName}' from '{userRecord.Email}' to '{input.NewEmail}'. Message: {error.Description}");
+								serviceResponse.Error(error.Description);
+							}
+						}
+						else {
+							Log.LogInformation($"Username was modified by '{UserContext.ApplicationUser.DisplayName}' from '{userRecord.Email}' to '{input.NewEmail}'.");
+
+							var code = await UserManager.GenerateEmailConfirmationTokenAsync(userRecord);
+
+							if (EmailSender.Ready) {
+								var callbackUrl = EmailConfirmationLink(userRecord.Id, code);
+
+								await EmailSender.SendEmailConfirmationAsync(input.NewEmail, callbackUrl);
+
+								if (userRecord.Id == UserContext.ApplicationUser.Id) {
+									SignOut();
+								}
+							}
+							else {
+								identityResult = await UserManager.ConfirmEmailAsync(userRecord, code);
+
+								if (!identityResult.Succeeded) {
+									foreach (var error in identityResult.Errors) {
+										Log.LogError($"Error confirming '{userRecord.Email}'. Message: {error.Description}");
+										serviceResponse.Error(error.Description);
+									}
+								}
+								else {
+									Log.LogInformation($"User confirmed email '{userRecord.Email}'.");
+								}
+							}
+						}
 					}
 				}
-
-				return serviceResponse;
 			}
 
-			SettingsRepository.UpdateUserSettings(input);
+			async Task updatePassword() {
+				if (!string.IsNullOrEmpty(input.NewPassword) && input.Password != input.NewPassword && UserContext.ApplicationUser.Id == input.Id) {
+					var identityResult = await UserManager.ChangePasswordAsync(userRecord, input.Password, input.NewPassword);
 
-			if (!string.IsNullOrEmpty(input.NewPassword) && input.Password != input.NewPassword && UserContext.ApplicationUser.Id == input.Id) {
-				var identityResult = await UserManager.ChangePasswordAsync(userRecord, input.Password, input.NewPassword);
-
-				if (!identityResult.Succeeded) {
-					foreach (var error in identityResult.Errors) {
-						Log.LogError($"Error modifying password by '{UserContext.ApplicationUser.DisplayName}' for '{userRecord.DisplayName}'. Message: {error.Description}");
-						serviceResponse.Error(nameof(InputModels.UpdateAccountInput.NewPassword), error.Description);
+					if (!identityResult.Succeeded) {
+						foreach (var error in identityResult.Errors) {
+							Log.LogError($"Error modifying password by '{UserContext.ApplicationUser.DisplayName}' for '{userRecord.DisplayName}'. Message: {error.Description}");
+							serviceResponse.Error(nameof(InputModels.UpdateAccountInput.NewPassword), error.Description);
+						}
+					}
+					else if (userRecord.Id == UserContext.ApplicationUser.Id) {
+						Log.LogInformation($"Password was modified by '{UserContext.ApplicationUser.DisplayName}' for '{userRecord.DisplayName}'.");
+						SignOut();
 					}
 				}
-				else if (userRecord.Id == UserContext.ApplicationUser.Id) {
-					Log.LogInformation($"Password was modified by '{UserContext.ApplicationUser.DisplayName}' for '{userRecord.DisplayName}'.");
-					SignOut();
-					serviceResponse.RedirectPath = UrlHelper.Action(nameof(Login));
-					return serviceResponse;
-				}
 			}
-
-			if (serviceResponse.Success) {
-				serviceResponse.RedirectPath = UrlHelper.Action(nameof(Account.Details), nameof(Account), new { id = input.DisplayName });
-			}
-
-			return serviceResponse;
 		}
 
 		public async Task<ServiceModels.ServiceResponse> UpdateAvatar(InputModels.UpdateAvatarInput input) {
@@ -292,7 +345,7 @@ namespace Forum.Repositories {
 					FileName = $"avatar{userRecord.Id}.png",
 					ContentType = "image/png",
 					InputStream = inputStream,
-					MaxDimension = SettingsRepository.AvatarSize(true),
+					MaxDimension = 100,
 					Overwrite = true
 				});
 			}

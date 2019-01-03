@@ -37,16 +37,14 @@ export class App {
 	}
 
 	boot() {
-		if ((<any>window).sideloading) {
-			this.establishHubConnection();
-			this.whosOnlineMonitor.init();
-		}
+		this.establishHubConnection();
 
 		this.bbCode.init();
 		this.easterEgg.init();
 		this.navigation.addListeners();
 		this.smileySelector.init();
 		this.passedTimeMonitor.init();
+		this.whosOnlineMonitor.init();
 
 		let pageActions = (<any>window).pageActions;
 

@@ -57,7 +57,6 @@ namespace Forum.Extensions {
 			services.AddScoped<Repositories.PinRepository>();
 			services.AddScoped<Repositories.QuoteRepository>();
 			services.AddScoped<Repositories.RoleRepository>();
-			services.AddScoped<Repositories.SettingsRepository>();
 			services.AddScoped<Repositories.SmileyRepository>();
 			services.AddScoped<Repositories.TopicRepository>();
 		}

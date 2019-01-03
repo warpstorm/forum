@@ -31,7 +31,6 @@ namespace Forum.Repositories {
 		UserContext UserContext { get; }
 		AccountRepository AccountRepository { get; }
 		BoardRepository BoardRepository { get; }
-		SettingsRepository SettingsRepository { get; }
 		SmileyRepository SmileyRepository { get; }
 		IHubContext<ForumHub> ForumHub { get; }
 		IImageStore ImageStore { get; }
@@ -46,7 +45,6 @@ namespace Forum.Repositories {
 			UserContext userContext,
 			AccountRepository accountRepository,
 			BoardRepository boardRepository,
-			SettingsRepository settingsRepository,
 			SmileyRepository smileyRepository,
 			IHubContext<ForumHub> forumHub,
 			IActionContextAccessor actionContextAccessor,
@@ -61,7 +59,6 @@ namespace Forum.Repositories {
 			UserContext = userContext;
 			AccountRepository = accountRepository;
 			BoardRepository = boardRepository;
-			SettingsRepository = settingsRepository;
 			SmileyRepository = smileyRepository;
 			ForumHub = forumHub;
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
@@ -94,8 +91,7 @@ namespace Forum.Repositories {
 			var index = (double)messageIds.FindIndex(id => id == messageId);
 			index++;
 
-			var messagesPerPage = SettingsRepository.MessagesPerPage();
-			return Convert.ToInt32(Math.Ceiling(index / messagesPerPage));
+			return Convert.ToInt32(Math.Ceiling(index / UserContext.ApplicationUser.MessagesPerPage));
 		}
 
 		public async Task<ServiceModels.ServiceResponse> CreateTopic(InputModels.MessageInput input) {
@@ -649,10 +645,11 @@ namespace Forum.Repositories {
 			var secondLevelDomainMatches = Regex.Match(domain, @"([^.]*)\.[^.]{2,3}(?:\.[^.]{2,3})?$", RegexOptions.IgnoreCase);
 
 			if (secondLevelDomainMatches.Success) {
-				var strippedUrls = SettingsRepository.StrippedUrls();
+				var strippedUrl = DbContext.StrippedUrls.FirstOrDefault(r => r.Url == secondLevelDomainMatches.Groups[1].Value);
 
-				if (strippedUrls.Contains(secondLevelDomainMatches.Groups[1].Value)) {
-					returnResult.Title = returnResult.Title.Split(" - ")[0];
+				if (!(strippedUrl is null)) {
+					var match = Regex.Match(returnResult.Title, strippedUrl.RegexPattern);
+					returnResult.Title = match.Groups[1].Value;
 				}
 			}
 		}
@@ -924,8 +921,7 @@ namespace Forum.Repositories {
 
 			var recordCount = query.Count();
 
-			var take = SettingsRepository.TopicsPerPage(true);
-			var totalSteps = (int)Math.Ceiling(1D * recordCount / take);
+			var totalSteps = (int)Math.Ceiling(1D * recordCount / 25);
 
 			return totalSteps;
 		}
@@ -938,7 +934,7 @@ namespace Forum.Repositories {
 									 orderby message.Id descending
 									 select message;
 
-			var take = SettingsRepository.TopicsPerPage(true);
+			var take = 25;
 			var skip = input.CurrentStep * take;
 
 			var parents = parentMessageQuery.Skip(skip).Take(take).ToList();
@@ -992,8 +988,7 @@ namespace Forum.Repositories {
 
 			var recordCount = query.Count();
 
-			var take = SettingsRepository.TopicsPerPage(true);
-			var totalSteps = (int)Math.Ceiling(1D * recordCount / take);
+			var totalSteps = (int)Math.Ceiling(1D * recordCount / 25);
 
 			return totalSteps;
 		}
@@ -1006,7 +1001,7 @@ namespace Forum.Repositories {
 									 orderby message.Id descending
 									 select message;
 
-			var take = SettingsRepository.TopicsPerPage(true);
+			var take = 25;
 			var skip = input.CurrentStep * take;
 
 			var parents = parentMessageQuery.Skip(skip).Take(take).ToList();
@@ -1054,8 +1049,7 @@ namespace Forum.Repositories {
 
 			var recordCount = records.Count();
 
-			var take = SettingsRepository.MessagesPerPage(true);
-			var totalSteps = (int)Math.Ceiling(1D * recordCount / take);
+			var totalSteps = (int)Math.Ceiling(1D * recordCount / 25);
 
 			return totalSteps;
 		}
@@ -1069,7 +1063,7 @@ namespace Forum.Repositories {
 							   orderby message.Id descending
 							   select message;
 
-			var take = SettingsRepository.MessagesPerPage(true);
+			var take = 25;
 			var skip = take * input.CurrentStep;
 
 			var messages = messageQuery.Skip(skip).Take(take).ToList();

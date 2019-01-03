@@ -1,14 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
 namespace Forum.Models.InputModels {
-	public class EditSettingInput {
+	public class EditStrippedUrlInput {
 		[Required]
 		[MaxLength(200)]
-		public string Key { get; set; }
+		public string Url { get; set; }
 
+		[Required]
 		[MaxLength(200)]
-		public string Value { get; set; }
-
-		public bool AdminOnly { get; set; }
+		public string RegexPattern { get; set; }
 	}
 }

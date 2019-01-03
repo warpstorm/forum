@@ -17,7 +17,6 @@ namespace Forum.Controllers {
 		ApplicationDbContext DbContext { get; }
 		UserContext UserContext { get; }
 		AccountRepository AccountRepository { get; }
-		SettingsRepository SettingsRepository { get; }
 		SetupService SetupService { get; }
 		IForumViewResult ForumViewResult { get; }
 		IUrlHelper UrlHelper { get; }
@@ -25,7 +24,6 @@ namespace Forum.Controllers {
 		public Setup(
 			ApplicationDbContext dbContext,
 			UserContext userContext,
-			SettingsRepository settingsRepository,
 			AccountRepository accountRepository,
 			SetupService setupService,
 			IForumViewResult forumViewResult,
@@ -35,7 +33,6 @@ namespace Forum.Controllers {
 			DbContext = dbContext;
 			UserContext = userContext;
 			AccountRepository = accountRepository;
-			SettingsRepository = settingsRepository;
 			SetupService = setupService;
 			ForumViewResult = forumViewResult;
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
@@ -103,10 +100,6 @@ namespace Forum.Controllers {
 		}
 
 		void CheckContext() {
-			if (SettingsRepository.Installed()) {
-				throw new HttpException("The forum has already been installed.");
-			}
-
 			if (!UserContext.IsAuthenticated) {
 				throw new HttpException("You must create an account and log into it first.");
 			}

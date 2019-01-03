@@ -1,4 +1,5 @@
 ﻿using Forum.Contexts;
+using Forum.Enums;
 using Forum.Errors;
 using Forum.Extensions;
 using Forum.Interfaces.Services;
@@ -24,7 +25,6 @@ namespace Forum.Controllers {
 		UserContext UserContext { get; }
 
 		AccountRepository AccountRepository { get; }
-		SettingsRepository SettingsRepository { get; }
 
 		UserManager<DataModels.ApplicationUser> UserManager { get; }
 		IForumViewResult ForumViewResult { get; }
@@ -34,7 +34,6 @@ namespace Forum.Controllers {
 			ApplicationDbContext dbContext,
 			UserContext userContext,
 			AccountRepository accountRepository,
-			SettingsRepository settingsRepository,
 			UserManager<DataModels.ApplicationUser> userManager,
 			IForumViewResult forumViewResult,
 			ILogger<Account> log
@@ -42,7 +41,6 @@ namespace Forum.Controllers {
 			DbContext = dbContext;
 			UserContext = userContext;
 			AccountRepository = accountRepository;
-			SettingsRepository = settingsRepository;
 			UserManager = userManager;
 			ForumViewResult = forumViewResult;
 			Log = log;
@@ -90,7 +88,13 @@ namespace Forum.Controllers {
 				BirthdayDay = userRecord.Birthday.Day.ToString(),
 				BirthdayMonth = userRecord.Birthday.Month.ToString(),
 				BirthdayYear = userRecord.Birthday.Year.ToString(),
-				Settings = SettingsRepository.GetUserSettingsList(userRecord.Id)
+				FrontPage = userRecord.FrontPage,
+				FrontPageOptions = FrontPagePickList(userRecord.FrontPage),
+				MessagesPerPage = userRecord.MessagesPerPage,
+				PopularityLimit = userRecord.PopularityLimit,
+				Poseys = userRecord.Poseys,
+				ShowFavicons = userRecord.ShowFavicons,
+				TopicsPerPage = userRecord.TopicsPerPage
 			};
 
 			ModelState.Clear();
@@ -125,7 +129,13 @@ namespace Forum.Controllers {
 					BirthdayDay = input.BirthdayDay.ToString(),
 					BirthdayMonth = input.BirthdayMonth.ToString(),
 					BirthdayYear = input.BirthdayYear.ToString(),
-					Settings = SettingsRepository.GetUserSettingsList(userRecord.Id)
+					FrontPage = userRecord.FrontPage,
+					FrontPageOptions = FrontPagePickList(userRecord.FrontPage),
+					MessagesPerPage = userRecord.MessagesPerPage,
+					PopularityLimit = userRecord.PopularityLimit,
+					Poseys = userRecord.Poseys,
+					ShowFavicons = userRecord.ShowFavicons,
+					TopicsPerPage = userRecord.TopicsPerPage
 				};
 
 				return ForumViewResult.ViewResult(this, viewModel);
@@ -163,7 +173,13 @@ namespace Forum.Controllers {
 					BirthdayDay = userRecord.Birthday.Day.ToString(),
 					BirthdayMonth = userRecord.Birthday.Month.ToString(),
 					BirthdayYear = userRecord.Birthday.Year.ToString(),
-					Settings = SettingsRepository.GetUserSettingsList(userRecord.Id)
+					FrontPage = userRecord.FrontPage,
+					FrontPageOptions = FrontPagePickList(userRecord.FrontPage),
+					MessagesPerPage = userRecord.MessagesPerPage,
+					PopularityLimit = userRecord.PopularityLimit,
+					Poseys = userRecord.Poseys,
+					ShowFavicons = userRecord.ShowFavicons,
+					TopicsPerPage = userRecord.TopicsPerPage
 				};
 
 				return ForumViewResult.ViewResult(this, nameof(Details), viewModel);
@@ -500,6 +516,26 @@ namespace Forum.Controllers {
 			});
 
 			return months;
+		}
+
+		public IEnumerable<SelectListItem> FrontPagePickList(EFrontPage selected) {
+			return new List<SelectListItem> {
+				new SelectListItem {
+					Value = "0",
+					Text = "Boards",
+					Selected = selected == EFrontPage.Boards
+				},
+				new SelectListItem {
+					Value = "1",
+					Text = "All Topics",
+					Selected = selected == EFrontPage.All
+				},
+				new SelectListItem {
+					Value = "2",
+					Text = "Unread Topics",
+					Selected = selected == EFrontPage.Unread
+				},
+			};
 		}
 	}
 }

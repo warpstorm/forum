@@ -45,7 +45,10 @@
 			</dl>
 
 			<dl>
-				<dt>Birthday</dt>
+				<dt>
+					Birthday
+					<img src="~/images/thought.png" title="The birthday is used to verify you're over 13, and to show birthday cake icons by your name. That's it." />
+				</dt>
 				<dd>
 					<select asp-for="@Model.BirthdayYear" asp-items="@Model.BirthdayYears"></select>
 					<select asp-for="@Model.BirthdayMonth" asp-items="@Model.BirthdayMonths"></select>
@@ -58,29 +61,71 @@
 				</dd>
 			</dl>
 
-			@if (Model.Settings.Any()) {
+			<dl>
+				<dt>
+					Front page
+					<img src="~/images/thought.png" title="Choose your landing page when you visit the main site." />
+				</dt>
+				<dd>
+					<select asp-for="@Model.FrontPage" asp-items="@Model.FrontPageOptions"></select>
+				</dd>
+				<dd><span asp-validation-for="@Model.FrontPage" class="error"></span></dd>
+			</dl>
+
+			<dl>
+				<dt>
+					Messages per page
+					<img src="~/images/thought.png" title="Limits how many messages per page are displayed in a topic." />
+				</dt>
+				<dd>
+					<input asp-for="@Model.MessagesPerPage" />
+				</dd>
+				<dd><span asp-validation-for="@Model.MessagesPerPage" class="error"></span></dd>
+			</dl>
+
+			<dl>
+				<dt>
+					Topics per page
+					<img src="~/images/thought.png" title="Limits how many topics per page are displayed in a board." />
+				</dt>
+				<dd>
+					<input asp-for="@Model.TopicsPerPage" />
+				</dd>
+				<dd><span asp-validation-for="@Model.TopicsPerPage" class="error"></span></dd>
+			</dl>
+
+			<dl>
+				<dt>
+					Popularity limit
+					<img src="~/images/thought.png" title="Changes how many posts a topic must have to be considered popular." />
+				</dt>
+				<dd>
+					<input asp-for="@Model.PopularityLimit" />
+				</dd>
+				<dd><span asp-validation-for="@Model.PopularityLimit" class="error"></span></dd>
+			</dl>
+
+			<dl>
+				<dt>
+					Show favicons
+					<img src="~/images/thought.png" title="Show icons by links in post bodies." />
+				</dt>
+				<dd>
+					<input asp-for="@Model.ShowFavicons" />
+				</dd>
+				<dd><span asp-validation-for="@Model.ShowFavicons" class="error"></span></dd>
+			</dl>
+
+			@if (UserContext.IsAdmin) {
 				<dl>
-					<dt>Site Settings</dt>
+					<dt>
+						Poseys
+						<img src="~/images/thought.png" title="User is posey'd." />
+					</dt>
 					<dd>
-						<ol>
-							@for (int i = 0; i < Model.Settings.Count; i++) {
-								<li>
-									<input asp-for="@Model.Settings[i].Key" type="hidden" />
-									<span class="font-small subdued-text">@Model.Settings[i].Display</span>
-
-									@if (Model.Settings[i].Options.Any()) {
-										<select asp-for="@Model.Settings[i].Value" asp-items="@Model.Settings[i].Options"></select>
-									}
-									else {
-										<input asp-for="@Model.Settings[i].Value" value="" placeholder="@Model.Settings[i].Value" />
-									}
-
-									<img src="~/images/thought.png" title="@Model.Settings[i].Description" />
-									<span asp-validation-for="@Model.Settings[i].Value" class="error"></span>
-								</li>
-							}
-						</ol>
+						<input asp-for="@Model.Poseys" />
 					</dd>
+					<dd><span asp-validation-for="@Model.Poseys" class="error"></span></dd>
 				</dl>
 			}
 

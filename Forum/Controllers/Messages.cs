@@ -18,7 +18,6 @@ namespace Forum.Controllers {
 		ApplicationDbContext DbContext { get; }
 		BoardRepository BoardRepository { get; }
 		MessageRepository MessageRepository { get; }
-		SettingsRepository SettingsRepository { get; }
 		SmileyRepository SmileyRepository { get; }
 		IForumViewResult ForumViewResult { get; }
 		IUrlHelper UrlHelper { get; }
@@ -27,7 +26,6 @@ namespace Forum.Controllers {
 			ApplicationDbContext dbContext,
 			BoardRepository boardRepository,
 			MessageRepository messageRepository,
-			SettingsRepository settingsRepository,
 			SmileyRepository smileyRepository,
 			IActionContextAccessor actionContextAccessor,
 			IForumViewResult forumViewResult,
@@ -36,7 +34,6 @@ namespace Forum.Controllers {
 			DbContext = dbContext;
 			BoardRepository = boardRepository;
 			MessageRepository = messageRepository;
-			SettingsRepository = settingsRepository;
 			SmileyRepository = smileyRepository;
 			ForumViewResult = forumViewResult;
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);

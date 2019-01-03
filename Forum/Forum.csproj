@@ -15,6 +15,11 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Remove="Migrations\20190103101933_userConfiguration.cs" />
+	  <Compile Remove="Migrations\20190103101933_userConfiguration.Designer.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
 	  <None Remove="appsettings.Development.json-example" />
 	  <Content Include="appsettings.Development.json-example" />
 	</ItemGroup>

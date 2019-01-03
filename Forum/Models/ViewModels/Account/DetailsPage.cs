@@ -1,4 +1,5 @@
 ﻿using Forum.Annotations;
+using Forum.Enums;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Collections.Generic;
@@ -40,6 +41,19 @@ namespace Forum.Models.ViewModels.Account {
 		public IFormFile NewAvatar { get; set; }
 		public string AvatarPath { get; set; }
 
-		public List<SiteSettings.IndexItem> Settings { get; set; }
+		public EFrontPage FrontPage { get; set; }
+		public IEnumerable<SelectListItem> FrontPageOptions { get; set; }
+
+		[Range(5, 50)]
+		public int MessagesPerPage { get; set; }
+
+		[Range(5, 50)]
+		public int TopicsPerPage { get; set; }
+
+		[Range(5, 100)]
+		public int PopularityLimit { get; set; }
+
+		public bool Poseys { get; set; }
+		public bool ShowFavicons { get; set; }
 	}
 }

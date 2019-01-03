@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Forum.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace Forum.Models.InputModels {
 	public class UpdateAccountInput {
@@ -33,6 +34,18 @@ namespace Forum.Models.InputModels {
 		[Range(1900, 2100)]
 		public int BirthdayYear { get; set; }
 
-		public EditSettingInput[] Settings { get; set; }
+		public EFrontPage FrontPage { get; set; }
+
+		[Range(5, 50)]
+		public int MessagesPerPage { get; set; }
+
+		[Range(5, 50)]
+		public int TopicsPerPage { get; set; }
+
+		[Range(5, 100)]
+		public int PopularityLimit { get; set; }
+
+		public bool Poseys { get; set; }
+		public bool ShowFavicons { get; set; }
 	}
 }

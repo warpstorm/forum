@@ -1,4 +1,6 @@
-﻿using Forum.Interfaces.Services;
+﻿using Forum.Contexts;
+using Forum.Enums;
+using Forum.Interfaces.Services;
 using Forum.Repositories;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
@@ -10,21 +12,21 @@ namespace Forum.Controllers {
 	using ViewModels = Models.ViewModels;
 
 	public class Home : Controller {
+		UserContext UserContext { get; }
 		AccountRepository AccountRepository { get; }
-		SettingsRepository SettingsRepository { get; }
 		IForumViewResult ForumViewResult { get; }
 		IHttpContextAccessor HttpContextAccessor { get; }
 		IAntiforgery Xsrf { get; }
 
 		public Home(
+			UserContext userContext,
 			AccountRepository accountRepository,
-			SettingsRepository settingsRepository,
 			IForumViewResult forumViewResult,
 			IHttpContextAccessor httpContextAccessor,
 			IAntiforgery xsrf
 		) {
+			UserContext = userContext;
 			AccountRepository = accountRepository;
-			SettingsRepository = settingsRepository;
 			ForumViewResult = forumViewResult;
 			HttpContextAccessor = httpContextAccessor;
 			Xsrf = xsrf;
@@ -32,17 +34,17 @@ namespace Forum.Controllers {
 
 		[HttpGet]
 		public IActionResult FrontPage() {
-			var frontpage = SettingsRepository.FrontPage();
+			var frontpage = UserContext.ApplicationUser.FrontPage;
 
 			switch (frontpage) {
 				default:
-				case "Board List":
+				case EFrontPage.Boards:
 					return RedirectToAction(nameof(Boards.Index), nameof(Boards));
 
-				case "All Topics":
+				case EFrontPage.All:
 					return RedirectToAction(nameof(Topics.Index), nameof(Topics), new { id = 0 });
 
-				case "Unread Topics":
+				case EFrontPage.Unread:
 					return RedirectToAction(nameof(Topics.Index), nameof(Topics), new { id = 0, unread = 1 });
 			}
 		}

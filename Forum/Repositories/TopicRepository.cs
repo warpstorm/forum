@@ -25,7 +25,6 @@ namespace Forum.Repositories {
 		NotificationRepository NotificationRepository { get; }
 		PinRepository PinRepository { get; }
 		RoleRepository RoleRepository { get; }
-		SettingsRepository SettingsRepository { get; }
 		SmileyRepository SmileyRepository { get; }
 
 		IUrlHelper UrlHelper { get; }
@@ -38,7 +37,6 @@ namespace Forum.Repositories {
 			PinRepository pinRepository,
 			NotificationRepository notificationRepository,
 			RoleRepository roleRepository,
-			SettingsRepository settingsRepository,
 			SmileyRepository smileyRepository,
 			AccountRepository accountRepository,
 			IActionContextAccessor actionContextAccessor,
@@ -52,7 +50,6 @@ namespace Forum.Repositories {
 			NotificationRepository = notificationRepository;
 			PinRepository = pinRepository;
 			RoleRepository = roleRepository;
-			SettingsRepository = settingsRepository;
 			SmileyRepository = smileyRepository;
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
@@ -61,8 +58,6 @@ namespace Forum.Repositories {
 		/// Builds a collection of Message objects. The message ids should already have been filtered by permissions.
 		/// </summary>
 		public List<ItemModels.Message> GetMessages(List<int> messageIds) {
-			var poseyUsers = SettingsRepository.PoseyUsers();
-
 			var thoughtQuery = from mt in DbContext.MessageThoughts
 							   join s in DbContext.Smileys on mt.SmileyId equals s.Id
 							   join u in DbContext.Users on mt.UserId equals u.Id
@@ -127,7 +122,7 @@ namespace Forum.Repositories {
 				if (!(postedBy is null)) {
 					message.PostedByAvatarPath = postedBy.AvatarPath;
 					message.PostedByName = postedBy.DisplayName;
-					message.Poseys = poseyUsers.Contains(postedBy.Id);
+					message.Poseys = postedBy.Poseys;
 
 					if (DateTime.Now.Date == new DateTime(DateTime.Now.Year, postedBy.Birthday.Month, postedBy.Birthday.Day).Date) {
 						message.Birthday = true;
@@ -156,7 +151,7 @@ namespace Forum.Repositories {
 				return serviceResponse;
 			}
 
-			var historyTimeLimit = SettingsRepository.HistoryTimeLimit();
+			var historyTimeLimit = DateTime.Now.AddDays(-14);
 			var viewLogs = DbContext.ViewLogs.Where(r => r.UserId == UserContext.ApplicationUser.Id && r.LogTime >= historyTimeLimit).ToList();
 			var latestViewTime = historyTimeLimit;
 
@@ -201,7 +196,7 @@ namespace Forum.Repositories {
 		public List<ItemModels.MessagePreview> GetPreviews(int boardId, int page, int unread) {
 			var participation = new List<DataModels.Participant>();
 			var viewLogs = new List<DataModels.ViewLog>();
-			var historyTimeLimit = SettingsRepository.HistoryTimeLimit();
+			var historyTimeLimit = DateTime.Now.AddDays(-14);
 
 			if (UserContext.IsAuthenticated) {
 				participation = DbContext.Participants.Where(r => r.UserId == UserContext.ApplicationUser.Id).ToList();
@@ -229,9 +224,6 @@ namespace Forum.Repositories {
 
 			var messages = messageQuery.ToList();
 
-			var take = SettingsRepository.MessagesPerPage();
-			var popularityLimit = SettingsRepository.PopularityLimit();
-
 			var messagePreviews = new List<ItemModels.MessagePreview>();
 
 			foreach (var messageId in sortedMessageIds) {
@@ -242,9 +234,9 @@ namespace Forum.Repositories {
 					ShortPreview = string.IsNullOrEmpty(message.ShortPreview.Trim()) ? "No subject" : message.ShortPreview,
 					Views = message.ViewCount,
 					Replies = message.ReplyCount,
-					Pages = Convert.ToInt32(Math.Ceiling(1.0 * message.ReplyCount / take)),
+					Pages = Convert.ToInt32(Math.Ceiling(1.0 * message.ReplyCount / UserContext.ApplicationUser.MessagesPerPage)),
 					LastReplyId = message.Id,
-					Popular = message.ReplyCount > popularityLimit,
+					Popular = message.ReplyCount > UserContext.ApplicationUser.PopularityLimit,
 					Pinned = PinRepository.Any(item => item.MessageId == message.Id),
 					TimePosted = message.TimePosted,
 					PostedById = message.PostedById,
@@ -286,7 +278,7 @@ namespace Forum.Repositories {
 		}
 
 		public List<int> GetIndexIds(int boardId, int page, int unreadFilter, DateTime historyTimeLimit, List<DataModels.Participant> participation, List<DataModels.ViewLog> viewLogs) {
-			var take = SettingsRepository.TopicsPerPage();
+			var take = UserContext.ApplicationUser.TopicsPerPage;
 			var skip = (page - 1) * take;
 
 			var forbiddenBoardIdsQuery = from role in RoleRepository.SiteRoles

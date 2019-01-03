@@ -1,0 +1,44 @@
+@model ViewModels.StrippedUrls.IndexPage
+
+<div class="content-box pad">
+	<div asp-validation-summary="All" class="error"></div>
+
+	<form method="post" asp-action="@nameof(StrippedUrls.Index)">
+		<ol>
+			@if (Model.StrippedUrls.Any()) {
+				@for (int i = 0; i < Model.StrippedUrls.Count; i++) {
+					<li>
+						<a asp-action="@nameof(StrippedUrls.Delete)" asp-route-url="@Uri.EscapeDataString(Model.StrippedUrls[i].Url)"><img src="~/images/delete.png" title="Delete" alt="Delete" /></a>
+						<input asp-for="@Model.StrippedUrls[i].Url" type="hidden" />
+						<span>@Model.StrippedUrls[i].Url</span>
+						<input asp-for="@Model.StrippedUrls[i].RegexPattern" />
+						<span asp-validation-for="@Model.StrippedUrls[i].RegexPattern" class="error"></span>
+					</li>
+				}
+			}
+		</ol>
+
+		<dl>
+			<dt>
+				New Url:
+				<img src="~/images/thought.png" title="Don't include the TLD like .com or .org" />
+			</dt>
+			<dd><input asp-for="@Model.NewUrl" /></dd>
+			<dd><span asp-validation-for="@Model.NewUrl" /></dd>
+		</dl>
+		<dl>
+			<dt>Regex:</dt>
+			<dd><input asp-for="@Model.NewRegex" /></dd>
+			<dd><span asp-validation-for="@Model.NewRegex" /></dd>
+		</dl>
+
+		<ul>
+			<li><button>Save Changes</button></li>
+			<li><cancel-button /></li>
+		</ul>
+	</form>
+
+	<p class="gap-top"><a href="https://regexr.com/" target="_blank" class="subdued-text font-small">regexr.com</a></p>
+</div>
+
+@{ViewData["Title"] = "Site Settings";}

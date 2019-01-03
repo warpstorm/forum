@@ -27,7 +27,6 @@ namespace Forum.Controllers {
 		BoardRepository BoardRepository { get; }
 		MessageRepository MessageRepository { get; }
 		RoleRepository RoleRepository { get; }
-		SettingsRepository SettingsRepository { get; }
 		SmileyRepository SmileyRepository { get; }
 		TopicRepository TopicRepository { get; }
 
@@ -40,7 +39,6 @@ namespace Forum.Controllers {
 			BoardRepository boardRepository,
 			MessageRepository messageRepository,
 			RoleRepository roleRepository,
-			SettingsRepository settingsRepository,
 			SmileyRepository smileyRepository,
 			TopicRepository topicRepository,
 			Sidebar sidebar,
@@ -54,7 +52,6 @@ namespace Forum.Controllers {
 			BoardRepository = boardRepository;
 			MessageRepository = messageRepository;
 			RoleRepository = roleRepository;
-			SettingsRepository = settingsRepository;
 			SmileyRepository = smileyRepository;
 			TopicRepository = topicRepository;
 
@@ -396,7 +393,7 @@ namespace Forum.Controllers {
 					pageId = 1;
 				}
 
-				var take = SettingsRepository.MessagesPerPage();
+				var take = UserContext.ApplicationUser.MessagesPerPage;
 				var skip = take * (pageId - 1);
 				var totalPages = Convert.ToInt32(Math.Ceiling(1.0 * messageIds.Count / take));
 
@@ -411,8 +408,6 @@ namespace Forum.Controllers {
 				if (string.IsNullOrEmpty(record.ShortPreview)) {
 					record.ShortPreview = "No subject";
 				}
-
-				var showFavicons = SettingsRepository.ShowFavicons();
 
 				viewModel = new PageModels.TopicDisplayPage {
 					Id = record.Id,
@@ -430,7 +425,7 @@ namespace Forum.Controllers {
 					ReplyCount = record.ReplyCount,
 					ViewCount = record.ViewCount,
 					CurrentPage = pageId,
-					ShowFavicons = showFavicons,
+					ShowFavicons = UserContext.ApplicationUser.ShowFavicons,
 					ReplyForm = new ItemModels.ReplyForm {
 						Id = record.Id.ToString()
 					}

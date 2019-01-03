@@ -1,7 +1,7 @@
 @model ViewModels.Quotes.EditQuotes
 
 <div class="content-box pad">
-	<div asp-validation-summary="All"></div>
+	<div asp-validation-summary="All" class="error"></div>
 
 	<form method="post" asp-action="@nameof(Quotes.Edit)">
 		@if (Model.Quotes.Any()) {
@@ -14,24 +14,24 @@
 					<th>Details</th>
 				</tr>
 				@for (int i = 0; i < Model.Quotes.Count; i++) {
-				<tr>
-					<td class="align-center align-top">
-						<input hidden="hidden" asp-for="@Model.Quotes[i].Id" />
-						<a asp-action="@nameof(Quotes.Delete)" asp-route-id="@Model.Quotes[i].Id" class="borderless spaced"><img alt="Delete" src="~/images/delete.png" /></a>
-					</td>
-					<td class="align-center align-top">
-						<input asp-for="@Model.Quotes[i].Approved" class="small-input" />
-					</td>
-					<td class="pad-left"><textarea asp-for="@Model.Quotes[i].OriginalBody"></textarea></td>
-					<td class="pad-left align-top font-small subdued-text">
-						@Html.Raw(Model.Quotes[i].DisplayBody)
-					</td>
-					<td class="pad-left align-top">
-						<p><a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Display)" asp-route-id="@Model.Quotes[i].MessageId">Link to Message</a></p>
-						<p class="font-small subdued-text">Posted <passed-time time="@Model.Quotes[i].PostedTime" /> by @Model.Quotes[i].PostedBy</p>
-						<p class="font-small subdued-text">Submitted <passed-time time="@Model.Quotes[i].SubmittedTime" /> by @Model.Quotes[i].SubmittedBy</p>
-					</td>
-				</tr>
+					<tr>
+						<td class="align-center align-top">
+							<input hidden="hidden" asp-for="@Model.Quotes[i].Id" />
+							<a asp-action="@nameof(Quotes.Delete)" asp-route-id="@Model.Quotes[i].Id" class="borderless spaced"><img alt="Delete" src="~/images/delete.png" /></a>
+						</td>
+						<td class="align-center align-top">
+							<input asp-for="@Model.Quotes[i].Approved" class="small-input" />
+						</td>
+						<td class="pad-left"><textarea asp-for="@Model.Quotes[i].OriginalBody"></textarea></td>
+						<td class="pad-left align-top font-small subdued-text">
+							@Html.Raw(Model.Quotes[i].DisplayBody)
+						</td>
+						<td class="pad-left align-top">
+							<p><a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Display)" asp-route-id="@Model.Quotes[i].MessageId">Link to Message</a></p>
+							<p class="font-small subdued-text">Posted <passed-time time="@Model.Quotes[i].PostedTime" /> by @Model.Quotes[i].PostedBy</p>
+							<p class="font-small subdued-text">Submitted <passed-time time="@Model.Quotes[i].SubmittedTime" /> by @Model.Quotes[i].SubmittedBy</p>
+						</td>
+					</tr>
 				}
 			</table>
 		}

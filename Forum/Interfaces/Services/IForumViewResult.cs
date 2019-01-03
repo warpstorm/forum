@@ -6,7 +6,7 @@ namespace Forum.Interfaces.Services {
 
 	public interface IForumViewResult {
 		IActionResult RedirectToReferrer(Controller controller);
-		IActionResult RedirectFromService(Controller controller, ServiceModels.ServiceResponse serviceResponse, Func<IActionResult> failureCallback);
+		IActionResult RedirectFromService(Controller controller, ServiceModels.ServiceResponse serviceResponse, Func<IActionResult> failureCallback = null);
 		IActionResult RedirectToLocal(Controller controller, string returnUrl);
 		IActionResult ViewResult(Controller controller);
 		IActionResult ViewResult(Controller controller, object model);

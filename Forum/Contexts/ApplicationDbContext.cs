@@ -1,4 +1,5 @@
-﻿using Forum.Models.DataModels;
+﻿using Forum.Enums;
+using Forum.Models.DataModels;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,6 +17,7 @@ namespace Forum.Contexts {
 		public DbSet<Quote> Quotes { get; set; }
 		public DbSet<SiteSetting> SiteSettings { get; set; }
 		public DbSet<Smiley> Smileys { get; set; }
+		public DbSet<StrippedUrl> StrippedUrls { get; set; }
 		public DbSet<ViewLog> ViewLogs { get; set; }
 
 		public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
@@ -25,6 +27,26 @@ namespace Forum.Contexts {
 
 			modelBuilder.Entity<ApplicationUser>()
 				.HasIndex(r => r.DisplayName);
+
+			modelBuilder.Entity<ApplicationUser>()
+				.Property(r => r.FrontPage)
+				.HasDefaultValue(EFrontPage.Boards);
+
+			modelBuilder.Entity<ApplicationUser>()
+				.Property(r => r.MessagesPerPage)
+				.HasDefaultValue(25);
+
+			modelBuilder.Entity<ApplicationUser>()
+				.Property(r => r.PopularityLimit)
+				.HasDefaultValue(30);
+
+			modelBuilder.Entity<ApplicationUser>()
+				.Property(r => r.ShowFavicons)
+				.HasDefaultValue(true);
+
+			modelBuilder.Entity<ApplicationUser>()
+				.Property(r => r.TopicsPerPage)
+				.HasDefaultValue(15);
 
 			modelBuilder.Entity<BoardRole>()
 				.HasIndex(r => r.BoardId);
