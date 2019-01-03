@@ -221,7 +221,7 @@ namespace Forum.Controllers {
 		[AllowAnonymous]
 		public IActionResult Login() {
 			if (AccountRepository.IsAuthenticated) {
-				return RedirectToAction(nameof(Home.FrontPage), nameof(Home));
+				return Redirect("/");
 			}
 
 			AccountRepository.SignOut();
@@ -244,7 +244,7 @@ namespace Forum.Controllers {
 
 			IActionResult FailureCallback() {
 				if (AccountRepository.IsAuthenticated) {
-					return RedirectToAction(nameof(Home.FrontPage), nameof(Home));
+					return Redirect("/");
 				}
 
 				AccountRepository.SignOut();
@@ -272,7 +272,7 @@ namespace Forum.Controllers {
 		[HttpGet]
 		public IActionResult Logout() {
 			AccountRepository.SignOut();
-			return RedirectToAction(nameof(Home.FrontPage), nameof(Home));
+			return Redirect("/");
 		}
 
 		[HttpGet]
@@ -435,7 +435,7 @@ namespace Forum.Controllers {
 
 			await AccountRepository.MergeAccounts(userId, deletedAccount.Id, true);
 
-			return RedirectToAction(nameof(Home.FrontPage), nameof(Home));
+			return Redirect("/");
 		}
 
 		[Authorize(Roles = Constants.InternalKeys.Admin)]

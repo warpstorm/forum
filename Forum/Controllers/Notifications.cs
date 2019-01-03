@@ -49,6 +49,6 @@ namespace Forum.Controllers {
 		}
 
 		[HttpGet]
-		public ActionResult MarkAllRead() => RedirectToAction(nameof(Home.FrontPage), nameof(Home));
+		public ActionResult MarkAllRead() => Redirect("/");
 	}
 }

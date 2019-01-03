@@ -1,21 +1,15 @@
-﻿using Forum.Controllers;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 
 namespace Forum.TagHelpers {
 	public class CancelButtonTagHelper : TagHelper {
 		HttpContext HttpContext { get; }
-		IUrlHelper UrlHelper { get; }
 
 		public CancelButtonTagHelper(
-			IActionContextAccessor actionContextAccessor,
-			IUrlHelperFactory urlHelperFactory
+			IActionContextAccessor actionContextAccessor
 		) {
 			HttpContext = actionContextAccessor.ActionContext.HttpContext;
-			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
 		public override void Process(TagHelperContext context, TagHelperOutput output) {
@@ -43,7 +37,7 @@ namespace Forum.TagHelpers {
 			}
 
 			if (string.IsNullOrEmpty(returnUrl)) {
-				returnUrl = UrlHelper.Action(nameof(Home.FrontPage), nameof(Home));
+				returnUrl = "/";
 			}
 
 			return returnUrl;

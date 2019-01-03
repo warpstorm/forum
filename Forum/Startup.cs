@@ -86,6 +86,8 @@ namespace Forum {
 			});
 
 			app.UseMvc(routes => {
+				routes.Routes.Add(new ForumRouter(app, routes.DefaultHandler));
+
 				routes.MapRoute(
 					name: "default",
 					template: "{controller=Home}/{action=FrontPage}/{id?}/{pageId?}/{target?}");

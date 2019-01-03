@@ -32,23 +32,6 @@ namespace Forum.Controllers {
 			Xsrf = xsrf;
 		}
 
-		[HttpGet]
-		public IActionResult FrontPage() {
-			var frontpage = UserContext.ApplicationUser.FrontPage;
-
-			switch (frontpage) {
-				default:
-				case EFrontPage.Boards:
-					return RedirectToAction(nameof(Boards.Index), nameof(Boards));
-
-				case EFrontPage.All:
-					return RedirectToAction(nameof(Topics.Index), nameof(Topics), new { id = 0 });
-
-				case EFrontPage.Unread:
-					return RedirectToAction(nameof(Topics.Index), nameof(Topics), new { id = 0, unread = 1 });
-			}
-		}
-
 		[AllowAnonymous]
 		public IActionResult Error() {
 			var viewModel = new ViewModels.Error {

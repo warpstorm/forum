@@ -1,10 +1,7 @@
-﻿using Forum.Controllers;
-using Forum.Interfaces.Services;
+﻿using Forum.Interfaces.Services;
 using Forum.Repositories;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Routing;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -16,15 +13,11 @@ namespace Forum.Services {
 
 	public class ForumViewResult : IForumViewResult {
 		BoardRepository BoardRepository { get; }
-		IUrlHelper UrlHelper { get; }
 
 		public ForumViewResult(
-			BoardRepository boardRepository,
-			IActionContextAccessor actionContextAccessor,
-			IUrlHelperFactory urlHelperFactory
+			BoardRepository boardRepository
 		) {
 			BoardRepository = boardRepository;
-			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
 		public IActionResult RedirectToReferrer(Controller controller) {
@@ -65,7 +58,7 @@ namespace Forum.Services {
 				return controller.Redirect(returnUrl);
 			}
 			else {
-				return controller.RedirectToAction(nameof(Home.FrontPage), nameof(Home));
+				return controller.Redirect("/");
 			}
 		}
 
@@ -105,7 +98,7 @@ namespace Forum.Services {
 			}
 
 			if (string.IsNullOrEmpty(referrer)) {
-				referrer = UrlHelper.Action(nameof(Home.FrontPage), nameof(Home));
+				referrer = "/";
 			}
 
 			return referrer;
