@@ -584,6 +584,6 @@ namespace Forum.Repositories {
 
 		public string EmailConfirmationLink(string userId, string code) => UrlHelper.AbsoluteAction(nameof(Account.ConfirmEmail), nameof(Account), new { userId, code });
 		public string ResetPasswordCallbackLink(string userId, string code) => UrlHelper.AbsoluteAction(nameof(Account.ResetPassword), nameof(Account), new { userId, code });
-		protected override List<DataModels.ApplicationUser> GetRecords() => DbContext.Users.OrderBy(u => u.DisplayName).ToList();
+		protected override List<DataModels.ApplicationUser> GetRecords() => DbContext.Users.ToList().OrderBy(u => u.DisplayName).ToList();
 	}
 }

@@ -14,21 +14,6 @@ namespace Forum.Repositories {
 	using ViewModels = Models.ViewModels.Notifications;
 
 	public class NotificationRepository {
-		public List<DataModels.Notification> ForCurrentUser {
-			get {
-				if (_ForCurrentUser is null) {
-					var notificationQuery = from n in DbContext.Notifications
-											where n.UserId == UserContext.ApplicationUser.Id
-											select n;
-
-					_ForCurrentUser = notificationQuery.ToList();
-				}
-
-				return _ForCurrentUser;
-			}
-		}
-		List<DataModels.Notification> _ForCurrentUser;
-
 		ApplicationDbContext DbContext { get; }
 		UserContext UserContext { get; }
 		AccountRepository AccountRepository { get; }
@@ -55,7 +40,8 @@ namespace Forum.Repositories {
 			var hiddenTimeLimit = DateTime.Now.AddDays(-7);
 			var recentTimeLimit = DateTime.Now.AddMinutes(-30);
 
-			var notificationQuery = from n in ForCurrentUser
+			var notificationQuery = from n in DbContext.Notifications
+									where n.UserId == UserContext.ApplicationUser.Id
 									join targetUser in DbContext.Users on n.TargetUserId equals targetUser.Id into targetUsers
 									from targetUser in targetUsers.DefaultIfEmpty()
 									where n.Time > hiddenTimeLimit
@@ -81,7 +67,8 @@ namespace Forum.Repositories {
 		public ServiceModels.ServiceResponse Open(int id) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
-			var recordQuery = from n in ForCurrentUser
+			var recordQuery = from n in DbContext.Notifications
+							  where n.UserId == UserContext.ApplicationUser.Id
 							  where n.Id == id
 							  select n;
 
