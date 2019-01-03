@@ -110,12 +110,14 @@ namespace Forum.Repositories {
 
 				// Only checks the most recent 10 topics. If all 10 are forbidden, then LastMessage stays null.
 				foreach (var item in messages.Take(10)) {
-					var messageRoles = from messageBoard in DbContext.MessageBoards
-									   join boardRole in DbContext.BoardRoles on messageBoard.BoardId equals boardRole.BoardId
-									   where messageBoard.MessageId == item.MessageId
-									   select boardRole.RoleId;
+					var messageBoardQuery = from messageBoard in DbContext.MessageBoards
+										where messageBoard.MessageId == item.MessageId
+										select messageBoard.BoardId;
 
-					if (UserContext.IsAdmin || !messageRoles.Any() || messageRoles.Intersect(UserContext.Roles).Any()) {
+					var messageBoards = messageBoardQuery.ToList();
+					var messageRoleIds = RoleRepository.BoardRoles.Where(r => messageBoards.Contains(r.BoardId)).Select(r => r.RoleId);
+
+					if (UserContext.IsAdmin || !messageRoleIds.Any() || messageRoleIds.Intersect(UserContext.Roles).Any()) {
 						var lastReplyQuery = from message in DbContext.Messages
 										where message.Id == item.LastReplyId
 										select new Models.ViewModels.Topics.Items.MessagePreview {

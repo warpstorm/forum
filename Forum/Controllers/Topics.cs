@@ -445,12 +445,12 @@ namespace Forum.Controllers {
 		}
 
 		public List<Models.DataModels.Board> LoadTopicBoards(int topicId) {
-			var assignedBoardsQuery = from messageBoard in DbContext.MessageBoards
-									  join board in DbContext.Boards on messageBoard.BoardId equals board.Id
+			var messageBoardsQuery = from messageBoard in DbContext.MessageBoards
 									  where messageBoard.MessageId == topicId
-									  select board;
+									  select messageBoard.BoardId;
 
-			var assignedBoards = assignedBoardsQuery.ToList();
+			var boardIds = messageBoardsQuery.ToList();
+			var assignedBoards = BoardRepository.Where(r => boardIds.Contains(r.Id)).ToList();
 
 			if (!RoleRepository.CanAccessBoards(assignedBoards)) {
 				throw new HttpForbiddenError();

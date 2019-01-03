@@ -59,16 +59,22 @@ namespace Forum.Repositories {
 		/// </summary>
 		public List<ItemModels.Message> GetMessages(List<int> messageIds) {
 			var thoughtQuery = from mt in DbContext.MessageThoughts
-							   join s in DbContext.Smileys on mt.SmileyId equals s.Id
-							   join u in DbContext.Users on mt.UserId equals u.Id
 							   where messageIds.Contains(mt.MessageId)
 							   select new ItemModels.MessageThought {
 								   MessageId = mt.MessageId.ToString(),
-								   Path = s.Path,
-								   Thought = s.Thought.Replace("{user}", u.DisplayName)
+								   UserId = mt.UserId,
+								   SmileyId = mt.SmileyId,
 							   };
 
 			var thoughts = thoughtQuery.ToList();
+
+			foreach (var item in thoughts) {
+				var smiley = SmileyRepository.FirstOrDefault(r => r.Id == item.SmileyId);
+				var user = AccountRepository.FirstOrDefault(r => r.Id == item.UserId);
+
+				item.Path = smiley.Path;
+				item.Thought = smiley.Thought.Replace("{user}", user.DisplayName);
+			}
 
 			var messageQuery = from message in DbContext.Messages
 							   where messageIds.Contains(message.Id)
@@ -152,10 +158,9 @@ namespace Forum.Repositories {
 			}
 
 			var historyTimeLimit = DateTime.Now.AddDays(-14);
-			var viewLogs = DbContext.ViewLogs.Where(r => r.UserId == UserContext.ApplicationUser.Id && r.LogTime >= historyTimeLimit).ToList();
 			var latestViewTime = historyTimeLimit;
 
-			foreach (var viewLog in viewLogs) {
+			foreach (var viewLog in UserContext.ViewLogs) {
 				switch (viewLog.TargetType) {
 					case EViewLogTargetType.All:
 						if (viewLog.LogTime >= latestViewTime) {
@@ -195,18 +200,15 @@ namespace Forum.Repositories {
 
 		public List<ItemModels.MessagePreview> GetPreviews(int boardId, int page, int unread) {
 			var participation = new List<DataModels.Participant>();
-			var viewLogs = new List<DataModels.ViewLog>();
 			var historyTimeLimit = DateTime.Now.AddDays(-14);
 
 			if (UserContext.IsAuthenticated) {
 				participation = DbContext.Participants.Where(r => r.UserId == UserContext.ApplicationUser.Id).ToList();
-				viewLogs = DbContext.ViewLogs.Where(r => r.LogTime >= historyTimeLimit && r.UserId == UserContext.ApplicationUser.Id).ToList();
 			}
 
-			var sortedMessageIds = GetIndexIds(boardId, page, unread, historyTimeLimit, participation, viewLogs);
+			var sortedMessageIds = GetIndexIds(boardId, page, unread, historyTimeLimit, participation);
 
 			var messageQuery = from message in DbContext.Messages
-							   join postedBy in DbContext.Users on message.PostedById equals postedBy.Id
 							   where sortedMessageIds.Contains(message.Id)
 							   select new {
 								   message.Id,
@@ -215,8 +217,6 @@ namespace Forum.Repositories {
 								   message.ReplyCount,
 								   message.TimePosted,
 								   message.PostedById,
-								   postedBy.DisplayName,
-								   postedBy.Birthday,
 								   message.LastReplyId,
 								   message.LastReplyById,
 								   message.LastReplyPosted
@@ -225,9 +225,11 @@ namespace Forum.Repositories {
 			var messages = messageQuery.ToList();
 
 			var messagePreviews = new List<ItemModels.MessagePreview>();
+			var today = DateTime.Now.Date;
 
 			foreach (var messageId in sortedMessageIds) {
 				var message = messages.First(item => item.Id == messageId);
+				var postedBy = AccountRepository.First(r => r.Id == message.PostedById);
 
 				var messagePreview = new ItemModels.MessagePreview {
 					Id = message.Id,
@@ -240,8 +242,8 @@ namespace Forum.Repositories {
 					Pinned = PinRepository.Any(item => item.MessageId == message.Id),
 					TimePosted = message.TimePosted,
 					PostedById = message.PostedById,
-					PostedByName = message.DisplayName,
-					PostedByBirthday = DateTime.Now.Date == new DateTime(DateTime.Now.Year, message.Birthday.Month, message.Birthday.Day).Date
+					PostedByName = postedBy.DisplayName,
+					PostedByBirthday = today == new DateTime(today.Year, postedBy.Birthday.Month, postedBy.Birthday.Day).Date
 				};
 
 				messagePreviews.Add(messagePreview);
@@ -250,34 +252,33 @@ namespace Forum.Repositories {
 
 				if (message.LastReplyId != 0) {
 					var lastReply = (from item in DbContext.Messages
-											join postedBy in DbContext.Users on item.PostedById equals postedBy.Id
 											where item.Id == message.LastReplyId
 											select new {
-												postedBy.DisplayName,
-												postedBy.Birthday,
 												item.ShortPreview
 											}).FirstOrDefault();
 
 					if (lastReply != null) {
+						var lastReplyBy = AccountRepository.First(r => r.Id == message.LastReplyById);
+
 						messagePreview.LastReplyId = message.LastReplyId;
 						messagePreview.LastReplyPreview = lastReply.ShortPreview;
-						messagePreview.LastReplyByName = lastReply.DisplayName;
+						messagePreview.LastReplyByName = lastReplyBy.DisplayName;
 						messagePreview.LastReplyById = message.LastReplyById;
-						messagePreview.LastReplyByBirthday = DateTime.Now.Date == new DateTime(DateTime.Now.Year, lastReply.Birthday.Month, lastReply.Birthday.Day).Date;
+						messagePreview.LastReplyByBirthday = today.Date == new DateTime(today.Year, lastReplyBy.Birthday.Month, lastReplyBy.Birthday.Day).Date;
 						messagePreview.LastReplyPosted = message.LastReplyPosted;
 						lastMessageTime = message.LastReplyPosted;
 					}
 				}
 
 				if (lastMessageTime > historyTimeLimit) {
-					messagePreview.Unread = GetUnreadLevel(message.Id, lastMessageTime, participation, viewLogs);
+					messagePreview.Unread = GetUnreadLevel(message.Id, lastMessageTime, participation);
 				}
 			}
 
 			return messagePreviews;
 		}
 
-		public List<int> GetIndexIds(int boardId, int page, int unreadFilter, DateTime historyTimeLimit, List<DataModels.Participant> participation, List<DataModels.ViewLog> viewLogs) {
+		public List<int> GetIndexIds(int boardId, int page, int unreadFilter, DateTime historyTimeLimit, List<DataModels.Participant> participation) {
 			var take = UserContext.ApplicationUser.TopicsPerPage;
 			var skip = (page - 1) * take;
 
@@ -334,7 +335,7 @@ namespace Forum.Repositories {
 					continue;
 				}
 
-				var unreadLevel = unreadFilter == 0 ? 0 : GetUnreadLevel(message.Id, message.LastReplyPosted, participation, viewLogs);
+				var unreadLevel = unreadFilter == 0 ? 0 : GetUnreadLevel(message.Id, message.LastReplyPosted, participation);
 
 				if (unreadLevel < unreadFilter) {
 					if (attempts++ > 100) {
@@ -368,11 +369,11 @@ namespace Forum.Repositories {
 			return messageBoards.Any() && messageBoards.Intersect(forbiddenBoardIds).Any();
 		}
 
-		public int GetUnreadLevel(int messageId, DateTime lastMessageTime, List<DataModels.Participant> participation, List<DataModels.ViewLog> viewLogs) {
+		public int GetUnreadLevel(int messageId, DateTime lastMessageTime, List<DataModels.Participant> participation) {
 			var unread = 1;
 
 			if (UserContext.IsAuthenticated) {
-				foreach (var viewLog in viewLogs.Where(item => item.LogTime >= lastMessageTime)) {
+				foreach (var viewLog in UserContext.ViewLogs.Where(item => item.LogTime >= lastMessageTime)) {
 					switch (viewLog.TargetType) {
 						case EViewLogTargetType.All:
 							unread = 0;
@@ -432,10 +433,8 @@ namespace Forum.Repositories {
 		}
 
 		public ServiceModels.ServiceResponse MarkAllRead() {
-			var viewLogs = DbContext.ViewLogs.Where(item => item.UserId == UserContext.ApplicationUser.Id).ToList();
-
-			if (viewLogs.Any()) {
-				foreach (var viewLog in viewLogs) {
+			if (UserContext.ViewLogs.Any()) {
+				foreach (var viewLog in UserContext.ViewLogs) {
 					DbContext.Remove(viewLog);
 				}
 
@@ -466,7 +465,7 @@ namespace Forum.Repositories {
 				messageId = record.ParentId;
 			}
 
-			var viewLogs = DbContext.ViewLogs.Where(item => item.UserId == UserContext.ApplicationUser.Id && item.TargetId == messageId && item.TargetType == EViewLogTargetType.Message).ToList();
+			var viewLogs = UserContext.ViewLogs.Where(item => item.TargetId == messageId && item.TargetType == EViewLogTargetType.Message).ToList();
 
 			if (viewLogs.Any()) {
 				foreach (var viewLog in viewLogs) {
