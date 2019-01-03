@@ -15,7 +15,6 @@ namespace Forum.Contexts {
 		public DbSet<Participant> Participants { get; set; }
 		public DbSet<Pin> Pins { get; set; }
 		public DbSet<Quote> Quotes { get; set; }
-		public DbSet<SiteSetting> SiteSettings { get; set; }
 		public DbSet<Smiley> Smileys { get; set; }
 		public DbSet<StrippedUrl> StrippedUrls { get; set; }
 		public DbSet<ViewLog> ViewLogs { get; set; }
@@ -71,9 +70,6 @@ namespace Forum.Contexts {
 
 			modelBuilder.Entity<Quote>()
 				.HasIndex(r => r.Approved);
-
-			modelBuilder.Entity<SiteSetting>()
-				.HasIndex(r => new { r.Name, r.UserId });
 		}
 	}
 }
