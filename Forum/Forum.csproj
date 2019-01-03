@@ -1,12 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
 	<PropertyGroup>
-		<TargetFramework>netcoreapp2.1</TargetFramework>
+		<TargetFramework>netcoreapp2.2</TargetFramework>
 		<UserSecretsId>aspnet-Forum3.Netcore2-D5ED8B40-B6D7-4B31-ABC2-9390741510C9</UserSecretsId>
 		<Authors>Jim Yarbro</Authors>
 		<Company>Warpstorm.com</Company>
 		<AssemblyName>Forum</AssemblyName>
 		<RootNamespace>Forum</RootNamespace>
+		<AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
 	</PropertyGroup>
 
 	<PropertyGroup>
@@ -15,26 +16,16 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Compile Remove="Migrations\20190103101933_userConfiguration.cs" />
-	  <Compile Remove="Migrations\20190103101933_userConfiguration.Designer.cs" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <None Remove="appsettings.Development.json-example" />
-	  <Content Include="appsettings.Development.json-example" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<PackageReference Include="CoreCompat.System.Drawing" Version="1.0.0-beta006" />
-		<PackageReference Include="HtmlAgilityPack" Version="1.8.10" />
-		<PackageReference Include="Jdenticon.AspNetCore" Version="2.2.0" />
-		<PackageReference Include="Microsoft.AspNetCore.All" Version="2.1.6" />
-		<PackageReference Include="Microsoft.AspNetCore.Session" Version="2.1.1" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.1.4" PrivateAssets="all">
+		<PackageReference Include="HtmlAgilityPack" Version="1.8.11" />
+		<PackageReference Include="Jdenticon.AspNetCore" Version="2.2.1" />
+		<PackageReference Include="Microsoft.AspNetCore.All" />
+		<PackageReference Include="Microsoft.AspNetCore.Session" Version="2.2.0" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.2.0" PrivateAssets="all">
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.6" PrivateAssets="All" />
-		<PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.2.0" PrivateAssets="All" />
+		<PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
 		<PackageReference Include="Sendgrid" Version="9.10.0" />
 	</ItemGroup>
 
