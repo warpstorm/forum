@@ -75,7 +75,7 @@ namespace Forum.Repositories {
 
 		public async Task<List<ViewModels.Profile.OnlineUser>> GetOnlineList() {
 			// Users are considered "offline" after 5 minutes.
-			var onlineTimeLimit = DateTime.Now.AddMinutes(5);
+			var onlineTimeLimit = DateTime.Now.AddMinutes(-5);
 			var onlineTodayTimeLimit = DateTime.Now.AddMinutes(-10080);
 
 			var onlineUsersQuery = from user in await Records()
