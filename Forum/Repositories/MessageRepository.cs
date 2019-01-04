@@ -1168,6 +1168,8 @@ namespace Forum.Repositories {
 			var messages = messageQuery.ToList();
 
 			foreach (var message in messages) {
+				message.ShowControls = true;
+
 				if (message.ReplyId > 0) {
 					var reply = DbContext.Messages.FirstOrDefault(item => item.Id == message.ReplyId);
 
@@ -1248,7 +1250,13 @@ namespace Forum.Repositories {
 				}
 			}
 
-			return await GetMessages(messageIds);
+			var messages = await GetMessages(messageIds);
+
+			foreach (var message in messages) {
+				message.ShowControls = false;
+			}
+
+			return messages;
 		}
 	}
 }

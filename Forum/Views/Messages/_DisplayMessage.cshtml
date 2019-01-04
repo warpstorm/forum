@@ -22,38 +22,40 @@
 		<section class="@messageClasses">
 			<span id="message@(Model.Id)"></span>
 
-			<aside class="float-right pad-bottom font-small">
-				@if (Model.CanThought) {
-					<span class="thought-button pad-right pointer" message-id="@Model.Id">
-						<img class="align-middle" src="~/images/smiley.png" alt="Thought" title="Thought" />
-					</span>
-				}
+			@if (Model.ShowControls) {
+				<aside class="float-right pad-bottom font-small">
+					@if (Model.CanThought) {
+						<span class="thought-button pad-right pointer" message-id="@Model.Id">
+							<img class="align-middle" src="~/images/smiley.png" alt="Thought" title="Thought" />
+						</span>
+					}
 
-				@if (Model.CanReply) {
-					<span class="reply-button pad-right pointer">
-						<img class="align-middle" src="~/images/reply.png" alt="Reply" title="Reply" />
-					</span>
-				}
+					@if (Model.CanReply) {
+						<span class="reply-button pad-right pointer">
+							<img class="align-middle" src="~/images/reply.png" alt="Reply" title="Reply" />
+						</span>
+					}
 
-				@if (Model.CanEdit) {
-					<a class="pad-right" asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.Edit)" asp-route-id="@Model.Id">
-						<img class="align-middle" src="~/images/edit.png" alt="Edit" title="Edit" />
-					</a>
-				}
-
-				@if (Model.CanDelete) {
-					@if (Model.ParentId == 0) {
-						<a class="pad-right" asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.Delete)" asp-route-id="@Model.Id" onclick="return confirm('Are you sure you want to remove this ENTIRE topic?');">
-							<img class="align-middle" src="~/images/delete.png" alt="Delete" title="Delete" />
+					@if (Model.CanEdit) {
+						<a class="pad-right" asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.Edit)" asp-route-id="@Model.Id">
+							<img class="align-middle" src="~/images/edit.png" alt="Edit" title="Edit" />
 						</a>
 					}
-					else {
-						<a class="pad-right" asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.Delete)" asp-route-id="@Model.Id" onclick="return confirm('Are you sure you want to remove this reply?');">
-							<img class="align-middle" src="~/images/delete.png" alt="Delete" title="Delete" />
-						</a>
+
+					@if (Model.CanDelete) {
+						@if (Model.ParentId == 0) {
+							<a class="pad-right" asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.Delete)" asp-route-id="@Model.Id" onclick="return confirm('Are you sure you want to remove this ENTIRE topic?');">
+								<img class="align-middle" src="~/images/delete.png" alt="Delete" title="Delete" />
+							</a>
+						}
+						else {
+							<a class="pad-right" asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.Delete)" asp-route-id="@Model.Id" onclick="return confirm('Are you sure you want to remove this reply?');">
+								<img class="align-middle" src="~/images/delete.png" alt="Delete" title="Delete" />
+							</a>
+						}
 					}
-				}
-			</aside>
+				</aside>
+			}
 
 			<header class="message-header font-small">
 				<aside class="user-avatar align-center float-left mobile-show">
@@ -69,7 +71,7 @@
 					<img src="~/images/hbd.png" alt="Happy birthday!" title="Happy birthday!" />
 				}
 
-				<span class="small-pad-right">@Model.PostedByName</span>
+				<a asp-controller="@nameof(Profile)" asp-action="@nameof(Profile.History)" asp-route-id="@Model.PostedById" class="small-pad-right">@Model.PostedByName</a>
 
 				<span class="font-tiny dark-text">
 					<span>posted <passed-time time="@Model.TimePosted" /></span>
@@ -103,7 +105,7 @@
 					</a>
 				}
 
-				<a asp-action="@nameof(Topics.Display)" asp-route-id="@Model.Id">#@Model.Id</a>
+				<a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Display)" asp-route-id="@Model.Id">#@Model.Id</a>
 			</div>
 
 			<br class="clear" />

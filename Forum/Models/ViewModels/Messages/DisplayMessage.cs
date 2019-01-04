@@ -27,6 +27,7 @@ namespace Forum.Models.ViewModels.Messages {
 		public DateTime RecordTime { get; set; }
 		public DateTime TimePosted { get; set; }
 		public DateTime TimeEdited { get; set; }
+		public bool ShowControls { get; set; }
 		public IMessageViewModel ReplyForm { get; set; }
 		public List<MessageThought> Thoughts { get; set; }
 	}
