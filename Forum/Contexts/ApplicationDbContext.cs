@@ -62,6 +62,9 @@ namespace Forum.Contexts {
 			modelBuilder.Entity<Message>()
 				.HasIndex(r => r.LastReplyPosted);
 
+			modelBuilder.Entity<Message>()
+				.HasIndex(r => r.PostedById);
+
 			modelBuilder.Entity<Pin>()
 				.HasIndex(r => r.MessageId);
 
@@ -75,6 +78,21 @@ namespace Forum.Contexts {
 				.HasIndex(r => r.MessageId );
 
 			modelBuilder.Entity<Participant>()
+				.HasIndex(r => r.UserId);
+
+			modelBuilder.Entity<Participant>()
+				.HasIndex(r => new { r.UserId, r.MessageId });
+
+			modelBuilder.Entity<ViewLog>()
+				.HasIndex(r => new { r.LogTime, r.UserId });
+
+			modelBuilder.Entity<ViewLog>()
+				.HasIndex(r => new { r.UserId, r.TargetType, r.TargetId });
+
+			modelBuilder.Entity<ViewLog>()
+				.HasIndex(r => r.LogTime);
+
+			modelBuilder.Entity<Notification>()
 				.HasIndex(r => r.UserId);
 		}
 	}
