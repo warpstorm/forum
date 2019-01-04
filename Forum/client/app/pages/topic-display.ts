@@ -217,6 +217,10 @@ export class TopicDisplay {
 		let idElement = form.querySelector('[name=Id]') as HTMLInputElement;
 		let bodyElement = form.querySelector('[name=body]') as HTMLTextAreaElement;
 
+		if (!bodyElement || bodyElement.value == '') {
+			return;
+		}
+
 		form.classList.add('faded');
 		saveButton.setAttribute('disabled', 'disabled');
 		bodyElement.setAttribute('disabled', 'disabled');
@@ -226,10 +230,6 @@ export class TopicDisplay {
 			body: bodyElement ? bodyElement.value : '',
 			sideload: true
 		};
-
-		if (requestBodyValues.body == '') {
-			return;
-		}
 
 		self.submitting = true;
 
