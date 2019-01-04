@@ -31,7 +31,7 @@ export class PassedTimeMonitor {
 		var differenceHours = difference / 3600;
 		var differenceDays = difference / 86400;
 
-		var returnText = "Just now";
+		var returnText = "just now";
 
 		if (differenceDays >= 1 && differenceDays < 2) {
 			returnText = "1 day ago";

@@ -53,15 +53,21 @@
 
 .error {
 	font-weight: 600;
+}
+
+.error, error a {
 	color: #d01d1d;
 }
 
 .error-stylish {
-	border: 1px solid;
+	border: 1px solid #d01d1d;
 	border-radius: 2px;
 	padding: 2px 4px;
 	background-color: #440000;
-	border-color: #d01d1d;
+}
+
+.warning, .warning a {
+	color: #fffde8;
 }
 
 .borderless,

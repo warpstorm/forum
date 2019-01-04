@@ -39,7 +39,10 @@
 			<img class="add-smiley pointer align-middle pad-left" src="~/images/smiley.png" alt="Smiley" title="Smiley" />
 		</p>
 
-		<p class="pad-top"><span class="error" data-valmsg-for="@nameof(Model.Body)"></span></p>
+		<p class="pad-top">
+			<span class="warning font-small"></span>
+			<span class="error" data-valmsg-for="@nameof(Model.Body)"></span>
+		</p>
 		<p class="pad-top"><textarea asp-for="@Model.Body" name="body"></textarea></p>
 	</div>
 

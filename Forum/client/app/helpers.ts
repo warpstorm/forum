@@ -1,5 +1,12 @@
 ﻿import { isString } from "util";
 
+export function warning(message: string): void {
+	document.querySelectorAll('.warning').forEach(element => {
+		element.innerHTML = message;
+		//element.insertAdjacentHTML('beforeend', `<br />${message}`);
+	});
+}
+
 export function postToPath(path: string, parameters: { [key: string]: any } ): void {
 	throwIfNull(path, 'path');
 	throwIfNull(parameters, 'parameters');

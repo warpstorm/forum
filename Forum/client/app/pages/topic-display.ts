@@ -1,4 +1,4 @@
-﻿import { throwIfNull, hide, show, queryify } from "../helpers";
+﻿import { throwIfNull, hide, show, queryify, warning } from "../helpers";
 import { App } from "../app";
 import { HttpMethod } from "../definitions/http-method";
 import { Xhr } from "../services/xhr";
@@ -128,7 +128,12 @@ export class TopicDisplay {
 
 				self.bindMessageEventListeners();
 
-				window.location.hash = `message${firstMessageId}`;
+				var time = new Date();
+				var passedTime = this.app.passedTimeMonitor.convertToPassedTime(time);
+
+				warning(`<a href='#message${firstMessageId}'>New messages were posted <time datetime='${time}'>${passedTime}</time>.</a>`);
+
+				//window.location.hash = `message${firstMessageId}`;
 			})
 			.catch(Xhr.logRejected)
 			.then(() => {
@@ -157,9 +162,7 @@ export class TopicDisplay {
 	hubNewReply = (data: HubMessage) => {
 		let self = this;
 
-		if (data.topicId == self.settings.topicId
-			&& self.settings.currentPage == self.settings.totalPages) {
-
+		if (data.topicId == self.settings.topicId && self.settings.currentPage == self.settings.totalPages) {
 			self.getLatestReplies();
 		}
 	}
@@ -193,6 +196,11 @@ export class TopicDisplay {
 					});
 
 					self.bindMessageEventListeners();
+
+					var time = new Date();
+					var passedTime = this.app.passedTimeMonitor.convertToPassedTime(time);
+
+					warning(`<a href='#message${data.messageId}'>A message was updated <time datetime='${time}'>${passedTime}</time>.</a>`);
 				})
 				.catch(Xhr.logRejected);
 		}
