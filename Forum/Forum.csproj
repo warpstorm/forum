@@ -13,6 +13,7 @@
 	<PropertyGroup>
 		<TypeScriptToolsVersion>3.1</TypeScriptToolsVersion>
 		<TypeScriptCompileBlocked>True</TypeScriptCompileBlocked>
+		<LangVersion>7.3</LangVersion>
 	</PropertyGroup>
 
 	<ItemGroup>
