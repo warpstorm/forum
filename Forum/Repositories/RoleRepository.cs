@@ -20,13 +20,13 @@ namespace Forum.Repositories {
 	using ServiceModels = Models.ServiceModels;
 
 	public class RoleRepository {
-		public List<DataModels.BoardRole> BoardRoles => _BoardRoles ?? (_BoardRoles = DbContext.BoardRoles.ToList());
+		public async Task<List<DataModels.BoardRole>> BoardRoles() => _BoardRoles ?? (_BoardRoles = await DbContext.BoardRoles.ToListAsync());
 		List<DataModels.BoardRole> _BoardRoles;
 
-		public List<DataModels.ApplicationRole> SiteRoles => _SiteRoles ?? (_SiteRoles = DbContext.Roles.ToList());
+		public async Task<List<DataModels.ApplicationRole>> SiteRoles() => _SiteRoles ?? (_SiteRoles = await DbContext.Roles.ToListAsync());
 		List<DataModels.ApplicationRole> _SiteRoles;
 
-		public List<IdentityUserRole<string>> UserRoles => _UserRoles ?? (_UserRoles = DbContext.UserRoles.ToList());
+		public async Task<List<IdentityUserRole<string>>> UserRoles() => _UserRoles ?? (_UserRoles = await DbContext.UserRoles.ToListAsync());
 		List<IdentityUserRole<string>> _UserRoles;
 
 		ApplicationDbContext DbContext { get; }
@@ -53,8 +53,8 @@ namespace Forum.Repositories {
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
-		public List<SelectListItem> PickList(int boardId) {
-			var boardRolesQuery = from boardRole in BoardRoles
+		public async Task<List<SelectListItem>> PickList(int boardId) {
+			var boardRolesQuery = from boardRole in await BoardRoles()
 								  where boardRole.BoardId == boardId
 								  select boardRole.RoleId;
 
@@ -292,8 +292,8 @@ namespace Forum.Repositories {
 			return serviceResponse;
 		}
 
-		public bool CanAccessBoards(IEnumerable<DataModels.Board> boards) {
-			var boardRoles = BoardRoles.Where(r => boards.Any(b => b.Id == r.BoardId)).Select(r => r.RoleId).ToList();
+		public async Task<bool> CanAccessBoards(IEnumerable<DataModels.Board> boards) {
+			var boardRoles = (await BoardRoles()).Where(r => boards.Any(b => b.Id == r.BoardId)).Select(r => r.RoleId).ToList();
 
 			if (!UserContext.IsAdmin && boardRoles.Any() && !boardRoles.Intersect(UserContext.Roles).Any()) {
 				return false;

@@ -61,20 +61,20 @@ namespace Forum.Services {
 		}
 
 		async Task LoadUserRoles(UserContext userContext) {
-			var userRolesQuery = from userRole in RoleRepository.UserRoles
-								 join role in RoleRepository.SiteRoles on userRole.RoleId equals role.Id
+			var userRolesQuery = from userRole in await RoleRepository.UserRoles()
+								 join role in await RoleRepository.SiteRoles() on userRole.RoleId equals role.Id
 								 where userRole.UserId.Equals(userContext.ApplicationUser.Id)
 								 select role.Id;
 
-			var adminUsersQuery = from user in AccountRepository
-								  join userRole in RoleRepository.UserRoles on user.Id equals userRole.UserId
-								  join role in RoleRepository.SiteRoles on userRole.RoleId equals role.Id
+			var adminUsersQuery = from user in await AccountRepository.Records()
+								  join userRole in await RoleRepository.UserRoles() on user.Id equals userRole.UserId
+								  join role in await RoleRepository.SiteRoles() on userRole.RoleId equals role.Id
 								  where role.Name == Constants.InternalKeys.Admin
 								  select user.Id;
 
 			userContext.Roles = userRolesQuery.ToList() ?? new List<string>();
 
-			var adminRole = RoleRepository.SiteRoles.FirstOrDefault(r => r.Name == Constants.InternalKeys.Admin);
+			var adminRole = (await RoleRepository.SiteRoles()).FirstOrDefault(r => r.Name == Constants.InternalKeys.Admin);
 			var anyAdminUsers = adminUsersQuery.Any();
 
 			if (adminRole != null && userContext.Roles.Contains(adminRole.Id)) {

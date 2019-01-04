@@ -24,7 +24,7 @@ namespace Forum.Services {
 		}
 
 		public async Task SetupRoles() {
-			if (!RoleRepository.SiteRoles.Any()) {
+			if (!(await RoleRepository.SiteRoles()).Any()) {
 				await RoleRepository.Create(new Models.InputModels.CreateRoleInput {
 					Name = Constants.InternalKeys.Admin,
 					Description = "Forum administrators"
@@ -41,7 +41,7 @@ namespace Forum.Services {
 				return;
 			}
 
-			var adminRole = RoleRepository.SiteRoles.First(r => r.Name == Constants.InternalKeys.Admin);
+			var adminRole = (await RoleRepository.SiteRoles()).First(r => r.Name == Constants.InternalKeys.Admin);
 			await RoleRepository.AddUser(adminRole.Id, UserContext.ApplicationUser.Id);
 		}
 

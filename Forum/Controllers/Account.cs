@@ -47,10 +47,10 @@ namespace Forum.Controllers {
 		}
 
 		[HttpGet]
-		public IActionResult Index() {
+		public async Task<IActionResult> Index() {
 			var viewModel = new ViewModels.Account.IndexPage();
 
-			foreach (var user in AccountRepository.Where(r => r.DisplayName != "Deleted Account")) {
+			foreach (var user in (await AccountRepository.Records()).Where(r => r.DisplayName != "Deleted Account")) {
 				var indexItem = new ViewModels.Account.IndexItem {
 					Id = user.Id,
 					DisplayName = user.DisplayName,
@@ -63,7 +63,7 @@ namespace Forum.Controllers {
 				viewModel.IndexItems.Add(indexItem);
 			}
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpGet]
@@ -99,7 +99,7 @@ namespace Forum.Controllers {
 
 			ModelState.Clear();
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpPost]
@@ -107,13 +107,13 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> Details(InputModels.UpdateAccountInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await AccountRepository.UpdateAccount(input);
-				return ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
-			return FailureCallback();
+			return await FailureCallback();
 
-			IActionResult FailureCallback() {
-				var userRecord = AccountRepository.First(item => item.Id == input.Id);
+			async Task<IActionResult> FailureCallback() {
+				var userRecord = (await AccountRepository.Records()).First(item => item.Id == input.Id);
 
 				AccountRepository.CanEdit(userRecord.Id);
 
@@ -138,7 +138,7 @@ namespace Forum.Controllers {
 					TopicsPerPage = userRecord.TopicsPerPage
 				};
 
-				return ForumViewResult.ViewResult(this, viewModel);
+				return await ForumViewResult.ViewResult(this, viewModel);
 			}
 		}
 
@@ -147,13 +147,13 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> UpdateAvatar(InputModels.UpdateAvatarInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await AccountRepository.UpdateAvatar(input);
-				return ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
-			return FailureCallback();
+			return await FailureCallback();
 
-			IActionResult FailureCallback() {
-				var userRecord = input.Id is null ? UserContext.ApplicationUser : UserManager.FindByIdAsync(input.Id).Result;
+			async Task<IActionResult> FailureCallback() {
+				var userRecord = input.Id is null ? UserContext.ApplicationUser : await UserManager.FindByIdAsync(input.Id);
 
 				if (userRecord is null) {
 					userRecord = UserContext.ApplicationUser;
@@ -182,7 +182,7 @@ namespace Forum.Controllers {
 					TopicsPerPage = userRecord.TopicsPerPage
 				};
 
-				return ForumViewResult.ViewResult(this, nameof(Details), viewModel);
+				return await ForumViewResult.ViewResult(this, nameof(Details), viewModel);
 			}
 		}
 
@@ -192,14 +192,12 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> SendVerificationEmail() {
 			if (ModelState.IsValid) {
 				var serviceResponse = await AccountRepository.SendVerificationEmail();
-				return ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, failSync: FailureCallback);
 			}
 
 			return FailureCallback();
 
-			IActionResult FailureCallback() {
-				return RedirectToAction(nameof(Profile.Details), nameof(Profile));
-			}
+			IActionResult FailureCallback() => RedirectToAction(nameof(Profile.Details), nameof(Profile));
 		}
 
 		[HttpGet]
@@ -207,27 +205,25 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> ConfirmEmail(InputModels.ConfirmEmailInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await AccountRepository.ConfirmEmail(input);
-				return ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
-			return FailureCallback();
+			return await FailureCallback();
 
-			IActionResult FailureCallback() {
-				return ForumViewResult.ViewResult(this);
-			}
+			async Task<IActionResult> FailureCallback() => await ForumViewResult.ViewResult(this);
 		}
 
 		[HttpGet]
 		[AllowAnonymous]
-		public IActionResult Login() {
-			if (AccountRepository.IsAuthenticated) {
+		public async Task<IActionResult> Login() {
+			if (UserContext.IsAuthenticated) {
 				return Redirect("/");
 			}
 
-			AccountRepository.SignOut();
+			await AccountRepository.SignOut();
 
 			var viewModel = new ViewModels.Account.LoginPage();
-			return ForumViewResult.ViewResult(this, viewModel);
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpPost]
@@ -237,24 +233,24 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> Login(InputModels.LoginInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await AccountRepository.Login(input);
-				return ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
-			return FailureCallback();
+			return await FailureCallback();
 
-			IActionResult FailureCallback() {
-				if (AccountRepository.IsAuthenticated) {
+			async Task<IActionResult> FailureCallback() {
+				if (UserContext.IsAuthenticated) {
 					return Redirect("/");
 				}
 
-				AccountRepository.SignOut();
+				await AccountRepository.SignOut();
 
 				var viewModel = new ViewModels.Account.LoginPage {
 					Email = input.Email,
 					RememberMe = input.RememberMe
 				};
 
-				return ForumViewResult.ViewResult(this, viewModel);
+				return await ForumViewResult.ViewResult(this, viewModel);
 			}
 		}
 
@@ -264,21 +260,21 @@ namespace Forum.Controllers {
 
 		[HttpGet]
 		[AllowAnonymous]
-		public IActionResult Lockout() {
-			AccountRepository.SignOut();
-			return ForumViewResult.ViewResult(this);
+		public async Task<IActionResult> Lockout() {
+			await AccountRepository.SignOut();
+			return await ForumViewResult.ViewResult(this);
 		}
 
 		[HttpGet]
-		public IActionResult Logout() {
-			AccountRepository.SignOut();
+		public async Task<IActionResult> Logout() {
+			await AccountRepository.SignOut();
 			return Redirect("/");
 		}
 
 		[HttpGet]
 		[AllowAnonymous]
-		public IActionResult Register() {
-			AccountRepository.SignOut();
+		public async Task<IActionResult> Register() {
+			await AccountRepository.SignOut();
 
 			var viewModel = new ViewModels.Account.RegisterPage {
 				BirthdayDays = DayPickList(),
@@ -286,7 +282,7 @@ namespace Forum.Controllers {
 				BirthdayYears = YearPickList()
 			};
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpPost]
@@ -296,13 +292,13 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> Register(InputModels.RegisterInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await AccountRepository.Register(input);
-				return ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
-			return FailureCallback();
+			return await FailureCallback();
 
-			IActionResult FailureCallback() {
-				AccountRepository.SignOut();
+			async Task<IActionResult> FailureCallback() {
+				await AccountRepository.SignOut();
 
 				var viewModel = new ViewModels.Account.RegisterPage {
 					BirthdayDays = DayPickList(),
@@ -318,18 +314,18 @@ namespace Forum.Controllers {
 					ConfirmPassword = input.ConfirmPassword,
 				};
 
-				return ForumViewResult.ViewResult(this, viewModel);
+				return await ForumViewResult.ViewResult(this, viewModel);
 			}
 		}
 
 		[HttpGet]
 		[AllowAnonymous]
-		public IActionResult ForgotPassword() {
-			AccountRepository.SignOut();
+		public async Task<IActionResult> ForgotPassword() {
+			await AccountRepository.SignOut();
 
 			var viewModel = new ViewModels.Account.ForgotPasswordPage();
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpPost]
@@ -339,19 +335,19 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> ForgotPassword(InputModels.ForgotPasswordInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await AccountRepository.ForgotPassword(input);
-				return ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
-			return FailureCallback();
+			return await FailureCallback();
 
-			IActionResult FailureCallback() {
-				AccountRepository.SignOut();
+			async Task<IActionResult> FailureCallback() {
+				await AccountRepository.SignOut();
 
 				var viewModel = new ViewModels.Account.ForgotPasswordPage {
 					Email = input.Email
 				};
 
-				return ForumViewResult.ViewResult(this, viewModel);
+				return await ForumViewResult.ViewResult(this, viewModel);
 			}
 		}
 
@@ -361,16 +357,16 @@ namespace Forum.Controllers {
 
 		[HttpGet]
 		[AllowAnonymous]
-		public IActionResult ResetPassword(string code) {
+		public async Task<IActionResult> ResetPassword(string code) {
 			code.ThrowIfNull(nameof(code));
 
-			AccountRepository.SignOut();
+			await AccountRepository.SignOut();
 
 			var viewModel = new ViewModels.Account.ResetPasswordPage {
 				Code = code
 			};
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpPost]
@@ -380,29 +376,29 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> ResetPassword(InputModels.ResetPasswordInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await AccountRepository.ResetPassword(input);
-				return ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
-			return FailureCallback();
+			return await FailureCallback();
 
-			IActionResult FailureCallback() {
-				AccountRepository.SignOut();
+			async Task<IActionResult> FailureCallback() {
+				await AccountRepository.SignOut();
 
 				var viewModel = new ViewModels.Account.ResetPasswordPage {
 					Code = input.Code
 				};
 
-				return ForumViewResult.ViewResult(this, viewModel);
+				return await ForumViewResult.ViewResult(this, viewModel);
 			}
 		}
 
 		[HttpGet]
 		[AllowAnonymous]
-		public IActionResult ResetPasswordConfirmation() => ForumViewResult.ViewResult(this);
+		public async Task<IActionResult> ResetPasswordConfirmation() => await ForumViewResult.ViewResult(this);
 
 		[HttpGet]
-		public IActionResult Delete(string userId) {
-			var deletedAccount = AccountRepository.FirstOrDefault(item => item.DisplayName == "Deleted Account");
+		public async Task<IActionResult> Delete(string userId) {
+			var deletedAccount = (await AccountRepository.Records()).FirstOrDefault(item => item.DisplayName == "Deleted Account");
 
 			if (deletedAccount is null) {
 				deletedAccount = new DataModels.ApplicationUser {
@@ -418,7 +414,7 @@ namespace Forum.Controllers {
 				DbContext.SaveChanges();
 			}
 
-			return ForumViewResult.ViewResult(this, "Delete", userId);
+			return await ForumViewResult.ViewResult(this, "Delete", userId);
 		}
 
 		[HttpGet]
@@ -427,7 +423,7 @@ namespace Forum.Controllers {
 				throw new HttpForbiddenError();
 			}
 
-			var deletedAccount = AccountRepository.FirstOrDefault(item => item.DisplayName == "Deleted Account");
+			var deletedAccount = (await AccountRepository.Records()).FirstOrDefault(item => item.DisplayName == "Deleted Account");
 
 			if (deletedAccount is null) {
 				throw new HttpNotFoundError();
@@ -440,12 +436,12 @@ namespace Forum.Controllers {
 
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
-		public IActionResult Merge(string userId) {
+		public async Task<IActionResult> Merge(string userId) {
 			var viewModel = new ViewModels.Account.MergePage {
 				SourceId = userId
 			};
 
-			foreach (var user in AccountRepository.Where(item => item.Id != userId && item.DisplayName != "Deleted Account")) {
+			foreach (var user in (await AccountRepository.Records()).Where(item => item.Id != userId && item.DisplayName != "Deleted Account")) {
 				var indexItem = new ViewModels.Account.IndexItem {
 					Id = user.Id,
 					DisplayName = user.DisplayName,
@@ -458,7 +454,7 @@ namespace Forum.Controllers {
 				viewModel.IndexItems.Add(indexItem);
 			}
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[Authorize(Roles = Constants.InternalKeys.Admin)]

@@ -1,4 +1,6 @@
 ﻿using Forum.Contexts;
+using Forum.Interfaces.Models;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -11,7 +13,10 @@ namespace Forum.Repositories {
 	using ServiceModels = Models.ServiceModels;
 	using ViewModels = Models.ViewModels;
 
-	public class QuoteRepository : Repository<DataModels.Quote> {
+	public class QuoteRepository : IRepository<DataModels.Quote> {
+		public async Task<List<DataModels.Quote>> Records() => _Records ?? (_Records = await DbContext.Quotes.ToListAsync());
+		List<DataModels.Quote> _Records;
+
 		ApplicationDbContext DbContext { get; }
 		UserContext UserContext { get; }
 		AccountRepository AccountRepository { get; }
@@ -23,22 +28,22 @@ namespace Forum.Repositories {
 			AccountRepository accountRepository,
 			MessageRepository messageRepository,
 			ILogger<PinRepository> log
-		) : base(log) {
+		) {
 			DbContext = dbContext;
 			UserContext = userContext;
 			AccountRepository = accountRepository;
 			MessageRepository = messageRepository;
 		}
 
-		public ViewModels.Quotes.EditQuotes Index() {
+		public async Task<ViewModels.Quotes.EditQuotes> Index() {
 			var returnObject = new ViewModels.Quotes.EditQuotes {
 				Quotes = new List<ViewModels.Quotes.EditQuote>()
 			};
 
-			foreach (var record in Records) {
+			foreach (var record in await Records()) {
 				var originalMessage = DbContext.Messages.FirstOrDefault(r => r.Id == record.MessageId);
-				var postedBy = AccountRepository.FirstOrDefault(r => r.Id == record.PostedById);
-				var submittedBy = AccountRepository.FirstOrDefault(r => r.Id == record.SubmittedById);
+				var postedBy = (await AccountRepository.Records()).FirstOrDefault(r => r.Id == record.PostedById);
+				var submittedBy = (await AccountRepository.Records()).FirstOrDefault(r => r.Id == record.SubmittedById);
 
 				returnObject.Quotes.Add(new ViewModels.Quotes.EditQuote {
 					Id = record.Id,
@@ -56,8 +61,8 @@ namespace Forum.Repositories {
 			return returnObject;
 		}
 
-		public ViewModels.Quotes.DisplayQuote Get() {
-			var approvedRecords = Records.Where(r => r.Approved).ToList();
+		public async Task<ViewModels.Quotes.DisplayQuote> Get() {
+			var approvedRecords = (await Records()).Where(r => r.Approved).ToList();
 
 			if (!approvedRecords.Any()) {
 				return null;
@@ -66,7 +71,7 @@ namespace Forum.Repositories {
 			var randomQuoteIndex = new Random().Next(0, approvedRecords.Count);
 			var randomQuote = approvedRecords[randomQuoteIndex];
 
-			var postedBy = AccountRepository.FirstOrDefault(r => r.Id == randomQuote.PostedById);
+			var postedBy = (await AccountRepository.Records()).FirstOrDefault(r => r.Id == randomQuote.PostedById);
 
 			return new ViewModels.Quotes.DisplayQuote {
 				Id = randomQuote.MessageId,
@@ -75,7 +80,7 @@ namespace Forum.Repositories {
 			};
 		}
 
-		public ServiceModels.ServiceResponse Create(int messageId) {
+		public async Task<ServiceModels.ServiceResponse> Create(int messageId) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			var message = DbContext.Messages.FirstOrDefault(r => r.Id == messageId);
@@ -84,7 +89,7 @@ namespace Forum.Repositories {
 				serviceResponse.Error($@"No record was found with the id '{messageId}'.");
 			}
 
-			if (Records.Any(r => r.MessageId == messageId)) {
+			if ((await Records()).Any(r => r.MessageId == messageId)) {
 				serviceResponse.Error($@"A message with the id '{messageId}' has already been submitted.");
 			}
 
@@ -112,7 +117,7 @@ namespace Forum.Repositories {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			foreach (var quoteInput in input.Quotes) {
-				var record = Records.FirstOrDefault(r => r.Id == quoteInput.Id);
+				var record = (await Records()).FirstOrDefault(r => r.Id == quoteInput.Id);
 
 				if (record is null) {
 					serviceResponse.Error($@"No record was found with the id '{quoteInput.Id}'.");
@@ -143,10 +148,10 @@ namespace Forum.Repositories {
 			return serviceResponse;
 		}
 
-		public ServiceModels.ServiceResponse Delete(int quoteId) {
+		public async Task<ServiceModels.ServiceResponse> Delete(int quoteId) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
-			var record = Records.FirstOrDefault(r => r.Id == quoteId);
+			var record = (await Records()).FirstOrDefault(r => r.Id == quoteId);
 
 			if (record is null) {
 				serviceResponse.Error($@"No record was found with the id '{quoteId}'.");
@@ -154,14 +159,12 @@ namespace Forum.Repositories {
 
 			if (serviceResponse.Success) {
 				DbContext.Quotes.Remove(record);
-				DbContext.SaveChanges();
+				await DbContext.SaveChangesAsync();
 
 				serviceResponse.Message = $"Quote deleted.";
 			}
 
 			return serviceResponse;
 		}
-
-		protected override List<DataModels.Quote> GetRecords() => DbContext.Quotes.ToList();
 	}
 }

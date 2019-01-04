@@ -1,4 +1,5 @@
 ﻿using Forum.Repositories;
+using System.Threading.Tasks;
 
 namespace Forum.Services {
 	using ViewModels = Models.ViewModels;
@@ -18,11 +19,11 @@ namespace Forum.Services {
 			QuoteRepository = quoteRepository;
 		}
 
-		public ViewModels.Sidebar.Sidebar Generate() {
+		public async Task<ViewModels.Sidebar.Sidebar> Generate() {
 			var sidebar = new ViewModels.Sidebar.Sidebar {
-				Quote = QuoteRepository.Get(),
-				OnlineUsers = AccountRepository.GetOnlineList(),
-				Notifications = NotificationRepository.Index()
+				Quote = await QuoteRepository.Get(),
+				OnlineUsers = await AccountRepository.GetOnlineList(),
+				Notifications = await NotificationRepository.Index()
 			};
 
 			return sidebar;

@@ -61,19 +61,21 @@ namespace Forum.Controllers {
 		}
 
 		[HttpGet]
-		public IActionResult Index(int id = 0, int unread = 0) {
-			var boardRoles = RoleRepository.BoardRoles.Where(r => r.BoardId == id).Select(r => r.RoleId).ToList();
+		public async Task<IActionResult> Index(int id = 0, int unread = 0) {
+			var boardRoles = (from role in await RoleRepository.BoardRoles()
+							  where role.BoardId == id
+							  select role.RoleId).ToList();
 
 			if (!UserContext.IsAdmin && boardRoles.Any() && !boardRoles.Intersect(UserContext.Roles).Any()) {
 				throw new HttpForbiddenError();
 			}
 
-			var sidebar = Sidebar.Generate();
+			var sidebar = await Sidebar.Generate();
 
 			var page = 1;
-			var topicPreviews = TopicRepository.GetPreviews(id, page, unread);
+			var topicPreviews = await TopicRepository.GetPreviews(id, page, unread);
 
-			var boardRecord = id == 0 ? null : BoardRepository.FirstOrDefault(record => record.Id == id);
+			var boardRecord = id == 0 ? null : (await BoardRepository.Records()).FirstOrDefault(record => record.Id == id);
 
 			var viewModel = new PageModels.TopicIndexPage {
 				BoardId = id,
@@ -84,18 +86,20 @@ namespace Forum.Controllers {
 				Sidebar = sidebar
 			};
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpGet]
-		public IActionResult IndexMore(int id = 0, int page = 0, int unread = 0) {
-			var boardRoles = RoleRepository.BoardRoles.Where(r => r.BoardId == id).Select(r => r.RoleId).ToList();
+		public async Task<IActionResult> IndexMore(int id = 0, int page = 0, int unread = 0) {
+			var boardRoles = (from role in await RoleRepository.BoardRoles()
+							  where role.BoardId == id
+							  select role.RoleId).ToList();
 
 			if (!UserContext.IsAdmin && boardRoles.Any() && !boardRoles.Intersect(UserContext.Roles).Any()) {
 				throw new HttpForbiddenError();
 			}
 
-			var topicPreviews = TopicRepository.GetPreviews(id, page, unread);
+			var topicPreviews = await TopicRepository.GetPreviews(id, page, unread);
 
 			ViewData[Constants.InternalKeys.Layout] = "_LayoutEmpty";
 
@@ -105,19 +109,19 @@ namespace Forum.Controllers {
 				Topics = topicPreviews
 			};
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpGet]
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
-		public IActionResult Merge(int id) {
+		public async Task<IActionResult> Merge(int id) {
 			var record = DbContext.Messages.FirstOrDefault(item => item.Id == id);
 
 			if (record is null) {
 				throw new HttpNotFoundError();
 			}
 
-			var topicPreviews = TopicRepository.GetPreviews(0, 1, 0);
+			var topicPreviews = await TopicRepository.GetPreviews(0, 1, 0);
 
 			foreach (var topicPreview in topicPreviews.ToList()) {
 				if (topicPreview.Id == id) {
@@ -136,19 +140,19 @@ namespace Forum.Controllers {
 				Topics = topicPreviews,
 			};
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpGet]
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
-		public IActionResult MergeMore(int id, int page = 0) {
+		public async Task<IActionResult> MergeMore(int id, int page = 0) {
 			var record = DbContext.Messages.FirstOrDefault(item => item.Id == id);
 
 			if (record is null) {
 				throw new HttpNotFoundError();
 			}
 
-			var topicPreviews = TopicRepository.GetPreviews(0, page, 0);
+			var topicPreviews = await TopicRepository.GetPreviews(0, page, 0);
 
 			foreach (var topicPreview in topicPreviews.ToList()) {
 				if (topicPreview.Id == id) {
@@ -165,24 +169,24 @@ namespace Forum.Controllers {
 				Topics = topicPreviews
 			};
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpGet]
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
-		public IActionResult FinishMerge(int sourceId, int targetId) {
+		public async Task<IActionResult> FinishMerge(int sourceId, int targetId) {
 			var serviceResponse = TopicRepository.Merge(sourceId, targetId);
-			return ForumViewResult.RedirectFromService(this, serviceResponse, FailToReferrer);
+			return await ForumViewResult.RedirectFromService(this, serviceResponse);
 		}
 
 		[HttpGet]
-		public IActionResult Display(int id, int pageId = 1, int target = -1) {
-			ViewData["Smileys"] = SmileyRepository.GetSelectorList();
+		public async Task<IActionResult> Display(int id, int pageId = 1, int target = -1) {
+			ViewData["Smileys"] = await SmileyRepository.GetSelectorList();
 
-			var viewModel = GetDisplayPageModel(id, pageId, target);
+			var viewModel = await GetDisplayPageModel(id, pageId, target);
 
 			if (string.IsNullOrEmpty(viewModel.RedirectPath)) {
-				return ForumViewResult.ViewResult(this, viewModel);
+				return await ForumViewResult.ViewResult(this, viewModel);
 			}
 			else {
 				return Redirect(viewModel.RedirectPath);
@@ -193,7 +197,7 @@ namespace Forum.Controllers {
 		/// Retrieves a specific message. Useful for API calls.
 		/// </summary>
 		[HttpGet]
-		public IActionResult DisplayOne(int id) {
+		public async Task<IActionResult> DisplayOne(int id) {
 			var record = DbContext.Messages.Find(id);
 
 			if (record is null) {
@@ -206,10 +210,10 @@ namespace Forum.Controllers {
 				topicId = record.ParentId;
 			}
 
-			LoadTopicBoards(topicId);
+			await LoadTopicBoards(topicId);
 
 			var messageIds = new List<int> { id };
-			var messages = TopicRepository.GetMessages(messageIds);
+			var messages = await TopicRepository.GetMessages(messageIds);
 
 			ViewData[Constants.InternalKeys.Layout] = "_LayoutEmpty";
 
@@ -218,14 +222,14 @@ namespace Forum.Controllers {
 				Messages = messages
 			};
 
-			return ForumViewResult.ViewResult(this, "DisplayPartial", viewModel);
+			return await ForumViewResult.ViewResult(this, "DisplayPartial", viewModel);
 		}
 
 		/// <summary>
 		/// Retrieves all of the latest messages in a topic. Useful for API calls.
 		/// </summary>
 		[HttpGet]
-		public IActionResult DisplayPartial(int id, long latest) {
+		public async Task<IActionResult> DisplayPartial(int id, long latest) {
 			var latestTime = new DateTime(latest);
 
 			var record = DbContext.Messages.Find(id);
@@ -240,10 +244,10 @@ namespace Forum.Controllers {
 				topicId = record.ParentId;
 			}
 
-			LoadTopicBoards(topicId);
+			await LoadTopicBoards(topicId);
 
 			var messageIds = MessageRepository.GetMessageIds(topicId, latestTime);
-			var messages = TopicRepository.GetMessages(messageIds);
+			var messages = await TopicRepository.GetMessages(messageIds);
 
 			var latestMessageTime = messages.Max(r => r.RecordTime);
 			TopicRepository.MarkRead(topicId, latestMessageTime, messageIds);
@@ -255,57 +259,53 @@ namespace Forum.Controllers {
 				Messages = messages
 			};
 
-			return ForumViewResult.ViewResult(this, "DisplayPartial", viewModel);
+			return await ForumViewResult.ViewResult(this, "DisplayPartial", viewModel);
 		}
 
 		[HttpGet]
-		public IActionResult Latest(int id) {
+		public async Task<IActionResult> Latest(int id) {
 			if (ModelState.IsValid) {
 				var serviceResponse = TopicRepository.GetLatest(id);
-				return ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse);
 			}
 
-			return FailureCallback();
-
-			IActionResult FailureCallback() {
-				return ForumViewResult.RedirectToReferrer(this);
-			}
+			return ForumViewResult.RedirectToReferrer(this);
 		}
 
 		[HttpGet]
-		public IActionResult Pin(int id) {
+		public async Task<IActionResult> Pin(int id) {
 			if (ModelState.IsValid) {
 				var serviceResponse = TopicRepository.Pin(id);
-				return ForumViewResult.RedirectFromService(this, serviceResponse, FailToReferrer);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse);
 			}
 
-			return FailToReferrer();
+			return ForumViewResult.RedirectToReferrer(this);
 		}
 
 		[HttpGet]
-		public IActionResult MarkAllRead() {
+		public async Task<IActionResult> MarkAllRead() {
 			if (ModelState.IsValid) {
 				var serviceResponse = TopicRepository.MarkAllRead();
-				return ForumViewResult.RedirectFromService(this, serviceResponse, FailToReferrer);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse);
 			}
 
-			return FailToReferrer();
+			return ForumViewResult.RedirectToReferrer(this);
 		}
 
 		[HttpGet]
-		public IActionResult MarkUnread(int id) {
+		public async Task<IActionResult> MarkUnread(int id) {
 			if (ModelState.IsValid) {
 				var serviceResponse = TopicRepository.MarkUnread(id);
-				return ForumViewResult.RedirectFromService(this, serviceResponse, FailToReferrer);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse);
 			}
 
-			return FailToReferrer();
+			return ForumViewResult.RedirectToReferrer(this);
 		}
 
 		[HttpGet]
-		public IActionResult ToggleBoard(InputModels.ToggleBoardInput input) {
+		public async Task<IActionResult> ToggleBoard(InputModels.ToggleBoardInput input) {
 			if (ModelState.IsValid) {
-				TopicRepository.Toggle(input);
+				await TopicRepository.Toggle(input);
 			}
 
 			return new NoContentResult();
@@ -324,7 +324,7 @@ namespace Forum.Controllers {
 					}
 				}
 				else {
-					return ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+					return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 				}
 			}
 
@@ -333,14 +333,14 @@ namespace Forum.Controllers {
 				return new JsonResult(errors);
 			}
 			else {
-				return FailureCallback();
+				return await FailureCallback();
 			}
 
-			IActionResult FailureCallback() {
-				var viewModel = GetDisplayPageModel(input.Id);
+			async Task<IActionResult> FailureCallback() {
+				var viewModel = await GetDisplayPageModel(input.Id);
 				viewModel.ReplyForm.Body = input.Body;
 
-				return ForumViewResult.ViewResult(this, nameof(Display), viewModel);
+				return await ForumViewResult.ViewResult(this, nameof(Display), viewModel);
 			}
 		}
 
@@ -358,7 +358,7 @@ namespace Forum.Controllers {
 			return UrlHelper.Action(nameof(Topics.Display), nameof(Topics), routeValues) + "#message" + messageId;
 		}
 
-		public PageModels.TopicDisplayPage GetDisplayPageModel(int id, int pageId = 1, int targetId = -1) {
+		public async Task<PageModels.TopicDisplayPage> GetDisplayPageModel(int id, int pageId = 1, int targetId = -1) {
 			var viewModel = new PageModels.TopicDisplayPage();
 
 			var record = DbContext.Messages.Find(id);
@@ -387,7 +387,7 @@ namespace Forum.Controllers {
 			}
 
 			if (string.IsNullOrEmpty(viewModel.RedirectPath)) {
-				var assignedBoards = LoadTopicBoards(topicId);
+				var assignedBoards = await LoadTopicBoards(topicId);
 
 				if (pageId < 1) {
 					pageId = 1;
@@ -403,7 +403,7 @@ namespace Forum.Controllers {
 				DbContext.Update(record);
 				DbContext.SaveChanges();
 
-				var messages = TopicRepository.GetMessages(pageMessageIds);
+				var messages = await TopicRepository.GetMessages(pageMessageIds);
 
 				if (string.IsNullOrEmpty(record.ShortPreview)) {
 					record.ShortPreview = "No subject";
@@ -417,7 +417,7 @@ namespace Forum.Controllers {
 						Views = record.ViewCount,
 					},
 					Messages = messages,
-					Categories = BoardRepository.CategoryIndex(),
+					Categories = await BoardRepository.CategoryIndex(),
 					AssignedBoards = new List<ViewModels.Boards.Items.IndexBoard>(),
 					IsAuthenticated = UserContext.IsAuthenticated,
 					CanManage = UserContext.IsAdmin || record.PostedById == UserContext.ApplicationUser?.Id,
@@ -432,7 +432,7 @@ namespace Forum.Controllers {
 				};
 
 				foreach (var assignedBoard in assignedBoards) {
-					var indexBoard = BoardRepository.GetIndexBoard(assignedBoard);
+					var indexBoard = await BoardRepository.GetIndexBoard(assignedBoard);
 					viewModel.AssignedBoards.Add(indexBoard);
 				}
 
@@ -444,21 +444,19 @@ namespace Forum.Controllers {
 			return viewModel;
 		}
 
-		public List<Models.DataModels.Board> LoadTopicBoards(int topicId) {
+		public async Task<List<Models.DataModels.Board>> LoadTopicBoards(int topicId) {
 			var messageBoardsQuery = from messageBoard in DbContext.MessageBoards
 									  where messageBoard.MessageId == topicId
 									  select messageBoard.BoardId;
 
 			var boardIds = messageBoardsQuery.ToList();
-			var assignedBoards = BoardRepository.Where(r => boardIds.Contains(r.Id)).ToList();
+			var assignedBoards = (await BoardRepository.Records()).Where(r => boardIds.Contains(r.Id)).ToList();
 
-			if (!RoleRepository.CanAccessBoards(assignedBoards)) {
+			if (! await RoleRepository.CanAccessBoards(assignedBoards)) {
 				throw new HttpForbiddenError();
 			}
 
 			return assignedBoards;
 		}
-
-		IActionResult FailToReferrer() => ForumViewResult.RedirectToReferrer(this);
 	}
 }

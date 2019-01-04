@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Routing;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Forum.Repositories {
 	using DataModels = Models.DataModels;
@@ -32,7 +33,7 @@ namespace Forum.Repositories {
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
-		public List<ViewModels.Items.IndexItem> Index(bool showRead = false) {
+		public async Task<List<ViewModels.Items.IndexItem>> Index(bool showRead = false) {
 			if (UserContext.ApplicationUser is null) {
 				return new List<ViewModels.Items.IndexItem>();
 			}
@@ -54,10 +55,11 @@ namespace Forum.Repositories {
 									};
 
 			var notifications = notificationQuery.ToList();
+			var users = await AccountRepository.Records();
 
 			foreach (var notification in notifications) {
 				if (!string.IsNullOrEmpty(notification.TargetUserId)) {
-					notification.TargetUser = AccountRepository.FirstOrDefault(r => r.Id == notification.TargetUserId)?.DisplayName ?? "User";
+					notification.TargetUser = users.FirstOrDefault(r => r.Id == notification.TargetUserId)?.DisplayName ?? "User";
 				}
 
 				notification.Text = NotificationText(notification);

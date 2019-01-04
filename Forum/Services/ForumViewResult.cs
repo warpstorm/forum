@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace Forum.Services {
 	using ServiceModels = Models.ServiceModels;
@@ -25,7 +26,7 @@ namespace Forum.Services {
 			return controller.Redirect(referrer);
 		}
 
-		public IActionResult RedirectFromService(Controller controller, ServiceModels.ServiceResponse serviceResponse, Func<IActionResult> failureCallback = null) {
+		public async Task<IActionResult> RedirectFromService(Controller controller, ServiceModels.ServiceResponse serviceResponse, Func<Task<IActionResult>> failAsync = null, Func<IActionResult> failSync = null) {
 			if (!string.IsNullOrEmpty(serviceResponse.Message)) {
 				controller.TempData[Constants.InternalKeys.StatusMessage] = serviceResponse.Message;
 			}
@@ -44,12 +45,15 @@ namespace Forum.Services {
 				return controller.Redirect(redirectPath);
 			}
 
-			if (failureCallback is null) {
-				var redirectPath = GetReferrer(controller);
-				return controller.Redirect(redirectPath);
+			if (!(failAsync is null)) {
+				return await failAsync();
+			}
+			else if (!(failSync is null)) {
+				return failSync();
 			}
 			else {
-				return failureCallback();
+				var redirectPath = GetReferrer(controller);
+				return controller.Redirect(redirectPath);
 			}
 		}
 
@@ -62,7 +66,11 @@ namespace Forum.Services {
 			}
 		}
 
-		public IActionResult ViewResult(Controller controller, string viewName, object model = null) {
+		public async Task<IActionResult> ViewResult(Controller controller, string viewName, object model = null) {
+			if (model is Task) {
+				throw new Exception($"{nameof(model)} is still a task. Did you forget an await?");
+			}
+
 			var requestUrl = controller.Request.GetEncodedUrl();
 			controller.ViewData["Url"] = requestUrl;
 
@@ -76,7 +84,7 @@ namespace Forum.Services {
 
 			controller.ViewData["LogoPath"] = GetLogoPath();
 			controller.ViewData["Referrer"] = GetReferrer(controller);
-			controller.ViewData["Categories"] = BoardRepository.CategoryIndex();
+			controller.ViewData["Categories"] = await BoardRepository.CategoryIndex();
 
 			if (controller.HttpContext.Items["PageTimer"] is Stopwatch pageTimer) {
 				pageTimer.Stop();
@@ -87,8 +95,8 @@ namespace Forum.Services {
 
 			return controller.View(viewName, model);
 		}
-		public IActionResult ViewResult(Controller controller, object model) => ViewResult(controller, null, model);
-		public IActionResult ViewResult(Controller controller) => ViewResult(controller, null, null);
+		public async Task<IActionResult> ViewResult(Controller controller, object model) => await ViewResult(controller, null, model);
+		public async Task<IActionResult> ViewResult(Controller controller) => await ViewResult(controller, null, null);
 
 		string GetReferrer(Controller controller) {
 			controller.Request.Query.TryGetValue("ReturnUrl", out var referrer);

@@ -4,6 +4,7 @@ using Forum.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Forum.Controllers {
 	using InputModels = Models.InputModels;
@@ -28,11 +29,11 @@ namespace Forum.Controllers {
 		}
 
 		[HttpGet]
-		public IActionResult Index() {
-			var sidebar = Sidebar.Generate();
+		public async Task<IActionResult> Index() {
+			var sidebar = await Sidebar.Generate();
 
 			var viewModel = new PageViewModels.IndexPage {
-				Categories = BoardRepository.CategoryIndex(true),
+				Categories = await BoardRepository.CategoryIndex(true),
 				Sidebar = sidebar
 			};
 
@@ -40,42 +41,42 @@ namespace Forum.Controllers {
 				return RedirectToAction(nameof(Setup.Initialize), nameof(Setup));
 			}
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
-		public IActionResult Manage() {
+		public async Task<IActionResult> Manage() {
 			var viewModel = new PageViewModels.IndexPage {
-				Categories = BoardRepository.CategoryIndex()
+				Categories = await BoardRepository.CategoryIndex()
 			};
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
-		public IActionResult Create() {
+		public async Task<IActionResult> Create() {
 			var viewModel = new PageViewModels.CreatePage() {
-				Categories = BoardRepository.CategoryPickList()
+				Categories = await BoardRepository.CategoryPickList()
 			};
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpPost]
-		public IActionResult Create(InputModels.CreateBoardInput input) {
+		public async Task<IActionResult> Create(InputModels.CreateBoardInput input) {
 			if (ModelState.IsValid) {
-				var serviceResponse = BoardRepository.AddBoard(input);
-				return ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				var serviceResponse = await BoardRepository.AddBoard(input);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
-			return FailureCallback();
+			return await FailureCallback();
 
-			IActionResult FailureCallback() {
+			async Task<IActionResult> FailureCallback() {
 				var viewModel = new PageViewModels.CreatePage() {
-					Categories = BoardRepository.CategoryPickList()
+					Categories = await BoardRepository.CategoryPickList()
 				};
 
 				viewModel.Name = input.Name;
@@ -85,46 +86,46 @@ namespace Forum.Controllers {
 					viewModel.Categories.First(item => item.Value == input.Category).Selected = true;
 				}
 
-				return ForumViewResult.ViewResult(this, viewModel);
+				return await ForumViewResult.ViewResult(this, viewModel);
 			}
 		}
 
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
-		public IActionResult Edit(int id) {
-			var boardRecord = BoardRepository.First(b => b.Id == id);
-			var category = BoardRepository.Categories.First(item => item.Id == boardRecord.CategoryId);
+		public async Task<IActionResult> Edit(int id) {
+			var boardRecord = (await BoardRepository.Records()).First(b => b.Id == id);
+			var category = (await BoardRepository.Categories()).First(item => item.Id == boardRecord.CategoryId);
 
 			var viewModel = new PageViewModels.EditPage {
 				Id = boardRecord.Id,
 				Name = boardRecord.Name,
 				Description = boardRecord.Description,
-				Categories = BoardRepository.CategoryPickList(),
-				Roles = RoleRepository.PickList(boardRecord.Id),
+				Categories = await BoardRepository.CategoryPickList(),
+				Roles = await RoleRepository.PickList(boardRecord.Id),
 			};
 
 			viewModel.Categories.First(item => item.Text == category.Name).Selected = true;
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpPost]
-		public IActionResult Edit(InputModels.EditBoardInput input) {
+		public async Task<IActionResult> Edit(InputModels.EditBoardInput input) {
 			if (ModelState.IsValid) {
-				var serviceResponse = BoardRepository.UpdateBoard(input);
-				return ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				var serviceResponse = await BoardRepository.UpdateBoard(input);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
-			return FailureCallback();
+			return await FailureCallback();
 
-			IActionResult FailureCallback() {
-				var boardRecord = BoardRepository.First(b => b.Id == input.Id);
+			async Task<IActionResult> FailureCallback() {
+				var boardRecord = (await BoardRepository.Records()).First(b => b.Id == input.Id);
 
 				var viewModel = new PageViewModels.EditPage {
 					Id = boardRecord.Id,
-					Categories = BoardRepository.CategoryPickList(),
-					Roles = RoleRepository.PickList(boardRecord.Id)
+					Categories = await BoardRepository.CategoryPickList(),
+					Roles = await RoleRepository.PickList(boardRecord.Id)
 				};
 
 				viewModel.Name = input.Name;
@@ -134,68 +135,52 @@ namespace Forum.Controllers {
 					viewModel.Categories.First(item => item.Value == input.Category).Selected = true;
 				}
 
-				return ForumViewResult.ViewResult(this, viewModel);
+				return await ForumViewResult.ViewResult(this, viewModel);
 			}
 		}
 
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
-		public IActionResult MoveCategoryUp(int id) {
+		public async Task<IActionResult> MoveCategoryUp(int id) {
 			if (ModelState.IsValid) {
-				var serviceResponse = BoardRepository.MoveCategoryUp(id);
-				return ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				var serviceResponse = await BoardRepository.MoveCategoryUp(id);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse);
 			}
 
-			return FailureCallback();
-
-			IActionResult FailureCallback() {
-				return ForumViewResult.RedirectToReferrer(this);
-			}
+			return ForumViewResult.RedirectToReferrer(this);
 		}
 
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
-		public IActionResult MoveBoardUp(int id) {
+		public async Task<IActionResult> MoveBoardUp(int id) {
 			if (ModelState.IsValid) {
-				var serviceResponse = BoardRepository.MoveBoardUp(id);
-				return ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				var serviceResponse = await BoardRepository.MoveBoardUp(id);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse);
 			}
 
-			return FailureCallback();
-
-			IActionResult FailureCallback() {
-				return ForumViewResult.RedirectToReferrer(this);
-			}
+			return ForumViewResult.RedirectToReferrer(this);
 		}
 
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpPost]
-		public IActionResult MergeCategory(InputModels.MergeInput input) {
+		public async Task<IActionResult> MergeCategory(InputModels.MergeInput input) {
 			if (ModelState.IsValid) {
-				var serviceResponse = BoardRepository.MergeCategory(input);
-				return ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				var serviceResponse = await BoardRepository.MergeCategory(input);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse);
 			}
 
-			return FailureCallback();
-
-			IActionResult FailureCallback() {
-				return ForumViewResult.RedirectToReferrer(this);
-			}
+			return ForumViewResult.RedirectToReferrer(this);
 		}
 
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpPost]
-		public IActionResult MergeBoard(InputModels.MergeInput input) {
+		public async Task<IActionResult> MergeBoard(InputModels.MergeInput input) {
 			if (ModelState.IsValid) {
-				var serviceResponse = BoardRepository.MergeBoard(input);
-				return ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				var serviceResponse = await BoardRepository.MergeBoard(input);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse);
 			}
 
-			return FailureCallback();
-
-			IActionResult FailureCallback() {
-				return ForumViewResult.RedirectToReferrer(this);
-			}
+			return ForumViewResult.RedirectToReferrer(this);
 		}
 	}
 }

@@ -1,12 +1,14 @@
 ﻿using Forum.Contexts;
+using Forum.Interfaces.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Forum.Repositories {
 	using DataModels = Models.DataModels;
@@ -14,8 +16,18 @@ namespace Forum.Repositories {
 	using ItemViewModels = Models.ViewModels.Boards.Items;
 	using ServiceModels = Models.ServiceModels;
 
-	public class BoardRepository : Repository<DataModels.Board> {
-		public List<DataModels.Category> Categories => _Categories ?? (_Categories = GetCategories());
+	public class BoardRepository : IRepository<DataModels.Board> {
+		public async Task<List<DataModels.Board>> Records() => _Records ?? (_Records = await DbContext.Boards.ToListAsync());
+		List<DataModels.Board> _Records;
+
+		public async Task<List<DataModels.Category>> Categories() {
+			if (_Categories is null) {
+				var records = await DbContext.Categories.ToListAsync();
+				_Categories = records.OrderBy(record => record.DisplayOrder).ToList();
+			}
+
+			return _Categories;
+		}
 		List<DataModels.Category> _Categories;
 
 		ApplicationDbContext DbContext { get; }
@@ -30,9 +42,8 @@ namespace Forum.Repositories {
 			AccountRepository accountRepository,
 			RoleRepository roleRepository,
 			IActionContextAccessor actionContextAccessor,
-			IUrlHelperFactory urlHelperFactory,
-			ILogger<BoardRepository> log
-		) : base(log) {
+			IUrlHelperFactory urlHelperFactory
+		) {
 			DbContext = dbContext;
 			UserContext = userContext;
 			AccountRepository = accountRepository;
@@ -40,10 +51,10 @@ namespace Forum.Repositories {
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
-		public List<SelectListItem> CategoryPickList() {
+		public async Task<List<SelectListItem>> CategoryPickList() {
 			var pickList = new List<SelectListItem>();
 
-			foreach (var categoryRecord in Categories) {
+			foreach (var categoryRecord in await Categories()) {
 				pickList.Add(new SelectListItem {
 					Text = categoryRecord.Name,
 					Value = categoryRecord.Id.ToString()
@@ -53,8 +64,8 @@ namespace Forum.Repositories {
 			return pickList;
 		}
 
-		public List<ItemViewModels.IndexCategory> CategoryIndex(bool includeReplies = false) {
-			var categories = Categories.OrderBy(r => r.DisplayOrder).ToList();
+		public async Task<List<ItemViewModels.IndexCategory>> CategoryIndex(bool includeReplies = false) {
+			var categories = (await Categories()).OrderBy(r => r.DisplayOrder).ToList();
 
 			var indexCategories = new List<ItemViewModels.IndexCategory>();
 
@@ -65,8 +76,10 @@ namespace Forum.Repositories {
 					DisplayOrder = categoryRecord.DisplayOrder
 				};
 
-				foreach (var board in Records.Where(r => r.CategoryId == categoryRecord.Id)) {
-					var thisBoardRoles = RoleRepository.BoardRoles.Where(r => r.BoardId == board.Id);
+				foreach (var board in (await Records()).Where(r => r.CategoryId == categoryRecord.Id)) {
+					var thisBoardRoles = from role in await RoleRepository.BoardRoles()
+										 where role.BoardId == board.Id
+										 select role;
 
 					var authorized = UserContext.IsAdmin || !thisBoardRoles.Any() || (UserContext.Roles?.Any(userRole => thisBoardRoles.Any(boardRole => boardRole.RoleId == userRole)) ?? false);
 
@@ -74,7 +87,7 @@ namespace Forum.Repositories {
 						continue;
 					}
 
-					var indexBoard = GetIndexBoard(board, includeReplies);
+					var indexBoard = await GetIndexBoard(board, includeReplies);
 
 					indexCategory.Boards.Add(indexBoard);
 				}
@@ -88,7 +101,7 @@ namespace Forum.Repositories {
 			return indexCategories;
 		}
 
-		public ItemViewModels.IndexBoard GetIndexBoard(DataModels.Board boardRecord, bool includeReplies = false) {
+		public async Task<ItemViewModels.IndexBoard> GetIndexBoard(DataModels.Board boardRecord, bool includeReplies = false) {
 			var indexBoard = new ItemViewModels.IndexBoard {
 				Id = boardRecord.Id.ToString(),
 				Name = boardRecord.Name,
@@ -111,25 +124,28 @@ namespace Forum.Repositories {
 				// Only checks the most recent 10 topics. If all 10 are forbidden, then LastMessage stays null.
 				foreach (var item in messages.Take(10)) {
 					var messageBoardQuery = from messageBoard in DbContext.MessageBoards
-										where messageBoard.MessageId == item.MessageId
-										select messageBoard.BoardId;
+											where messageBoard.MessageId == item.MessageId
+											select messageBoard.BoardId;
 
 					var messageBoards = messageBoardQuery.ToList();
-					var messageRoleIds = RoleRepository.BoardRoles.Where(r => messageBoards.Contains(r.BoardId)).Select(r => r.RoleId);
+
+					var messageRoleIds = from role in await RoleRepository.BoardRoles()
+										 where messageBoards.Contains(role.BoardId)
+										 select role.RoleId;
 
 					if (UserContext.IsAdmin || !messageRoleIds.Any() || messageRoleIds.Intersect(UserContext.Roles).Any()) {
 						var lastReplyQuery = from message in DbContext.Messages
-										where message.Id == item.LastReplyId
-										select new Models.ViewModels.Topics.Items.MessagePreview {
-											Id = message.Id,
-											ShortPreview = item.TopicPreview,
-											LastReplyId = message.LastReplyId,
-											LastReplyById = message.LastReplyById,
-											LastReplyPosted = message.LastReplyPosted,
-										};
+											 where message.Id == item.LastReplyId
+											 select new Models.ViewModels.Topics.Items.MessagePreview {
+												 Id = message.Id,
+												 ShortPreview = item.TopicPreview,
+												 LastReplyId = message.LastReplyId,
+												 LastReplyById = message.LastReplyById,
+												 LastReplyPosted = message.LastReplyPosted,
+											 };
 
 						indexBoard.LastMessage = lastReplyQuery.FirstOrDefault();
-						indexBoard.LastMessage.LastReplyByName = AccountRepository.FirstOrDefault(r => r.Id == indexBoard.LastMessage.LastReplyById)?.DisplayName ?? "User";
+						indexBoard.LastMessage.LastReplyByName = (await AccountRepository.Records()).FirstOrDefault(r => r.Id == indexBoard.LastMessage.LastReplyById)?.DisplayName ?? "User";
 						break;
 					}
 				}
@@ -138,10 +154,10 @@ namespace Forum.Repositories {
 			return indexBoard;
 		}
 
-		public ServiceModels.ServiceResponse AddBoard(InputModels.CreateBoardInput input) {
+		public async Task<ServiceModels.ServiceResponse> AddBoard(InputModels.CreateBoardInput input) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
-			if (Records.Any(b => b.Name == input.Name)) {
+			if ((await Records()).Any(b => b.Name == input.Name)) {
 				serviceResponse.Error(nameof(input.Name), "A board with that name already exists");
 			}
 
@@ -152,10 +168,10 @@ namespace Forum.Repositories {
 			}
 
 			if (!string.IsNullOrEmpty(input.NewCategory)) {
-				categoryRecord = Categories.FirstOrDefault(c => c.Name == input.NewCategory);
+				categoryRecord = (await Categories()).FirstOrDefault(c => c.Name == input.NewCategory);
 
 				if (categoryRecord is null) {
-					var displayOrder = Categories.DefaultIfEmpty().Max(c => c.DisplayOrder);
+					var displayOrder = (await Categories()).DefaultIfEmpty().Max(c => c.DisplayOrder);
 
 					categoryRecord = new DataModels.Category {
 						Name = input.NewCategory,
@@ -168,7 +184,7 @@ namespace Forum.Repositories {
 			else {
 				try {
 					var categoryId = Convert.ToInt32(input.Category);
-					categoryRecord = Categories.First(c => c.Id == categoryId);
+					categoryRecord = (await Categories()).First(c => c.Id == categoryId);
 
 					if (categoryRecord is null) {
 						serviceResponse.Error(nameof(input.Category), "No category was found with this ID.");
@@ -191,7 +207,7 @@ namespace Forum.Repositories {
 				input.Description = input.Description.Trim();
 			}
 
-			var existingRecord = Records.FirstOrDefault(b => b.Name == input.Name);
+			var existingRecord = (await Records()).FirstOrDefault(b => b.Name == input.Name);
 
 			if (existingRecord != null) {
 				serviceResponse.Error(nameof(input.Name), "A board with that name already exists");
@@ -218,10 +234,10 @@ namespace Forum.Repositories {
 			return serviceResponse;
 		}
 
-		public ServiceModels.ServiceResponse UpdateBoard(InputModels.EditBoardInput input) {
+		public async Task<ServiceModels.ServiceResponse> UpdateBoard(InputModels.EditBoardInput input) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
-			var record = Records.FirstOrDefault(b => b.Id == input.Id);
+			var record = (await Records()).FirstOrDefault(b => b.Id == input.Id);
 
 			if (record is null) {
 				serviceResponse.Error($"A record does not exist with ID '{input.Id}'");
@@ -234,10 +250,10 @@ namespace Forum.Repositories {
 			}
 
 			if (!string.IsNullOrEmpty(input.NewCategory)) {
-				newCategoryRecord = Categories.FirstOrDefault(c => c.Name == input.NewCategory);
+				newCategoryRecord = (await Categories()).FirstOrDefault(c => c.Name == input.NewCategory);
 
 				if (newCategoryRecord is null) {
-					var displayOrder = Categories.DefaultIfEmpty().Max(c => c.DisplayOrder);
+					var displayOrder = (await Categories()).DefaultIfEmpty().Max(c => c.DisplayOrder);
 
 					newCategoryRecord = new DataModels.Category {
 						Name = input.NewCategory,
@@ -251,7 +267,7 @@ namespace Forum.Repositories {
 			else {
 				try {
 					var newCategoryId = Convert.ToInt32(input.Category);
-					newCategoryRecord = Categories.FirstOrDefault(c => c.Id == newCategoryId);
+					newCategoryRecord = (await Categories()).FirstOrDefault(c => c.Id == newCategoryId);
 
 					if (newCategoryRecord is null) {
 						serviceResponse.Error(nameof(input.Category), "No category was found with this ID.");
@@ -284,7 +300,7 @@ namespace Forum.Repositories {
 			var oldCategoryId = -1;
 
 			if (record.CategoryId != newCategoryRecord.Id) {
-				var categoryBoards = Records.Where(r => r.CategoryId == record.CategoryId).ToList();
+				var categoryBoards = (await Records()).Where(r => r.CategoryId == record.CategoryId).ToList();
 
 				if (categoryBoards.Count() <= 1) {
 					oldCategoryId = record.CategoryId;
@@ -293,14 +309,17 @@ namespace Forum.Repositories {
 				record.CategoryId = newCategoryRecord.Id;
 			}
 
-			var boardRoles = RoleRepository.BoardRoles.Where(r => r.BoardId == record.Id).ToList();
+			var boardRoles = (from role in await RoleRepository.BoardRoles()
+							  where role.BoardId == record.Id
+							  select role).ToList();
 
 			foreach (var boardRole in boardRoles) {
 				DbContext.BoardRoles.Remove(boardRole);
 			}
 
 			if (input.Roles != null) {
-				var roleIds = RoleRepository.SiteRoles.Select(r => r.Id).ToList();
+				var roleIds = (from role in await RoleRepository.SiteRoles()
+							   select role.Id).ToList();
 
 				foreach (var inputRole in input.Roles) {
 					if (roleIds.Contains(inputRole)) {
@@ -323,7 +342,7 @@ namespace Forum.Repositories {
 			DbContext.SaveChanges();
 
 			if (oldCategoryId >= 0) {
-				var oldCategoryRecord = Categories.FirstOrDefault(item => item.Id == oldCategoryId);
+				var oldCategoryRecord = (await Categories()).FirstOrDefault(item => item.Id == oldCategoryId);
 
 				if (oldCategoryRecord != null) {
 					DbContext.Categories.Remove(oldCategoryRecord);
@@ -336,11 +355,11 @@ namespace Forum.Repositories {
 			return serviceResponse;
 		}
 
-		public ServiceModels.ServiceResponse MergeBoard(InputModels.MergeInput input) {
+		public async Task<ServiceModels.ServiceResponse> MergeBoard(InputModels.MergeInput input) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
-			var fromBoard = Records.FirstOrDefault(b => b.Id == input.FromId);
-			var toBoard = Records.FirstOrDefault(b => b.Id == input.ToId);
+			var fromBoard = (await Records()).FirstOrDefault(b => b.Id == input.FromId);
+			var toBoard = (await Records()).FirstOrDefault(b => b.Id == input.ToId);
 
 			if (fromBoard is null) {
 				serviceResponse.Error($"A record does not exist with ID '{input.FromId}'");
@@ -373,7 +392,7 @@ namespace Forum.Repositories {
 
 			// Remove the category if empty
 			if (!DbContext.Boards.Any(b => b.CategoryId == categoryId)) {
-				var categoryRecord = Categories.FirstOrDefault(item => item.Id == categoryId);
+				var categoryRecord = (await Categories()).FirstOrDefault(item => item.Id == categoryId);
 
 				if (categoryRecord != null) {
 					DbContext.Categories.Remove(categoryRecord);
@@ -384,11 +403,11 @@ namespace Forum.Repositories {
 			return serviceResponse;
 		}
 
-		public ServiceModels.ServiceResponse MergeCategory(InputModels.MergeInput input) {
+		public async Task<ServiceModels.ServiceResponse> MergeCategory(InputModels.MergeInput input) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
-			var fromCategory = Categories.FirstOrDefault(b => b.Id == input.FromId);
-			var toCategory = Categories.FirstOrDefault(b => b.Id == input.ToId);
+			var fromCategory = (await Categories()).FirstOrDefault(b => b.Id == input.FromId);
+			var toCategory = (await Categories()).FirstOrDefault(b => b.Id == input.ToId);
 
 			if (fromCategory is null) {
 				serviceResponse.Error($"A record does not exist with ID '{input.FromId}'");
@@ -402,7 +421,7 @@ namespace Forum.Repositories {
 				return serviceResponse;
 			}
 
-			var displacedBoards = Records.Where(b => b.CategoryId == fromCategory.Id).ToList();
+			var displacedBoards = (await Records()).Where(b => b.CategoryId == fromCategory.Id).ToList();
 
 			foreach (var displacedBoard in displacedBoards) {
 				displacedBoard.CategoryId = toCategory.Id;
@@ -418,17 +437,17 @@ namespace Forum.Repositories {
 			return serviceResponse;
 		}
 
-		public ServiceModels.ServiceResponse MoveBoardUp(int id) {
+		public async Task<ServiceModels.ServiceResponse> MoveBoardUp(int id) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
-			var targetBoard = Records.FirstOrDefault(b => b.Id == id);
+			var targetBoard = (await Records()).FirstOrDefault(b => b.Id == id);
 
 			if (targetBoard is null) {
 				serviceResponse.Error("No board found with that ID.");
 				return serviceResponse;
 			}
 
-			var categoryBoards = Records.Where(b => b.CategoryId == targetBoard.CategoryId).OrderBy(b => b.DisplayOrder).ToList();
+			var categoryBoards = (await Records()).Where(b => b.CategoryId == targetBoard.CategoryId).OrderBy(b => b.DisplayOrder).ToList();
 
 			var currentIndex = 1;
 
@@ -461,10 +480,10 @@ namespace Forum.Repositories {
 			return serviceResponse;
 		}
 
-		public ServiceModels.ServiceResponse MoveCategoryUp(int id) {
+		public async Task<ServiceModels.ServiceResponse> MoveCategoryUp(int id) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
-			var targetCategory = Categories.FirstOrDefault(b => b.Id == id);
+			var targetCategory = (await Categories()).FirstOrDefault(b => b.Id == id);
 
 			if (targetCategory is null) {
 				serviceResponse.Error("No category found with that ID.");
@@ -472,7 +491,7 @@ namespace Forum.Repositories {
 			}
 
 			if (targetCategory.DisplayOrder > 1) {
-				var displacedCategory = Categories.First(b => b.DisplayOrder == targetCategory.DisplayOrder - 1);
+				var displacedCategory = (await Categories()).First(b => b.DisplayOrder == targetCategory.DisplayOrder - 1);
 
 				displacedCategory.DisplayOrder++;
 				DbContext.Update(displacedCategory);
@@ -485,8 +504,5 @@ namespace Forum.Repositories {
 
 			return serviceResponse;
 		}
-
-		protected override List<DataModels.Board> GetRecords() => DbContext.Boards.OrderBy(record => record.DisplayOrder).ToList();
-		List<DataModels.Category> GetCategories() => DbContext.Categories.OrderBy(record => record.DisplayOrder).ToList();
 	}
 }

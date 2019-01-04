@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace Forum.Controllers {
 	using InputModels = Models.InputModels;
@@ -28,7 +29,7 @@ namespace Forum.Controllers {
 		}
 
 		[HttpGet]
-		public IActionResult Index() {
+		public async Task<IActionResult> Index() {
 			var records = DbContext.StrippedUrls.ToList();
 
 			var items = new List<ViewModels.IndexItem>();
@@ -44,13 +45,13 @@ namespace Forum.Controllers {
 				StrippedUrls = items
 			};
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		[PreventRapidRequests]
-		public IActionResult Index(InputModels.EditStrippedUrlsInput input) {
+		public async Task<IActionResult> Index(InputModels.EditStrippedUrlsInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = new ServiceResponse();
 
@@ -93,7 +94,7 @@ namespace Forum.Controllers {
 				if (serviceResponse.Success) {
 					DbContext.SaveChanges();
 
-					return ForumViewResult.RedirectFromService(this, serviceResponse);
+					return await ForumViewResult.RedirectFromService(this, serviceResponse);
 				}
 
 				foreach (var kvp in serviceResponse.Errors) {
@@ -116,7 +117,7 @@ namespace Forum.Controllers {
 				StrippedUrls = strippedUrls
 			};
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpGet]

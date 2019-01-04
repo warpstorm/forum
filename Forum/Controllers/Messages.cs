@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Forum.Controllers {
@@ -41,9 +42,9 @@ namespace Forum.Controllers {
 
 		[HttpGet]
 		public async Task<IActionResult> Create(int id = 0) {
-			ViewData["Smileys"] = SmileyRepository.GetSelectorList();
+			ViewData["Smileys"] = await SmileyRepository.GetSelectorList();
 
-			var board = BoardRepository.First(item => item.Id == id);
+			var board = (await BoardRepository.Records()).First(item => item.Id == id);
 
 			if (Request.Query.TryGetValue("source", out var source)) {
 				return await Create(new InputModels.MessageInput { BoardId = id, Body = source });
@@ -54,7 +55,7 @@ namespace Forum.Controllers {
 				BoardId = id.ToString()
 			};
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpPost]
@@ -66,7 +67,7 @@ namespace Forum.Controllers {
 					input.SelectedBoards.Add((int)input.BoardId);
 				}
 				else {
-					foreach (var board in BoardRepository) {
+					foreach (var board in await BoardRepository.Records()) {
 						if (Request.Form.TryGetValue("Selected_" + board.Id, out var boardSelected)) {
 							if (boardSelected == "True") {
 								input.SelectedBoards.Add(board.Id);
@@ -76,25 +77,25 @@ namespace Forum.Controllers {
 				}
 
 				var serviceResponse = await MessageRepository.CreateTopic(input);
-				return ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
-			return FailureCallback();
+			return await FailureCallback();
 
-			IActionResult FailureCallback() {
+			async Task<IActionResult> FailureCallback() {
 				var viewModel = new ViewModels.Messages.CreateTopicPage() {
 					Id = "0",
 					BoardId = input.BoardId.ToString(),
 					Body = input.Body
 				};
 
-				return ForumViewResult.ViewResult(this, viewModel);
+				return await ForumViewResult.ViewResult(this, viewModel);
 			}
 		}
 
 		[HttpGet]
 		public async Task<IActionResult> Edit(int id) {
-			ViewData["Smileys"] = SmileyRepository.GetSelectorList();
+			ViewData["Smileys"] = await SmileyRepository.GetSelectorList();
 
 			var record = await DbContext.Messages.SingleOrDefaultAsync(m => m.Id == id);
 
@@ -107,7 +108,7 @@ namespace Forum.Controllers {
 				Body = record.OriginalBody
 			};
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpPost]
@@ -116,18 +117,18 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> Edit(InputModels.MessageInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await MessageRepository.EditMessage(input);
-				return ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
-			return FailureCallback();
+			return await FailureCallback();
 
-			IActionResult FailureCallback() {
+			async Task<IActionResult> FailureCallback() {
 				var viewModel = new ViewModels.Messages.CreateTopicPage {
 					Id = "0",
 					Body = input.Body
 				};
 
-				return ForumViewResult.ViewResult(this, viewModel);
+				return await ForumViewResult.ViewResult(this, viewModel);
 			}
 		}
 
@@ -135,33 +136,25 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> Delete(int id) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await MessageRepository.DeleteMessage(id);
-				return ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse);
 			}
 
-			return FailureCallback();
-
-			IActionResult FailureCallback() {
-				return ForumViewResult.RedirectToReferrer(this);
-			}
+			return ForumViewResult.RedirectToReferrer(this);
 		}
 
 		[HttpGet]
 		public async Task<IActionResult> AddThought(int id, int smiley) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await MessageRepository.AddThought(id, smiley);
-				return ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse);
 			}
 
-			return FailureCallback();
-
-			IActionResult FailureCallback() {
-				return ForumViewResult.RedirectToReferrer(this);
-			}
+			return ForumViewResult.RedirectToReferrer(this);
 		}
 
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
-		public IActionResult Admin(InputModels.Continue input = null) => ForumViewResult.ViewResult(this);
+		public async Task<IActionResult> Admin(InputModels.Continue input = null) => await ForumViewResult.ViewResult(this);
 
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
@@ -192,7 +185,7 @@ namespace Forum.Controllers {
 				viewModel.NextAction = UrlHelper.Action(nameof(Messages.ProcessMessages), nameof(Messages), input);
 			}
 
-			return ForumViewResult.ViewResult(this, "Delay", viewModel);
+			return await ForumViewResult.ViewResult(this, "Delay", viewModel);
 		}
 
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
@@ -224,12 +217,12 @@ namespace Forum.Controllers {
 				viewModel.NextAction = UrlHelper.Action(nameof(Messages.ReprocessMessages), nameof(Messages), input);
 			}
 
-			return ForumViewResult.ViewResult(this, "Delay", viewModel);
+			return await ForumViewResult.ViewResult(this, "Delay", viewModel);
 		}
 
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
-		public IActionResult RecountReplies(InputModels.Continue input) {
+		public async Task<IActionResult> RecountReplies(InputModels.Continue input) {
 			if (string.IsNullOrEmpty(input.Stage)) {
 				var totalSteps = MessageRepository.RecountReplies();
 
@@ -255,12 +248,12 @@ namespace Forum.Controllers {
 				viewModel.NextAction = UrlHelper.Action(nameof(Messages.RecountReplies), nameof(Messages), input);
 			}
 
-			return ForumViewResult.ViewResult(this, "Delay", viewModel);
+			return await ForumViewResult.ViewResult(this, "Delay", viewModel);
 		}
 
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
-		public IActionResult RebuildParticipants(InputModels.Continue input) {
+		public async Task<IActionResult> RebuildParticipants(InputModels.Continue input) {
 			if (string.IsNullOrEmpty(input.Stage)) {
 				var totalSteps = MessageRepository.RebuildParticipants();
 
@@ -286,7 +279,7 @@ namespace Forum.Controllers {
 				viewModel.NextAction = UrlHelper.Action(nameof(Messages.RebuildParticipants), nameof(Messages), input);
 			}
 
-			return ForumViewResult.ViewResult(this, "Delay", viewModel);
+			return await ForumViewResult.ViewResult(this, "Delay", viewModel);
 		}
 	}
 }

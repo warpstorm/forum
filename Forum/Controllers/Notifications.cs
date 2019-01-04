@@ -1,6 +1,7 @@
 ﻿using Forum.Interfaces.Services;
 using Forum.Repositories;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace Forum.Controllers {
 	using ViewModels = Models.ViewModels.Notifications;
@@ -18,34 +19,30 @@ namespace Forum.Controllers {
 		}
 
 		[HttpGet]
-		public IActionResult Index() {
+		public async Task<IActionResult> Index() {
 			var showRead = false;
 
 			if (Request.Query.ContainsKey("show-read")) {
 				showRead = true;
 			}
 
-			var notifications = NotificationRepository.Index(showRead);
+			var notifications = await NotificationRepository.Index(showRead);
 
 			var viewModel = new ViewModels.Pages.IndexPage {
 				Notifications = notifications
 			};
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpGet]
-		public IActionResult Open(int id) {
+		public async Task<IActionResult> Open(int id) {
 			if (ModelState.IsValid) {
 				var serviceResponse = NotificationRepository.Open(id);
-				return ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse);
 			}
 
-			return FailureCallback();
-
-			IActionResult FailureCallback() {
-				return ForumViewResult.RedirectToReferrer(this);
-			}
+			return ForumViewResult.RedirectToReferrer(this);
 		}
 
 		[HttpGet]

@@ -2,7 +2,9 @@
 using Forum.Interfaces.Services;
 using Forum.Repositories;
 using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 using System.Text.Encodings.Web;
+using System.Threading.Tasks;
 
 namespace Forum.Controllers {
 	using ViewModels = Models.ViewModels.Profile;
@@ -29,12 +31,12 @@ namespace Forum.Controllers {
 		}
 
 		[HttpGet]
-		public IActionResult Details(string id) {
+		public async Task<IActionResult> Details(string id) {
 			if (string.IsNullOrEmpty(id)) {
 				id = UserContext.ApplicationUser.Id;
 			}
 
-			var userRecord = AccountRepository.First(item => item.Id == id);
+			var userRecord = (await AccountRepository.Records()).First(item => item.Id == id);
 
 			var viewModel = new ViewModels.DetailsPage {
 				Id = userRecord.Email,
@@ -42,7 +44,7 @@ namespace Forum.Controllers {
 				Email = userRecord.Email,
 			};
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 	}
 }

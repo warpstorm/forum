@@ -76,13 +76,13 @@ namespace Forum.Controllers {
 				});
 			}
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpGet]
-		public IActionResult Create() {
+		public async Task<IActionResult> Create() {
 			var viewModel = new PageViewModels.CreatePage();
-			return ForumViewResult.ViewResult(this, viewModel);
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpPost]
@@ -90,25 +90,25 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> Create(InputModels.CreateRoleInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await RoleRepository.Create(input);
-				return ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
-			return FailureCallback();
+			return await FailureCallback();
 
-			IActionResult FailureCallback() {
+			async Task<IActionResult> FailureCallback() {
 				var viewModel = new PageViewModels.CreatePage() {
 					Name = input.Name,
 					Description = input.Description
 				};
 
-				return ForumViewResult.ViewResult(this, viewModel);
+				return await ForumViewResult.ViewResult(this, viewModel);
 			}
 		}
 
 		[HttpGet]
-		public IActionResult Edit(string id) {
+		public async Task<IActionResult> Edit(string id) {
 			var viewModel = GetEditPageModel(id);
-			return ForumViewResult.ViewResult(this, viewModel);
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpPost]
@@ -116,18 +116,18 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> Edit(InputModels.EditRoleInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await RoleRepository.Edit(input);
-				return ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
-			return FailureCallback();
+			return await FailureCallback();
 
-			IActionResult FailureCallback() {
+			async Task<IActionResult> FailureCallback() {
 				var viewModel = GetEditPageModel(input.Id);
 
 				viewModel.Name = input.Name;
 				viewModel.Description = input.Description;
 
-				return ForumViewResult.ViewResult(this, viewModel);
+				return await ForumViewResult.ViewResult(this, viewModel);
 			}
 		}
 
@@ -143,21 +143,21 @@ namespace Forum.Controllers {
 		[HttpGet]
 		public async Task<IActionResult> UserList(string id) {
 			var viewModel = await RoleRepository.UserList(id);
-			return ForumViewResult.ViewResult(this, viewModel);
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpGet]
 		public async Task<IActionResult> AddUser(string id, string user) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await RoleRepository.AddUser(id, user);
-				return ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
-			return FailureCallback();
+			return await FailureCallback();
 
-			IActionResult FailureCallback() {
+			async Task<IActionResult> FailureCallback() {
 				var viewModel = GetEditPageModel(id);
-				return ForumViewResult.ViewResult(this, nameof(Edit), viewModel);
+				return await ForumViewResult.ViewResult(this, nameof(Edit), viewModel);
 			}
 		}
 
@@ -165,14 +165,14 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> RemoveUser(string id, string user) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await RoleRepository.RemoveUser(id, user);
-				return ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
-			return FailureCallback();
+			return await FailureCallback();
 
-			IActionResult FailureCallback() {
+			async Task<IActionResult> FailureCallback() {
 				var viewModel = GetEditPageModel(id);
-				return ForumViewResult.ViewResult(this, nameof(Edit), viewModel);
+				return await ForumViewResult.ViewResult(this, nameof(Edit), viewModel);
 			}
 		}
 

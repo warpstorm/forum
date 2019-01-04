@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Forum.Repositories {
 	using DataModels = Models.DataModels;
@@ -57,7 +58,7 @@ namespace Forum.Repositories {
 		/// <summary>
 		/// Builds a collection of Message objects. The message ids should already have been filtered by permissions.
 		/// </summary>
-		public List<ItemModels.Message> GetMessages(List<int> messageIds) {
+		public async Task<List<ItemModels.Message>> GetMessages(List<int> messageIds) {
 			var thoughtQuery = from mt in DbContext.MessageThoughts
 							   where messageIds.Contains(mt.MessageId)
 							   select new ItemModels.MessageThought {
@@ -67,10 +68,12 @@ namespace Forum.Repositories {
 							   };
 
 			var thoughts = thoughtQuery.ToList();
+			var smileys = await SmileyRepository.Records();
+			var users = await AccountRepository.Records();
 
 			foreach (var item in thoughts) {
-				var smiley = SmileyRepository.FirstOrDefault(r => r.Id == item.SmileyId);
-				var user = AccountRepository.FirstOrDefault(r => r.Id == item.UserId);
+				var smiley = smileys.FirstOrDefault(r => r.Id == item.SmileyId);
+				var user = users.FirstOrDefault(r => r.Id == item.UserId);
 
 				item.Path = smiley.Path;
 				item.Thought = smiley.Thought.Replace("{user}", user.DisplayName);
@@ -99,7 +102,7 @@ namespace Forum.Repositories {
 					var reply = DbContext.Messages.FirstOrDefault(item => item.Id == message.ReplyId);
 
 					if (reply != null) {
-						var replyPostedBy = AccountRepository.FirstOrDefault(item => item.Id == reply.PostedById);
+						var replyPostedBy = users.FirstOrDefault(item => item.Id == reply.PostedById);
 
 						if (string.IsNullOrEmpty(reply.ShortPreview)) {
 							reply.ShortPreview = "No preview";
@@ -123,7 +126,7 @@ namespace Forum.Repositories {
 
 				message.Thoughts = thoughts.Where(item => item.MessageId == message.Id).ToList();
 
-				var postedBy = AccountRepository.FirstOrDefault(item => item.Id == message.PostedById);
+				var postedBy = users.FirstOrDefault(item => item.Id == message.PostedById);
 
 				if (!(postedBy is null)) {
 					message.PostedByAvatarPath = postedBy.AvatarPath;
@@ -198,7 +201,7 @@ namespace Forum.Repositories {
 			return serviceResponse;
 		}
 
-		public List<ItemModels.MessagePreview> GetPreviews(int boardId, int page, int unread) {
+		public async Task<List<ItemModels.MessagePreview>> GetPreviews(int boardId, int page, int unread) {
 			var participation = new List<DataModels.Participant>();
 			var historyTimeLimit = DateTime.Now.AddDays(-14);
 
@@ -206,7 +209,7 @@ namespace Forum.Repositories {
 				participation = DbContext.Participants.Where(r => r.UserId == UserContext.ApplicationUser.Id).ToList();
 			}
 
-			var sortedMessageIds = GetIndexIds(boardId, page, unread, historyTimeLimit, participation);
+			var sortedMessageIds = await GetIndexIds(boardId, page, unread, historyTimeLimit, participation);
 
 			var messageQuery = from message in DbContext.Messages
 							   where sortedMessageIds.Contains(message.Id)
@@ -223,13 +226,15 @@ namespace Forum.Repositories {
 							   };
 
 			var messages = messageQuery.ToList();
+			var users = await AccountRepository.Records();
+			var pins = await PinRepository.Records();
 
 			var messagePreviews = new List<ItemModels.MessagePreview>();
 			var today = DateTime.Now.Date;
 
 			foreach (var messageId in sortedMessageIds) {
 				var message = messages.First(item => item.Id == messageId);
-				var postedBy = AccountRepository.First(r => r.Id == message.PostedById);
+				var postedBy = users.First(r => r.Id == message.PostedById);
 
 				var messagePreview = new ItemModels.MessagePreview {
 					Id = message.Id,
@@ -239,7 +244,7 @@ namespace Forum.Repositories {
 					Pages = Convert.ToInt32(Math.Ceiling(1.0 * message.ReplyCount / UserContext.ApplicationUser.MessagesPerPage)),
 					LastReplyId = message.Id,
 					Popular = message.ReplyCount > UserContext.ApplicationUser.PopularityLimit,
-					Pinned = PinRepository.Any(item => item.MessageId == message.Id),
+					Pinned = pins.Any(item => item.MessageId == message.Id),
 					TimePosted = message.TimePosted,
 					PostedById = message.PostedById,
 					PostedByName = postedBy.DisplayName,
@@ -258,7 +263,7 @@ namespace Forum.Repositories {
 											}).FirstOrDefault();
 
 					if (lastReply != null) {
-						var lastReplyBy = AccountRepository.First(r => r.Id == message.LastReplyById);
+						var lastReplyBy = users.First(r => r.Id == message.LastReplyById);
 
 						messagePreview.LastReplyId = message.LastReplyId;
 						messagePreview.LastReplyPreview = lastReply.ShortPreview;
@@ -278,12 +283,12 @@ namespace Forum.Repositories {
 			return messagePreviews;
 		}
 
-		public List<int> GetIndexIds(int boardId, int page, int unreadFilter, DateTime historyTimeLimit, List<DataModels.Participant> participation) {
+		public async Task<List<int>> GetIndexIds(int boardId, int page, int unreadFilter, DateTime historyTimeLimit, List<DataModels.Participant> participation) {
 			var take = UserContext.ApplicationUser.TopicsPerPage;
 			var skip = (page - 1) * take;
 
-			var forbiddenBoardIdsQuery = from role in RoleRepository.SiteRoles
-										 join board in RoleRepository.BoardRoles on role.Id equals board.RoleId
+			var forbiddenBoardIdsQuery = from role in await RoleRepository.SiteRoles()
+										 join board in await RoleRepository.BoardRoles() on role.Id equals board.RoleId
 										 where !UserContext.Roles.Contains(role.Id)
 										 select board.BoardId;
 
@@ -311,7 +316,8 @@ namespace Forum.Repositories {
 				messageQuery = messageQuery.Where(m => m.LastReplyPosted > historyTimeLimit);
 			}
 
-			var pinnedTopicIds = PinRepository.Select(item => item.MessageId).ToList();
+			var pins = await PinRepository.Records();
+			var pinnedTopicIds = pins.Select(item => item.MessageId).ToList();
 
 			var sortedMessageQuery = from message in messageQuery
 									 let pinned = pinnedTopicIds.Contains(message.Id)
@@ -480,14 +486,14 @@ namespace Forum.Repositories {
 			};
 		}
 
-		public void Toggle(InputModels.ToggleBoardInput input) {
-			var messageRecord = DbContext.Messages.Find(input.MessageId);
+		public async Task Toggle(InputModels.ToggleBoardInput input) {
+			var messageRecord = await DbContext.Messages.FindAsync(input.MessageId);
 
 			if (messageRecord is null) {
 				throw new HttpNotFoundError();
 			}
 
-			if (!BoardRepository.Any(r => r.Id == input.BoardId)) {
+			if (!(await BoardRepository.Records()).Any(r => r.Id == input.BoardId)) {
 				throw new HttpNotFoundError();
 			}
 
@@ -499,7 +505,7 @@ namespace Forum.Repositories {
 
 			var boardId = input.BoardId;
 
-			var existingRecord = DbContext.MessageBoards.FirstOrDefault(p => p.MessageId == messageId && p.BoardId == boardId);
+			var existingRecord = await DbContext.MessageBoards.FirstOrDefaultAsync(p => p.MessageId == messageId && p.BoardId == boardId);
 
 			if (existingRecord is null) {
 				var messageBoardRecord = new DataModels.MessageBoard {
@@ -514,7 +520,7 @@ namespace Forum.Repositories {
 				DbContext.MessageBoards.Remove(existingRecord);
 			}
 
-			DbContext.SaveChanges();
+			await DbContext.SaveChangesAsync();
 		}
 
 		public void MarkRead(int topicId, DateTime latestMessageTime, List<int> pageMessageIds) {

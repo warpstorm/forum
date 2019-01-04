@@ -21,23 +21,19 @@ namespace Forum.Controllers {
 
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
-		public IActionResult Index() {
-			var viewModel = QuoteRepository.Index();
-			return ForumViewResult.ViewResult(this, viewModel);
+		public async Task<IActionResult> Index() {
+			var viewModel = await QuoteRepository.Index();
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpGet]
-		public IActionResult Create(int id) {
+		public async Task<IActionResult> Create(int id) {
 			if (ModelState.IsValid) {
-				var serviceResponse = QuoteRepository.Create(id);
-				return ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				var serviceResponse = await QuoteRepository.Create(id);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse);
 			}
 
-			return FailureCallback();
-
-			IActionResult FailureCallback() {
-				return ForumViewResult.RedirectToReferrer(this);
-			}
+			return ForumViewResult.RedirectToReferrer(this);
 		}
 
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
@@ -45,29 +41,21 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> Edit(InputModels.QuotesInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await QuoteRepository.Edit(input);
-				return ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse);
 			}
 
-			return FailureCallback();
-
-			IActionResult FailureCallback() {
-				return ForumViewResult.RedirectToReferrer(this);
-			}
+			return ForumViewResult.RedirectToReferrer(this);
 		}
 
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
-		public IActionResult Delete(int id) {
+		public async Task<IActionResult> Delete(int id) {
 			if (ModelState.IsValid) {
-				var serviceResponse = QuoteRepository.Delete(id);
-				return ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				var serviceResponse = await QuoteRepository.Delete(id);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse);
 			}
 
-			return FailureCallback();
-
-			IActionResult FailureCallback() {
-				return ForumViewResult.RedirectToReferrer(this);
-			}
+			return ForumViewResult.RedirectToReferrer(this);
 		}
 	}
 }

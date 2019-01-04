@@ -27,10 +27,10 @@ namespace Forum.Controllers {
 		}
 
 		[HttpGet]
-		public IActionResult Index() {
+		public async Task<IActionResult> Index() {
 			var viewModel = new ViewModels.IndexPage();
 
-			foreach (var smiley in SmileyRepository) {
+			foreach (var smiley in await SmileyRepository.Records()) {
 				var sortColumn = smiley.SortOrder / 1000;
 				var sortRow = smiley.SortOrder % 1000;
 
@@ -44,13 +44,13 @@ namespace Forum.Controllers {
 				});
 			}
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpGet]
-		public IActionResult Create() {
+		public async Task<IActionResult> Create() {
 			var viewModel = new ViewModels.CreatePage();
-			return ForumViewResult.ViewResult(this, viewModel);
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpPost]
@@ -59,28 +59,28 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> Create(CreateSmileyInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await SmileyRepository.Create(input);
-				return ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
 			}
 
-			return FailureCallback();
+			return await FailureCallback();
 
-			IActionResult FailureCallback() {
+			async Task<IActionResult> FailureCallback() {
 				var viewModel = new ViewModels.CreatePage {
 					Code = input.Code,
 					Thought = input.Thought
 				};
 
-				return ForumViewResult.ViewResult(this, viewModel);
+				return await ForumViewResult.ViewResult(this, viewModel);
 			}
 		}
 
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		[PreventRapidRequests]
-		public IActionResult Edit(EditSmileysInput input) {
+		public async Task<IActionResult> Edit(EditSmileysInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = SmileyRepository.Update(input);
-				return ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, failSync: FailureCallback);
 			}
 
 			return FailureCallback();
@@ -94,14 +94,10 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> Delete(int id) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await SmileyRepository.Delete(id);
-				return ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse);
 			}
 
-			return FailureCallback();
-
-			IActionResult FailureCallback() {
-				return ForumViewResult.RedirectToReferrer(this);
-			}
+			return ForumViewResult.RedirectToReferrer(this);
 		}
 	}
 }

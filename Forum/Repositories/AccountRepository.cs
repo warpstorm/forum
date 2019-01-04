@@ -2,6 +2,7 @@
 using Forum.Controllers;
 using Forum.Errors;
 using Forum.Extensions;
+using Forum.Interfaces.Models;
 using Forum.Plugins.EmailSender;
 using Forum.Plugins.ImageStore;
 using Microsoft.AspNetCore.Http;
@@ -24,8 +25,16 @@ namespace Forum.Repositories {
 	using ServiceModels = Models.ServiceModels;
 	using ViewModels = Models.ViewModels;
 
-	public class AccountRepository : Repository<DataModels.ApplicationUser> {
-		public bool IsAuthenticated => UserContext.IsAuthenticated;
+	public class AccountRepository : IRepository<DataModels.ApplicationUser> {
+		public async Task<List<DataModels.ApplicationUser>> Records() {
+			if (_Records is null) {
+				var records = await DbContext.Users.ToListAsync();
+				_Records = records.OrderBy(r => r.DisplayName).ToList();
+			}
+
+			return _Records;
+		}
+		List<DataModels.ApplicationUser> _Records;
 
 		ApplicationDbContext DbContext { get; }
 		UserContext UserContext { get; }
@@ -35,6 +44,7 @@ namespace Forum.Repositories {
 		IUrlHelper UrlHelper { get; }
 		IEmailSender EmailSender { get; }
 		IImageStore ImageStore { get; }
+		ILogger<AccountRepository> Log { get; }
 
 		public AccountRepository(
 			ApplicationDbContext dbContext,
@@ -47,7 +57,7 @@ namespace Forum.Repositories {
 			IEmailSender emailSender,
 			IImageStore imageStore,
 			ILogger<AccountRepository> log
-		) : base(log) {
+		) {
 			DbContext = dbContext;
 			UserContext = userContext;
 
@@ -59,14 +69,16 @@ namespace Forum.Repositories {
 
 			EmailSender = emailSender;
 			ImageStore = imageStore;
+
+			Log = log;
 		}
 
-		public List<ViewModels.Profile.OnlineUser> GetOnlineList() {
+		public async Task<List<ViewModels.Profile.OnlineUser>> GetOnlineList() {
 			// Users are considered "offline" after 5 minutes.
 			var onlineTimeLimit = DateTime.Now.AddMinutes(5);
 			var onlineTodayTimeLimit = DateTime.Now.AddMinutes(-10080);
 
-			var onlineUsersQuery = from user in Records
+			var onlineUsersQuery = from user in await Records()
 								   where user.LastOnline >= onlineTodayTimeLimit
 								   orderby user.LastOnline descending
 								   select new ViewModels.Profile.OnlineUser {
@@ -99,7 +111,7 @@ namespace Forum.Repositories {
 			else if (!result.Succeeded) {
 				Log.LogWarning($"Invalid login attempt for account '{input.Email}'.");
 
-				var user = Records.FirstOrDefault(u => u.Email == input.Email);
+				var user = (await Records()).FirstOrDefault(u => u.Email == input.Email);
 
 				if (user != null && !user.EmailConfirmed) {
 					serviceResponse.Error("Your account isn't activated. Check your email for the link. Check your spam folder if you didn't get the message after 5 minutes.");
@@ -134,7 +146,7 @@ namespace Forum.Repositories {
 
 			CanEdit(userRecord.Id);
 
-			updateDisplayName();
+			await updateDisplayName();
 			updateBirthday();
 			updateFrontPage();
 			updateMessagesPerPage();
@@ -144,7 +156,7 @@ namespace Forum.Repositories {
 			updateShowFavicons();
 
 			if (serviceResponse.Success) {
-				DbContext.SaveChanges();
+				await DbContext.SaveChangesAsync();
 			}
 
 			await updateEmail();
@@ -152,9 +164,9 @@ namespace Forum.Repositories {
 
 			return serviceResponse;
 
-			void updateDisplayName() {
+			async Task updateDisplayName() {
 				if (serviceResponse.Success && input.DisplayName != userRecord.DisplayName) {
-					if (Records.Any(r => r.DisplayName == input.DisplayName)) {
+					if ((await Records()).Any(r => r.DisplayName == input.DisplayName)) {
 						var message = $"The display name '{input.DisplayName}' is already taken.";
 						serviceResponse.Error(message);
 						Log.LogWarning(message);
@@ -269,7 +281,7 @@ namespace Forum.Repositories {
 								await EmailSender.SendEmailConfirmationAsync(input.NewEmail, callbackUrl);
 
 								if (userRecord.Id == UserContext.ApplicationUser.Id) {
-									SignOut();
+									await SignOut();
 								}
 							}
 							else {
@@ -302,7 +314,7 @@ namespace Forum.Repositories {
 					}
 					else if (userRecord.Id == UserContext.ApplicationUser.Id) {
 						Log.LogInformation($"Password was modified by '{UserContext.ApplicationUser.DisplayName}' for '{userRecord.DisplayName}'.");
-						SignOut();
+						await SignOut();
 					}
 				}
 			}
@@ -369,7 +381,7 @@ namespace Forum.Repositories {
 				Log.LogWarning(message);
 			}
 
-			if (Records.Any(r => r.DisplayName == input.DisplayName)) {
+			if ((await Records()).Any(r => r.DisplayName == input.DisplayName)) {
 				var message = $"The display name '{input.DisplayName}' is already taken.";
 				serviceResponse.Error(message);
 				Log.LogWarning(message);
@@ -453,7 +465,7 @@ namespace Forum.Repositories {
 				}
 			}
 
-			SignOut();
+			await SignOut();
 
 			return serviceResponse;
 		}
@@ -502,8 +514,8 @@ namespace Forum.Repositories {
 		}
 
 		public async Task MergeAccounts(string sourceId, string targetId, bool eraseContent) {
-			var sourceAccount = First(item => item.Id == sourceId);
-			var targetAccount = First(item => item.Id == targetId);
+			var sourceAccount = (await Records()).First(item => item.Id == sourceId);
+			var targetAccount = (await Records()).First(item => item.Id == targetId);
 
 			var updateTasks = new List<Task>();
 
@@ -570,10 +582,10 @@ namespace Forum.Repositories {
 			throw new HttpForbiddenError();
 		}
 
-		public void SignOut() {
+		public async Task SignOut() {
 			HttpContextAccessor.HttpContext.Session.Remove(Constants.InternalKeys.UserId);
 
-			Task.WaitAll(new[] {
+			await Task.WhenAll(new[] {
 				HttpContextAccessor.HttpContext.Session.CommitAsync(),
 				SignInManager.SignOutAsync()
 			});
@@ -581,6 +593,5 @@ namespace Forum.Repositories {
 
 		public string EmailConfirmationLink(string userId, string code) => UrlHelper.AbsoluteAction(nameof(Account.ConfirmEmail), nameof(Account), new { userId, code });
 		public string ResetPasswordCallbackLink(string userId, string code) => UrlHelper.AbsoluteAction(nameof(Account.ResetPassword), nameof(Account), new { userId, code });
-		protected override List<DataModels.ApplicationUser> GetRecords() => DbContext.Users.ToList().OrderBy(u => u.DisplayName).ToList();
 	}
 }

@@ -1,5 +1,7 @@
 ﻿using Forum.Contexts;
+using Forum.Interfaces.Models;
 using Forum.Plugins.ImageStore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.IO;
@@ -13,7 +15,17 @@ namespace Forum.Repositories {
 	using ServiceModels = Models.ServiceModels;
 	using ViewModels = Models.ViewModels.Smileys;
 
-	public class SmileyRepository : Repository<DataModels.Smiley> {
+	public class SmileyRepository : IRepository<DataModels.Smiley> {
+		public async Task<List<DataModels.Smiley>> Records() {
+			if (_Records is null) {
+				var records = await DbContext.Smileys.ToListAsync();
+				_Records = records.Where(r => r.Code != null).OrderBy(s => s.SortOrder).ToList();
+			}
+
+			return _Records;
+		}
+		List<DataModels.Smiley> _Records;
+
 		ApplicationDbContext DbContext { get; }
 		IImageStore ImageStore { get; }
 
@@ -21,19 +33,19 @@ namespace Forum.Repositories {
 			ApplicationDbContext dbContext,
 			IImageStore imageStore,
 			ILogger<SmileyRepository> log
-		) : base(log) {
+		) {
 			DbContext = dbContext;
 			ImageStore = imageStore;
 		}
 
-		public List<List<ViewModels.IndexItem>> GetSelectorList() {
+		public async Task<List<List<ViewModels.IndexItem>>> GetSelectorList() {
 			var results = new List<List<ViewModels.IndexItem>>();
 
 			var currentColumn = -1;
 
 			List<ViewModels.IndexItem> currentColumnList = null;
 
-			foreach (var smiley in Records) {
+			foreach (var smiley in await Records()) {
 				var sortColumn = smiley.SortOrder / 1000;
 				var sortRow = smiley.SortOrder % 1000;
 
@@ -193,7 +205,5 @@ namespace Forum.Repositories {
 			serviceResponse.Message = $"The smiley was deleted.";
 			return serviceResponse;
 		}
-
-		protected override List<DataModels.Smiley> GetRecords() => DbContext.Smileys.Where(s => s.Code != null).OrderBy(s => s.SortOrder).ToList();
 	}
 }

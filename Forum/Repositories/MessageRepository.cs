@@ -112,7 +112,7 @@ namespace Forum.Repositories {
 			}
 
 			foreach (var selectedBoard in input.SelectedBoards) {
-				var board = BoardRepository.FirstOrDefault(item => item.Id == selectedBoard);
+				var board = (await BoardRepository.Records()).FirstOrDefault(item => item.Id == selectedBoard);
 
 				if (board != null) {
 					DbContext.MessageBoards.Add(new DataModels.MessageBoard {
@@ -342,11 +342,11 @@ namespace Forum.Repositories {
 			InputModels.ProcessedMessageInput processedMessage = null;
 
 			try {
-				processedMessage = PreProcessMessageInput(messageBody);
+				processedMessage = await PreProcessMessageInput(messageBody);
 				ParseBBC(processedMessage);
-				ProcessSmileys(processedMessage);
+				await ProcessSmileys(processedMessage);
 				await ProcessMessageBodyUrls(processedMessage);
-				FindMentionedUsers(processedMessage);
+				await FindMentionedUsers(processedMessage);
 				PostProcessMessageInput(processedMessage);
 			}
 			catch (ArgumentException e) {
@@ -364,7 +364,7 @@ namespace Forum.Repositories {
 		/// <summary>
 		/// Some minor housekeeping on the message before we get into the heavy lifting.
 		/// </summary>
-		public InputModels.ProcessedMessageInput PreProcessMessageInput(string messageBody) {
+		public async Task<InputModels.ProcessedMessageInput> PreProcessMessageInput(string messageBody) {
 			var processedMessageInput = new InputModels.ProcessedMessageInput {
 				OriginalBody = messageBody ?? string.Empty,
 				DisplayBody = messageBody ?? string.Empty,
@@ -377,9 +377,11 @@ namespace Forum.Repositories {
 				throw new ArgumentException("Message body is empty.");
 			}
 
+			var smileys = await SmileyRepository.Records();
+
 			// Ensures the smileys are safe from other HTML processing.
-			for (var i = 0; i < SmileyRepository.Count(); i++) {
-				var pattern = $@"(^|[\r\n\s]){Regex.Escape(SmileyRepository[i].Code)}(?=$|[\r\n\s])";
+			for (var i = 0; i < smileys.Count(); i++) {
+				var pattern = $@"(^|[\r\n\s]){Regex.Escape(smileys[i].Code)}(?=$|[\r\n\s])";
 				var replacement = $"$1SMILEY_{i}_INDEX";
 				processedMessageInput.DisplayBody = Regex.Replace(processedMessageInput.DisplayBody, pattern, replacement, RegexOptions.Singleline);
 			}
@@ -438,10 +440,12 @@ namespace Forum.Repositories {
 			processedMessageInput.DisplayBody = displayBody;
 		}
 
-		public void ProcessSmileys(InputModels.ProcessedMessageInput processedMessageInput) {
-			for (var i = 0; i < SmileyRepository.Count(); i++) {
+		public async Task ProcessSmileys(InputModels.ProcessedMessageInput processedMessageInput) {
+			var smileys = await SmileyRepository.Records();
+
+			for (var i = 0; i < smileys.Count(); i++) {
 				var pattern = $@"SMILEY_{i}_INDEX";
-				var replacement = $"<img src='{SmileyRepository[i].Path}' />";
+				var replacement = $"<img src='{smileys[i].Path}' />";
 				processedMessageInput.DisplayBody = Regex.Replace(processedMessageInput.DisplayBody, pattern, replacement);
 			}
 		}
@@ -687,7 +691,7 @@ namespace Forum.Repositories {
 		/// <summary>
 		/// Searches a post for references to other users
 		/// </summary>
-		public void FindMentionedUsers(InputModels.ProcessedMessageInput processedMessageInput) {
+		public async Task FindMentionedUsers(InputModels.ProcessedMessageInput processedMessageInput) {
 			var regexUsers = new Regex(@"@(\S+)");
 
 			var matches = 0;
@@ -702,11 +706,13 @@ namespace Forum.Repositories {
 
 				var matchedTag = regexMatch.Groups[1].Value;
 
-				var user = AccountRepository.FirstOrDefault(u => u.DisplayName.ToLower() == matchedTag.ToLower());
+				var users = await AccountRepository.Records();
+
+				var user = users.FirstOrDefault(u => u.DisplayName.ToLower() == matchedTag.ToLower());
 
 				// try to guess what they meant
 				if (user is null) {
-					user = AccountRepository.FirstOrDefault(u => u.UserName.ToLower().Contains(matchedTag.ToLower()));
+					user = users.FirstOrDefault(u => u.UserName.ToLower().Contains(matchedTag.ToLower()));
 				}
 
 				if (user != null) {
