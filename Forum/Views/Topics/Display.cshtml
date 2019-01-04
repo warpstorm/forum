@@ -82,7 +82,7 @@
 
 <div id="message-list">
 	@for (var i = 0; i < Model.Messages.Count(); i++) {
-		<partial name="_DisplayItem" for="@Model.Messages[i]" />
+		<partial name="../Messages/_DisplayMessage" for="@Model.Messages[i]" />
 	}
 </div>
 

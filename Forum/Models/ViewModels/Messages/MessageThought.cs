@@ -1,4 +1,4 @@
-﻿namespace Forum.Models.ViewModels.Topics.Items {
+﻿namespace Forum.Models.ViewModels.Messages {
 	public class MessageThought {
 		public int SmileyId { get; set; }
 		public string MessageId { get; set; }

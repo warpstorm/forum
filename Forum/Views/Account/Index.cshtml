@@ -11,7 +11,7 @@
 		<tr>
 			@if (item.CanManage) {
 				<td class="pad">
-					<p><a asp-controller="@nameof(Account)" asp-action="@nameof(Account.Details)" asp-route-id="@item.Id">@item.DisplayName</a></p>
+					<p><a asp-controller="@nameof(Profile)" asp-action="@nameof(Profile.History)" asp-route-id="@item.Id">@item.DisplayName</a></p>
 					<p class="font-small subdued-text">@item.Email</p>
 				</td>
 				<td class="pad">

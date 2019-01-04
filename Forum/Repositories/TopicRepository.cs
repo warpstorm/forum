@@ -55,93 +55,6 @@ namespace Forum.Repositories {
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
-		/// <summary>
-		/// Builds a collection of Message objects. The message ids should already have been filtered by permissions.
-		/// </summary>
-		public async Task<List<ItemModels.Message>> GetMessages(List<int> messageIds) {
-			var thoughtQuery = from mt in DbContext.MessageThoughts
-							   where messageIds.Contains(mt.MessageId)
-							   select new ItemModels.MessageThought {
-								   MessageId = mt.MessageId.ToString(),
-								   UserId = mt.UserId,
-								   SmileyId = mt.SmileyId,
-							   };
-
-			var thoughts = thoughtQuery.ToList();
-			var smileys = await SmileyRepository.Records();
-			var users = await AccountRepository.Records();
-
-			foreach (var item in thoughts) {
-				var smiley = smileys.FirstOrDefault(r => r.Id == item.SmileyId);
-				var user = users.FirstOrDefault(r => r.Id == item.UserId);
-
-				item.Path = smiley.Path;
-				item.Thought = smiley.Thought.Replace("{user}", user.DisplayName);
-			}
-
-			var messageQuery = from message in DbContext.Messages
-							   where messageIds.Contains(message.Id)
-							   select new ItemModels.Message {
-								   Id = message.Id.ToString(),
-								   ParentId = message.ParentId,
-								   ReplyId = message.ReplyId,
-								   Body = message.DisplayBody,
-								   Cards = message.Cards,
-								   OriginalBody = message.OriginalBody,
-								   PostedById = message.PostedById,
-								   TimePosted = message.TimePosted,
-								   TimeEdited = message.TimeEdited,
-								   RecordTime = message.TimeEdited,
-								   Processed = message.Processed
-							   };
-
-			var messages = messageQuery.ToList();
-
-			foreach (var message in messages) {
-				if (message.ReplyId > 0) {
-					var reply = DbContext.Messages.FirstOrDefault(item => item.Id == message.ReplyId);
-
-					if (reply != null) {
-						var replyPostedBy = users.FirstOrDefault(item => item.Id == reply.PostedById);
-
-						if (string.IsNullOrEmpty(reply.ShortPreview)) {
-							reply.ShortPreview = "No preview";
-						}
-
-						message.ReplyBody = reply.DisplayBody;
-						message.ReplyPreview = reply.ShortPreview;
-						message.ReplyPostedBy = replyPostedBy?.DisplayName;
-					}
-				}
-
-				message.CanEdit = UserContext.IsAdmin || (UserContext.IsAuthenticated && UserContext.ApplicationUser.Id == message.PostedById);
-				message.CanDelete = UserContext.IsAdmin || (UserContext.IsAuthenticated && UserContext.ApplicationUser.Id == message.PostedById);
-				message.CanReply = UserContext.IsAuthenticated;
-				message.CanThought = UserContext.IsAuthenticated;
-				message.CanQuote = UserContext.IsAuthenticated;
-
-				message.ReplyForm = new ItemModels.ReplyForm {
-					Id = message.Id,
-				};
-
-				message.Thoughts = thoughts.Where(item => item.MessageId == message.Id).ToList();
-
-				var postedBy = users.FirstOrDefault(item => item.Id == message.PostedById);
-
-				if (!(postedBy is null)) {
-					message.PostedByAvatarPath = postedBy.AvatarPath;
-					message.PostedByName = postedBy.DisplayName;
-					message.Poseys = postedBy.Poseys;
-
-					if (DateTime.Now.Date == new DateTime(DateTime.Now.Year, postedBy.Birthday.Month, postedBy.Birthday.Day).Date) {
-						message.Birthday = true;
-					}
-				}
-			}
-
-			return messages;
-		}
-
 		public ServiceModels.ServiceResponse GetLatest(int messageId) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
@@ -287,13 +200,6 @@ namespace Forum.Repositories {
 			var take = UserContext.ApplicationUser.TopicsPerPage;
 			var skip = (page - 1) * take;
 
-			var forbiddenBoardIdsQuery = from role in await RoleRepository.SiteRoles()
-										 join board in await RoleRepository.BoardRoles() on role.Id equals board.RoleId
-										 where !UserContext.Roles.Contains(role.Id)
-										 select board.BoardId;
-
-			var forbiddenBoardIds = forbiddenBoardIdsQuery.ToList();
-
 			var messageQuery = from message in DbContext.Messages
 							   where message.ParentId == 0
 							   select new {
@@ -333,7 +239,7 @@ namespace Forum.Repositories {
 			var skipped = 0;
 
 			foreach (var message in sortedMessageQuery) {
-				if (IsAccessDenied(message.Id, forbiddenBoardIds)) {
+				if (!await BoardRepository.CanAccess(message.Id)) {
 					if (attempts++ > 100) {
 						break;
 					}
@@ -364,17 +270,7 @@ namespace Forum.Repositories {
 
 			return messageIds;
 		}
-
-		public bool IsAccessDenied(int messageId, List<int> forbiddenBoardIds) {
-			if (UserContext.IsAdmin) {
-				return false;
-			}
-
-			var messageBoards = DbContext.MessageBoards.Where(mb => mb.MessageId == messageId).Select(mb => mb.BoardId);
-
-			return messageBoards.Any() && messageBoards.Intersect(forbiddenBoardIds).Any();
-		}
-
+		
 		public int GetUnreadLevel(int messageId, DateTime lastMessageTime, List<DataModels.Participant> participation) {
 			var unread = 1;
 

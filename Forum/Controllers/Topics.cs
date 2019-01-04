@@ -213,7 +213,7 @@ namespace Forum.Controllers {
 			await LoadTopicBoards(topicId);
 
 			var messageIds = new List<int> { id };
-			var messages = await TopicRepository.GetMessages(messageIds);
+			var messages = await MessageRepository.GetMessages(messageIds);
 
 			ViewData[Constants.InternalKeys.Layout] = "_LayoutEmpty";
 
@@ -247,7 +247,7 @@ namespace Forum.Controllers {
 			await LoadTopicBoards(topicId);
 
 			var messageIds = MessageRepository.GetMessageIds(topicId, latestTime);
-			var messages = await TopicRepository.GetMessages(messageIds);
+			var messages = await MessageRepository.GetMessages(messageIds);
 
 			var latestMessageTime = messages.Max(r => r.RecordTime);
 			TopicRepository.MarkRead(topicId, latestMessageTime, messageIds);
@@ -403,7 +403,7 @@ namespace Forum.Controllers {
 				DbContext.Update(record);
 				DbContext.SaveChanges();
 
-				var messages = await TopicRepository.GetMessages(pageMessageIds);
+				var messages = await MessageRepository.GetMessages(pageMessageIds);
 
 				if (string.IsNullOrEmpty(record.ShortPreview)) {
 					record.ShortPreview = "No subject";

@@ -197,7 +197,7 @@ namespace Forum.Controllers {
 
 			return FailureCallback();
 
-			IActionResult FailureCallback() => RedirectToAction(nameof(Profile.Details), nameof(Profile));
+			IActionResult FailureCallback() => RedirectToAction(nameof(Account.Details), nameof(Account));
 		}
 
 		[HttpGet]

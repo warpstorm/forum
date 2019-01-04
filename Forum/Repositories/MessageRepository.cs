@@ -25,12 +25,14 @@ namespace Forum.Repositories {
 	using HubModels = Models.HubModels;
 	using InputModels = Models.InputModels;
 	using ServiceModels = Models.ServiceModels;
+	using ViewModels = Models.ViewModels;
 
 	public class MessageRepository {
 		ApplicationDbContext DbContext { get; }
 		UserContext UserContext { get; }
 		AccountRepository AccountRepository { get; }
 		BoardRepository BoardRepository { get; }
+		RoleRepository RoleRepository { get; }
 		SmileyRepository SmileyRepository { get; }
 		IHubContext<ForumHub> ForumHub { get; }
 		IImageStore ImageStore { get; }
@@ -45,6 +47,7 @@ namespace Forum.Repositories {
 			UserContext userContext,
 			AccountRepository accountRepository,
 			BoardRepository boardRepository,
+			RoleRepository roleRepository,
 			SmileyRepository smileyRepository,
 			IHubContext<ForumHub> forumHub,
 			IActionContextAccessor actionContextAccessor,
@@ -59,6 +62,7 @@ namespace Forum.Repositories {
 			UserContext = userContext;
 			AccountRepository = accountRepository;
 			BoardRepository = boardRepository;
+			RoleRepository = roleRepository;
 			SmileyRepository = smileyRepository;
 			ForumHub = forumHub;
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
@@ -1116,6 +1120,129 @@ namespace Forum.Repositories {
 			}
 
 			DbContext.SaveChanges();
+		}
+
+		/// <summary>
+		/// Builds a collection of Message objects. The message ids should already have been filtered by permissions.
+		/// </summary>
+		public async Task<List<ViewModels.Messages.DisplayMessage>> GetMessages(List<int> messageIds) {
+			var thoughtQuery = from mt in DbContext.MessageThoughts
+							   where messageIds.Contains(mt.MessageId)
+							   select new ViewModels.Messages.MessageThought {
+								   MessageId = mt.MessageId.ToString(),
+								   UserId = mt.UserId,
+								   SmileyId = mt.SmileyId,
+							   };
+
+			var thoughts = thoughtQuery.ToList();
+			var smileys = await SmileyRepository.Records();
+			var users = await AccountRepository.Records();
+
+			foreach (var item in thoughts) {
+				var smiley = smileys.FirstOrDefault(r => r.Id == item.SmileyId);
+				var user = users.FirstOrDefault(r => r.Id == item.UserId);
+
+				item.Path = smiley.Path;
+				item.Thought = smiley.Thought.Replace("{user}", user.DisplayName);
+			}
+
+			var messageQuery = from message in DbContext.Messages
+							   where messageIds.Contains(message.Id)
+							   select new ViewModels.Messages.DisplayMessage {
+								   Id = message.Id.ToString(),
+								   ParentId = message.ParentId,
+								   ReplyId = message.ReplyId,
+								   Body = message.DisplayBody,
+								   Cards = message.Cards,
+								   OriginalBody = message.OriginalBody,
+								   PostedById = message.PostedById,
+								   TimePosted = message.TimePosted,
+								   TimeEdited = message.TimeEdited,
+								   RecordTime = message.TimeEdited,
+								   Processed = message.Processed
+							   };
+
+			var messages = messageQuery.ToList();
+
+			foreach (var message in messages) {
+				if (message.ReplyId > 0) {
+					var reply = DbContext.Messages.FirstOrDefault(item => item.Id == message.ReplyId);
+
+					if (reply != null) {
+						var replyPostedBy = users.FirstOrDefault(item => item.Id == reply.PostedById);
+
+						if (string.IsNullOrEmpty(reply.ShortPreview)) {
+							reply.ShortPreview = "No preview";
+						}
+
+						message.ReplyBody = reply.DisplayBody;
+						message.ReplyPreview = reply.ShortPreview;
+						message.ReplyPostedBy = replyPostedBy?.DisplayName;
+					}
+				}
+
+				message.CanEdit = UserContext.IsAdmin || (UserContext.IsAuthenticated && UserContext.ApplicationUser.Id == message.PostedById);
+				message.CanDelete = UserContext.IsAdmin || (UserContext.IsAuthenticated && UserContext.ApplicationUser.Id == message.PostedById);
+				message.CanReply = UserContext.IsAuthenticated;
+				message.CanThought = UserContext.IsAuthenticated;
+				message.CanQuote = UserContext.IsAuthenticated;
+
+				message.ReplyForm = new ViewModels.Topics.Items.ReplyForm {
+					Id = message.Id,
+				};
+
+				message.Thoughts = thoughts.Where(item => item.MessageId == message.Id).ToList();
+
+				var postedBy = users.FirstOrDefault(item => item.Id == message.PostedById);
+
+				if (!(postedBy is null)) {
+					message.PostedByAvatarPath = postedBy.AvatarPath;
+					message.PostedByName = postedBy.DisplayName;
+					message.Poseys = postedBy.Poseys;
+
+					if (DateTime.Now.Date == new DateTime(DateTime.Now.Year, postedBy.Birthday.Month, postedBy.Birthday.Day).Date) {
+						message.Birthday = true;
+					}
+				}
+			}
+
+			return messages;
+		}
+
+		public async Task<List<ViewModels.Messages.DisplayMessage>> GetUserMessages(string userId, int page) {
+			var take = UserContext.ApplicationUser.MessagesPerPage;
+			var skip = (page - 1) * take;
+
+			var messageIdQuery = from message in DbContext.Messages
+								 where message.PostedById == userId
+								 orderby message.Id descending
+								 select message.Id;
+
+			var messageIds = new List<int>();
+			var attempts = 0;
+			var skipped = 0;
+
+			foreach (var messageId in messageIdQuery) {
+				if (!await BoardRepository.CanAccess(messageId)) {
+					if (attempts++ > 100) {
+						break;
+					}
+
+					continue;
+				}
+
+				if (skipped++ < skip) {
+					continue;
+				}
+
+				messageIds.Add(messageId);
+
+				if (messageIds.Count == take) {
+					break;
+				}
+			}
+
+			return await GetMessages(messageIds);
 		}
 	}
 }

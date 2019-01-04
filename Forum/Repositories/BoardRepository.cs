@@ -504,5 +504,22 @@ namespace Forum.Repositories {
 
 			return serviceResponse;
 		}
+
+		public async Task<bool> CanAccess(int messageId) {
+			if (UserContext.IsAdmin) {
+				return true;
+			}
+
+			var forbiddenBoardIdsQuery = from role in await RoleRepository.SiteRoles()
+										 join board in await RoleRepository.BoardRoles() on role.Id equals board.RoleId
+										 where !UserContext.Roles.Contains(role.Id)
+										 select board.BoardId;
+
+			var forbiddenBoardIds = forbiddenBoardIdsQuery.ToList();
+
+			var messageBoards = await DbContext.MessageBoards.Where(mb => mb.MessageId == messageId).Select(mb => mb.BoardId).ToListAsync();
+
+			return !messageBoards.Any() || !messageBoards.Intersect(forbiddenBoardIds).Any();
+		}
 	}
 }

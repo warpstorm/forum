@@ -1,0 +1,61 @@
+﻿@model Forum.Models.ViewModels.Profile.HistoryPage
+
+@{ 
+	var pageModifier = Model.MorePages ? 1 : 0;
+}
+
+<header id="topic-header" class="content-box pad gap-bottom">
+	<ul class="inline pages">
+		<li class="hidden pointer unhide-pages more-pages-before">&#8230;</li>
+		@for (var i = 1; i <= Model.CurrentPage + pageModifier; i++) {
+			if (Model.CurrentPage == i) {
+				<li class="small-button highlight page hidden">@i</li>
+			}
+			else {
+				<li class="page hidden"><a asp-controller="@nameof(Profile)" asp-action="@nameof(Profile.History)" asp-route-id="@Model.Id" asp-route-page="@i" class="small-button">@i.ToString()</a></li>
+			}
+		}
+		<li class="hidden pointer unhide-pages more-pages-after">&#8230;</li>
+	</ul>
+</header>
+
+<br class="clear" />
+
+<div id="message-list">
+	@for (var i = 0; i < Model.Messages.Count(); i++) {
+	<partial name="../Messages/_DisplayMessage" for="@Model.Messages[i]" />
+	}
+</div>
+
+<footer>
+	<ul class="inline pages">
+		<li class="hidden pointer unhide-pages more-pages-before">&#8230;</li>
+		@for (var i = 1; i <= Model.CurrentPage + pageModifier; i++) {
+			if (Model.CurrentPage == i) {
+				<li class="small-button highlight page hidden">@i</li>
+			}
+			else {
+				<li class="page hidden"><a asp-controller="@nameof(Profile)" asp-action="@nameof(Profile.History)" asp-route-id="@Model.Id" asp-route-page="@i" class="small-button">@i.ToString()</a></li>
+			}
+		}
+		<li class="hidden pointer unhide-pages more-pages-after">&#8230;</li>
+	</ul>
+</footer>
+
+@{ ViewData["Title"] = $"{@Model.DisplayName}'s message history"; }
+@section Header {@ViewData["Title"]}
+
+@section scripts {
+	<script>
+		window.pageActions = 'profile-history';
+		window.currentPage = @Model.CurrentPage;
+		window.totalPages = @Model.CurrentPage;
+		window.showFavicons = @Model.ShowFavicons.ToString().ToLower();
+		window.togglePath = '@Url.Action(nameof(Topics.ToggleBoard), nameof(Topics), new { MessageId = Model.Id })';
+		window.messages = [@(string.Join(", ", Model.Messages.Select(b => b.Id)))];
+	</script>
+}
+
+@section styles {
+	<link rel="stylesheet" href="~/styles/topic-display.css" asp-append-version="true" />
+}

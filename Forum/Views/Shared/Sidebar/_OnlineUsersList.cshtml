@@ -5,7 +5,7 @@
 	<ul id="whos-online">
 		<li class="font-small subdued-text"><a asp-controller="@nameof(Account)" asp-action="@nameof(Account.Index)">View All Users</a></li>
 		@foreach (var onlineUser in Model) {
-			<li class="font-small subdued-text nowrap small-pad-top">
+			<li class="font-small subdued-text nowrap small-pad-top" clickable-link-parent>
 				@if (onlineUser.Online) {
 					<span class="whos-online-chiclet chiclet chiclet-green" time="@onlineUser.LastOnline.ToHtmlLocalTimeString()"></span>
 				}
@@ -13,7 +13,7 @@
 					@if (onlineUser.IsBirthday) {
 						<img src="~/images/hbd.png" alt="Happy birthday!" title="Happy birthday!" />
 					}
-					@onlineUser.Name
+					<a asp-controller="@nameof(Profile)" asp-action="@nameof(Profile.History)">@onlineUser.Name</a>
 				</span>
 				<passed-time class="font-tiny dark-text" time="@onlineUser.LastOnline" />
 			</li>

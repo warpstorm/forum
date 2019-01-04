@@ -16,7 +16,7 @@
 				<span class='small-button pointer'>@UserContext.ApplicationUser.DisplayName</span>
 				<div class='menu-wrapper hidden align-left'>
 					<ul class='drop-down-menu content-box'>
-						<li class='hover-highlight' clickable-link-parent><a asp-controller='@nameof(Profile)' asp-action='@nameof(Profile.Details)'>Profile</a></li>
+						<li class='hover-highlight' clickable-link-parent><a asp-controller='@nameof(Profile)' asp-action='@nameof(Profile.History)'>History</a></li>
 						<li class='hover-highlight' clickable-link-parent><a asp-controller='@nameof(Account)' asp-action='@nameof(Account.Details)'>Account Settings</a></li>
 						<li class='hover-highlight'>
 							<a asp-controller='@nameof(Account)' asp-action='@nameof(Account.Logout)' onclick='return confirm("Are you sure you want to logout?");'>Log off</a>

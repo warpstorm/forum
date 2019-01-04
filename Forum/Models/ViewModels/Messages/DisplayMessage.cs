@@ -2,8 +2,8 @@
 using System;
 using System.Collections.Generic;
 
-namespace Forum.Models.ViewModels.Topics.Items {
-	public class Message {
+namespace Forum.Models.ViewModels.Messages {
+	public class DisplayMessage {
 		public string Body { get; set; }
 		public string Cards { get; set; }
 		public string OriginalBody { get; set; }
