@@ -45,7 +45,7 @@ namespace Forum.Contexts {
 
 			modelBuilder.Entity<ApplicationUser>()
 				.Property(r => r.TopicsPerPage)
-				.HasDefaultValue(15);
+				.HasDefaultValue(7);
 
 			modelBuilder.Entity<BoardRole>()
 				.HasIndex(r => r.BoardId);
