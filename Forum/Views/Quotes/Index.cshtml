@@ -1,7 +1,7 @@
 @model ViewModels.Quotes.EditQuotes
 
 <div class="content-box pad">
-	<div asp-validation-summary="All" class="error hidden"></div>
+	<div asp-validation-summary="All" class="error"></div>
 
 	<form method="post" asp-action="@nameof(Quotes.Edit)">
 		@if (Model.Quotes.Any()) {

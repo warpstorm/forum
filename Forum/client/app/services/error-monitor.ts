@@ -8,10 +8,11 @@
 		};
 
 		this.doc.querySelectorAll(".error").forEach(element => {
-			if (element.textContent && element.textContent.trim().length > 0) {
-				console.log(element.textContent);
-				element.classList.remove('hidden');
+			if (!element.textContent || element.textContent.trim().length == 0) {
+				element.classList.add('hidden');
 			}
+
+			element.classList.add('error-stylish');
 
 			observer.observe(element, observerConfig);
 		});

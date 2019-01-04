@@ -8,18 +8,18 @@
 		  asp-action="@nameof(Account.Login)"
 		  asp-route-returnurl="@ViewData["Referrer"]">
 
-		<div asp-validation-summary="All" class="error hidden"></div>
+		<div asp-validation-summary="All" class="error"></div>
 
 		<dl>
 			<dt>Username (email address)</dt>
 			<dd><input asp-for="@Model.Email" /></dd>
-			<dd><span asp-validation-for="@Model.Email" class="error hidden"></span></dd>
+			<dd><span asp-validation-for="@Model.Email" class="error"></span></dd>
 		</dl>
 
 		<dl>
 			<dt>Password</dt>
 			<dd><input asp-for="@Model.Password" /></dd>
-			<dd><span asp-validation-for="@Model.Password" class="error hidden"></span></dd>
+			<dd><span asp-validation-for="@Model.Password" class="error"></span></dd>
 		</dl>
 
 		<dl>

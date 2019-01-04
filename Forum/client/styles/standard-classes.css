@@ -51,23 +51,17 @@
 	box-shadow: #1d2737 0 -2px 8px inset;
 }
 
-.error, .warning {
+.error {
 	font-weight: 600;
+	color: #d01d1d;
+}
+
+.error-stylish {
 	border: 1px solid;
 	border-radius: 2px;
 	padding: 2px 4px;
-}
-
-	.error {
-		color: #d01d1d;
-		background-color: #440000;
-		border-color: #d01d1d;
-	}
-
-.warning {
-	color: #f2dd35;
-	background-color: #494736;
-	border-color: #f2dd35;
+	background-color: #440000;
+	border-color: #d01d1d;
 }
 
 .borderless,

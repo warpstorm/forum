@@ -1,7 +1,7 @@
 @model ViewModels.StrippedUrls.IndexPage
 
 <div class="content-box pad">
-	<div asp-validation-summary="All" class="error hidden"></div>
+	<div asp-validation-summary="All" class="error"></div>
 
 	<form method="post" asp-action="@nameof(StrippedUrls.Index)">
 		<ol>
@@ -12,7 +12,7 @@
 						<input asp-for="@Model.StrippedUrls[i].Url" type="hidden" />
 						<span>@Model.StrippedUrls[i].Url</span>
 						<input asp-for="@Model.StrippedUrls[i].RegexPattern" />
-						<span asp-validation-for="@Model.StrippedUrls[i].RegexPattern" class="error hidden"></span>
+						<span asp-validation-for="@Model.StrippedUrls[i].RegexPattern" class="error"></span>
 					</li>
 				}
 			}

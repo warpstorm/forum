@@ -1,7 +1,7 @@
 ﻿@model ViewModels.Smileys.CreatePage
 
 <div class="content-box pad">
-	<div asp-validation-summary="ModelOnly" class="error hidden"></div>
+	<div asp-validation-summary="ModelOnly" class="error"></div>
 
 	<form method="post" enctype="multipart/form-data"
 		  asp-action="@nameof(Smileys.Create)"
@@ -10,19 +10,19 @@
 		<dl>
 			<dt>Code</dt>
 			<dd><input asp-for="@Model.Code" /></dd>
-			<dd><span asp-validation-for="@Model.Code" class="error hidden"></span></dd>
+			<dd><span asp-validation-for="@Model.Code" class="error"></span></dd>
 		</dl>
 
 		<dl>
 			<dt>Thought</dt>
 			<dd><input asp-for="@Model.Thought" /></dd>
-			<dd><span asp-validation-for="@Model.Thought" class="error hidden"></span></dd>
+			<dd><span asp-validation-for="@Model.Thought" class="error"></span></dd>
 		</dl>
 
 		<dl>
 			<dt>File</dt>
 			<dd><input asp-for="@Model.File" /></dd>
-			<dd><span asp-validation-for="@Model.File" class="error hidden"></span></dd>
+			<dd><span asp-validation-for="@Model.File" class="error"></span></dd>
 		</dl>
 
 		<ul>

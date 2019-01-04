@@ -80,8 +80,6 @@
 
 <br class="clear" />
 
-<div asp-validation-summary="All" class="error hidden"></div>
-
 <div id="message-list">
 	@for (var i = 0; i < Model.Messages.Count(); i++) {
 		<partial name="_DisplayItem" for="@Model.Messages[i]" />
@@ -108,6 +106,7 @@
 @if (Model.TotalPages == Model.CurrentPage) {
 	<p class="gap-top">Reply to Thread:</p>
 	<div class="content-box pad">
+		<div asp-validation-summary="All" class="error"></div>
 		<partial name="_MessageForm" for="@Model.ReplyForm" />
 	</div>
 }
