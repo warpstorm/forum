@@ -1216,17 +1216,20 @@ namespace Forum.Repositories {
 			var take = UserContext.ApplicationUser.MessagesPerPage;
 			var skip = (page - 1) * take;
 
-			var messageIdQuery = from message in DbContext.Messages
+			var messageQuery = from message in DbContext.Messages
 								 where message.PostedById == userId
 								 orderby message.Id descending
-								 select message.Id;
+								 select new {
+									 message.Id,
+									 message.ParentId
+								 };
 
 			var messageIds = new List<int>();
 			var attempts = 0;
 			var skipped = 0;
 
-			foreach (var messageId in messageIdQuery) {
-				if (!await BoardRepository.CanAccess(messageId)) {
+			foreach (var message in messageQuery) {
+				if (!await BoardRepository.CanAccess(message.ParentId > 0 ? message.ParentId : message.Id)) {
 					if (attempts++ > 100) {
 						break;
 					}
@@ -1238,7 +1241,7 @@ namespace Forum.Repositories {
 					continue;
 				}
 
-				messageIds.Add(messageId);
+				messageIds.Add(message.Id);
 
 				if (messageIds.Count == take) {
 					break;
