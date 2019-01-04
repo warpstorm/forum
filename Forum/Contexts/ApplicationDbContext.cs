@@ -70,6 +70,12 @@ namespace Forum.Contexts {
 
 			modelBuilder.Entity<Quote>()
 				.HasIndex(r => r.Approved);
+
+			modelBuilder.Entity<Participant>()
+				.HasIndex(r => r.MessageId );
+
+			modelBuilder.Entity<Participant>()
+				.HasIndex(r => r.UserId);
 		}
 	}
 }

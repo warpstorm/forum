@@ -175,7 +175,7 @@ namespace Forum.Controllers {
 		[HttpGet]
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		public async Task<IActionResult> FinishMerge(int sourceId, int targetId) {
-			var serviceResponse = TopicRepository.Merge(sourceId, targetId);
+			var serviceResponse = await TopicRepository.Merge(sourceId, targetId);
 			return await ForumViewResult.RedirectFromService(this, serviceResponse);
 		}
 

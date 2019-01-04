@@ -119,7 +119,7 @@ namespace Forum.Repositories {
 			var historyTimeLimit = DateTime.Now.AddDays(-14);
 
 			if (UserContext.IsAuthenticated) {
-				participation = DbContext.Participants.Where(r => r.UserId == UserContext.ApplicationUser.Id).ToList();
+				participation = await DbContext.Participants.Where(r => r.UserId == UserContext.ApplicationUser.Id).ToListAsync();
 			}
 
 			var sortedMessageIds = await GetIndexIds(boardId, page, unread, historyTimeLimit, participation);
@@ -138,7 +138,7 @@ namespace Forum.Repositories {
 								   message.LastReplyPosted
 							   };
 
-			var messages = messageQuery.ToList();
+			var messages = await messageQuery.ToListAsync();
 			var users = await AccountRepository.Records();
 			var pins = await PinRepository.Records();
 
@@ -469,7 +469,7 @@ namespace Forum.Repositories {
 			catch (DbUpdateConcurrencyException) { }
 		}
 
-		public ServiceModels.ServiceResponse Merge(int sourceId, int targetId) {
+		public async Task<ServiceModels.ServiceResponse> Merge(int sourceId, int targetId) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			var sourceRecord = DbContext.Messages.FirstOrDefault(item => item.Id == sourceId);
@@ -489,19 +489,19 @@ namespace Forum.Repositories {
 			}
 
 			if (sourceRecord.TimePosted > targetRecord.TimePosted) {
-				Merge(sourceRecord, targetRecord);
+				await Merge(sourceRecord, targetRecord);
 			}
 			else {
-				Merge(targetRecord, sourceRecord);
+				await Merge(targetRecord, sourceRecord);
 			}
 
 			return serviceResponse;
 		}
 
-		public void Merge(DataModels.Message sourceMessage, DataModels.Message targetMessage) {
+		public async Task Merge(DataModels.Message sourceMessage, DataModels.Message targetMessage) {
 			UpdateMessagesParentId(sourceMessage, targetMessage);
 			MessageRepository.RecountRepliesForTopic(targetMessage);
-			RemoveTopicParticipants(sourceMessage, targetMessage);
+			await RemoveTopicParticipants(sourceMessage, targetMessage);
 			MessageRepository.RebuildParticipantsForTopic(targetMessage.Id);
 			RemoveTopicViewlogs(sourceMessage, targetMessage);
 			RemoveTopicPins(sourceMessage);
@@ -519,10 +519,10 @@ namespace Forum.Repositories {
 			DbContext.SaveChanges();
 		}
 
-		public void RemoveTopicParticipants(DataModels.Message sourceMessage, DataModels.Message targetMessage) {
-			var records = DbContext.Participants.Where(item => item.MessageId == sourceMessage.Id).ToList();
+		public async Task RemoveTopicParticipants(DataModels.Message sourceMessage, DataModels.Message targetMessage) {
+			var records = await DbContext.Participants.Where(item => item.MessageId == sourceMessage.Id).ToListAsync();
 			DbContext.RemoveRange(records);
-			DbContext.SaveChanges();
+			await DbContext.SaveChangesAsync();
 		}
 
 		public void RemoveTopicViewlogs(DataModels.Message sourceMessage, DataModels.Message targetMessage) {
