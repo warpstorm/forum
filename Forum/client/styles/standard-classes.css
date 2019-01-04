@@ -51,9 +51,23 @@
 	box-shadow: #1d2737 0 -2px 8px inset;
 }
 
-.error {
-	font-weight: bold;
-	color: #d01d1d;
+.error, .warning {
+	font-weight: 600;
+	border: 1px solid;
+	border-radius: 2px;
+	padding: 2px 4px;
+}
+
+	.error {
+		color: #d01d1d;
+		background-color: #440000;
+		border-color: #d01d1d;
+	}
+
+.warning {
+	color: #f2dd35;
+	background-color: #494736;
+	border-color: #f2dd35;
 }
 
 .borderless,

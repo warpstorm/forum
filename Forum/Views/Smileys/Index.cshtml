@@ -1,7 +1,7 @@
 @model ViewModels.Smileys.IndexPage
 
 <div class="content-box pad">
-	<div asp-validation-summary="All" class="error"></div>
+	<div asp-validation-summary="All" class="error hidden"></div>
 
 	<form method="post" asp-action="@nameof(Smileys.Edit)">
 		@if (Model.Smileys.Any()) {
@@ -28,7 +28,7 @@
 						</td>
 						<td>
 							<input asp-for="@Model.Smileys[i].Code" />
-							<span asp-validation-for="@Model.Smileys[i].Code" class="error"></span>
+							<span asp-validation-for="@Model.Smileys[i].Code" class="error hidden"></span>
 						</td>
 						<td>
 							<input asp-for="@Model.Smileys[i].Thought" class="long-input" />

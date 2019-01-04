@@ -6,14 +6,14 @@
 		<form method="post" enctype="multipart/form-data"
 			  asp-action="@nameof(Account.UpdateAvatar)">
 
-			<div asp-validation-summary="All" class="error"></div>
+			<div asp-validation-summary="All" class="error hidden"></div>
 			<input type="hidden" asp-for="@Model.Id" />
 			<input type="hidden" asp-for="@Model.DisplayName" />
 			@if (!string.IsNullOrEmpty(Model.AvatarPath)) {
 				<p><img src="@Model.AvatarPath" /></p>
 			}
 			<p><input asp-for="@Model.NewAvatar" /></p>
-			<p asp-validation-for="@Model.NewAvatar" class="error"></p>
+			<p asp-validation-for="@Model.NewAvatar" class="error hidden"></p>
 
 			<ul>
 				<li><button>Update Avatar</button></li>
@@ -25,14 +25,14 @@
 		<form method="post"
 			  asp-action="@nameof(Account.Details)">
 
-			<div asp-validation-summary="All" class="error"></div>
+			<div asp-validation-summary="All" class="error hidden"></div>
 
 			<input type="hidden" asp-for="@Model.Id" />
 
 			<dl>
 				<dt>Display Name</dt>
 				<dd><input asp-for="@Model.DisplayName" /></dd>
-				<dd><span asp-validation-for="@Model.DisplayName" class="error"></span></dd>
+				<dd><span asp-validation-for="@Model.DisplayName" class="error hidden"></span></dd>
 			</dl>
 
 			<dl>
@@ -41,7 +41,7 @@
 				@if (!Model.EmailConfirmed) {
 					<dd><a asp-action="@nameof(Account.SendVerificationEmail)" class="button">Send verification email</a></dd>
 				}
-				<dd><span asp-validation-for="@Model.NewEmail" class="error"></span></dd>
+				<dd><span asp-validation-for="@Model.NewEmail" class="error hidden"></span></dd>
 			</dl>
 
 			<dl>
@@ -55,9 +55,9 @@
 					<select asp-for="@Model.BirthdayDay" asp-items="@Model.BirthdayDays"></select>
 				</dd>
 				<dd>
-					<span asp-validation-for="@Model.BirthdayYear" class="error"></span>
-					<span asp-validation-for="@Model.BirthdayMonth" class="error"></span>
-					<span asp-validation-for="@Model.BirthdayDay" class="error"></span>
+					<span asp-validation-for="@Model.BirthdayYear" class="error hidden"></span>
+					<span asp-validation-for="@Model.BirthdayMonth" class="error hidden"></span>
+					<span asp-validation-for="@Model.BirthdayDay" class="error hidden"></span>
 				</dd>
 			</dl>
 
@@ -69,7 +69,7 @@
 				<dd>
 					<select asp-for="@Model.FrontPage" asp-items="@Model.FrontPageOptions"></select>
 				</dd>
-				<dd><span asp-validation-for="@Model.FrontPage" class="error"></span></dd>
+				<dd><span asp-validation-for="@Model.FrontPage" class="error hidden"></span></dd>
 			</dl>
 
 			<dl>
@@ -80,7 +80,7 @@
 				<dd>
 					<input asp-for="@Model.MessagesPerPage" />
 				</dd>
-				<dd><span asp-validation-for="@Model.MessagesPerPage" class="error"></span></dd>
+				<dd><span asp-validation-for="@Model.MessagesPerPage" class="error hidden"></span></dd>
 			</dl>
 
 			<dl>
@@ -91,7 +91,7 @@
 				<dd>
 					<input asp-for="@Model.TopicsPerPage" />
 				</dd>
-				<dd><span asp-validation-for="@Model.TopicsPerPage" class="error"></span></dd>
+				<dd><span asp-validation-for="@Model.TopicsPerPage" class="error hidden"></span></dd>
 			</dl>
 
 			<dl>
@@ -102,7 +102,7 @@
 				<dd>
 					<input asp-for="@Model.PopularityLimit" />
 				</dd>
-				<dd><span asp-validation-for="@Model.PopularityLimit" class="error"></span></dd>
+				<dd><span asp-validation-for="@Model.PopularityLimit" class="error hidden"></span></dd>
 			</dl>
 
 			<dl>
@@ -113,7 +113,7 @@
 				<dd>
 					<input asp-for="@Model.ShowFavicons" />
 				</dd>
-				<dd><span asp-validation-for="@Model.ShowFavicons" class="error"></span></dd>
+				<dd><span asp-validation-for="@Model.ShowFavicons" class="error hidden"></span></dd>
 			</dl>
 
 			@if (UserContext.IsAdmin) {
@@ -125,20 +125,20 @@
 					<dd>
 						<input asp-for="@Model.Poseys" />
 					</dd>
-					<dd><span asp-validation-for="@Model.Poseys" class="error"></span></dd>
+					<dd><span asp-validation-for="@Model.Poseys" class="error hidden"></span></dd>
 				</dl>
 			}
 
 			<dl>
 				<dt>New Password <span class="font-small subdued-text">(Optional)</span></dt>
 				<dd><input asp-for="@Model.NewPassword" /></dd>
-				<dd><span asp-validation-for="@Model.NewPassword" class="error"></span></dd>
+				<dd><span asp-validation-for="@Model.NewPassword" class="error hidden"></span></dd>
 			</dl>
 
 			<dl>
 				<dt>Current Password <span class="font-small subdued-text">(Required for all changes)</span></dt>
 				<dd><input asp-for="@Model.Password" /></dd>
-				<dd><span asp-validation-for="@Model.Password" class="error"></span></dd>
+				<dd><span asp-validation-for="@Model.Password" class="error hidden"></span></dd>
 			</dl>
 
 			<ul>

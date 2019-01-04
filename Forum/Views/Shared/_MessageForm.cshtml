@@ -1,6 +1,6 @@
 ﻿@model Forum.Interfaces.Models.ViewModels.IMessageViewModel
 
-<div asp-validation-summary="ModelOnly" class="error"></div>
+<div asp-validation-summary="ModelOnly" class="error hidden"></div>
 
 <form method="post"
 	  class="message-form"
@@ -39,7 +39,7 @@
 			<img class="add-smiley pointer align-middle pad-left" src="~/images/smiley.png" alt="Smiley" title="Smiley" />
 		</p>
 
-		<p class="pad-top"><span class="error field-validation-valid" data-valmsg-for="body" data-valmsg-replace="true"></span></p>
+		<p class="pad-top"><span class="error hidden" data-valmsg-for="@nameof(Model.Body)"></span></p>
 		<p class="pad-top"><textarea asp-for="@Model.Body" name="body"></textarea></p>
 	</div>
 

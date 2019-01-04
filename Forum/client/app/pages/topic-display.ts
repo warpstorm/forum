@@ -247,11 +247,23 @@ export class TopicDisplay {
 				let modelErrors: ModelErrorResponse[] = JSON.parse(xhrResult.responseText);
 
 				for (let i = 0; i < modelErrors.length; i++) {
-					let modelErrorField = form.querySelector(`[data-valmsg-for="${modelErrors[i].propertyName.toLowerCase()}"]`);
+					let modelErrorField = form.querySelector(`[data-valmsg-for="${modelErrors[i].propertyName}"]`);
 
 					if (modelErrorField) {
 						modelErrorField.textContent = modelErrors[i].errorMessage;
 					}
+				}
+
+				if (modelErrors.length == 0) {
+					new Promise(() => {
+						self.doc.querySelectorAll('.reply-button').forEach(element => {
+							element.removeEventListener('click', self.eventHideReplyForm);
+							element.removeEventListener('click', self.eventShowReplyForm);
+							element.addEventListener('click', self.eventShowReplyForm);
+						});
+
+						self.doc.querySelectorAll('.reply-form').forEach(element => { hide(element); });
+					});
 				}
 			})
 			.catch(Xhr.logRejected)
@@ -263,19 +275,8 @@ export class TopicDisplay {
 					bodyElement.removeAttribute('disabled');
 				}
 
-				new Promise(() => {
-					self.doc.querySelectorAll('.reply-button').forEach(element => {
-						element.removeEventListener('click', self.eventHideReplyForm);
-						element.removeEventListener('click', self.eventShowReplyForm);
-						element.addEventListener('click', self.eventShowReplyForm);
-					});
-
-					self.doc.querySelectorAll('.reply-form').forEach(element => { hide(element); });
-
-					saveButton.removeAttribute('disabled');
-
-					self.submitting = false;
-				});
+				saveButton.removeAttribute('disabled');
+				self.submitting = false;
 			});
 	}
 

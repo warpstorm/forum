@@ -11,6 +11,7 @@ import { ManageBoards } from './pages/manage-boards';
 import { MessageCreate } from './pages/message-create';
 
 import * as SignalR from "@aspnet/signalr";
+import { ErrorMonitor } from './services/error-monitor';
 
 window.onload = function () {
 	let app = new App();
@@ -25,6 +26,7 @@ export class App {
 	passedTimeMonitor: PassedTimeMonitor;
 	smileySelector: SmileySelector;
 	whosOnlineMonitor: WhosOnlineMonitor;
+	errorMonitor: ErrorMonitor;
 
 	constructor() {
 		this.bbCode = new BBCode(document);
@@ -34,6 +36,7 @@ export class App {
 
 		this.passedTimeMonitor = new PassedTimeMonitor(document);
 		this.whosOnlineMonitor = new WhosOnlineMonitor(document, this);
+		this.errorMonitor = new ErrorMonitor(document);
 	}
 
 	boot() {
@@ -45,6 +48,7 @@ export class App {
 		this.smileySelector.init();
 		this.passedTimeMonitor.init();
 		this.whosOnlineMonitor.init();
+		this.errorMonitor.init();
 
 		let pageActions = (<any>window).pageActions;
 

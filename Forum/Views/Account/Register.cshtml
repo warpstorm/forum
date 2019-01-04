@@ -6,24 +6,24 @@
 		  asp-action="@nameof(Account.Register)"
 		  asp-route-returnurl="@ViewData["Referrer"]">
 
-		<div asp-validation-summary="All" class="error"></div>
+		<div asp-validation-summary="All" class="error hidden"></div>
 
 		<dl>
 			<dt>Display Name</dt>
 			<dd><input asp-for="@Model.DisplayName" /></dd>
-			<dd><span asp-validation-for="@Model.DisplayName" class="error"></span></dd>
+			<dd><span asp-validation-for="@Model.DisplayName" class="error hidden"></span></dd>
 		</dl>
 
 		<dl>
 			<dt>Username (email address)</dt>
 			<dd><input asp-for="@Model.Email" /></dd>
-			<dd><span asp-validation-for="@Model.Email" class="error"></span></dd>
+			<dd><span asp-validation-for="@Model.Email" class="error hidden"></span></dd>
 		</dl>
 
 		<dl>
 			<dt>Confirm your email</dt>
 			<dd><input asp-for="@Model.ConfirmEmail" /></dd>
-			<dd><span asp-validation-for="@Model.ConfirmEmail" class="error"></span></dd>
+			<dd><span asp-validation-for="@Model.ConfirmEmail" class="error hidden"></span></dd>
 		</dl>
 
 		<dl>
@@ -34,20 +34,20 @@
 				<select asp-for="@Model.BirthdayDay" asp-items="@Model.BirthdayDays"></select>
 			</dd>
 			<dd>
-				<span asp-validation-for="@Model.BirthdayYear" class="error"></span>
-				<span asp-validation-for="@Model.BirthdayMonth" class="error"></span>
-				<span asp-validation-for="@Model.BirthdayDay" class="error"></span>
+				<span asp-validation-for="@Model.BirthdayYear" class="error hidden"></span>
+				<span asp-validation-for="@Model.BirthdayMonth" class="error hidden"></span>
+				<span asp-validation-for="@Model.BirthdayDay" class="error hidden"></span>
 			</dd>
 		</dl>
 
 		<dl>
 			<dt>Password</dt>
 			<dd><input asp-for="@Model.Password" /></dd>
-			<dd><span asp-validation-for="@Model.Password" class="error"></span></dd>
+			<dd><span asp-validation-for="@Model.Password" class="error hidden"></span></dd>
 
 			<dt>Confirm Password</dt>
 			<dd><input asp-for="@Model.ConfirmPassword" /></dd>
-			<dd><span asp-validation-for="@Model.ConfirmPassword" class="error"></span></dd>
+			<dd><span asp-validation-for="@Model.ConfirmPassword" class="error hidden"></span></dd>
 		</dl>
 
 		<partial name="_Recaptcha" />

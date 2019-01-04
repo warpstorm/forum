@@ -5,20 +5,20 @@
 		  asp-action="@nameof(Boards.Edit)"
 		  asp-controller="@nameof(Boards)">
 
-		<div asp-validation-summary="All" class="error"></div>
+		<div asp-validation-summary="All" class="error hidden"></div>
 
 		<input type="hidden" asp-for="@Model.Id" />
 
 		<dl>
 			<dt>Name</dt>
 			<dd><input type="text" asp-for="@Model.Name" /></dd>
-			<dd><span asp-validation-for="@Model.Name" class="error"></span></dd>
+			<dd><span asp-validation-for="@Model.Name" class="error hidden"></span></dd>
 		</dl>
 
 		<dl>
 			<dt>Description</dt>
 			<dd><textarea asp-for="@Model.Description"></textarea></dd>
-			<dd><span asp-validation-for="@Model.Description" class="error"></span></dd>
+			<dd><span asp-validation-for="@Model.Description" class="error hidden"></span></dd>
 		</dl>
 
 		<dl>
