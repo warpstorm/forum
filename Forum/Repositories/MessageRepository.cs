@@ -137,10 +137,19 @@ namespace Forum.Repositories {
 				throw new HttpBadRequestError();
 			}
 
-			var replyRecord = DbContext.Messages.FirstOrDefault(m => m.Id == input.Id);
+			var replyRecord = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == input.Id);
 
 			if (replyRecord is null) {
 				serviceResponse.Error($"A record does not exist with ID '{input.Id}'");
+			}
+
+			var now = DateTime.Now;
+			var recentReply = (now - replyRecord.LastReplyPosted) < (now - now.AddSeconds(-30));
+
+			if (recentReply && replyRecord.ParentId == 0 && replyRecord.PostedById == UserContext.ApplicationUser.Id) {
+				var previousMessageRecord = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == replyRecord.LastReplyId);
+				await MergeReply(previousMessageRecord, input, serviceResponse);
+				return serviceResponse;
 			}
 
 			if (!serviceResponse.Success) {
@@ -178,7 +187,7 @@ namespace Forum.Repositories {
 			var processedMessage = await ProcessMessageInput(serviceResponse, input.Body);
 
 			if (serviceResponse.Success) {
-				UpdateMessageRecord(processedMessage, record);
+				await UpdateMessageRecord(processedMessage, record);
 				serviceResponse.RedirectPath = UrlHelper.DirectMessage(record.Id);
 
 				await ForumHub.Clients.All.SendAsync("updated-message", new HubModels.Message {
@@ -188,6 +197,21 @@ namespace Forum.Repositories {
 			}
 
 			return serviceResponse;
+		}
+
+		async Task MergeReply(DataModels.Message record, InputModels.MessageInput input, ServiceModels.ServiceResponse serviceResponse) {
+			var newBody = $"{record.OriginalBody}\n{input.Body}";
+			var processedMessage = await ProcessMessageInput(serviceResponse, newBody);
+
+			if (serviceResponse.Success) {
+				await UpdateMessageRecord(processedMessage, record);
+				serviceResponse.RedirectPath = UrlHelper.DirectMessage(record.Id);
+
+				await ForumHub.Clients.All.SendAsync("updated-message", new HubModels.Message {
+					TopicId = record.ParentId,
+					MessageId = record.Id
+				});
+			}
 		}
 
 		public async Task<ServiceModels.ServiceResponse> DeleteMessage(int messageId) {
@@ -874,7 +898,7 @@ namespace Forum.Repositories {
 			return record;
 		}
 
-		public void UpdateMessageRecord(InputModels.ProcessedMessageInput message, DataModels.Message record) {
+		public async Task UpdateMessageRecord(InputModels.ProcessedMessageInput message, DataModels.Message record) {
 			record.OriginalBody = message.OriginalBody;
 			record.DisplayBody = message.DisplayBody;
 			record.ShortPreview = message.ShortPreview;
@@ -886,7 +910,7 @@ namespace Forum.Repositories {
 
 			DbContext.Update(record);
 
-			DbContext.SaveChanges();
+			await DbContext.SaveChangesAsync();
 		}
 
 		public void UpdateTopicParticipation(int topicId, string userId, DateTime time) {
