@@ -160,7 +160,7 @@ namespace Forum.Controllers {
 		[HttpGet]
 		public async Task<IActionResult> ProcessMessages(InputModels.Continue input) {
 			if (string.IsNullOrEmpty(input.Stage)) {
-				var totalSteps = MessageRepository.ProcessMessages();
+				var totalSteps = await MessageRepository.ProcessMessages();
 
 				input = new InputModels.Continue {
 					Stage = nameof(MessageRepository.ProcessMessages),
@@ -192,7 +192,7 @@ namespace Forum.Controllers {
 		[HttpGet]
 		public async Task<IActionResult> ReprocessMessages(InputModels.Continue input) {
 			if (string.IsNullOrEmpty(input.Stage)) {
-				var totalSteps = MessageRepository.ReprocessMessages();
+				var totalSteps = await MessageRepository.ReprocessMessages();
 
 				input = new InputModels.Continue {
 					Stage = nameof(MessageRepository.ReprocessMessages),
@@ -224,7 +224,7 @@ namespace Forum.Controllers {
 		[HttpGet]
 		public async Task<IActionResult> RecountReplies(InputModels.Continue input) {
 			if (string.IsNullOrEmpty(input.Stage)) {
-				var totalSteps = MessageRepository.RecountReplies();
+				var totalSteps = await MessageRepository.RecountReplies();
 
 				input = new InputModels.Continue {
 					Stage = nameof(MessageRepository.RecountReplies),
@@ -233,7 +233,7 @@ namespace Forum.Controllers {
 				};
 			}
 			else {
-				MessageRepository.RecountRepliesContinue(input);
+				await MessageRepository.RecountRepliesContinue(input);
 			}
 
 			var viewModel = new ViewModels.Delay {
@@ -255,7 +255,7 @@ namespace Forum.Controllers {
 		[HttpGet]
 		public async Task<IActionResult> RebuildParticipants(InputModels.Continue input) {
 			if (string.IsNullOrEmpty(input.Stage)) {
-				var totalSteps = MessageRepository.RebuildParticipants();
+				var totalSteps = await MessageRepository.RebuildParticipants();
 
 				input = new InputModels.Continue {
 					Stage = nameof(MessageRepository.RebuildParticipants),
@@ -264,7 +264,7 @@ namespace Forum.Controllers {
 				};
 			}
 			else {
-				MessageRepository.RebuildParticipantsContinue(input);
+				await MessageRepository.RebuildParticipantsContinue(input);
 			}
 
 			var viewModel = new ViewModels.Delay {

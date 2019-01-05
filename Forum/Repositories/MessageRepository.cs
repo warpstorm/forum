@@ -130,7 +130,7 @@ namespace Forum.Repositories {
 
 			DbContext.SaveChanges();
 
-			serviceResponse.RedirectPath = UrlHelper.DirectMessage(record.Id);
+			serviceResponse.RedirectPath = UrlHelper.DisplayMessage(record.Id);
 			return serviceResponse;
 		}
 
@@ -167,7 +167,7 @@ namespace Forum.Repositories {
 
 			if (serviceResponse.Success) {
 				var record = CreateMessageRecord(processedMessage, replyRecord);
-				serviceResponse.RedirectPath = UrlHelper.DirectMessage(record.Id);
+				serviceResponse.RedirectPath = UrlHelper.DisplayMessage(record.Id);
 
 				await ForumHub.Clients.All.SendAsync("new-reply", new HubModels.Message {
 					TopicId = record.ParentId,
@@ -195,7 +195,7 @@ namespace Forum.Repositories {
 
 			if (serviceResponse.Success) {
 				await UpdateMessageRecord(processedMessage, record);
-				serviceResponse.RedirectPath = UrlHelper.DirectMessage(record.Id);
+				serviceResponse.RedirectPath = UrlHelper.DisplayMessage(record.Id);
 
 				await ForumHub.Clients.All.SendAsync("updated-message", new HubModels.Message {
 					TopicId = record.ParentId,
@@ -212,7 +212,7 @@ namespace Forum.Repositories {
 
 			if (serviceResponse.Success) {
 				await UpdateMessageRecord(processedMessage, record);
-				serviceResponse.RedirectPath = UrlHelper.DirectMessage(record.Id);
+				serviceResponse.RedirectPath = UrlHelper.DisplayMessage(record.Id);
 
 				await ForumHub.Clients.All.SendAsync("updated-message", new HubModels.Message {
 					TopicId = record.ParentId,
@@ -224,7 +224,7 @@ namespace Forum.Repositories {
 		public async Task<ServiceModels.ServiceResponse> DeleteMessage(int messageId) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
-			var record = DbContext.Messages.FirstOrDefault(m => m.Id == messageId);
+			var record = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == messageId);
 
 			if (record is null) {
 				serviceResponse.Error($@"No record was found with the id '{messageId}'");
@@ -237,7 +237,7 @@ namespace Forum.Repositories {
 			var parentId = record.ParentId;
 
 			if (parentId != 0) {
-				serviceResponse.RedirectPath = UrlHelper.DirectMessage(parentId);
+				serviceResponse.RedirectPath = $"{UrlHelper.Action(nameof(Topics.Latest), nameof(Topics), new { id = parentId })}#message{parentId}";
 
 				var directReplies = await DbContext.Messages.Where(m => m.ReplyId == messageId).ToListAsync();
 
@@ -252,7 +252,7 @@ namespace Forum.Repositories {
 					DbContext.Update(reply);
 				}
 
-				DbContext.SaveChanges();
+				await DbContext.SaveChangesAsync();
 			}
 			else {
 				serviceResponse.RedirectPath = UrlHelper.Action(nameof(Topics.Index), nameof(Topics));
@@ -266,13 +266,13 @@ namespace Forum.Repositories {
 
 			await RemoveMessageArtifacts(record);
 
-			DbContext.SaveChanges();
+			await DbContext.SaveChangesAsync();
 
 			if (parentId > 0) {
-				var parent = DbContext.Messages.FirstOrDefault(item => item.Id == parentId);
+				var parent = await DbContext.Messages.FirstOrDefaultAsync(item => item.Id == parentId);
 
 				if (parent != null) {
-					RecountRepliesForTopic(parent);
+					await RecountRepliesForTopic(parent);
 				}
 			}
 
@@ -365,7 +365,7 @@ namespace Forum.Repositories {
 				MessageId = messageRecord.Id
 			});
 
-			serviceResponse.RedirectPath = UrlHelper.DirectMessage(messageId);
+			serviceResponse.RedirectPath = UrlHelper.DisplayMessage(messageId);
 			return serviceResponse;
 		}
 
@@ -951,19 +951,19 @@ namespace Forum.Repositories {
 			}
 		}
 
-		public int RecountReplies() {
+		public async Task<int> RecountReplies() {
 			var query = from message in DbContext.Messages
 						where message.ParentId == 0
 						select message.Id;
 
-			var recordCount = query.Count();
+			var recordCount = await query.CountAsync();
 
 			var totalSteps = (int)Math.Ceiling(1D * recordCount / 25);
 
 			return totalSteps;
 		}
 
-		public void RecountRepliesContinue(InputModels.Continue input) {
+		public async Task RecountRepliesContinue(InputModels.Continue input) {
 			input.ThrowIfNull(nameof(input));
 
 			var parentMessageQuery = from message in DbContext.Messages
@@ -977,16 +977,16 @@ namespace Forum.Repositories {
 			var parents = parentMessageQuery.Skip(skip).Take(take).ToList();
 
 			foreach (var parent in parents) {
-				RecountRepliesForTopic(parent);
+				await RecountRepliesForTopic(parent);
 			}
 		}
 
-		public void RecountRepliesForTopic(DataModels.Message parentMessage) {
+		public async Task RecountRepliesForTopic(DataModels.Message parentMessage) {
 			var messagesQuery = from message in DbContext.Messages
 								where message.ParentId == parentMessage.Id
 								select message;
 
-			var messages = messagesQuery.ToList();
+			var messages = await messagesQuery.ToListAsync();
 
 			var updated = false;
 
@@ -1014,23 +1014,23 @@ namespace Forum.Repositories {
 
 			if (updated) {
 				DbContext.Update(parentMessage);
-				DbContext.SaveChanges();
+				await DbContext.SaveChangesAsync();
 			}
 		}
 
-		public int RebuildParticipants() {
+		public async Task<int> RebuildParticipants() {
 			var query = from message in DbContext.Messages
 						where message.ParentId == 0
 						select message.Id;
 
-			var recordCount = query.Count();
+			var recordCount = await query.CountAsync();
 
 			var totalSteps = (int)Math.Ceiling(1D * recordCount / 25);
 
 			return totalSteps;
 		}
 
-		public void RebuildParticipantsContinue(InputModels.Continue input) {
+		public async Task RebuildParticipantsContinue(InputModels.Continue input) {
 			input.ThrowIfNull(nameof(input));
 
 			var parentMessageQuery = from message in DbContext.Messages
@@ -1041,19 +1041,19 @@ namespace Forum.Repositories {
 			var take = 25;
 			var skip = input.CurrentStep * take;
 
-			var parents = parentMessageQuery.Skip(skip).Take(take).ToList();
+			var parents = await parentMessageQuery.Skip(skip).Take(take).ToListAsync();
 
 			foreach (var parent in parents) {
-				RebuildParticipantsForTopic(parent.Id);
+				await RebuildParticipantsForTopic(parent.Id);
 			}
 		}
 
-		public void RebuildParticipantsForTopic(int topicId) {
+		public async Task RebuildParticipantsForTopic(int topicId) {
 			var messagesQuery = from message in DbContext.Messages
 								where message.Id == topicId || message.ParentId == topicId
 								select message;
 
-			var messages = messagesQuery.ToList();
+			var messages = await messagesQuery.ToListAsync();
 
 			var newParticipants = new List<DataModels.Participant>();
 
@@ -1067,24 +1067,24 @@ namespace Forum.Repositories {
 				}
 			}
 
-			var oldParticipants = DbContext.Participants.Where(r => r.MessageId == topicId).ToList();
+			var oldParticipants = await DbContext.Participants.Where(r => r.MessageId == topicId).ToListAsync();
 
 			if (oldParticipants.Count() != newParticipants.Count()) {
 				DbContext.RemoveRange(oldParticipants);
-				DbContext.SaveChanges();
+				await DbContext.SaveChangesAsync();
 
 				DbContext.Participants.AddRange(newParticipants);
-				DbContext.SaveChanges();
+				await DbContext.SaveChangesAsync();
 			}
 		}
 
-		public int ReprocessMessages() => ProcessMessages(true);
-		public int ProcessMessages(bool force = false) {
+		public async Task<int> ReprocessMessages() => await ProcessMessages(true);
+		public async Task<int> ProcessMessages(bool force = false) {
 			var records = from message in DbContext.Messages
 						  where force || !message.Processed
 						  select message.Id;
 
-			var recordCount = records.Count();
+			var recordCount = await records.CountAsync();
 
 			var totalSteps = (int)Math.Ceiling(1D * recordCount / 25);
 

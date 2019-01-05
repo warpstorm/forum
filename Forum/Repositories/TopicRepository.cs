@@ -495,9 +495,9 @@ namespace Forum.Repositories {
 
 		public async Task Merge(DataModels.Message sourceMessage, DataModels.Message targetMessage) {
 			UpdateMessagesParentId(sourceMessage, targetMessage);
-			MessageRepository.RecountRepliesForTopic(targetMessage);
+			await MessageRepository.RecountRepliesForTopic(targetMessage);
 			await RemoveTopicParticipants(sourceMessage, targetMessage);
-			MessageRepository.RebuildParticipantsForTopic(targetMessage.Id);
+			await MessageRepository.RebuildParticipantsForTopic(targetMessage.Id);
 			RemoveTopicViewlogs(sourceMessage, targetMessage);
 			RemoveTopicPins(sourceMessage);
 			RemoveTopicMessageBoards(sourceMessage);

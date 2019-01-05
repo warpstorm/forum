@@ -8,6 +8,6 @@ namespace Forum.Extensions {
 			return url.Action(actionName, controllerName, routeValues, scheme);
 		}
 
-		public static string DirectMessage(this IUrlHelper url, int messageId) => url.Action(nameof(Topics.Display), nameof(Topics), new { id = messageId }) + $"#message{messageId}";
+		public static string DisplayMessage(this IUrlHelper url, int messageId) => url.Action(nameof(Topics.Display), nameof(Topics), new { id = messageId }) + $"#message{messageId}";
 	}
 }
