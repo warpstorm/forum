@@ -524,43 +524,43 @@ namespace Forum.Repositories {
 
 			if (eraseContent) {
 				updateTasks.AddRange(new List<Task> {
-					DbContext.Database.ExecuteSqlCommandAsync($"DELETE FROM [Notifications] WHERE UserId = @SourceId", pSourceId),
-					DbContext.Database.ExecuteSqlCommandAsync($"DELETE FROM [Participants] WHERE UserId = @SourceId", pSourceId),
-					DbContext.Database.ExecuteSqlCommandAsync($"DELETE FROM [Pins] WHERE UserId = @SourceId", pSourceId),
-					DbContext.Database.ExecuteSqlCommandAsync($"DELETE FROM [ViewLogs] WHERE UserId = @SourceId", pSourceId),
-					DbContext.Database.ExecuteSqlCommandAsync($"DELETE FROM [Quotes] WHERE PostedById = @SourceId", pSourceId),
-					DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [Messages] SET EditedById = @TargetId WHERE EditedById = @SourceId", pSourceId, pTargetId),
-					DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [Messages] SET LastReplyById = @TargetId WHERE LastReplyById = @SourceId", pSourceId, pTargetId),
+					DbContext.Database.ExecuteSqlCommandAsync($"DELETE FROM [{nameof(ApplicationDbContext.Notifications)}] WHERE {nameof(DataModels.Notification.UserId)} = @SourceId", pSourceId),
+					DbContext.Database.ExecuteSqlCommandAsync($"DELETE FROM [{nameof(ApplicationDbContext.Participants)}] WHERE {nameof(DataModels.Participant.UserId)} = @SourceId", pSourceId),
+					DbContext.Database.ExecuteSqlCommandAsync($"DELETE FROM [{nameof(ApplicationDbContext.Pins)}] WHERE {nameof(DataModels.Pin.UserId)} = @SourceId", pSourceId),
+					DbContext.Database.ExecuteSqlCommandAsync($"DELETE FROM [{nameof(ApplicationDbContext.ViewLogs)}] WHERE {nameof(DataModels.ViewLog.UserId)} = @SourceId", pSourceId),
+					DbContext.Database.ExecuteSqlCommandAsync($"DELETE FROM [{nameof(ApplicationDbContext.Quotes)}] WHERE {nameof(DataModels.Quote.PostedById)} = @SourceId", pSourceId),
+					DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [{nameof(ApplicationDbContext.Messages)}] SET {nameof(DataModels.Message.EditedById)} = @TargetId WHERE {nameof(DataModels.Message.EditedById)} = @SourceId", pSourceId, pTargetId),
+					DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [{nameof(ApplicationDbContext.Messages)}] SET {nameof(DataModels.Message.LastReplyById)} = @TargetId WHERE {nameof(DataModels.Message.LastReplyById)} = @SourceId", pSourceId, pTargetId),
 				});
 
 				updateTasks.Add(DbContext.Database.ExecuteSqlCommandAsync($@"
-					UPDATE [Messages] SET
-						PostedById = @TargetId,
-						OriginalBody = '',
-						DisplayBody = 'This account has been deleted.',
-						LongPreview = '',
-						ShortPreview = '',
-						Cards = ''
-					WHERE PostedById = @SourceId", pSourceId, pTargetId));
+					UPDATE [{nameof(ApplicationDbContext.Messages)}] SET
+						{nameof(DataModels.Message.PostedById)} = @TargetId,
+						{nameof(DataModels.Message.OriginalBody)} = '',
+						{nameof(DataModels.Message.DisplayBody)} = 'This account has been deleted.',
+						{nameof(DataModels.Message.LongPreview)} = '',
+						{nameof(DataModels.Message.ShortPreview)} = '',
+						{nameof(DataModels.Message.Cards)} = ''
+					WHERE {nameof(DataModels.Message.PostedById)} = @SourceId", pSourceId, pTargetId));
 			}
 			else {
 				updateTasks.AddRange(new List<Task> {
-					DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [Notifications] SET UserId = @TargetId WHERE UserId = @SourceId", pSourceId, pTargetId),
-					DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [Participants] SET UserId = @TargetId WHERE UserId = @SourceId", pSourceId, pTargetId),
-					DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [Pins] SET UserId = @TargetId WHERE UserId = @SourceId", pSourceId, pTargetId),
-					DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [ViewLogs] SET UserId = @TargetId WHERE UserId = @SourceId", pSourceId, pTargetId),
-					DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [Quotes] SET PostedById = @TargetId WHERE PostedById = @SourceId", pSourceId, pTargetId),
-					DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [Messages] SET PostedById = @TargetId WHERE PostedById = @SourceId", pSourceId, pTargetId),
-					DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [Messages] SET EditedById = @TargetId WHERE EditedById = @SourceId", pSourceId, pTargetId),
-					DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [Messages] SET LastReplyById = @TargetId WHERE LastReplyById = @SourceId", pSourceId, pTargetId),
+					DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [{nameof(ApplicationDbContext.Notifications)}] SET {nameof(DataModels.Notification.UserId)} = @TargetId WHERE {nameof(DataModels.Notification.UserId)} = @SourceId", pSourceId, pTargetId),
+					DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [{nameof(ApplicationDbContext.Participants)}] SET {nameof(DataModels.Participant.UserId)} = @TargetId WHERE {nameof(DataModels.Participant.UserId)} = @SourceId", pSourceId, pTargetId),
+					DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [{nameof(ApplicationDbContext.Pins)}] SET {nameof(DataModels.Pin.UserId)} = @TargetId WHERE {nameof(DataModels.Bookmark.UserId)} = @SourceId", pSourceId, pTargetId),
+					DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [{nameof(ApplicationDbContext.ViewLogs)}] SET {nameof(DataModels.ViewLog.UserId)} = @TargetId WHERE {nameof(DataModels.ViewLog.UserId)} = @SourceId", pSourceId, pTargetId),
+					DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [{nameof(ApplicationDbContext.Quotes)}] SET {nameof(DataModels.Quote.PostedById)} = @TargetId WHERE {nameof(DataModels.Quote.PostedById)} = @SourceId", pSourceId, pTargetId),
+					DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [{nameof(ApplicationDbContext.Messages)}] SET {nameof(DataModels.Message.PostedById)} = @TargetId WHERE {nameof(DataModels.Message.PostedById)} = @SourceId", pSourceId, pTargetId),
+					DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [{nameof(ApplicationDbContext.Messages)}] SET {nameof(DataModels.Message.EditedById)} = @TargetId WHERE {nameof(DataModels.Message.EditedById)} = @SourceId", pSourceId, pTargetId),
+					DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [{nameof(ApplicationDbContext.Messages)}] SET {nameof(DataModels.Message.LastReplyById)} = @TargetId WHERE {nameof(DataModels.Message.LastReplyById)} = @SourceId", pSourceId, pTargetId),
 				});
 			}
 
 			updateTasks.AddRange(new List<Task> {
-				DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [MessageBoards] SET UserId = @TargetId WHERE UserId = @SourceId", pSourceId, pTargetId),
-				DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [MessageThoughts] SET UserId = @TargetId WHERE UserId = @SourceId", pSourceId, pTargetId),
-				DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [Notifications] SET TargetUserId = @TargetId WHERE TargetUserId = @SourceId", pSourceId, pTargetId),
-				DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [Quotes] SET SubmittedById = @TargetId WHERE SubmittedById = @SourceId", pSourceId, pTargetId),
+				DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [{nameof(ApplicationDbContext.MessageBoards)}] SET {nameof(DataModels.MessageBoard.UserId)} = @TargetId WHERE {nameof(DataModels.MessageBoard.UserId)} = @SourceId", pSourceId, pTargetId),
+				DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [{nameof(ApplicationDbContext.MessageThoughts)}] SET {nameof(DataModels.MessageThought.UserId)} = @TargetId WHERE {nameof(DataModels.MessageThought.UserId)} = @SourceId", pSourceId, pTargetId),
+				DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [{nameof(ApplicationDbContext.Notifications)}] SET {nameof(DataModels.Notification.TargetUserId)} = @TargetId WHERE {nameof(DataModels.Notification.TargetUserId)} = @SourceId", pSourceId, pTargetId),
+				DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [{nameof(ApplicationDbContext.Quotes)}] SET {nameof(DataModels.Quote.SubmittedById)} = @TargetId WHERE {nameof(DataModels.Quote.SubmittedById)} = @SourceId", pSourceId, pTargetId),
 			});
 
 			Task.WaitAll(updateTasks.ToArray());
