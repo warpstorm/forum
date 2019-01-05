@@ -1,4 +1,5 @@
-﻿import { throwIfNull, hide, show, queryify, warning } from "../helpers";
+﻿import { HubConnectionState } from "@aspnet/signalr";
+import { throwIfNull, hide, show, queryify, warning } from "../helpers";
 import { App } from "../app";
 import { HttpMethod } from "../definitions/http-method";
 import { Xhr } from "../services/xhr";
@@ -210,7 +211,7 @@ export class TopicDisplay {
 		let self = this;
 
 		// make sure the user has chosen to enable the hub connection.
-		if (!self.app.hub) {
+		if (!self.app.hub || self.app.hub.state == HubConnectionState.Disconnected) {
 			return;
 		}
 
@@ -405,7 +406,7 @@ export class TopicDisplay {
 		let smileyId = smileyImg.getAttribute('smiley-id');
 
 		// Only send an XHR if we anticipate the thought will be returned via the hub.
-		if (this.app.hub) {
+		if (this.app.hub && this.app.hub.state == HubConnectionState.Connected) {
 			let requestOptions = new XhrOptions({
 				method: HttpMethod.Get,
 				url: `/Messages/AddThought/${this.thoughtSelectorMessageId}?smiley=${smileyId}`
