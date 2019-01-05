@@ -216,7 +216,7 @@ namespace Forum.Repositories {
 				serviceResponse.RedirectPath = UrlHelper.DisplayMessage(record.Id);
 
 				await ForumHub.Clients.All.SendAsync("updated-message", new HubModels.Message {
-					TopicId = record.ParentId,
+					TopicId = record.ParentId > 0 ? record.ParentId : record.Id,
 					MessageId = record.Id
 				});
 			}
