@@ -118,7 +118,7 @@ namespace Forum.Services {
 		async Task UpdateLastOnline() {
 			UserContext.ApplicationUser.LastOnline = DateTime.Now;
 			DbContext.Update(UserContext.ApplicationUser);
-			DbContext.SaveChanges();
+			await DbContext.SaveChangesAsync();
 			await ForumHub.Clients.All.SendAsync("whos-online");
 		}
 	}
