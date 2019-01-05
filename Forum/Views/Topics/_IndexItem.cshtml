@@ -2,6 +2,13 @@
 
 <div class="content-box gap hover-highlight">
 	<div class="details pad" clickable-link-parent>
+		<div class="topic-info mobile-hide float-right font-small subdued-text">
+			<p>Started <passed-time time="@Model.TimePosted" /> by @Model.PostedByName.</p>
+
+			@if (Model.LastReplyId != Model.Id) {
+				<p>Last reply was <passed-time time="@Model.LastReplyPosted" /> by @Model.LastReplyByName.</p>
+			}
+		</div>
 		<p>
 			<a asp-action="@nameof(Topics.Latest)" asp-route-id="@Model.Id">
 				@Html.Raw(Model.ShortPreview)
@@ -13,18 +20,16 @@
 				}
 			</a>
 		</p>
-		<div class="font-small subdued-text pad-left small-pad-top">
-			<p>
-				Started <passed-time time="@Model.TimePosted" /> by @Model.PostedByName.
-			</p>
+
+		<div class="mobile-topic-info font-small subdued-text small-pad-left small-pad-top">
+			<p>Started <passed-time time="@Model.TimePosted" /> by @Model.PostedByName.</p>
 
 			@if (Model.LastReplyId != Model.Id) {
-				<p>
-					Last reply was <passed-time time="@Model.LastReplyPosted" /> by @Model.LastReplyByName.
-				</p>
+				<p>Last reply was <passed-time time="@Model.LastReplyPosted" /> by @Model.LastReplyByName.</p>
 			}
+		</div>
 
-			<p class="small-pad-top dark-text">
+		<p class="small-pad-left small-pad-top subdued-text font-small">
 				@if (Model.Views == 0) {
 					<text>No views yet</text>
 				}
@@ -60,6 +65,5 @@
 					}
 				}
 			</p>
-		</div>
 	</div>
 </div>
