@@ -39,7 +39,7 @@ export class WhosOnlineMonitor {
 				let chicletTime = new Date(chicletTimeValue);
 				
 				// 5 minute expiration
-				let expiration = new Date(chicletTime.getTime() + 5 * 1000); 
+				let expiration = new Date(chicletTime.getTime() + 5 * 60 * 1000); 
 
 				let difference = expiration.getTime() - new Date().getTime();
 
