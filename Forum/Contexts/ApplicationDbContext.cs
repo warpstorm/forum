@@ -36,10 +36,8 @@ namespace Forum.Contexts {
 					return base.SaveChanges();
 				}
 				catch (DbUpdateConcurrencyException ex) when (attempts <= 3) {
-					Thread.Sleep(5);
-
 					foreach (var entry in ex.Entries) {
-						ex.Entries.Single().Reload();
+						entry.Reload();
 					}
 				}
 			}
@@ -57,13 +55,9 @@ namespace Forum.Contexts {
 					return await base.SaveChangesAsync(cancellationToken);
 				}
 				catch (DbUpdateConcurrencyException ex) when (attempts <= 3) {
-					await Task.Run(() => {
-						Thread.Sleep(5);
-
-						foreach (var entry in ex.Entries) {
-							ex.Entries.Single().Reload();
-						}
-					});
+					foreach (var entry in ex.Entries) {
+						await entry.ReloadAsync();
+					}
 				}
 			}
 		}

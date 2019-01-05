@@ -105,7 +105,7 @@ namespace Forum.Services {
 			DbContext.ViewLogs.RemoveRange(expiredViewLogsQuery);
 
 			DbContext.ViewLogs.Add(new DataModels.ViewLog {
-				LogTime = historyTimeLimit.AddSeconds(5),
+				LogTime = historyTimeLimit,
 				TargetType = EViewLogTargetType.All,
 				UserId = userContext.ApplicationUser.Id
 			});
