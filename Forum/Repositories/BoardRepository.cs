@@ -17,7 +17,14 @@ namespace Forum.Repositories {
 	using ServiceModels = Models.ServiceModels;
 
 	public class BoardRepository : IRepository<DataModels.Board> {
-		public async Task<List<DataModels.Board>> Records() => _Records ?? (_Records = await DbContext.Boards.ToListAsync());
+		public async Task<List<DataModels.Board>> Records() {
+			if (_Records is null) {
+				_Records = await DbContext.Boards.ToListAsync();
+				_Records = _Records.OrderBy(r => r.DisplayOrder).ToList();
+			}
+
+			return _Records;
+		}
 		List<DataModels.Board> _Records;
 
 		public async Task<List<DataModels.Category>> Categories() {
