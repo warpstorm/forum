@@ -4,6 +4,7 @@ using Forum.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -51,7 +52,7 @@ namespace Forum.Services {
 				}
 				else {
 					await LoadUserRoles(UserContext);
-					LoadViewLogs(UserContext);					
+					await LoadViewLogs(UserContext);					
 
 					if (HttpContextAccessor.HttpContext.Request.Headers["X-Requested-With"] != "XMLHttpRequest") {
 						await UpdateLastOnline();
@@ -75,7 +76,6 @@ namespace Forum.Services {
 			userContext.Roles = userRolesQuery.ToList() ?? new List<string>();
 
 			var adminRole = (await RoleRepository.SiteRoles()).FirstOrDefault(r => r.Name == Constants.InternalKeys.Admin);
-			var anyAdminUsers = adminUsersQuery.Any();
 
 			if (adminRole != null && userContext.Roles.Contains(adminRole.Id)) {
 				// Force logout if the user was removed from Admin, but their session still says they're in Admin.
@@ -90,41 +90,32 @@ namespace Forum.Services {
 			userContext.IsAuthenticated = true;
 		}
 
-		void LoadViewLogs(UserContext userContext) {
+		async Task LoadViewLogs(UserContext userContext) {
 			var historyTimeLimit = DateTime.Now.AddDays(-14);
 
 			// We shouldn't filter by time here because we're going to remove the expired ones below.
 			var viewLogsQuery = from record in DbContext.ViewLogs
 								where record.UserId == userContext.ApplicationUser.Id
-								orderby record.LogTime descending
 								select record;
 
-			var viewLogs = viewLogsQuery.ToList();
-
-			var expiredViewLogsQuery = from record in viewLogs
-									   where record.TargetType == EViewLogTargetType.All
+			var expiredViewLogsQuery = from record in viewLogsQuery
+									   where record.LogTime <= historyTimeLimit
 									   select record;
 
-			var expiredViewLogs = expiredViewLogsQuery.ToList();
+			DbContext.ViewLogs.RemoveRange(expiredViewLogsQuery);
 
-			if (expiredViewLogs.Where(record => record.LogTime <= historyTimeLimit).Any()) {
-				foreach (var viewLog in expiredViewLogs) {
-					DbContext.ViewLogs.Remove(viewLog);
-				}
+			// Prevents concurrency collision between threads.
+			historyTimeLimit = historyTimeLimit.AddSeconds(30);
 
-				// Gives them a day before the next update so we don't do this every request.
-				historyTimeLimit = historyTimeLimit.AddDays(1);
+			DbContext.ViewLogs.Add(new DataModels.ViewLog {
+				LogTime = historyTimeLimit,
+				TargetType = EViewLogTargetType.All,
+				UserId = userContext.ApplicationUser.Id
+			});
 
-				DbContext.ViewLogs.Add(new DataModels.ViewLog {
-					LogTime = historyTimeLimit,
-					TargetType = EViewLogTargetType.All,
-					UserId = userContext.ApplicationUser.Id
-				});
-
-				DbContext.SaveChanges();
-			}
-
-			userContext.ViewLogs = viewLogsQuery.ToList();
+			await DbContext.SaveChangesAsync();
+			
+			userContext.ViewLogs = await viewLogsQuery.ToListAsync();
 		}
 
 		async Task UpdateLastOnline() {
