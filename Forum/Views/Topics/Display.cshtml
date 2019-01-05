@@ -2,12 +2,14 @@
 
 <header id="topic-header" class="content-box pad gap-bottom">
 	@if (User.Identity.IsAuthenticated) {
+		<span class="bookmark-button">
+			@{var bookmarkImage = Model.IsBookmarked ? "bookmark_on" : "bookmark_off";}
+			<a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Bookmark)" asp-route-id="@Model.Id"><img src="~/images/@(bookmarkImage).png" /></a>
+		</span>
+
 		<nav class="float-right">
 			<ul class="inline">
-				<li><a class="small-button" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.MarkUnread)" asp-route-id="@Model.Id">Mark as Unread</a></li>
-				<li><a class="small-button" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Pin)" asp-route-id="@Model.Id">Pin</a></li>
-				<li><a class="small-button" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Merge)" asp-route-id="@Model.Id">Merge</a></li>
-				@if (Model.CanManage) {
+				@if (Model.IsOwner || Model.IsAdmin) {
 					<li class="open-menu open-menu-hover">
 						<span class="small-button">Boards</span>
 						<div class="menu-wrapper hidden">
@@ -34,6 +36,11 @@
 						</div>
 					</li>
 				}
+				@if (Model.IsAdmin) {
+					<li><a class="small-button" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Merge)" asp-route-id="@Model.Id">Merge</a></li>
+					<li><a class="small-button" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Pin)" asp-route-id="@Model.Id">@(Model.IsPinned ? "Unpin" : "Pin")</a></li>
+				}
+				<li><a class="small-button" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.MarkUnread)" asp-route-id="@Model.Id">Mark as Unread</a></li>
 			</ul>
 		</nav>
 	}
@@ -120,6 +127,7 @@
 		window.latest = @DateTime.Now.Ticks;
 		window.topicId = @Model.Id;
 		window.pageActions = 'topic-display';
+		window.bookmarked = '@Model.IsBookmarked' == 'True';
 		window.currentPage = @Model.CurrentPage;
 		window.totalPages = @Model.TotalPages;
 		window.showFavicons = @Model.ShowFavicons.ToString().ToLower();

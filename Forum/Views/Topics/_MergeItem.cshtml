@@ -1,14 +1,11 @@
 ﻿@model MessagePreview
 
 <div class="content-box gap hover-highlight">
-	<div class="pin float-right small-pad-top gap">
-		@if (Model.Pinned) {
+	@if (Model.Pinned) {
+		<div class="pin float-right small-pad-top gap">
 			<img src="~/images/pinned.png" />
-		}
-		else {
-			<img src="~/images/unpinned.png" />
-		}
-	</div>
+		</div>
+	}
 	<div class="details pad" clickable-link-parent>
 		<p>
 			<a asp-action="@nameof(Topics.FinishMerge)" asp-route-sourceId="@Model.SourceId" asp-route-targetId="@Model.Id">

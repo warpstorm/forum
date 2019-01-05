@@ -22,9 +22,9 @@ namespace Forum.Repositories {
 
 		AccountRepository AccountRepository { get; }
 		BoardRepository BoardRepository { get; }
+		BookmarkRepository BookmarkRepository { get; }
 		MessageRepository MessageRepository { get; }
 		NotificationRepository NotificationRepository { get; }
-		PinRepository PinRepository { get; }
 		RoleRepository RoleRepository { get; }
 		SmileyRepository SmileyRepository { get; }
 
@@ -34,8 +34,8 @@ namespace Forum.Repositories {
 			ApplicationDbContext dbContext,
 			UserContext userContext,
 			BoardRepository boardRepository,
+			BookmarkRepository bookmarkRepository,
 			MessageRepository messageRepository,
-			PinRepository pinRepository,
 			NotificationRepository notificationRepository,
 			RoleRepository roleRepository,
 			SmileyRepository smileyRepository,
@@ -47,9 +47,9 @@ namespace Forum.Repositories {
 			UserContext = userContext;
 			AccountRepository = accountRepository;
 			BoardRepository = boardRepository;
+			BookmarkRepository = bookmarkRepository;
 			MessageRepository = messageRepository;
 			NotificationRepository = notificationRepository;
-			PinRepository = pinRepository;
 			RoleRepository = roleRepository;
 			SmileyRepository = smileyRepository;
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
@@ -135,12 +135,12 @@ namespace Forum.Repositories {
 								   message.PostedById,
 								   message.LastReplyId,
 								   message.LastReplyById,
-								   message.LastReplyPosted
+								   message.LastReplyPosted,
+								   message.Pinned
 							   };
 
 			var messages = await messageQuery.ToListAsync();
 			var users = await AccountRepository.Records();
-			var pins = await PinRepository.Records();
 
 			var messagePreviews = new List<ItemModels.MessagePreview>();
 			var today = DateTime.Now.Date;
@@ -157,7 +157,7 @@ namespace Forum.Repositories {
 					Pages = Convert.ToInt32(Math.Ceiling(1.0 * message.ReplyCount / UserContext.ApplicationUser.MessagesPerPage)),
 					LastReplyId = message.Id,
 					Popular = message.ReplyCount > UserContext.ApplicationUser.PopularityLimit,
-					Pinned = pins.Any(item => item.MessageId == message.Id),
+					Pinned = message.Pinned,
 					TimePosted = message.TimePosted,
 					PostedById = message.PostedById,
 					PostedByName = postedBy.DisplayName,
@@ -204,7 +204,8 @@ namespace Forum.Repositories {
 							   where message.ParentId == 0
 							   select new {
 								   message.Id,
-								   message.LastReplyPosted
+								   message.LastReplyPosted,
+								   message.Pinned
 							   };
 
 			if (boardId > 0) {
@@ -214,7 +215,8 @@ namespace Forum.Repositories {
 							   where messageBoard.BoardId == boardId
 							   select new {
 								   message.Id,
-								   message.LastReplyPosted
+								   message.LastReplyPosted,
+								   message.Pinned
 							   };
 			}
 
@@ -222,13 +224,9 @@ namespace Forum.Repositories {
 				messageQuery = messageQuery.Where(m => m.LastReplyPosted > historyTimeLimit);
 			}
 
-			var pins = await PinRepository.Records();
-			var pinnedTopicIds = pins.Select(item => item.MessageId).ToList();
-
 			var sortedMessageQuery = from message in messageQuery
-									 let pinned = pinnedTopicIds.Contains(message.Id)
 									 orderby message.LastReplyPosted descending
-									 orderby pinned descending
+									 orderby message.Pinned descending
 									 select new {
 										 message.Id,
 										 message.LastReplyPosted
@@ -303,7 +301,7 @@ namespace Forum.Repositories {
 			return unread;
 		}
 
-		public ServiceModels.ServiceResponse Pin(int messageId) {
+		public async Task<ServiceModels.ServiceResponse> Pin(int messageId) {
 			var record = DbContext.Messages.Find(messageId);
 
 			if (record is null) {
@@ -314,24 +312,40 @@ namespace Forum.Repositories {
 				messageId = record.ParentId;
 			}
 
-			var existingRecord = DbContext.Pins.FirstOrDefault(p => p.MessageId == messageId && p.UserId == UserContext.ApplicationUser.Id);
+			record.Pinned = !record.Pinned;
 
-			if (existingRecord is null) {
-				var pinRecord = new DataModels.Pin {
+			await DbContext.SaveChangesAsync();
+
+			return new ServiceModels.ServiceResponse();
+		}
+
+		public async Task Bookmark(int messageId) {
+			var record = await DbContext.Messages.FindAsync(messageId);
+
+			if (record is null) {
+				throw new HttpNotFoundError();
+			}
+
+			if (record.ParentId > 0) {
+				messageId = record.ParentId;
+			}
+
+			var existingBookmarkRecord = await DbContext.Bookmarks.FirstOrDefaultAsync(p => p.MessageId == messageId && p.UserId == UserContext.ApplicationUser.Id);
+
+			if (existingBookmarkRecord is null) {
+				var bookmarkRecord = new DataModels.Bookmark {
 					MessageId = messageId,
 					Time = DateTime.Now,
 					UserId = UserContext.ApplicationUser.Id
 				};
 
-				DbContext.Pins.Add(pinRecord);
+				DbContext.Bookmarks.Add(bookmarkRecord);
 			}
 			else {
-				DbContext.Pins.Remove(existingRecord);
+				DbContext.Bookmarks.Remove(existingBookmarkRecord);
 			}
 
-			DbContext.SaveChanges();
-
-			return new ServiceModels.ServiceResponse();
+			await DbContext.SaveChangesAsync();
 		}
 
 		public ServiceModels.ServiceResponse MarkAllRead() {
@@ -499,7 +513,7 @@ namespace Forum.Repositories {
 			await RemoveTopicParticipants(sourceMessage, targetMessage);
 			await MessageRepository.RebuildParticipantsForTopic(targetMessage.Id);
 			RemoveTopicViewlogs(sourceMessage, targetMessage);
-			RemoveTopicPins(sourceMessage);
+			RemoveTopicBookmarks(sourceMessage);
 			RemoveTopicMessageBoards(sourceMessage);
 		}
 
@@ -526,8 +540,8 @@ namespace Forum.Repositories {
 			DbContext.SaveChanges();
 		}
 
-		public void RemoveTopicPins(DataModels.Message sourceMessage) {
-			var records = DbContext.Pins.Where(item => item.MessageId == sourceMessage.Id);
+		public void RemoveTopicBookmarks(DataModels.Message sourceMessage) {
+			var records = DbContext.Bookmarks.Where(item => item.MessageId == sourceMessage.Id);
 			DbContext.RemoveRange(records);
 			DbContext.SaveChanges();
 		}

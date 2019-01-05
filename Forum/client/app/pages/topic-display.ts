@@ -41,6 +41,11 @@ export class TopicDisplay {
 
 		this.bindMessageEventListeners();
 
+		this.doc.querySelectorAll('.bookmark-button').forEach(element => {
+			element.addEventListener('mouseenter', this.eventToggleBookmarkImage);
+			element.addEventListener('mouseleave', this.eventToggleBookmarkImage);
+		});
+
 		this.doc.querySelectorAll('[toggle-board]').forEach(element => {
 			element.addEventListener('click', this.eventToggleBoard);
 		});
@@ -418,6 +423,22 @@ export class TopicDisplay {
 		}
 		else {
 			window.location.href = `/Messages/AddThought/${this.thoughtSelectorMessageId}?smiley=${smileyId}`;
+		}
+	}
+
+	eventToggleBookmarkImage = (event: Event): void => {
+		var bookmarkImageSpan = <HTMLElement>event.currentTarget;
+		var bookmarkImage = bookmarkImageSpan.querySelector('img');
+
+		if (bookmarkImage) {
+			var status = this.settings.bookmarked ? 'on' : 'off';
+
+			if (bookmarkImage.src.includes('hover')) {
+				bookmarkImage.src = bookmarkImage.src.replace('hover', status);
+			}
+			else {
+				bookmarkImage.src = bookmarkImage.src.replace(status, 'hover');
+			}
 		}
 	}
 }

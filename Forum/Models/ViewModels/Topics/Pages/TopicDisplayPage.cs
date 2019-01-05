@@ -10,14 +10,17 @@ namespace Forum.Models.ViewModels.Topics.Pages {
 		public List<Messages.DisplayMessage> Messages { get; internal set; }
 		public List<IndexCategory>	Categories { get; set; }
 		public List<IndexBoard> AssignedBoards { get; set; }
-		public bool CanManage { get; internal set; }
+		public bool IsAuthenticated { get; internal set; }
+		public bool IsOwner { get; internal set; }
+		public bool IsAdmin { get; set; }
+		public bool IsBookmarked { get; set; }
+		public bool IsPinned { get; set; }
+		public bool ShowFavicons { get; set; }
 		public int TotalPages { get; internal set; }
 		public int ViewCount { get; set; }
 		public int ReplyCount { get; set; }
 		public int CurrentPage { get; internal set; }
-		public bool IsAuthenticated { get; internal set; }
 		public IMessageViewModel ReplyForm { get; set; }
 		public string RedirectPath { get; set; }
-		public bool ShowFavicons { get; set; }
 	}
 }

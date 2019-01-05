@@ -8,21 +8,21 @@ using System.Threading.Tasks;
 namespace Forum.Repositories {
 	using DataModels = Models.DataModels;
 
-	public class PinRepository : IRepository<DataModels.Pin> {
-		public async Task<List<DataModels.Pin>> Records() {
+	public class BookmarkRepository : IRepository<DataModels.Bookmark> {
+		public async Task<List<DataModels.Bookmark>> Records() {
 			if (_Records is null) {
-				var records = await DbContext.Pins.Where(r => r.UserId == UserContext.ApplicationUser.Id).ToListAsync();
+				var records = await DbContext.Bookmarks.Where(r => r.UserId == UserContext.ApplicationUser.Id).ToListAsync();
 				_Records = records.OrderByDescending(item => item.Id).ToList();
 			}
 
 			return _Records;
 		}
-		List<DataModels.Pin> _Records;
+		List<DataModels.Bookmark> _Records;
 
 		ApplicationDbContext DbContext { get; }
 		UserContext UserContext { get; }
 
-		public PinRepository(
+		public BookmarkRepository(
 			ApplicationDbContext dbContext,
 			UserContext userContext
 		) {

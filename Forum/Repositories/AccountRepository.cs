@@ -526,7 +526,7 @@ namespace Forum.Repositories {
 				updateTasks.AddRange(new List<Task> {
 					DbContext.Database.ExecuteSqlCommandAsync($"DELETE FROM [{nameof(ApplicationDbContext.Notifications)}] WHERE {nameof(DataModels.Notification.UserId)} = @SourceId", pSourceId),
 					DbContext.Database.ExecuteSqlCommandAsync($"DELETE FROM [{nameof(ApplicationDbContext.Participants)}] WHERE {nameof(DataModels.Participant.UserId)} = @SourceId", pSourceId),
-					DbContext.Database.ExecuteSqlCommandAsync($"DELETE FROM [{nameof(ApplicationDbContext.Pins)}] WHERE {nameof(DataModels.Pin.UserId)} = @SourceId", pSourceId),
+					DbContext.Database.ExecuteSqlCommandAsync($"DELETE FROM [{nameof(ApplicationDbContext.Bookmarks)}] WHERE {nameof(DataModels.Bookmark.UserId)} = @SourceId", pSourceId),
 					DbContext.Database.ExecuteSqlCommandAsync($"DELETE FROM [{nameof(ApplicationDbContext.ViewLogs)}] WHERE {nameof(DataModels.ViewLog.UserId)} = @SourceId", pSourceId),
 					DbContext.Database.ExecuteSqlCommandAsync($"DELETE FROM [{nameof(ApplicationDbContext.Quotes)}] WHERE {nameof(DataModels.Quote.PostedById)} = @SourceId", pSourceId),
 					DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [{nameof(ApplicationDbContext.Messages)}] SET {nameof(DataModels.Message.EditedById)} = @TargetId WHERE {nameof(DataModels.Message.EditedById)} = @SourceId", pSourceId, pTargetId),
@@ -547,7 +547,7 @@ namespace Forum.Repositories {
 				updateTasks.AddRange(new List<Task> {
 					DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [{nameof(ApplicationDbContext.Notifications)}] SET {nameof(DataModels.Notification.UserId)} = @TargetId WHERE {nameof(DataModels.Notification.UserId)} = @SourceId", pSourceId, pTargetId),
 					DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [{nameof(ApplicationDbContext.Participants)}] SET {nameof(DataModels.Participant.UserId)} = @TargetId WHERE {nameof(DataModels.Participant.UserId)} = @SourceId", pSourceId, pTargetId),
-					DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [{nameof(ApplicationDbContext.Pins)}] SET {nameof(DataModels.Pin.UserId)} = @TargetId WHERE {nameof(DataModels.Bookmark.UserId)} = @SourceId", pSourceId, pTargetId),
+					DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [{nameof(ApplicationDbContext.Bookmarks)}] SET {nameof(DataModels.Bookmark.UserId)} = @TargetId WHERE {nameof(DataModels.Bookmark.UserId)} = @SourceId", pSourceId, pTargetId),
 					DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [{nameof(ApplicationDbContext.ViewLogs)}] SET {nameof(DataModels.ViewLog.UserId)} = @TargetId WHERE {nameof(DataModels.ViewLog.UserId)} = @SourceId", pSourceId, pTargetId),
 					DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [{nameof(ApplicationDbContext.Quotes)}] SET {nameof(DataModels.Quote.PostedById)} = @TargetId WHERE {nameof(DataModels.Quote.PostedById)} = @SourceId", pSourceId, pTargetId),
 					DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [{nameof(ApplicationDbContext.Messages)}] SET {nameof(DataModels.Message.PostedById)} = @TargetId WHERE {nameof(DataModels.Message.PostedById)} = @SourceId", pSourceId, pTargetId),

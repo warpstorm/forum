@@ -166,3 +166,11 @@ blockquote.card {
 .link-favicon {
 	vertical-align: middle;
 }
+
+.bookmark-button {
+	float: right;
+	margin-top: -20px;
+	margin-left: 10px;
+	width: 37px;
+	height: 71px;
+}

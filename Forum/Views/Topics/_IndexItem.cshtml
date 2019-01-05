@@ -1,9 +1,6 @@
 ﻿@model MessagePreview
 
 <div class="content-box gap hover-highlight">
-	<div class="pin float-right small-pad-top gap">
-		<a asp-action="@nameof(Topics.Pin)" asp-route-id="@Model.Id"><img src="~/images/unpinned.png" /></a>
-	</div>
 	<div class="details pad" clickable-link-parent>
 		<p>
 			<a asp-action="@nameof(Topics.Latest)" asp-route-id="@Model.Id">

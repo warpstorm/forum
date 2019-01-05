@@ -25,6 +25,7 @@ namespace Forum.Controllers {
 		Sidebar Sidebar { get; }
 
 		BoardRepository BoardRepository { get; }
+		BookmarkRepository BookmarkRepository { get; }
 		MessageRepository MessageRepository { get; }
 		RoleRepository RoleRepository { get; }
 		SmileyRepository SmileyRepository { get; }
@@ -37,6 +38,7 @@ namespace Forum.Controllers {
 			ApplicationDbContext applicationDbContext,
 			UserContext userContext,
 			BoardRepository boardRepository,
+			BookmarkRepository bookmarkRepository,
 			MessageRepository messageRepository,
 			RoleRepository roleRepository,
 			SmileyRepository smileyRepository,
@@ -50,6 +52,7 @@ namespace Forum.Controllers {
 			UserContext = userContext;
 
 			BoardRepository = boardRepository;
+			BookmarkRepository = bookmarkRepository;
 			MessageRepository = messageRepository;
 			RoleRepository = roleRepository;
 			SmileyRepository = smileyRepository;
@@ -272,13 +275,20 @@ namespace Forum.Controllers {
 			return ForumViewResult.RedirectToReferrer(this);
 		}
 
+		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
 		public async Task<IActionResult> Pin(int id) {
 			if (ModelState.IsValid) {
-				var serviceResponse = TopicRepository.Pin(id);
+				var serviceResponse = await TopicRepository.Pin(id);
 				return await ForumViewResult.RedirectFromService(this, serviceResponse);
 			}
 
+			return ForumViewResult.RedirectToReferrer(this);
+		}
+
+		[HttpGet]
+		public async Task<IActionResult> Bookmark(int id) {
+			await TopicRepository.Bookmark(id);
 			return ForumViewResult.RedirectToReferrer(this);
 		}
 
@@ -387,6 +397,8 @@ namespace Forum.Controllers {
 			}
 
 			if (string.IsNullOrEmpty(viewModel.RedirectPath)) {
+				var bookmarked = (await BookmarkRepository.Records()).Any(r => r.MessageId == topicId);
+
 				var assignedBoards = await LoadTopicBoards(topicId);
 
 				if (pageId < 1) {
@@ -420,12 +432,15 @@ namespace Forum.Controllers {
 					Categories = await BoardRepository.CategoryIndex(),
 					AssignedBoards = new List<ViewModels.Boards.Items.IndexBoard>(),
 					IsAuthenticated = UserContext.IsAuthenticated,
-					CanManage = UserContext.IsAdmin || record.PostedById == UserContext.ApplicationUser?.Id,
+					IsOwner = record.PostedById == UserContext.ApplicationUser?.Id,
+					IsAdmin = UserContext.IsAdmin,
+					IsBookmarked = bookmarked,
+					IsPinned = record.Pinned,
+					ShowFavicons = UserContext.ApplicationUser.ShowFavicons,
 					TotalPages = totalPages,
 					ReplyCount = record.ReplyCount,
 					ViewCount = record.ViewCount,
 					CurrentPage = pageId,
-					ShowFavicons = UserContext.ApplicationUser.ShowFavicons,
 					ReplyForm = new ItemModels.ReplyForm {
 						Id = record.Id.ToString()
 					}
@@ -446,13 +461,13 @@ namespace Forum.Controllers {
 
 		public async Task<List<Models.DataModels.Board>> LoadTopicBoards(int topicId) {
 			var messageBoardsQuery = from messageBoard in DbContext.MessageBoards
-									  where messageBoard.MessageId == topicId
-									  select messageBoard.BoardId;
+									 where messageBoard.MessageId == topicId
+									 select messageBoard.BoardId;
 
 			var boardIds = messageBoardsQuery.ToList();
 			var assignedBoards = (await BoardRepository.Records()).Where(r => boardIds.Contains(r.Id)).ToList();
 
-			if (! await RoleRepository.CanAccessBoards(assignedBoards)) {
+			if (!await RoleRepository.CanAccessBoards(assignedBoards)) {
 				throw new HttpForbiddenError();
 			}
 

@@ -26,23 +26,25 @@ namespace Forum.Services {
 			return controller.Redirect(referrer);
 		}
 
-		public async Task<IActionResult> RedirectFromService(Controller controller, ServiceModels.ServiceResponse serviceResponse, Func<Task<IActionResult>> failAsync = null, Func<IActionResult> failSync = null) {
-			if (!string.IsNullOrEmpty(serviceResponse.Message)) {
-				controller.TempData[Constants.InternalKeys.StatusMessage] = serviceResponse.Message;
-			}
-
-			foreach (var kvp in serviceResponse.Errors) {
-				controller.ModelState.AddModelError(kvp.Key, kvp.Value);
-			}
-
-			if (serviceResponse.Success) {
-				var redirectPath = serviceResponse.RedirectPath;
-
-				if (string.IsNullOrEmpty(redirectPath)) {
-					redirectPath = GetReferrer(controller);
+		public async Task<IActionResult> RedirectFromService(Controller controller, ServiceModels.ServiceResponse serviceResponse = null, Func<Task<IActionResult>> failAsync = null, Func<IActionResult> failSync = null) {
+			if (!(serviceResponse is null)) {
+				if (!string.IsNullOrEmpty(serviceResponse.Message)) {
+					controller.TempData[Constants.InternalKeys.StatusMessage] = serviceResponse.Message;
 				}
 
-				return controller.Redirect(redirectPath);
+				foreach (var kvp in serviceResponse.Errors) {
+					controller.ModelState.AddModelError(kvp.Key, kvp.Value);
+				}
+
+				if (serviceResponse.Success) {
+					var redirectPath = serviceResponse.RedirectPath;
+
+					if (string.IsNullOrEmpty(redirectPath)) {
+						redirectPath = GetReferrer(controller);
+					}
+
+					return controller.Redirect(redirectPath);
+				}
 			}
 
 			if (!(failAsync is null)) {
@@ -103,6 +105,10 @@ namespace Forum.Services {
 
 			if (string.IsNullOrEmpty(referrer)) {
 				controller.Request.Query.TryGetValue("Referer", out referrer);
+			}
+
+			if (string.IsNullOrEmpty(referrer)) {
+				referrer = controller.Request.Headers["Referer"].ToString();
 			}
 
 			if (string.IsNullOrEmpty(referrer)) {

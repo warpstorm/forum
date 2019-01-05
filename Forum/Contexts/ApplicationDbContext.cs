@@ -10,13 +10,13 @@ namespace Forum.Contexts {
 	public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, string> {
 		public DbSet<Board> Boards { get; set; }
 		public DbSet<BoardRole> BoardRoles { get; set; }
+		public DbSet<Bookmark> Bookmarks { get; set; }
 		public DbSet<Category> Categories { get; set; }
 		public DbSet<MessageBoard> MessageBoards { get; set; }
 		public DbSet<Message> Messages { get; set; }
 		public DbSet<MessageThought> MessageThoughts { get; set; }
 		public DbSet<Notification> Notifications { get; set; }
 		public DbSet<Participant> Participants { get; set; }
-		public DbSet<Pin> Pins { get; set; }
 		public DbSet<Quote> Quotes { get; set; }
 		public DbSet<Smiley> Smileys { get; set; }
 		public DbSet<StrippedUrl> StrippedUrls { get; set; }
@@ -106,10 +106,10 @@ namespace Forum.Contexts {
 			modelBuilder.Entity<Message>()
 				.HasIndex(r => r.PostedById);
 
-			modelBuilder.Entity<Pin>()
+			modelBuilder.Entity<Bookmark>()
 				.HasIndex(r => r.MessageId);
 
-			modelBuilder.Entity<Pin>()
+			modelBuilder.Entity<Bookmark>()
 				.HasIndex(r => r.UserId);
 
 			modelBuilder.Entity<Quote>()

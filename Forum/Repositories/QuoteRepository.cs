@@ -27,7 +27,7 @@ namespace Forum.Repositories {
 			UserContext userContext,
 			AccountRepository accountRepository,
 			MessageRepository messageRepository,
-			ILogger<PinRepository> log
+			ILogger<BookmarkRepository> log
 		) {
 			DbContext = dbContext;
 			UserContext = userContext;

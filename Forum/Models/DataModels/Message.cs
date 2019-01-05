@@ -58,6 +58,7 @@ namespace Forum.Models.DataModels {
 		public int ViewCount { get; set; }
 		public int ReplyCount { get; set; }
 
+		public bool Pinned { get; set; }
 		public bool Processed { get; set; }
 
 		public int LegacyId { get; set; }
