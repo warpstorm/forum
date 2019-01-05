@@ -132,7 +132,7 @@ export class Navigation {
 		if (url) {
 			switch ((<KeyboardEvent>event).which) {
 				case 1:
-					if ((<KeyboardEvent>event).shiftKey) {
+					if ((<KeyboardEvent>event).shiftKey || (<KeyboardEvent>event).ctrlKey) {
 						this.win.open(url, '_blank');
 					}
 					else {
