@@ -14,11 +14,13 @@ export class WhosOnlineMonitor {
 	}
 
 	init(): void {
-		if (this.app.hub) {
-			this.bindHubActions();
-		}
+		if (document.querySelector("[sidebar='whos-online']")) {
+			if (this.app.hub) {
+				this.bindHubActions();
+			}
 
-		this.bindChicletMonitor();
+			this.bindChicletMonitor();
+		}
 	}
 
 	bindHubActions = () => {
@@ -37,7 +39,7 @@ export class WhosOnlineMonitor {
 				let chicletTime = new Date(chicletTimeValue);
 				
 				// 5 minute expiration
-				let expiration = new Date(chicletTime.getTime() + 5 * 60 * 1000); 
+				let expiration = new Date(chicletTime.getTime() + 5 * 1000); 
 
 				let difference = expiration.getTime() - new Date().getTime();
 
@@ -75,6 +77,8 @@ export class WhosOnlineMonitor {
 							targetElement.remove();
 						}
 					});
+
+					this.bindChicletMonitor();
 				})
 				.catch(Xhr.logRejected);
 						
