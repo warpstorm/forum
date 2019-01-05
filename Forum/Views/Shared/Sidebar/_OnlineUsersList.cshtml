@@ -13,7 +13,7 @@
 					@if (onlineUser.IsBirthday) {
 						<img src="~/images/hbd.png" alt="Happy birthday!" title="Happy birthday!" />
 					}
-					<a asp-controller="@nameof(Profile)" asp-action="@nameof(Profile.History)" asp-route-id="@onlineUser.Id">@onlineUser.Name</a>
+					<a asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.History)" asp-route-id="@onlineUser.Id">@onlineUser.Name</a>
 				</span>
 				<passed-time class="font-tiny dark-text" time="@onlineUser.LastOnline" />
 			</li>

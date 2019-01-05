@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Forum.Models.ViewModels.Profile {
+namespace Forum.Models.ViewModels.Messages {
 	public class HistoryPage {
 		public string Id { get; set; }
 		public string DisplayName { get; set; }
@@ -9,6 +9,6 @@ namespace Forum.Models.ViewModels.Profile {
 		public bool ShowFavicons { get; set; }
 		public bool MorePages { get; set; }
 
-		public List<Messages.DisplayMessage> Messages { get; set; }
+		public List<DisplayMessage> Messages { get; set; }
 	}
 }

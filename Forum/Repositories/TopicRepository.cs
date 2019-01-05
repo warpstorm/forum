@@ -114,18 +114,9 @@ namespace Forum.Repositories {
 			return serviceResponse;
 		}
 
-		public async Task<List<ItemModels.MessagePreview>> GetPreviews(int boardId, int page, int unread) {
-			var participation = new List<DataModels.Participant>();
-			var historyTimeLimit = DateTime.Now.AddDays(-14);
-
-			if (UserContext.IsAuthenticated) {
-				participation = await DbContext.Participants.Where(r => r.UserId == UserContext.ApplicationUser.Id).ToListAsync();
-			}
-
-			var sortedMessageIds = await GetIndexIds(boardId, page, unread, historyTimeLimit, participation);
-
+		public async Task<List<ItemModels.MessagePreview>> GetPreviews(List<int> messageIds) {
 			var messageQuery = from message in DbContext.Messages
-							   where sortedMessageIds.Contains(message.Id)
+							   where messageIds.Contains(message.Id)
 							   select new {
 								   message.Id,
 								   message.ShortPreview,
@@ -145,7 +136,7 @@ namespace Forum.Repositories {
 			var messagePreviews = new List<ItemModels.MessagePreview>();
 			var today = DateTime.Now.Date;
 
-			foreach (var messageId in sortedMessageIds) {
+			foreach (var messageId in messageIds) {
 				var message = messages.First(item => item.Id == messageId);
 				var postedBy = users.First(r => r.Id == message.PostedById);
 
@@ -188,17 +179,20 @@ namespace Forum.Repositories {
 					}
 				}
 
+				var historyTimeLimit = DateTime.Now.AddDays(-14);
+
 				if (lastMessageTime > historyTimeLimit) {
-					messagePreview.Unread = GetUnreadLevel(message.Id, lastMessageTime, participation);
+					messagePreview.Unread = GetUnreadLevel(message.Id, lastMessageTime);
 				}
 			}
 
 			return messagePreviews;
 		}
 
-		public async Task<List<int>> GetIndexIds(int boardId, int page, int unreadFilter, DateTime historyTimeLimit, List<DataModels.Participant> participation) {
+		public async Task<List<int>> GetIndexIds(int boardId, int page, int unreadFilter) {
 			var take = UserContext.ApplicationUser.TopicsPerPage;
 			var skip = (page - 1) * take;
+			var historyTimeLimit = DateTime.Now.AddDays(-14);
 
 			var messageQuery = from message in DbContext.Messages
 							   where message.ParentId == 0
@@ -245,7 +239,7 @@ namespace Forum.Repositories {
 					continue;
 				}
 
-				var unreadLevel = unreadFilter == 0 ? 0 : GetUnreadLevel(message.Id, message.LastReplyPosted, participation);
+				var unreadLevel = unreadFilter == 0 ? 0 : GetUnreadLevel(message.Id, message.LastReplyPosted);
 
 				if (unreadLevel < unreadFilter) {
 					if (attempts++ > 100) {
@@ -269,7 +263,7 @@ namespace Forum.Repositories {
 			return messageIds;
 		}
 		
-		public int GetUnreadLevel(int messageId, DateTime lastMessageTime, List<DataModels.Participant> participation) {
+		public int GetUnreadLevel(int messageId, DateTime lastMessageTime) {
 			var unread = 1;
 
 			if (UserContext.IsAuthenticated) {
@@ -294,7 +288,7 @@ namespace Forum.Repositories {
 				}
 			}
 
-			if (unread == 1 && participation.Any(r => r.MessageId == messageId)) {
+			if (unread == 1 && DbContext.Participants.Any(r => r.MessageId == messageId && r.UserId == UserContext.ApplicationUser.Id)) {
 				unread = 2;
 			}
 

@@ -76,7 +76,9 @@ namespace Forum.Controllers {
 			var sidebar = await Sidebar.Generate();
 
 			var page = 1;
-			var topicPreviews = await TopicRepository.GetPreviews(id, page, unread);
+
+			var messageIds = await TopicRepository.GetIndexIds(id, page, unread);
+			var topicPreviews = await TopicRepository.GetPreviews(messageIds);
 
 			var boardRecord = id == 0 ? null : (await BoardRepository.Records()).FirstOrDefault(record => record.Id == id);
 
@@ -93,6 +95,18 @@ namespace Forum.Controllers {
 		}
 
 		[HttpGet]
+		public async Task<IActionResult> Bookmarks() {
+			var messageIds = (await BookmarkRepository.Records()).Select(r => r.MessageId).ToList();
+			var topicPreviews = await TopicRepository.GetPreviews(messageIds);
+
+			var viewModel = new PageModels.TopicBookmarksPage {
+				Topics = topicPreviews
+			};
+
+			return await ForumViewResult.ViewResult(this, viewModel);
+		}
+
+		[HttpGet]
 		public async Task<IActionResult> IndexMore(int id = 0, int page = 0, int unread = 0) {
 			var boardRoles = (from role in await RoleRepository.BoardRoles()
 							  where role.BoardId == id
@@ -102,7 +116,8 @@ namespace Forum.Controllers {
 				throw new HttpForbiddenError();
 			}
 
-			var topicPreviews = await TopicRepository.GetPreviews(id, page, unread);
+			var messageIds = await TopicRepository.GetIndexIds(id, page, unread);
+			var topicPreviews = await TopicRepository.GetPreviews(messageIds);
 
 			ViewData[Constants.InternalKeys.Layout] = "_LayoutEmpty";
 
@@ -124,7 +139,8 @@ namespace Forum.Controllers {
 				throw new HttpNotFoundError();
 			}
 
-			var topicPreviews = await TopicRepository.GetPreviews(0, 1, 0);
+			var messageIds = await TopicRepository.GetIndexIds(0, 1, 0);
+			var topicPreviews = await TopicRepository.GetPreviews(messageIds);
 
 			foreach (var topicPreview in topicPreviews.ToList()) {
 				if (topicPreview.Id == id) {
@@ -155,7 +171,8 @@ namespace Forum.Controllers {
 				throw new HttpNotFoundError();
 			}
 
-			var topicPreviews = await TopicRepository.GetPreviews(0, page, 0);
+			var messageIds = await TopicRepository.GetIndexIds(0, page, 0);
+			var topicPreviews = await TopicRepository.GetPreviews(messageIds);
 
 			foreach (var topicPreview in topicPreviews.ToList()) {
 				if (topicPreview.Id == id) {

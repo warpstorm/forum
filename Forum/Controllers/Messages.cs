@@ -17,6 +17,8 @@ namespace Forum.Controllers {
 
 	public class Messages : Controller {
 		ApplicationDbContext DbContext { get; }
+		UserContext UserContext { get; }
+		AccountRepository AccountRepository { get; }
 		BoardRepository BoardRepository { get; }
 		MessageRepository MessageRepository { get; }
 		SmileyRepository SmileyRepository { get; }
@@ -25,6 +27,8 @@ namespace Forum.Controllers {
 
 		public Messages(
 			ApplicationDbContext dbContext,
+			UserContext userContext,
+			AccountRepository accountRepository,
 			BoardRepository boardRepository,
 			MessageRepository messageRepository,
 			SmileyRepository smileyRepository,
@@ -33,6 +37,8 @@ namespace Forum.Controllers {
 			IUrlHelperFactory urlHelperFactory
 		) {
 			DbContext = dbContext;
+			UserContext = userContext;
+			AccountRepository = accountRepository;
 			BoardRepository = boardRepository;
 			MessageRepository = messageRepository;
 			SmileyRepository = smileyRepository;
@@ -150,6 +156,40 @@ namespace Forum.Controllers {
 			}
 
 			return ForumViewResult.RedirectToReferrer(this);
+		}
+
+		[HttpGet]
+		public async Task<IActionResult> History(string id, int page = 1) {
+			if (string.IsNullOrEmpty(id)) {
+				id = UserContext.ApplicationUser.Id;
+			}
+
+			var userRecord = (await AccountRepository.Records()).FirstOrDefault(item => item.Id == id);
+
+			if (userRecord is null) {
+				throw new HttpNotFoundError();
+			}
+
+			var messages = await MessageRepository.GetUserMessages(id, page);
+			var morePages = true;
+
+			if (messages.Count < UserContext.ApplicationUser.MessagesPerPage) {
+				morePages = false;
+			}
+
+			messages = messages.OrderByDescending(r => r.TimePosted).ToList();
+
+			var viewModel = new ViewModels.Messages.HistoryPage {
+				Id = userRecord.Id,
+				DisplayName = userRecord.DisplayName,
+				Email = userRecord.Email,
+				CurrentPage = page,
+				MorePages = morePages,
+				ShowFavicons = UserContext.ApplicationUser.ShowFavicons,
+				Messages = messages,
+			};
+
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[Authorize(Roles = Constants.InternalKeys.Admin)]

@@ -1,0 +1,24 @@
+@model TopicBookmarksPage
+
+<section id="topic-list">
+	@if (Model.Topics.Any()) {
+		@foreach (var item in Model.Topics) {
+			<partial name="_IndexItem" for="@item" />
+		}
+	}
+	else {
+		<text><span class="small-pad-top">No topics found that matched the specified criteria.</span></text>
+	}
+</section>
+
+@{ViewData["Title"] = "Your bookmarks";}
+@section Header {@ViewData["Title"]}
+
+@section scripts {
+	<script>
+	</script>
+}
+
+@section styles {
+	<link rel="stylesheet" href="~/styles/topic-index.css" asp-append-version="true" />
+}
