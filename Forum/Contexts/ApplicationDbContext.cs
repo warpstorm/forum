@@ -2,6 +2,9 @@
 using Forum.Models.DataModels;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Forum.Contexts {
 	public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, string> {
@@ -20,6 +23,44 @@ namespace Forum.Contexts {
 		public DbSet<ViewLog> ViewLogs { get; set; }
 
 		public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
+
+		/// <summary>
+		/// Standard SaveChanges, with a blunt-force concurrency exception handler to retry 3 times before failing.
+		/// </summary>
+		public override int SaveChanges() {
+			var attempts = 0;
+
+			while (true) {
+				try {
+					attempts++;
+					return base.SaveChanges();
+				}
+				catch (DbUpdateConcurrencyException ex) when (attempts <= 3) {
+					foreach (var entry in ex.Entries) {
+						ex.Entries.Single().Reload();
+					}
+				}
+			}
+		}
+
+		/// <summary>
+		/// Standard SaveChangesAsync, with a blunt-force concurrency exception handler to retry 3 times before failing.
+		/// </summary>
+		public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) {
+			var attempts = 0;
+
+			while (true) {
+				try {
+					attempts++;
+					return await base.SaveChangesAsync(cancellationToken);
+				}
+				catch (DbUpdateConcurrencyException ex) when (attempts <= 3) {
+					foreach (var entry in ex.Entries) {
+						await ex.Entries.Single().ReloadAsync();
+					}
+				}
+			}
+		}
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder) {
 			base.OnModelCreating(modelBuilder);

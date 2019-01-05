@@ -461,12 +461,7 @@ namespace Forum.Repositories {
 				}
 			}
 
-			try {
-				DbContext.SaveChanges();
-			}
-			// see - https://docs.microsoft.com/en-us/ef/core/saving/concurrency
-			// The user probably refreshed several times in a row.
-			catch (DbUpdateConcurrencyException) { }
+			DbContext.SaveChanges();
 		}
 
 		public async Task<ServiceModels.ServiceResponse> Merge(int sourceId, int targetId) {

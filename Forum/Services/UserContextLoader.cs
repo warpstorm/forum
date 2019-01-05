@@ -104,17 +104,14 @@ namespace Forum.Services {
 
 			DbContext.ViewLogs.RemoveRange(expiredViewLogsQuery);
 
-			// Prevents concurrency collision between threads.
-			historyTimeLimit = historyTimeLimit.AddSeconds(30);
-
 			DbContext.ViewLogs.Add(new DataModels.ViewLog {
-				LogTime = historyTimeLimit,
+				LogTime = historyTimeLimit.AddSeconds(5),
 				TargetType = EViewLogTargetType.All,
 				UserId = userContext.ApplicationUser.Id
 			});
 
 			await DbContext.SaveChangesAsync();
-			
+
 			userContext.ViewLogs = await viewLogsQuery.ToListAsync();
 		}
 
