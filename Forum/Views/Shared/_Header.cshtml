@@ -26,12 +26,11 @@
 			</li>
 
 			<li class='open-menu open-menu-hover'>
-				<span class='small-button pointer'>Boards</span>					
+				<span class='small-button pointer'>Boards</span>
 				<div class='menu-wrapper hidden align-left'>
 					<ul class='drop-down-menu content-box'>
 						<li class='hover-highlight' clickable-link-parent><a asp-controller='@nameof(Boards)' asp-action='@nameof(Boards.Index)'>Board Index</a></li>
-						@if(ViewData["Categories"] != null)
-						{
+						@if (ViewData["Categories"] != null) {
 							foreach (BoardItemViewModels.IndexCategory category in ViewData["Categories"] as List<BoardItemViewModels.IndexCategory>) {
 								<li>
 									@category.Name
@@ -76,11 +75,8 @@
 				</li>
 			}
 		}
-		else {
-			<li><a class='small-button' asp-action='@nameof(Account.Register)' asp-controller='@nameof(Account)'>Register</a></li>
-			<li><a class='small-button' asp-action='@nameof(Account.Login)' asp-controller='@nameof(Account)'>Log in</a></li>
-		}
 		<li><a class='small-button' target='_blank' href='https://github.com/jyarbro/forum/wiki'>Wiki</a></li>
+		<li><a class='small-button' target='_blank' href='https://github.com/jyarbro/forum/issues'>Issues</a></li>
 	</ul>
 		
 	<br class='clear' />

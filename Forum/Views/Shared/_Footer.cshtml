@@ -7,9 +7,11 @@
 		pageTimer.Stop();
 		var pageTimerSeconds = 1D * pageTimer.ElapsedMilliseconds / 1000;
 
-		timerOutput = $"| Loaded in {pageTimerSeconds} seconds";
+		timerOutput = $"Loaded in {pageTimerSeconds} seconds";
 	}
 }
+
+<br class="clear" />
 
 <footer id="page-footer" class="align-center">
 	@if (User.Identity.IsAuthenticated) {
@@ -20,9 +22,13 @@
 		</ul>
 	}
 
-	<p><a href="https://github.com/jyarbro/forum/commits/master">Theme @Constants.Versions.Theme | Code @Constants.Versions.Code @timerOutput</a></p>
-	<p><span id="easter-egg">Bringing disorder to chaos for @siteAge years.</span></p>
+	<p class="font-small small-pad"><span id="easter-egg">Bringing disorder to chaos for @siteAge years.</span></p>
+	<p class="font-tiny subdued-text">@timerOutput</p>
+	<p class="font-tiny subdued-text"><a href="https://github.com/jyarbro/forum/commits/master" title="Click here for what's changed">v@(Constants.Versions.Code)</a></p>
 	<div id="danger-sign" class="hidden">
 		<img src="~/images/dangerSign.png" />
 	</div>
+	<p class="font-tiny dark-text small-pad"><a href="https://github.com/jyarbro/forum/wiki/Legal-Statements">Legal Stuff</a></p>
 </footer>
+
+<br class="clear" />

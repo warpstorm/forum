@@ -3,6 +3,8 @@
 @model LoginPage
 
 <section class="content-box pad">
+	<p><a class="button" asp-action="@nameof(Account.Register)" asp-route-returnurl="@ViewData["Referrer"]">Are you new user?</a></p>
+
 	<form method="post"
 		  asp-controller="@nameof(Account)"
 		  asp-action="@nameof(Account.Login)"
@@ -26,16 +28,11 @@
 			<dt><input asp-for="@Model.RememberMe" /> Remember Me</dt>
 		</dl>
 
-		<ul>
-			<li><button>Log in</button></li>
-			<li><a class="button" asp-action="@nameof(Account.Register)" asp-route-returnurl="@ViewData["Referrer"]">Register as a new user?</a></li>
-			<li><a class="button" asp-action="@nameof(Account.ForgotPassword)">Forgot your password?</a></li>
-		</ul>
+		<p><button>Log in</button></p>
+		<p class="subdued-text font-small pad-top"><a asp-action="@nameof(Account.ForgotPassword)">Forgot your password?</a></p>
 
 		<partial name="_Recaptcha3" />
 	</form>
-
-	<p class="gap-top">Problems? Email me: yarbro@outlook.com</p>
 </section>
 
 @{ViewData["Title"] = "Warpstorm";}

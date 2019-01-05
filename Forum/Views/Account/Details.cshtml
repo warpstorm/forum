@@ -36,7 +36,10 @@
 			</dl>
 
 			<dl>
-				<dt>Email</dt>
+				<dt>
+					Email
+					<img src="~/images/thought.png" title="Your email address requires activation, but is only used to reset your password. Consider using a temporary mailbox provider that doesn't require registration, like mailinator.com." />
+				</dt>
 				<dd><input asp-for="@Model.NewEmail" /></dd>
 				@if (!Model.EmailConfirmed) {
 					<dd><a asp-action="@nameof(Account.SendVerificationEmail)" class="button">Send verification email</a></dd>

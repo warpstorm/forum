@@ -179,12 +179,12 @@ br.clear {
 	}
 
 .font-small {
-	line-height: 12pt;
+	line-height: 16pt;
 	font-size: 10pt;
 }
 
 .font-tiny {
-	line-height: 10pt;
+	line-height: 12pt;
 	font-size: 7pt;
 	font-weight: bold;
 	font-family: Verdana;

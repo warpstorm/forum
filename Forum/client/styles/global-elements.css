@@ -78,3 +78,7 @@ video {
 	max-width: 100%;
 	height: auto;
 }
+
+b {
+	text-shadow: 0 0 2px #000000;
+}
