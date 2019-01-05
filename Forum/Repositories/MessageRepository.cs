@@ -151,9 +151,10 @@ namespace Forum.Repositories {
 			var recentReply = (now - replyRecord.LastReplyPosted) < (now - now.AddSeconds(-30));
 
 			if (recentReply && replyRecord.ParentId == 0) {
-				var previousMessageRecord = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == replyRecord.LastReplyId);
+				var targetId = replyRecord.LastReplyId > 0 ? replyRecord.LastReplyId : replyRecord.Id;
+				var previousMessageRecord = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == targetId);
 
-				if (previousMessageRecord.PostedById == UserContext.ApplicationUser.Id) {
+				if (previousMessageRecord?.PostedById == UserContext.ApplicationUser.Id) {
 					await MergeReply(previousMessageRecord, input, serviceResponse);
 					return serviceResponse;
 				}
