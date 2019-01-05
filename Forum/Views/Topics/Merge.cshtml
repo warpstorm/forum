@@ -21,9 +21,10 @@
 @section scripts {
 	<script>
 		window.pageActions = 'topic-index';
-		window.moreAction = 'MergeMore';
+		window.moreAction = 'MergeMore/' + @Model.SourceId;
 		window.page = @Model.Page;
 		window.id = @Model.SourceId;
+		window.unreadFilter = 0;
 	</script>
 }
 

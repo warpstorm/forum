@@ -36,7 +36,7 @@
 @section scripts {
 	<script>
 		window.pageActions = 'topic-index';
-		window.moreAction = 'IndexMore';
+		window.moreAction = 'IndexMore/' + @Model.BoardId;
 		window.boardId = @Model.BoardId;
 		window.page = @Model.Page;
 		window.unreadFilter = @Model.UnreadFilter;

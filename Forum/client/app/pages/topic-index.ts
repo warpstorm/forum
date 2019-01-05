@@ -34,7 +34,7 @@ export class TopicIndex {
 
 		let requestOptions = new XhrOptions({
 			method: HttpMethod.Get,
-			url: `/topics/${(<any>window).moreAction}/${(<any>window).boardId}/?page=${(<any>window).page + 1}`,
+			url: `/topics/${(<any>window).moreAction}/?page=${(<any>window).page + 1}`,
 			responseType: 'document'
 		});
 
