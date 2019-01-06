@@ -1147,7 +1147,7 @@ namespace Forum.Repositories {
 				var user = users.FirstOrDefault(r => r.Id == item.UserId);
 
 				item.Path = smiley.Path;
-				item.Thought = smiley.Thought.Replace("{user}", user.DisplayName);
+				item.Thought = smiley.Thought.Replace("{user}", user.DecoratedName);
 			}
 
 			var messageQuery = from message in DbContext.Messages
@@ -1183,7 +1183,7 @@ namespace Forum.Repositories {
 
 						message.ReplyBody = reply.DisplayBody;
 						message.ReplyPreview = reply.ShortPreview;
-						message.ReplyPostedBy = replyPostedBy?.DisplayName;
+						message.ReplyPostedBy = replyPostedBy?.DecoratedName;
 					}
 				}
 
@@ -1203,7 +1203,7 @@ namespace Forum.Repositories {
 
 				if (!(postedBy is null)) {
 					message.PostedByAvatarPath = postedBy.AvatarPath;
-					message.PostedByName = postedBy.DisplayName;
+					message.PostedByName = postedBy.DecoratedName;
 					message.Poseys = postedBy.Poseys;
 
 					if (DateTime.Now.Date == new DateTime(DateTime.Now.Year, postedBy.Birthday.Month, postedBy.Birthday.Day).Date) {

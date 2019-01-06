@@ -50,9 +50,9 @@ namespace Forum.Repositories {
 					MessageId = record.MessageId,
 					OriginalBody = record.OriginalBody,
 					DisplayBody = record.DisplayBody,
-					PostedBy = postedBy?.DisplayName ?? "Missing User",
+					PostedBy = postedBy?.DecoratedName ?? "Missing User",
 					PostedTime = originalMessage.TimePosted,
-					SubmittedBy = submittedBy?.DisplayName ?? "Missing User",
+					SubmittedBy = submittedBy?.DecoratedName ?? "Missing User",
 					SubmittedTime = record.SubmittedTime,
 					Approved = record.Approved
 				});
@@ -76,7 +76,7 @@ namespace Forum.Repositories {
 			return new ViewModels.Quotes.DisplayQuote {
 				Id = randomQuote.MessageId,
 				DisplayBody = randomQuote.DisplayBody,
-				PostedBy = postedBy.DisplayName
+				PostedBy = postedBy.DecoratedName
 			};
 		}
 

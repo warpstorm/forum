@@ -10,7 +10,7 @@
 					<a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Display)" asp-route-id="@Model.Id"></a>
 				</p>
 			</div>
-			<p class="font-small subdued-text align-right">- @Model.PostedBy</p>
+			<p class="font-small subdued-text align-right">- @Html.Raw(Model.PostedBy)</p>
 		</div>
 	</div>
 }

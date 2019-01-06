@@ -59,7 +59,7 @@ namespace Forum.Repositories {
 
 			foreach (var notification in notifications) {
 				if (!string.IsNullOrEmpty(notification.TargetUserId)) {
-					notification.TargetUser = users.FirstOrDefault(r => r.Id == notification.TargetUserId)?.DisplayName ?? "User";
+					notification.TargetUser = users.FirstOrDefault(r => r.Id == notification.TargetUserId)?.DecoratedName ?? "User";
 				}
 
 				notification.Text = NotificationText(notification);

@@ -42,8 +42,10 @@
 	</ul>
 </footer>
 
-@{ ViewData["Title"] = $"{@Model.DisplayName}'s message history"; }
-@section Header {@ViewData["Title"]}
+@{ ViewData["Title"] = $"Message History"; }
+@section Header {
+	@Html.Raw(Model.DisplayName)'s @ViewData["Title"]
+}
 
 @section scripts {
 	<script>

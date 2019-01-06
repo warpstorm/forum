@@ -181,7 +181,7 @@ namespace Forum.Controllers {
 
 			var viewModel = new ViewModels.Messages.HistoryPage {
 				Id = userRecord.Id,
-				DisplayName = userRecord.DisplayName,
+				DisplayName = userRecord.DecoratedName,
 				Email = userRecord.Email,
 				CurrentPage = page,
 				MorePages = morePages,

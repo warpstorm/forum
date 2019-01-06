@@ -8,7 +8,7 @@
 					@Html.Raw(Model.LastMessage.ShortPreview)
 				</a>
 			</p>
-			<p class="font-small subdued-text">by @Model.LastMessage.LastReplyByName, <passed-time time="@Model.LastMessage.LastReplyPosted" /></p>
+			<p class="font-small subdued-text">by @Html.Raw(Model.LastMessage.LastReplyByName), <passed-time time="@Model.LastMessage.LastReplyPosted" /></p>
 		}
 	</div>
 
@@ -18,7 +18,7 @@
 
 		@if (Model.LastMessage != null) {
 			<div class="board-last-post pad mobile-show" clickable-link-parent>
-				<p class="font-small subdued-text">Last post by @Model.LastMessage.LastReplyByName, <passed-time time="@Model.LastMessage.LastReplyPosted" />
+				<p class="font-small subdued-text">Last post by @Html.Raw(Model.LastMessage.LastReplyByName), <passed-time time="@Model.LastMessage.LastReplyPosted" />
 				<p>
 					<a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Latest)" asp-route-id="@Model.LastMessage.Id">
 						@Html.Raw(Model.LastMessage.ShortPreview)

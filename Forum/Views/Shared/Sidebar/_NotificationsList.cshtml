@@ -10,7 +10,7 @@
 						@if (notification.Recent) {
 							<span class="chiclet chiclet-gold"></span>
 						}
-						<a asp-controller="@nameof(Notifications)" asp-action="@nameof(Notifications.Open)" asp-route-id="@notification.Id">@notification.Text</a>
+						<a asp-controller="@nameof(Notifications)" asp-action="@nameof(Notifications.Open)" asp-route-id="@notification.Id">@Html.Raw(notification.Text)</a>
 					</p>
 					<p><passed-time time="@notification.Time" /></p>
 				</li>

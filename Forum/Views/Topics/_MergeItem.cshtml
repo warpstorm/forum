@@ -17,12 +17,12 @@
 		</p>
 		<div class="font-small subdued-text pad-left small-pad-top">
 			<p>
-				Started <passed-time time="@Model.TimePosted" /> by @Model.PostedByName.
+				Started <passed-time time="@Model.TimePosted" /> by @Html.Raw(Model.PostedByName).
 			</p>
 
 			@if (Model.LastReplyId != Model.Id) {
 				<p>
-					Last reply was <passed-time time="@Model.LastReplyPosted" /> by @Model.LastReplyByName.
+					Last reply was <passed-time time="@Model.LastReplyPosted" /> by @Html.Raw(Model.LastReplyByName).
 				</p>
 			}
 

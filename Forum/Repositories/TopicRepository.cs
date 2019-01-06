@@ -151,7 +151,7 @@ namespace Forum.Repositories {
 					Pinned = message.Pinned,
 					TimePosted = message.TimePosted,
 					PostedById = message.PostedById,
-					PostedByName = postedBy.DisplayName,
+					PostedByName = postedBy.DecoratedName,
 					PostedByBirthday = today == new DateTime(today.Year, postedBy.Birthday.Month, postedBy.Birthday.Day).Date
 				};
 
@@ -171,7 +171,7 @@ namespace Forum.Repositories {
 
 						messagePreview.LastReplyId = message.LastReplyId;
 						messagePreview.LastReplyPreview = lastReply.ShortPreview;
-						messagePreview.LastReplyByName = lastReplyBy.DisplayName;
+						messagePreview.LastReplyByName = lastReplyBy.DecoratedName;
 						messagePreview.LastReplyById = message.LastReplyById;
 						messagePreview.LastReplyByBirthday = today.Date == new DateTime(today.Year, lastReplyBy.Birthday.Month, lastReplyBy.Birthday.Day).Date;
 						messagePreview.LastReplyPosted = message.LastReplyPosted;

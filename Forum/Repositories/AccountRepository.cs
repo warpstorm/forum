@@ -30,6 +30,20 @@ namespace Forum.Repositories {
 			if (_Records is null) {
 				var records = await DbContext.Users.ToListAsync();
 				_Records = records.OrderBy(r => r.DisplayName).ToList();
+
+				foreach (var user in _Records) {
+					user.DecoratedName = user.DisplayName;
+
+					var birthdayCakeImg = @"<img src=""/images/hbd.png"" alt=""Happy birthday!"" title=""Happy birthday!"" />";
+
+					if (user.ShowBirthday) {
+						var isBirthday = DateTime.Now.Date == new DateTime(DateTime.Now.Year, user.Birthday.Month, user.Birthday.Day).Date;
+
+						if (isBirthday) {
+							user.DecoratedName = $"{birthdayCakeImg} {user.DecoratedName}";
+						}
+					}
+				}
 			}
 
 			return _Records;
@@ -83,20 +97,12 @@ namespace Forum.Repositories {
 								   orderby user.LastOnline descending
 								   select new ViewModels.Profile.OnlineUser {
 									   Id = user.Id,
-									   Name = user.DisplayName,
+									   Name = user.DecoratedName,
 									   Online = user.LastOnline >= onlineTimeLimit,
-									   Birthday = user.Birthday,
 									   LastOnline = user.LastOnline
 								   };
 
-			var onlineUsers = onlineUsersQuery.ToList();
-			var birthdayUsers = onlineUsers.Where(u => DateTime.Now.Date == new DateTime(DateTime.Now.Year, u.Birthday.Month, u.Birthday.Day).Date);
-
-			foreach (var user in birthdayUsers) {
-				user.IsBirthday = true;
-			}
-
-			return onlineUsers;
+			return onlineUsersQuery.ToList();
 		}
 
 		public async Task<ServiceModels.ServiceResponse> Login(InputModels.LoginInput input) {

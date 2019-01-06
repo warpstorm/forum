@@ -68,9 +68,9 @@ namespace Forum.Controllers {
 					Id = role.Id,
 					Description = role.Description,
 					Name = role.Name,
-					CreatedBy = createdBy?.DisplayName,
+					CreatedBy = createdBy?.DecoratedName,
 					Created = role.CreatedDate.ToPassedTimeString(),
-					ModifiedBy = modifiedBy?.DisplayName,
+					ModifiedBy = modifiedBy?.DecoratedName,
 					Modified = role.ModifiedDate.ToPassedTimeString(),
 					NumberOfUsers = usersInRole.Count()
 				});
@@ -200,9 +200,9 @@ namespace Forum.Controllers {
 				Id = role.Id,
 				Description = role.Description,
 				Name = role.Name,
-				CreatedBy = createdBy?.DisplayName,
+				CreatedBy = createdBy?.DecoratedName,
 				Created = role.CreatedDate,
-				ModifiedBy = modifiedBy?.DisplayName,
+				ModifiedBy = modifiedBy?.DecoratedName,
 				Modified = role.ModifiedDate,
 				NumberOfUsers = usersInRole.Count()
 			};

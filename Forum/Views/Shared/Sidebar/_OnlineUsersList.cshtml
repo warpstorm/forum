@@ -9,12 +9,7 @@
 				@if (onlineUser.Online) {
 					<span class="whos-online-chiclet chiclet chiclet-green" time="@onlineUser.LastOnline.ToHtmlLocalTimeString()"></span>
 				}
-				<span>
-					@if (onlineUser.IsBirthday) {
-						<img src="~/images/hbd.png" alt="Happy birthday!" title="Happy birthday!" />
-					}
-					<a asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.History)" asp-route-id="@onlineUser.Id">@onlineUser.Name</a>
-				</span>
+				<a asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.History)" asp-route-id="@onlineUser.Id">@Html.Raw(onlineUser.Name)</a>
 				<passed-time class="font-tiny dark-text" time="@onlineUser.LastOnline" />
 			</li>
 		}

@@ -128,6 +128,8 @@ namespace Forum.Repositories {
 								   TopicPreview = message.ShortPreview
 							   };
 
+				var users = await AccountRepository.Records();
+
 				// Only checks the most recent 10 topics. If all 10 are forbidden, then LastMessage stays null.
 				foreach (var item in messages.Take(10)) {
 					var messageBoardQuery = from messageBoard in DbContext.MessageBoards
@@ -152,7 +154,7 @@ namespace Forum.Repositories {
 											 };
 
 						indexBoard.LastMessage = lastReplyQuery.FirstOrDefault();
-						indexBoard.LastMessage.LastReplyByName = (await AccountRepository.Records()).FirstOrDefault(r => r.Id == indexBoard.LastMessage.LastReplyById)?.DisplayName ?? "User";
+						indexBoard.LastMessage.LastReplyByName = users.FirstOrDefault(r => r.Id == indexBoard.LastMessage.LastReplyById)?.DecoratedName ?? "User";
 						break;
 					}
 				}

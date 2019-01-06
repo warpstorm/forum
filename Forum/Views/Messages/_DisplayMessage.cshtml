@@ -3,7 +3,7 @@
 <article class="gap-bottom" message="@Model.Id">
 	<aside class="user-avatar align-center float-left mobile-hide">
 		@if (string.IsNullOrEmpty(Model.PostedByAvatarPath)) {
-			<img identicon-value="@Model.PostedById" width="80" height="80" alt="Identicon" />
+			<img identicon-value="@Model.PostedById" style="width: 80%; height: 80%;" alt="Identicon" />
 		}
 		else {
 			<img src="@Model.PostedByAvatarPath" />
@@ -67,11 +67,7 @@
 					}
 				</aside>
 
-				@if (Model.Birthday) {
-					<img src="~/images/hbd.png" alt="Happy birthday!" title="Happy birthday!" />
-				}
-
-				<a asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.History)" asp-route-id="@Model.PostedById" class="small-pad-right">@Model.PostedByName</a>
+				<a asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.History)" asp-route-id="@Model.PostedById" class="small-pad-right">@Html.Raw(Model.PostedByName)</a>
 
 				<span class="font-tiny dark-text">
 					<span>posted <passed-time time="@Model.TimePosted" /></span>
@@ -84,7 +80,7 @@
 			<br class="clear mobile-show" />
 
 			@if (Model.ReplyId > 0) {
-				<p class="pad-left font-small subdued-text"><a asp-action="@nameof(Topics.Display)" asp-route-id="@Model.ReplyId">In reply to this post by @Model.ReplyPostedBy:</a></p>
+				<p class="pad-left font-small subdued-text"><a asp-action="@nameof(Topics.Display)" asp-route-id="@Model.ReplyId">In reply to this post by @Html.Raw(Model.ReplyPostedBy):</a></p>
 				<blockquote class="reply pointer">
 					<div class="reply-preview font-small subdued-text">@Html.Raw(Model.ReplyPreview)</div>
 					<div class="reply-body hidden">@Html.Raw(Model.ReplyBody)</div>
@@ -114,7 +110,7 @@
 		<section class="pad-left font-small subdued-text">
 			<ol>
 				@foreach (var messageThought in Model.Thoughts) {
-					<li class="small-pad"><img src="@messageThought.Path" /> @messageThought.Thought</li>
+					<li class="small-pad"><img src="@messageThought.Path" /> @Html.Raw(messageThought.Thought)</li>
 				}
 			</ol>
 		</section>

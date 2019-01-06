@@ -2,12 +2,17 @@
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Forum.Models.DataModels {
 	public class ApplicationUser : IdentityUser {
 		[Required]
 		[StringLength(64)]
 		public string DisplayName { get; set; }
+
+		[NotMapped]
+		public string DecoratedName { get; set; }
+
 		public DateTime Registered { get; set; } = new DateTime(2000, 1, 1);
 		public DateTime LastOnline { get; set; } = new DateTime(2000, 1, 1);
 		public string AvatarPath { get; set; }
