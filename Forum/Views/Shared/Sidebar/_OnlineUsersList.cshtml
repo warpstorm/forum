@@ -6,9 +6,6 @@
 		<li class="font-small subdued-text"><a asp-controller="@nameof(Account)" asp-action="@nameof(Account.Index)">View All Users</a></li>
 		@foreach (var onlineUser in Model) {
 			<li class="font-small subdued-text nowrap small-pad-top" clickable-link-parent>
-				@if (onlineUser.Online) {
-					<span class="whos-online-chiclet chiclet chiclet-green" time="@onlineUser.LastOnline.ToHtmlLocalTimeString()"></span>
-				}
 				<a asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.History)" asp-route-id="@onlineUser.Id">@Html.Raw(onlineUser.Name)</a>
 				<passed-time class="font-tiny dark-text" time="@onlineUser.LastOnline" />
 			</li>

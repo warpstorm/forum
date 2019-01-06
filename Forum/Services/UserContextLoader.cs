@@ -51,12 +51,12 @@ namespace Forum.Services {
 					await SignInManager.SignOutAsync();
 				}
 				else {
-					await LoadUserRoles(UserContext);
-					await LoadViewLogs(UserContext);					
-
 					if (HttpContextAccessor.HttpContext.Request.Headers["X-Requested-With"] != "XMLHttpRequest") {
 						await UpdateLastOnline();
 					}
+
+					await LoadUserRoles(UserContext);
+					await LoadViewLogs(UserContext);					
 				}
 			}
 		}
