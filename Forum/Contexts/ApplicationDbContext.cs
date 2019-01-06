@@ -137,7 +137,7 @@ namespace Forum.Contexts {
 				.HasIndex(r => r.Approved);
 
 			modelBuilder.Entity<ViewLog>()
-				.HasIndex(r => new { r.LogTime, r.UserId });
+				.HasIndex(r => new { r.UserId, r.LogTime });
 
 			modelBuilder.Entity<ViewLog>()
 				.HasIndex(r => new { r.UserId, r.TargetType, r.TargetId });
