@@ -168,15 +168,18 @@ namespace Forum.Repositories {
 											}).FirstOrDefault();
 
 					if (lastReply != null) {
-						var lastReplyBy = users.First(r => r.Id == message.LastReplyById);
+						var lastReplyBy = users.FirstOrDefault(r => r.Id == message.LastReplyById);
 
 						messagePreview.LastReplyId = message.LastReplyId;
 						messagePreview.LastReplyPreview = lastReply.ShortPreview;
-						messagePreview.LastReplyByName = lastReplyBy.DecoratedName;
 						messagePreview.LastReplyById = message.LastReplyById;
-						messagePreview.LastReplyByBirthday = today.Date == new DateTime(today.Year, lastReplyBy.Birthday.Month, lastReplyBy.Birthday.Day).Date;
 						messagePreview.LastReplyPosted = message.LastReplyPosted;
 						lastMessageTime = message.LastReplyPosted;
+						messagePreview.LastReplyByName = lastReplyBy?.DecoratedName ?? "User";
+
+						if (!(lastReplyBy is null)) {
+							messagePreview.LastReplyByBirthday = today.Date == new DateTime(today.Year, lastReplyBy.Birthday.Month, lastReplyBy.Birthday.Day).Date;
+						}
 					}
 				}
 
