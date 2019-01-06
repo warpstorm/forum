@@ -33,11 +33,9 @@ namespace Forum.Models.ViewModels.Account {
 
 		public string BirthdayDay { get; set; }
 		public string BirthdayMonth { get; set; }
-		public string BirthdayYear { get; set; }
 
 		public IEnumerable<SelectListItem> BirthdayMonths { get; set; }
 		public IEnumerable<SelectListItem> BirthdayDays { get; set; }
-		public IEnumerable<SelectListItem> BirthdayYears { get; set; }
 
 		[MaxFileSize(256, ErrorMessage = "Maximum allowed file size is {0} KB")]
 		public IFormFile NewAvatar { get; set; }

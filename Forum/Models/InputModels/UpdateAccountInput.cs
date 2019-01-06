@@ -33,9 +33,6 @@ namespace Forum.Models.InputModels {
 		[Range(1, 12)]
 		public int BirthdayMonth { get; set; }
 
-		[Range(1900, 2100)]
-		public int BirthdayYear { get; set; }
-
 		public EFrontPage FrontPage { get; set; }
 
 		[Range(5, 50)]

@@ -198,7 +198,7 @@ namespace Forum.Repositories {
 						Log.LogInformation($"ShowBirthday was modified by '{UserContext.ApplicationUser.DisplayName}' for account '{userRecord.DisplayName}'.");
 					}
 
-					var birthday = new DateTime(input.BirthdayYear, input.BirthdayMonth, input.BirthdayDay);
+					var birthday = new DateTime(userRecord.Registered.Year, input.BirthdayMonth, input.BirthdayDay);
 
 					if (birthday != userRecord.Birthday) {
 						userRecord.Birthday = birthday;
@@ -405,6 +405,7 @@ namespace Forum.Repositories {
 				var user = new DataModels.ApplicationUser {
 					DisplayName = input.DisplayName,
 					Registered = DateTime.Now,
+					Birthday = DateTime.Now,
 					LastOnline = DateTime.Now,
 					UserName = input.Email,
 					Email = input.Email

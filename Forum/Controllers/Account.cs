@@ -84,10 +84,8 @@ namespace Forum.Controllers {
 				EmailConfirmed = userRecord.EmailConfirmed,
 				BirthdayDays = DayPickList(userRecord.Birthday.Day),
 				BirthdayMonths = MonthPickList(userRecord.Birthday.Month),
-				BirthdayYears = YearPickList(userRecord.Birthday.Year),
 				BirthdayDay = userRecord.Birthday.Day.ToString(),
 				BirthdayMonth = userRecord.Birthday.Month.ToString(),
-				BirthdayYear = userRecord.Birthday.Year.ToString(),
 				FrontPage = userRecord.FrontPage,
 				FrontPageOptions = FrontPagePickList(userRecord.FrontPage),
 				MessagesPerPage = userRecord.MessagesPerPage,
@@ -126,10 +124,8 @@ namespace Forum.Controllers {
 					EmailConfirmed = userRecord.EmailConfirmed,
 					BirthdayDays = DayPickList(input.BirthdayDay),
 					BirthdayMonths = MonthPickList(input.BirthdayMonth),
-					BirthdayYears = YearPickList(input.BirthdayYear),
 					BirthdayDay = input.BirthdayDay.ToString(),
 					BirthdayMonth = input.BirthdayMonth.ToString(),
-					BirthdayYear = input.BirthdayYear.ToString(),
 					FrontPage = userRecord.FrontPage,
 					FrontPageOptions = FrontPagePickList(userRecord.FrontPage),
 					MessagesPerPage = userRecord.MessagesPerPage,
@@ -170,10 +166,8 @@ namespace Forum.Controllers {
 					EmailConfirmed = userRecord.EmailConfirmed,
 					BirthdayDays = DayPickList(userRecord.Birthday.Day),
 					BirthdayMonths = MonthPickList(userRecord.Birthday.Month),
-					BirthdayYears = YearPickList(userRecord.Birthday.Year),
 					BirthdayDay = userRecord.Birthday.Day.ToString(),
 					BirthdayMonth = userRecord.Birthday.Month.ToString(),
-					BirthdayYear = userRecord.Birthday.Year.ToString(),
 					FrontPage = userRecord.FrontPage,
 					FrontPageOptions = FrontPagePickList(userRecord.FrontPage),
 					MessagesPerPage = userRecord.MessagesPerPage,
@@ -449,23 +443,6 @@ namespace Forum.Controllers {
 			await AccountRepository.MergeAccounts(sourceId, targetId, false);
 
 			return RedirectToAction(nameof(Account.Details), nameof(Account), new { id = targetId });
-		}
-
-		public IEnumerable<SelectListItem> YearPickList(int selected = -1) {
-			var years = from number in Enumerable.Range(1900, DateTime.Now.Year - 1900)
-						orderby number descending
-						select new SelectListItem {
-							Value = number.ToString(),
-							Text = number.ToString(),
-							Selected = selected > -1 && number == selected
-						};
-
-			years.Prepend(new SelectListItem {
-				Disabled = true,
-				Text = "Year"
-			});
-
-			return years;
 		}
 
 		public IEnumerable<SelectListItem> DayPickList(int selected = -1) {
