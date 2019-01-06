@@ -1,15 +1,26 @@
 @model TopicIndexPartialPage
 
-@foreach (var item in Model.Topics) {
-	if (item.Pinned) {
-		<partial name="_PinnedIndexItem" for="@item" />
+@{ var pageModifier = Model.MorePages ? 1 : 0; }
+
+<section id="topic-list">
+	@if (Model.Topics.Any()) {
+		@foreach (var item in Model.Topics) {
+			if (item.Pinned) {
+				<partial name="_PinnedIndexItem" for="@item" />
+			}
+			else {
+				<partial name="_IndexItem" for="@item" />
+			}
+		}
 	}
 	else {
-		<partial name="_IndexItem" for="@item" />
+		<div class="content-box pad">
+			<text><span class="small-pad-top">No topics found with the specified filter.</span></text>
+		</div>
 	}
-}
+</section>
 
 <script>
-	window.page = @Model.Page;
-	window.moreTopics = @Model.More.ToString().ToLower();
+	window.currentPage = @Model.CurrentPage;
+	window.totalPages = @(Model.CurrentPage + pageModifier);
 </script>

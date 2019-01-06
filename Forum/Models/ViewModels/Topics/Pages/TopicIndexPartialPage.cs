@@ -3,8 +3,8 @@ using System.Collections.Generic;
 
 namespace Forum.Models.ViewModels.Topics.Pages {
 	public class TopicIndexPartialPage {
-		public bool More { get; set; }
-		public int Page { get; set; }
+		public int CurrentPage { get; set; }
+		public bool MorePages { get; set; }
 		public List<MessagePreview> Topics { get; set; }
 	}
 }

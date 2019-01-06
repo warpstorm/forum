@@ -31,16 +31,16 @@ export class TopicIndex {
 
 	hubNewReply = () => {
 		if (this.settings.currentPage == 1) {
-			//this.getLatestTopics();
+			this.loadTopicsPage(this.settings.boardId, 1, this.settings.unreadFilter);
 		}
 	}
 
-	eventLoadMoreTopics = () => {
+	loadTopicsPage = (boardId: number, pageId: number, unread: number) => {
 		let self = this;
 
 		let requestOptions = new XhrOptions({
 			method: HttpMethod.Get,
-			url: `/topics/${(<any>window).moreAction}/?page=${(<any>window).currentPage + 1}`,
+			url: `/Topics/IndexPartial/${boardId}/${pageId}?unread=${unread}`,
 			responseType: 'document'
 		});
 
@@ -49,6 +49,7 @@ export class TopicIndex {
 				let resultDocument = <HTMLElement>(<Document>xhrResult.response).documentElement;
 				let resultBody = <HTMLBodyElement>resultDocument.querySelector('body');
 				let resultBodyElements = resultBody.childNodes;
+				let topicList = <Element>self.doc.querySelector('#topic-list');
 
 				resultBodyElements.forEach(node => {
 					let element = node as Element;
@@ -58,12 +59,17 @@ export class TopicIndex {
 							eval(element.textContent || '');
 							new Navigation(self.doc).addListenerClickableLinkParent();
 						}
-						else {
-							let topicList = <Element>self.doc.querySelector('#topic-list');
-							topicList.insertAdjacentElement('beforeend', element);
+						else if (element.tagName.toLowerCase() == 'section') {
+							topicList.after(element);
+							topicList.remove();
 						}
 					}
 				});
+
+				let partialSettings = new TopicIndexSettings(window);
+
+				self.settings.currentPage = partialSettings.currentPage;
+				self.settings.totalPages = partialSettings.totalPages;
 			})
 			.catch(Xhr.logRejected);
 	}

@@ -139,7 +139,7 @@ export class TopicDisplay {
 
 				warning(`<a href='#message${firstMessageId}'>New messages were posted <time datetime='${time}'>${passedTime}</time>.</a>`);
 
-				//window.location.hash = `message${firstMessageId}`;
+				window.location.hash = `message${firstMessageId}`;
 			})
 			.catch(Xhr.logRejected)
 			.then(() => {

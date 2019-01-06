@@ -92,16 +92,22 @@ namespace Forum.Controllers {
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> IndexPartial(int id = 0, int page = 0, int unread = 0) {
-			var messageIds = await TopicRepository.GetIndexIds(id, page, unread);
+		public async Task<IActionResult> IndexPartial(int id = 0, int pageId = 0, int unread = 0) {
+			var messageIds = await TopicRepository.GetIndexIds(id, pageId, unread);
+			var morePages = true;
+
+			if (messageIds.Count < UserContext.ApplicationUser.TopicsPerPage) {
+				morePages = false;
+			}
+
 			var topicPreviews = await TopicRepository.GetPreviews(messageIds);
 
 			ViewData[Constants.InternalKeys.Layout] = "_LayoutEmpty";
 
 			var viewModel = new PageModels.TopicIndexPartialPage {
-				More = topicPreviews.Any(),
-				Page = page,
-				Topics = topicPreviews
+				CurrentPage = pageId,
+				Topics = topicPreviews,
+				MorePages = morePages,
 			};
 
 			return await ForumViewResult.ViewResult(this, viewModel);
