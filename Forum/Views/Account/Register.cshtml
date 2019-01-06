@@ -10,50 +10,44 @@
 
 		<div asp-validation-summary="All" class="error"></div>
 
-		<dl>
-			<dt>Display Name</dt>
-			<dd><input asp-for="@Model.DisplayName" /></dd>
-			<dd><span asp-validation-for="@Model.DisplayName" class="error"></span></dd>
-			<dd class="small-pad-top font-small">Special characters are allowed.</dd>
-		</dl>
+		<div class="half inline align-top pad">
+			<dl>
+				<dt>
+					Display Name
+					<img src="~/images/thought.png" title="Special characters are allowed." />
+				</dt>
+				<dd><input asp-for="@Model.DisplayName" /></dd>
+				<dd><span asp-validation-for="@Model.DisplayName" class="error"></span></dd>
+			</dl>
 
-		<dl>
-			<dt>Email Address</dt>
-			<dd><input asp-for="@Model.Email" /></dd>
-			<dd><span asp-validation-for="@Model.Email" class="error"></span></dd>
-			<dd class="small-pad-top font-small">Your email address <b>requires</b> activation, but is <b>only</b> used to reset your password, and is not shared with any company or anyone besides admins of this site. If you don't trust warpstorm with your real address (smart!), then use a temporary mailbox provider that doesn't require registration, like mailinator.com. Then you can safely reset your password on this site with a throwaway account.</dd>
-		</dl>
+			<dl>
+				<dt>Are you at least 13 years old?</dt>
+				<dd><input asp-for="@Model.ConfirmThirteen" /></dd>
+			</dl>
 
-		<dl>
-			<dt>Confirm your email</dt>
-			<dd><input asp-for="@Model.ConfirmEmail" /></dd>
-			<dd><span asp-validation-for="@Model.ConfirmEmail" class="error"></span></dd>
-		</dl>
+			<p class="small-pad-top font-small">Your email address <b>requires activation</b>, but is <b>only</b> used for password resets. It's not shared with anyone except Warpstorm admins. If you don't trust us with your real address (smart!), then try a free <a class="underline" href="http://noref.us/?https://www.mailinator.com/">Mailinator</a> temporary address.</p>
+		</div>
+		<div class="half inline align-top pad">
+			<dl>
+				<dt>Email Address</dt>
+				<dd><input asp-for="@Model.Email" /></dd>
+				<dd><span asp-validation-for="@Model.Email" class="error"></span></dd>
 
-		<dl>
-			<dt>Birthday</dt>
-			<dd>
-				<select asp-for="@Model.BirthdayYear" asp-items="@Model.BirthdayYears"></select>
-				<select asp-for="@Model.BirthdayMonth" asp-items="@Model.BirthdayMonths"></select>
-				<select asp-for="@Model.BirthdayDay" asp-items="@Model.BirthdayDays"></select>
-			</dd>
-			<dd>
-				<span asp-validation-for="@Model.BirthdayYear" class="error"></span>
-				<span asp-validation-for="@Model.BirthdayMonth" class="error"></span>
-				<span asp-validation-for="@Model.BirthdayDay" class="error"></span>
-			</dd>
-			<dd class="small-pad-top font-small">Your birthday is used to verify you are over 13. We also optionally mark your username on your birthday. This data is used for nothing else, and shared with nobody else.</dd>
-		</dl>
+				<dt>Confirm your email</dt>
+				<dd><input asp-for="@Model.ConfirmEmail" /></dd>
+				<dd><span asp-validation-for="@Model.ConfirmEmail" class="error"></span></dd>
+			</dl>
 
-		<dl>
-			<dt>Password</dt>
-			<dd><input asp-for="@Model.Password" /></dd>
-			<dd><span asp-validation-for="@Model.Password" class="error"></span></dd>
+			<dl>
+				<dt>Password</dt>
+				<dd><input asp-for="@Model.Password" /></dd>
+				<dd><span asp-validation-for="@Model.Password" class="error"></span></dd>
 
-			<dt>Confirm Password</dt>
-			<dd><input asp-for="@Model.ConfirmPassword" /></dd>
-			<dd><span asp-validation-for="@Model.ConfirmPassword" class="error"></span></dd>
-		</dl>
+				<dt>Confirm Password</dt>
+				<dd><input asp-for="@Model.ConfirmPassword" /></dd>
+				<dd><span asp-validation-for="@Model.ConfirmPassword" class="error"></span></dd>
+			</dl>
+		</div>
 
 		<partial name="_Recaptcha" />
 

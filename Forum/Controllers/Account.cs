@@ -94,7 +94,8 @@ namespace Forum.Controllers {
 				PopularityLimit = userRecord.PopularityLimit,
 				Poseys = userRecord.Poseys,
 				ShowFavicons = userRecord.ShowFavicons,
-				TopicsPerPage = userRecord.TopicsPerPage
+				TopicsPerPage = userRecord.TopicsPerPage,
+				ShowBirthday = userRecord.ShowBirthday
 			};
 
 			ModelState.Clear();
@@ -275,14 +276,7 @@ namespace Forum.Controllers {
 		[AllowAnonymous]
 		public async Task<IActionResult> Register() {
 			await AccountRepository.SignOut();
-
-			var viewModel = new ViewModels.Account.RegisterPage {
-				BirthdayDays = DayPickList(),
-				BirthdayMonths = MonthPickList(),
-				BirthdayYears = YearPickList()
-			};
-
-			return await ForumViewResult.ViewResult(this, viewModel);
+			return await ForumViewResult.ViewResult(this, new ViewModels.Account.RegisterPage());
 		}
 
 		[HttpPost]
@@ -301,12 +295,6 @@ namespace Forum.Controllers {
 				await AccountRepository.SignOut();
 
 				var viewModel = new ViewModels.Account.RegisterPage {
-					BirthdayDays = DayPickList(),
-					BirthdayDay = input.BirthdayDay.ToString(),
-					BirthdayMonths = MonthPickList(),
-					BirthdayMonth = input.BirthdayMonth.ToString(),
-					BirthdayYears = YearPickList(),
-					BirthdayYear = input.BirthdayYear.ToString(),
 					DisplayName = input.DisplayName,
 					Email = input.Email,
 					ConfirmEmail = input.ConfirmEmail,

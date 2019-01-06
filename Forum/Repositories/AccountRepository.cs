@@ -182,6 +182,13 @@ namespace Forum.Repositories {
 
 			void updateBirthday() {
 				if (serviceResponse.Success) {
+					if (input.ShowBirthday != userRecord.ShowBirthday) {
+						userRecord.ShowBirthday = input.ShowBirthday;
+						DbContext.Update(userRecord);
+
+						Log.LogInformation($"ShowBirthday was modified by '{UserContext.ApplicationUser.DisplayName}' for account '{userRecord.DisplayName}'.");
+					}
+
 					var birthday = new DateTime(input.BirthdayYear, input.BirthdayMonth, input.BirthdayDay);
 
 					if (birthday != userRecord.Birthday) {
@@ -373,17 +380,15 @@ namespace Forum.Repositories {
 		public async Task<ServiceModels.ServiceResponse> Register(InputModels.RegisterInput input) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
-			var birthday = new DateTime(input.BirthdayYear, input.BirthdayMonth, input.BirthdayDay);
-
-			if ((DateTime.Now - birthday).TotalDays < 13 * 365) {
+			if (!input.ConfirmThirteen) {
 				var message = $"You must be 13 or older to register.";
-				serviceResponse.Error(message);
+				serviceResponse.Error(nameof(input.ConfirmThirteen), message);
 				Log.LogWarning(message);
 			}
 
 			if ((await Records()).Any(r => r.DisplayName == input.DisplayName)) {
 				var message = $"The display name '{input.DisplayName}' is already taken.";
-				serviceResponse.Error(message);
+				serviceResponse.Error(nameof(input.DisplayName),message);
 				Log.LogWarning(message);
 			}
 
@@ -393,8 +398,7 @@ namespace Forum.Repositories {
 					Registered = DateTime.Now,
 					LastOnline = DateTime.Now,
 					UserName = input.Email,
-					Email = input.Email,
-					Birthday = birthday
+					Email = input.Email
 				};
 
 				var identityResult = await UserManager.CreateAsync(user, input.Password);

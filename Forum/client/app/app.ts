@@ -12,6 +12,7 @@ import { MessageCreate } from './pages/message-create';
 
 import * as SignalR from "@aspnet/signalr";
 import { ErrorMonitor } from './services/error-monitor';
+import { AccountDetails } from './pages/account-details';
 
 window.onload = function () {
 	let app = new App();
@@ -71,6 +72,11 @@ export class App {
 			case 'topic-index':
 				let topicIndex = new TopicIndex(document, this);
 				topicIndex.init();
+				break;
+
+			case 'account-details':
+				let accountDetails = new AccountDetails(document);
+				accountDetails.init();
 				break;
 		}
 	}

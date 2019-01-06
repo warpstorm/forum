@@ -1,4 +1,6 @@
-﻿export class ErrorMonitor {
+﻿import { show, hide } from "../helpers";
+
+export class ErrorMonitor {
 	constructor(private doc: Document) {}
 
 	init(): void {
@@ -9,7 +11,7 @@
 
 		this.doc.querySelectorAll(".error").forEach(element => {
 			if (!element.textContent || element.textContent.trim().length == 0) {
-				element.classList.add('hidden');
+				hide(element);
 			}
 
 			element.classList.add('error-stylish');
@@ -23,10 +25,10 @@
 			switch (mutation.type) {
 				case 'childList':
 					if (mutation.target.childNodes.length == 0) {
-						(mutation.target as HTMLElement).classList.add('hidden');
+						hide(mutation.target);
 					}
 					else {
-						(mutation.target as HTMLElement).classList.remove('hidden');
+						show(mutation.target);
 					}
 					break;
 			}

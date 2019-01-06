@@ -48,19 +48,24 @@
 			</dl>
 
 			<dl>
-				<dt>
-					Birthday
-					<img src="~/images/thought.png" title="The birthday is used to verify you're over 13, and to show birthday cake icons by your name. That's it." />
-				</dt>
+				<dt>Put a birthday cake by your name?</dt>
 				<dd>
+					<input asp-for="@Model.ShowBirthday" class="birthday-toggle" />
+				</dd>
+
+				@{
+					var birthdaySelectorClasses = "birthday-selectors";
+
+					if (!Model.ShowBirthday) {
+						birthdaySelectorClasses += " hidden";
+					}
+				}
+
+				<dt class="@birthdaySelectorClasses">What day should the cake appear?</dt>
+				<dd class="@birthdaySelectorClasses">
 					<select asp-for="@Model.BirthdayYear" asp-items="@Model.BirthdayYears"></select>
 					<select asp-for="@Model.BirthdayMonth" asp-items="@Model.BirthdayMonths"></select>
 					<select asp-for="@Model.BirthdayDay" asp-items="@Model.BirthdayDays"></select>
-				</dd>
-				<dd>
-					<span asp-validation-for="@Model.BirthdayYear" class="error"></span>
-					<span asp-validation-for="@Model.BirthdayMonth" class="error"></span>
-					<span asp-validation-for="@Model.BirthdayDay" class="error"></span>
 				</dd>
 			</dl>
 
@@ -160,3 +165,9 @@
 
 @{ ViewData["Title"] = $"{Model.DisplayName}'s Account Details"; }
 @section Header {@ViewData["Title"]}
+
+@section scripts {
+	<script>
+		window.pageActions = 'account-details';
+	</script>
+}

@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Forum.Models.ViewModels.Account {
 	public class RegisterPage {
@@ -26,12 +24,6 @@ namespace Forum.Models.ViewModels.Account {
 		[Compare(nameof(Password), ErrorMessage = "The password and confirmation password do not match.")]
 		public string ConfirmPassword { get; set; }
 
-		public string BirthdayDay { get; set; }
-		public string BirthdayMonth { get; set; }
-		public string BirthdayYear { get; set; }
-
-		public IEnumerable<SelectListItem> BirthdayMonths { get; set; }
-		public IEnumerable<SelectListItem> BirthdayDays { get; set; }
-		public IEnumerable<SelectListItem> BirthdayYears { get; set; }
+		public bool ConfirmThirteen { get; set; }
 	}
 }

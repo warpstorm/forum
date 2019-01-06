@@ -8,11 +8,12 @@ namespace Forum.Models.DataModels {
 		[Required]
 		[StringLength(64)]
 		public string DisplayName { get; set; }
-		public DateTime Registered { get; set; } = new DateTime(1900, 1, 1);
-		public DateTime LastOnline { get; set; } = new DateTime(1900, 1, 1);
+		public DateTime Registered { get; set; } = new DateTime(2000, 1, 1);
+		public DateTime LastOnline { get; set; } = new DateTime(2000, 1, 1);
 		public string AvatarPath { get; set; }
 
-		public DateTime Birthday { get; set; } = new DateTime(1900, 1, 1);
+		public bool ShowBirthday { get; set; }
+		public DateTime Birthday { get; set; } = new DateTime(1980, 1, 1);
 		public EFrontPage FrontPage { get; set; }
 		public int MessagesPerPage { get; set; }
 		public int PopularityLimit { get; set; }

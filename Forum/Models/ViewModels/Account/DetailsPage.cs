@@ -29,6 +29,8 @@ namespace Forum.Models.ViewModels.Account {
 		[DataType(DataType.Password)]
 		public string NewPassword { get; set; }
 
+		public bool ShowBirthday { get; set; }
+
 		public string BirthdayDay { get; set; }
 		public string BirthdayMonth { get; set; }
 		public string BirthdayYear { get; set; }

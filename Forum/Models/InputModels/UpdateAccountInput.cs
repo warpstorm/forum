@@ -25,6 +25,8 @@ namespace Forum.Models.InputModels {
 		[MaxLength(100)]
 		public string NewPassword { get; set; }
 
+		public bool ShowBirthday { get; set; }
+
 		[Range(1, 31)]
 		public int BirthdayDay { get; set; }
 
