@@ -1,4 +1,5 @@
 ﻿using Forum.Contexts;
+using Forum.Controllers;
 using Forum.Enums;
 using Forum.Errors;
 using Microsoft.AspNetCore.Mvc;
@@ -493,9 +494,11 @@ namespace Forum.Repositories {
 
 			if (sourceRecord.TimePosted > targetRecord.TimePosted) {
 				await Merge(sourceRecord, targetRecord);
+				serviceResponse.RedirectPath = UrlHelper.Action(nameof(Topics.Latest), nameof(Topics), new { id = targetRecord.Id });
 			}
 			else {
 				await Merge(targetRecord, sourceRecord);
+				serviceResponse.RedirectPath = UrlHelper.Action(nameof(Topics.Latest), nameof(Topics), new { id = sourceRecord.Id });
 			}
 
 			return serviceResponse;

@@ -1,40 +1,46 @@
+import { throwIfNull } from '../helpers';
+import { HttpMethod } from '../definitions/http-method';
 import { App } from '../app';
 import { Navigation } from '../services/navigation';
-
 import { Xhr } from '../services/xhr';
+
 import { XhrOptions } from '../models/xhr-options';
-import { HttpMethod } from '../definitions/http-method';
-import { throwIfNull, show, hide } from '../helpers';
+import { TopicIndexSettings } from '../models/topic-index-settings';
 
 export class TopicIndex {
-	private moreTopicsButton: HTMLElement | null;
+	private settings: TopicIndexSettings;
 
-	constructor(private doc: Document, private app: App | null = null) {
+	constructor(private doc: Document, private app: App) {
 		throwIfNull(doc, 'doc');
-		this.moreTopicsButton = doc.querySelector('#load-more-topics');
+		this.settings = new TopicIndexSettings(window);
 	}
 
 	init(): void {
-		if ((<any>this.doc.defaultView).unreadFilter == 0 && this.moreTopicsButton) {
-			show(this.moreTopicsButton);
-			this.moreTopicsButton.removeEventListener('click', this.eventLoadMoreTopics);
-			this.moreTopicsButton.addEventListener('click', this.eventLoadMoreTopics);
+		if (this.app.hub) {
+			this.bindHubActions();
+		}
+	}
+
+	bindHubActions = () => {
+		if (!this.app.hub) {
+			throw new Error('Hub not defined.');
+		}
+
+		this.app.hub.on('new-reply', this.hubNewReply);
+	}
+
+	hubNewReply = () => {
+		if (this.settings.currentPage == 1) {
+			//this.getLatestTopics();
 		}
 	}
 
 	eventLoadMoreTopics = () => {
 		let self = this;
 
-		let originalText = '';
-
-		if (this.moreTopicsButton) {
-			originalText = this.moreTopicsButton.textContent || '';
-			this.moreTopicsButton.textContent = 'Loading...';
-		}
-
 		let requestOptions = new XhrOptions({
 			method: HttpMethod.Get,
-			url: `/topics/${(<any>window).moreAction}/?page=${(<any>window).page + 1}`,
+			url: `/topics/${(<any>window).moreAction}/?page=${(<any>window).currentPage + 1}`,
 			responseType: 'document'
 		});
 
@@ -58,15 +64,6 @@ export class TopicIndex {
 						}
 					}
 				});
-
-				if (this.moreTopicsButton) {
-					if ((<any>window).moreTopics) {
-						this.moreTopicsButton.textContent = originalText;
-					}
-					else {
-						hide(this.moreTopicsButton);
-					}
-				}
 			})
 			.catch(Xhr.logRejected);
 	}

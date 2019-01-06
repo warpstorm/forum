@@ -8,7 +8,7 @@
 	background-image: url("../../images/poseys.png")
 }
 
-#topic-header, main > header, .message-container, #loading-message {
+#topic-header, #topic-footer, main > header, .message-container, #loading-message {
 	margin-left: 115px;
 }
 

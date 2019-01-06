@@ -1,5 +1,7 @@
 @model TopicIndexPage
 
+@{ var pageModifier = Model.MorePages ? 1 : 0; }
+
 <section id="topic-list">
 	@if (Model.Topics.Any()) {
 		@foreach (var item in Model.Topics) {
@@ -12,7 +14,22 @@
 </section>
 
 <footer>
-	<span id="load-more-topics" class="hidden small-button">More Topics</span>
+	<ul class="inline pages">
+		<li class="font-small subdued-text">Pages:</li>
+		<li class="hidden pointer unhide-pages more-pages-before">&#8230;</li>
+
+		@for (var i = 1; i <= Model.CurrentPage + pageModifier; i++) {
+			if (Model.CurrentPage == i) {
+				<li class="small-button highlight page hidden">@i</li>
+			}
+			else {
+				<li class="page hidden"><a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Merge)" asp-route-id="@Model.SourceId" asp-route-pageId="@i" class="small-button">@i.ToString()</a></li>
+			}
+		}
+		@if (Model.MorePages) {
+			<li class="more-pages-after">&#8230;</li>
+		}
+	</ul>
 </footer>
 
 @{ViewData["Title"] = Model.BoardName;}
@@ -20,10 +37,9 @@
 
 @section scripts {
 	<script>
-		window.pageActions = 'topic-index';
-		window.moreAction = 'MergeMore/' + @Model.SourceId;
-		window.page = @Model.CurrentPage;
 		window.id = @Model.SourceId;
+		window.currentPage = @Model.CurrentPage;
+		window.totalPages = @(Model.CurrentPage + pageModifier);
 		window.unreadFilter = 0;
 	</script>
 }

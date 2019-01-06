@@ -64,20 +64,16 @@ namespace Forum.Controllers {
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> Index(int id = 0, int pageId = 0, int unread = 0) {
-			var boardRoles = (from role in await RoleRepository.BoardRoles()
-							  where role.BoardId == id
-							  select role.RoleId).ToList();
-
-			if (!UserContext.IsAdmin && boardRoles.Any() && !boardRoles.Intersect(UserContext.Roles).Any()) {
-				throw new HttpForbiddenError();
-			}
-
+		public async Task<IActionResult> Index(int id = 0, int pageId = 1, int unread = 0) {
 			var sidebar = await Sidebar.Generate();
 
-			var page = 1;
+			var messageIds = await TopicRepository.GetIndexIds(id, pageId, unread);
+			var morePages = true;
 
-			var messageIds = await TopicRepository.GetIndexIds(id, page, unread);
+			if (messageIds.Count < UserContext.ApplicationUser.TopicsPerPage) {
+				morePages = false;
+			}
+
 			var topicPreviews = await TopicRepository.GetPreviews(messageIds);
 
 			var boardRecord = id == 0 ? null : (await BoardRepository.Records()).FirstOrDefault(record => record.Id == id);
@@ -85,43 +81,24 @@ namespace Forum.Controllers {
 			var viewModel = new PageModels.TopicIndexPage {
 				BoardId = id,
 				BoardName = boardRecord?.Name ?? "All Topics",
-				CurrentPage = page,
+				CurrentPage = pageId,
 				Topics = topicPreviews,
 				UnreadFilter = unread,
-				Sidebar = sidebar
+				Sidebar = sidebar,
+				MorePages = morePages
 			};
 
 			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> Bookmarks() {
-			var messageIds = (await BookmarkRepository.Records()).Select(r => r.MessageId).ToList();
-			var topicPreviews = await TopicRepository.GetPreviews(messageIds);
-
-			var viewModel = new PageModels.TopicBookmarksPage {
-				Topics = topicPreviews
-			};
-
-			return await ForumViewResult.ViewResult(this, viewModel);
-		}
-
-		[HttpGet]
-		public async Task<IActionResult> IndexMore(int id = 0, int page = 0, int unread = 0) {
-			var boardRoles = (from role in await RoleRepository.BoardRoles()
-							  where role.BoardId == id
-							  select role.RoleId).ToList();
-
-			if (!UserContext.IsAdmin && boardRoles.Any() && !boardRoles.Intersect(UserContext.Roles).Any()) {
-				throw new HttpForbiddenError();
-			}
-
+		public async Task<IActionResult> IndexPartial(int id = 0, int page = 0, int unread = 0) {
 			var messageIds = await TopicRepository.GetIndexIds(id, page, unread);
 			var topicPreviews = await TopicRepository.GetPreviews(messageIds);
 
 			ViewData[Constants.InternalKeys.Layout] = "_LayoutEmpty";
 
-			var viewModel = new PageModels.TopicIndexMorePage {
+			var viewModel = new PageModels.TopicIndexPartialPage {
 				More = topicPreviews.Any(),
 				Page = page,
 				Topics = topicPreviews
@@ -132,14 +109,20 @@ namespace Forum.Controllers {
 
 		[HttpGet]
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
-		public async Task<IActionResult> Merge(int id) {
+		public async Task<IActionResult> Merge(int id, int pageId = 1) {
 			var record = DbContext.Messages.FirstOrDefault(item => item.Id == id);
 
 			if (record is null) {
 				throw new HttpNotFoundError();
 			}
 
-			var messageIds = await TopicRepository.GetIndexIds(0, 1, 0);
+			var messageIds = await TopicRepository.GetIndexIds(0, pageId, 0);
+			var morePages = true;
+
+			if (messageIds.Count < UserContext.ApplicationUser.TopicsPerPage) {
+				morePages = false;
+			}
+
 			var topicPreviews = await TopicRepository.GetPreviews(messageIds);
 
 			foreach (var topicPreview in topicPreviews.ToList()) {
@@ -155,37 +138,20 @@ namespace Forum.Controllers {
 				SourceId = id,
 				BoardName = "Pick a Destination Topic",
 				BoardId = 0,
-				CurrentPage = 1,
+				CurrentPage = pageId,
 				Topics = topicPreviews,
+				MorePages = morePages
 			};
 
 			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpGet]
-		[Authorize(Roles = Constants.InternalKeys.Admin)]
-		public async Task<IActionResult> MergeMore(int id, int page = 0) {
-			var record = DbContext.Messages.FirstOrDefault(item => item.Id == id);
-
-			if (record is null) {
-				throw new HttpNotFoundError();
-			}
-
-			var messageIds = await TopicRepository.GetIndexIds(0, page, 0);
+		public async Task<IActionResult> Bookmarks() {
+			var messageIds = (await BookmarkRepository.Records()).Select(r => r.MessageId).ToList();
 			var topicPreviews = await TopicRepository.GetPreviews(messageIds);
 
-			foreach (var topicPreview in topicPreviews.ToList()) {
-				if (topicPreview.Id == id) {
-					topicPreviews.Remove(topicPreview);
-				}
-				else {
-					topicPreview.SourceId = id;
-				}
-			}
-
-			var viewModel = new PageModels.TopicIndexMorePage {
-				More = topicPreviews.Any(),
-				Page = page,
+			var viewModel = new PageModels.TopicBookmarksPage {
 				Topics = topicPreviews
 			};
 
