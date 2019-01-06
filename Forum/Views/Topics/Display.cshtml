@@ -4,7 +4,7 @@
 	@if (User.Identity.IsAuthenticated) {
 		<span class="bookmark-button">
 			@{var bookmarkImage = Model.IsBookmarked ? "bookmark_on" : "bookmark_off";}
-			<a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Bookmark)" asp-route-id="@Model.Id"><img src="~/images/@(bookmarkImage).png" /></a>
+			<a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Bookmark)" asp-route-id="@Model.Id"><img src="~/images/@(bookmarkImage).png" title="Bookmark this topic" alt="Bookmark" /></a>
 		</span>
 
 		<nav class="float-right">
