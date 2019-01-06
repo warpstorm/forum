@@ -3,36 +3,37 @@
 @model LoginPage
 
 <section class="content-box pad">
-	<p><a class="button" asp-action="@nameof(Account.Register)" asp-route-returnurl="@ViewData["Referrer"]">Are you new user?</a></p>
+	<div class="half inline align-middle align-center pad">
+		<p><a class="button" asp-action="@nameof(Account.Register)" asp-route-returnurl="@ViewData["Referrer"]">Are you new user?</a></p>
+	</div>
 
-	<form method="post"
-		  asp-controller="@nameof(Account)"
-		  asp-action="@nameof(Account.Login)"
-		  asp-route-returnurl="@ViewData["Referrer"]">
+	<div class="half inline align-middle border-left pad">
+		<p class="subdued-text font-small">Welcome back!</p>
+		<form method="post"
+			asp-controller="@nameof(Account)"
+			asp-action="@nameof(Account.Login)"
+			asp-route-returnurl="@ViewData["Referrer"]">
 
-		<div asp-validation-summary="All" class="error"></div>
+			<div asp-validation-summary="All" class="error"></div>
 
-		<dl>
-			<dt>Email Address</dt>
-			<dd><input asp-for="@Model.Email" /></dd>
-			<dd><span asp-validation-for="@Model.Email" class="error"></span></dd>
-		</dl>
+			<dl>
+				<dt>Email Address</dt>
+				<dd><input asp-for="@Model.Email" /></dd>
+				<dd><span asp-validation-for="@Model.Email" class="error"></span></dd>
 
-		<dl>
-			<dt>Password</dt>
-			<dd><input asp-for="@Model.Password" /></dd>
-			<dd><span asp-validation-for="@Model.Password" class="error"></span></dd>
-		</dl>
+				<dt>Password</dt>
+				<dd><input asp-for="@Model.Password" /></dd>
+				<dd><span asp-validation-for="@Model.Password" class="error"></span></dd>
 
-		<dl>
-			<dt><input asp-for="@Model.RememberMe" /> Remember Me</dt>
-		</dl>
+				<dt><input asp-for="@Model.RememberMe" /> Remember Me</dt>
+			</dl>
 
-		<p><button>Log in</button></p>
-		<p class="subdued-text font-small pad-top"><a asp-action="@nameof(Account.ForgotPassword)">Forgot your password?</a></p>
+			<p><button>Log in</button></p>
+			<p class="subdued-text font-small pad-top"><a asp-action="@nameof(Account.ForgotPassword)">Forgot your password?</a></p>
 
-		<partial name="_Recaptcha3" />
-	</form>
+			<partial name="_Recaptcha3" />
+		</form>
+	</div>
 </section>
 
 @{ViewData["Title"] = "Warpstorm";}

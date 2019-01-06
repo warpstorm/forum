@@ -10,7 +10,7 @@
 
 		<div asp-validation-summary="All" class="error"></div>
 
-		<div class="half inline align-top pad">
+		<div class="half inline align-top pad border-right">
 			<dl>
 				<dt>
 					Display Name
@@ -21,11 +21,13 @@
 			</dl>
 
 			<dl>
-				<dt>Are you at least 13 years old?</dt>
-				<dd><input asp-for="@Model.ConfirmThirteen" /></dd>
+				<dd>
+					<input asp-for="@Model.ConfirmThirteen" />
+					<span class="font-small">I am at least 13 years old.</span>
+				</dd>
 			</dl>
 
-			<p class="small-pad-top font-small">Your email address <b>requires activation</b>, but is <b>only</b> used for password resets. It's not shared with anyone except Warpstorm admins. If you don't trust us with your real address (smart!), then try a free <a class="underline" href="http://noref.us/?https://www.mailinator.com/">Mailinator</a> temporary address.</p>
+			<p class="small-pad-top font-small">Your email address <b>requires activation</b>, but is <b>only</b> used for password resets. It's not shared with anyone except Warpstorm admins. If you don't trust us with your real address (smart!), then try a free <a class="underline" href="https://www.mailinator.com/" target="_blank">Mailinator</a> temporary address.</p>
 		</div>
 		<div class="half inline align-top pad">
 			<dl>

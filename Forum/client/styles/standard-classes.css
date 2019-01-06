@@ -94,6 +94,26 @@ a.borderless * {
 	box-shadow: inset 0 -3px 0 #2a3951;
 }
 
+.border-top {
+	border-top: 1px solid #2a3951;
+}
+
+.border-right {
+	border-right: 1px solid #2a3951;
+}
+
+.border-bottom {
+	border-bottom: 1px solid #2a3951;
+}
+
+.border-left {
+	border-left: 1px solid #2a3951;
+}
+
+.border {
+	border: 1px solid #2a3951;
+}
+
 .hover-underline:hover {
 	color: #FFF;
 	text-decoration: underline;
