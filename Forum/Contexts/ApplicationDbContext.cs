@@ -91,11 +91,11 @@ namespace Forum.Contexts {
 			modelBuilder.Entity<BoardRole>()
 				.HasIndex(r => r.BoardId);
 
-			modelBuilder.Entity<MessageBoard>()
-				.HasIndex(r => r.BoardId);
-
-			modelBuilder.Entity<MessageBoard>()
+			modelBuilder.Entity<Bookmark>()
 				.HasIndex(r => r.MessageId);
+
+			modelBuilder.Entity<Bookmark>()
+				.HasIndex(r => r.UserId);
 
 			modelBuilder.Entity<Message>()
 				.HasIndex(r => r.Processed);
@@ -109,14 +109,14 @@ namespace Forum.Contexts {
 			modelBuilder.Entity<Message>()
 				.HasIndex(r => r.PostedById);
 
-			modelBuilder.Entity<Bookmark>()
+			modelBuilder.Entity<MessageBoard>()
+				.HasIndex(r => r.BoardId);
+
+			modelBuilder.Entity<MessageBoard>()
 				.HasIndex(r => r.MessageId);
 
-			modelBuilder.Entity<Bookmark>()
+			modelBuilder.Entity<Notification>()
 				.HasIndex(r => r.UserId);
-
-			modelBuilder.Entity<Quote>()
-				.HasIndex(r => r.Approved);
 
 			modelBuilder.Entity<Participant>()
 				.HasIndex(r => r.MessageId );
@@ -127,6 +127,9 @@ namespace Forum.Contexts {
 			modelBuilder.Entity<Participant>()
 				.HasIndex(r => new { r.UserId, r.MessageId });
 
+			modelBuilder.Entity<Quote>()
+				.HasIndex(r => r.Approved);
+
 			modelBuilder.Entity<ViewLog>()
 				.HasIndex(r => new { r.LogTime, r.UserId });
 
@@ -135,9 +138,6 @@ namespace Forum.Contexts {
 
 			modelBuilder.Entity<ViewLog>()
 				.HasIndex(r => r.LogTime);
-
-			modelBuilder.Entity<Notification>()
-				.HasIndex(r => r.UserId);
 		}
 	}
 }
