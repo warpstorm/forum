@@ -9,9 +9,11 @@ namespace Forum.Models.ViewModels.Topics.Pages {
 		public int SourceId { get; set; }
 
 		public int BoardId { get; set; }
-		public int Page { get; set; }
+		public int CurrentPage { get; set; }
 		public int UnreadFilter { get; set; }
 		public string BoardName { get; set; }
+		public bool MorePages { get; set; }
+
 		public List<MessagePreview> Topics { get; set; }
 
 		public Sidebar.Sidebar Sidebar { get; set; }

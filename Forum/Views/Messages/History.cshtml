@@ -1,21 +1,22 @@
 ﻿@model Forum.Models.ViewModels.Messages.HistoryPage
 
-@{ 
-	var pageModifier = Model.MorePages ? 1 : 0;
-}
+@{ var pageModifier = Model.MorePages ? 1 : 0; }
 
 <header id="topic-header" class="content-box pad gap-bottom">
 	<ul class="inline pages">
+		<li class="font-small subdued-text">Pages:</li>
 		<li class="hidden pointer unhide-pages more-pages-before">&#8230;</li>
 		@for (var i = 1; i <= Model.CurrentPage + pageModifier; i++) {
 			if (Model.CurrentPage == i) {
 				<li class="small-button highlight page hidden">@i</li>
 			}
 			else {
-				<li class="page hidden"><a asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.History)" asp-route-id="@Model.Id" asp-route-page="@i" class="small-button">@i.ToString()</a></li>
+				<li class="page hidden"><a asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.History)" asp-route-id="@Model.Id" asp-route-pageId="@i" class="small-button">@i.ToString()</a></li>
 			}
 		}
-		<li class="hidden pointer unhide-pages more-pages-after">&#8230;</li>
+		@if (Model.MorePages) {
+			<li class="more-pages-after">&#8230;</li>
+		}
 	</ul>
 </header>
 
@@ -27,18 +28,21 @@
 	}
 </div>
 
-<footer>
+<footer id="topic-footer" class="content-box pad gap-top">
 	<ul class="inline pages">
+		<li class="font-small subdued-text">Pages:</li>
 		<li class="hidden pointer unhide-pages more-pages-before">&#8230;</li>
 		@for (var i = 1; i <= Model.CurrentPage + pageModifier; i++) {
 			if (Model.CurrentPage == i) {
 				<li class="small-button highlight page hidden">@i</li>
 			}
 			else {
-				<li class="page hidden"><a asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.History)" asp-route-id="@Model.Id" asp-route-page="@i" class="small-button">@i.ToString()</a></li>
+				<li class="page hidden"><a asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.History)" asp-route-id="@Model.Id" asp-route-pageId="@i" class="small-button">@i.ToString()</a></li>
 			}
 		}
-		<li class="hidden pointer unhide-pages more-pages-after">&#8230;</li>
+		@if (Model.MorePages) {
+			<li class="more-pages-after">&#8230;</li>
+		}
 	</ul>
 </footer>
 

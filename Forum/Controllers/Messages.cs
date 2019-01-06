@@ -159,7 +159,7 @@ namespace Forum.Controllers {
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> History(string id, int page = 1) {
+		public async Task<IActionResult> History(string id, int pageId = 1) {
 			if (string.IsNullOrEmpty(id)) {
 				id = UserContext.ApplicationUser.Id;
 			}
@@ -170,7 +170,7 @@ namespace Forum.Controllers {
 				throw new HttpNotFoundError();
 			}
 
-			var messages = await MessageRepository.GetUserMessages(id, page);
+			var messages = await MessageRepository.GetUserMessages(id, pageId);
 			var morePages = true;
 
 			if (messages.Count < UserContext.ApplicationUser.MessagesPerPage) {
@@ -183,7 +183,7 @@ namespace Forum.Controllers {
 				Id = userRecord.Id,
 				DisplayName = userRecord.DecoratedName,
 				Email = userRecord.Email,
-				CurrentPage = page,
+				CurrentPage = pageId,
 				MorePages = morePages,
 				ShowFavicons = UserContext.ApplicationUser.ShowFavicons,
 				Messages = messages,

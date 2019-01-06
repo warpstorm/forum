@@ -64,7 +64,7 @@ namespace Forum.Controllers {
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> Index(int id = 0, int unread = 0) {
+		public async Task<IActionResult> Index(int id = 0, int pageId = 0, int unread = 0) {
 			var boardRoles = (from role in await RoleRepository.BoardRoles()
 							  where role.BoardId == id
 							  select role.RoleId).ToList();
@@ -85,7 +85,7 @@ namespace Forum.Controllers {
 			var viewModel = new PageModels.TopicIndexPage {
 				BoardId = id,
 				BoardName = boardRecord?.Name ?? "All Topics",
-				Page = page,
+				CurrentPage = page,
 				Topics = topicPreviews,
 				UnreadFilter = unread,
 				Sidebar = sidebar
@@ -155,7 +155,7 @@ namespace Forum.Controllers {
 				SourceId = id,
 				BoardName = "Pick a Destination Topic",
 				BoardId = 0,
-				Page = 1,
+				CurrentPage = 1,
 				Topics = topicPreviews,
 			};
 

@@ -1,5 +1,7 @@
 @model TopicIndexPage
 
+@{ var pageModifier = Model.MorePages ? 1 : 0; }
+
 <partial name="_TopicNav" model="@{(Model.BoardId > 0 ? Model.BoardId : 1)}" />
 
 <br class="clear" />
@@ -23,7 +25,22 @@
 </section>
 
 <footer>
-	<span id="load-more-topics" class="hidden small-button">More Topics</span>
+	<ul class="inline pages">
+		<li class="font-small subdued-text">Pages:</li>
+		<li class="hidden pointer unhide-pages more-pages-before">&#8230;</li>
+
+		@for (var i = 1; i <= Model.CurrentPage + pageModifier; i++) {
+			if (Model.CurrentPage == i) {
+				<li class="small-button highlight page hidden">@i</li>
+			}
+			else {
+				<li class="page hidden"><a asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.History)" asp-route-id="@Model.BoardId" asp-route-pageId="@i" asp-route-unread class="small-button">@i.ToString()</a></li>
+			}
+		}
+		@if (Model.MorePages) {
+			<li class="more-pages-after">&#8230;</li>
+		}
+	</ul>
 </footer>
 
 @{ViewData["Title"] = Model.BoardName;}
@@ -38,7 +55,7 @@
 		window.pageActions = 'topic-index';
 		window.moreAction = 'IndexMore/' + @Model.BoardId;
 		window.boardId = @Model.BoardId;
-		window.page = @Model.Page;
+		window.page = @Model.CurrentPage;
 		window.unreadFilter = @Model.UnreadFilter;
 	</script>
 }
