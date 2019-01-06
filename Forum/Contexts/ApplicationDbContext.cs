@@ -118,6 +118,9 @@ namespace Forum.Contexts {
 			modelBuilder.Entity<Notification>()
 				.HasIndex(r => r.UserId);
 
+			modelBuilder.Entity<Notification>()
+				.HasIndex(r => new { r.MessageId, r.Type });
+
 			modelBuilder.Entity<Participant>()
 				.HasIndex(r => r.MessageId );
 
