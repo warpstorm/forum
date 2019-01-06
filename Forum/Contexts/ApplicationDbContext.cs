@@ -77,10 +77,6 @@ namespace Forum.Contexts {
 				.HasDefaultValue(25);
 
 			modelBuilder.Entity<ApplicationUser>()
-				.Property(r => r.ShowBirthday)
-				.HasDefaultValue(true);
-
-			modelBuilder.Entity<ApplicationUser>()
 				.Property(r => r.PopularityLimit)
 				.HasDefaultValue(30);
 
