@@ -297,9 +297,7 @@ namespace Forum.Controllers {
 				var viewModel = new ViewModels.Account.RegisterPage {
 					DisplayName = input.DisplayName,
 					Email = input.Email,
-					ConfirmEmail = input.ConfirmEmail,
 					Password = input.Password,
-					ConfirmPassword = input.ConfirmPassword,
 				};
 
 				return await ForumViewResult.ViewResult(this, viewModel);

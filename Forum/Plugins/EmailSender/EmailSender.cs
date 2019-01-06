@@ -38,7 +38,7 @@ namespace Forum.Plugins.EmailSender {
 			return SendEmailAsync(
 				email,
 				"Confirm your email",
-				$"Please confirm your account by clicking this link: <a href='{HtmlEncoder.Default.Encode(link)}'>link</a>");
+				$"Please confirm your account by clicking this link: <a href='{HtmlEncoder.Default.Encode(link)}'>link</a>.");
 		}
 
 		public async Task Execute(string apiKey, string subject, string message, string email) {

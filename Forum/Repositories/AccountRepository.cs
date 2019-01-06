@@ -127,15 +127,7 @@ namespace Forum.Repositories {
 			}
 			else if (!result.Succeeded) {
 				Log.LogWarning($"Invalid login attempt for account '{input.Email}'.");
-
-				var user = (await Records()).FirstOrDefault(u => u.Email == input.Email);
-
-				if (user != null && !user.EmailConfirmed) {
-					serviceResponse.Error("Your account isn't activated. Check your email for the link. Check your spam folder if you didn't get the message after 5 minutes.");
-				}
-				else {
-					serviceResponse.Error("Invalid login attempt.");
-				}
+				serviceResponse.Error("Invalid login attempt.");
 			}
 			else {
 				Log.LogInformation($"User logged in '{input.Email}'.");
@@ -303,10 +295,6 @@ namespace Forum.Repositories {
 								var callbackUrl = EmailConfirmationLink(userRecord.Id, code);
 
 								await EmailSender.SendEmailConfirmationAsync(input.NewEmail, callbackUrl);
-
-								if (userRecord.Id == UserContext.ApplicationUser.Id) {
-									await SignOut();
-								}
 							}
 							else {
 								identityResult = await UserManager.ConfirmEmailAsync(userRecord, code);
@@ -320,6 +308,10 @@ namespace Forum.Repositories {
 								else {
 									Log.LogInformation($"User confirmed email '{userRecord.Email}'.");
 								}
+							}
+
+							if (userRecord.Id == UserContext.ApplicationUser.Id) {
+								await SignOut();
 							}
 						}
 					}
@@ -421,18 +413,19 @@ namespace Forum.Repositories {
 				var identityResult = await UserManager.CreateAsync(user, input.Password);
 
 				if (identityResult.Succeeded) {
-					Log.LogInformation($"User created a new account with password '{input.Email}'.");
-
 					var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
 					var callbackUrl = EmailConfirmationLink(user.Id, code);
 
 					if (EmailSender.Ready) {
 						await EmailSender.SendEmailConfirmationAsync(input.Email, callbackUrl);
-						serviceResponse.Message = "Please check your email for the activation link.";
 					}
-					else {
-						serviceResponse.RedirectPath = callbackUrl;
-					}
+
+					var loginInput = new InputModels.LoginInput {
+						Email = input.Email,
+						Password = input.Password
+					};
+
+					return await Login(loginInput);
 				}
 				else {
 					foreach (var error in identityResult.Errors) {

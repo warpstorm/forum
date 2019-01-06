@@ -55,6 +55,10 @@
 	font-weight: 600;
 }
 
+.error li {
+	padding: 0;
+}
+
 .error, error a {
 	color: #d01d1d;
 }
@@ -139,7 +143,7 @@ br.clear {
 }
 
 .half {
-	width: 49.5%;
+	width: 49%;
 }
 
 .float-right {
