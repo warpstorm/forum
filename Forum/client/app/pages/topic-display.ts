@@ -166,10 +166,8 @@ export class TopicDisplay {
 	}
 
 	hubNewReply = (data: HubMessage) => {
-		let self = this;
-
-		if (data.topicId == self.settings.topicId && self.settings.currentPage == self.settings.totalPages) {
-			self.getLatestReplies();
+		if (data.topicId == this.settings.topicId && this.settings.currentPage == this.settings.totalPages) {
+			this.getLatestReplies();
 		}
 	}
 
