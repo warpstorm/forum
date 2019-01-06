@@ -104,6 +104,9 @@ namespace Forum.Contexts {
 				.HasIndex(r => r.LastReplyPosted);
 
 			modelBuilder.Entity<Message>()
+				.HasIndex(r => new { r.Pinned, r.LastReplyPosted });
+
+			modelBuilder.Entity<Message>()
 				.HasIndex(r => r.ParentId);
 
 			modelBuilder.Entity<Message>()
