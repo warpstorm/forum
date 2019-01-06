@@ -63,6 +63,9 @@ export class TopicIndex {
 	loadTopicsPage = (boardId: number, pageId: number, unread: number, pushState: boolean = true) => {
 		let self = this;
 
+		let topicList = <Element>self.doc.querySelector('#topic-list');
+		topicList.classList.add('faded');
+
 		let requestOptions = new XhrOptions({
 			method: HttpMethod.Get,
 			url: `/Topics/IndexPartial/${boardId}/${pageId}?unread=${unread}`,
@@ -83,9 +86,8 @@ export class TopicIndex {
 							eval(element.textContent || '');
 						}
 						else if (element.tagName.toLowerCase() == 'section') {
-							let targetElement = <Element>self.doc.querySelector('#topic-list');
-							targetElement.after(element);
-							targetElement.remove();
+							topicList.after(element);
+							topicList.remove();
 						}
 						else if (element.tagName.toLowerCase() == 'footer') {
 							let targetElement = <Element>self.doc.querySelector('footer');
