@@ -4,7 +4,7 @@
 	public totalPages: number = 0;
 	public unreadFilter: number = 0;
 
-	public constructor(init?: Partial<Window>) {
+	public constructor(init?: Partial<object>) {
 		Object.assign(this, init);
 	}
 }

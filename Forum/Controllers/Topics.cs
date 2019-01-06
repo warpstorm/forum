@@ -104,7 +104,9 @@ namespace Forum.Controllers {
 
 			ViewData[Constants.InternalKeys.Layout] = "_LayoutEmpty";
 
-			var viewModel = new PageModels.TopicIndexPartialPage {
+			var viewModel = new PageModels.TopicIndexPage {
+				BoardId = id,
+				UnreadFilter = unread,
 				CurrentPage = pageId,
 				Topics = topicPreviews,
 				MorePages = morePages,

@@ -12,13 +12,44 @@ export class TopicIndex {
 
 	constructor(private doc: Document, private app: App) {
 		throwIfNull(doc, 'doc');
-		this.settings = new TopicIndexSettings(window);
+		this.settings = new TopicIndexSettings({
+			boardId: (<any>window).boardId,
+			currentPage: (<any>window).currentPage,
+			totalPages: (<any>window).totalPages,
+			unreadFilter: (<any>window).unreadFilter
+		});
 	}
 
 	init(): void {
-		if (this.app.hub) {
-			this.bindHubActions();
+		let self = this;
+
+		if (self.app.hub) {
+			self.bindHubActions();
 		}
+
+		self.bindPageButtons();
+
+		window.onpopstate = function (event: PopStateEvent) {
+			var settings = event.state as TopicIndexSettings;
+
+			if (settings) {
+				self.settings = settings;
+				self.loadTopicsPage(self.settings.boardId, self.settings.currentPage, self.settings.unreadFilter, false);
+			}
+		};
+	}
+
+	bindPageButtons = (pushState: boolean = true) => {
+		let self = this;
+
+		if (pushState) {
+			window.history.pushState(self.settings, self.doc.title, `/Topics/Index/${self.settings.boardId}/${self.settings.currentPage}?unread=${self.settings.unreadFilter}`);
+		}
+
+		self.doc.querySelectorAll('.page a').forEach(element => {
+			element.removeEventListener('click', self.eventPageClick);
+			element.addEventListener('click', self.eventPageClick);
+		});
 	}
 
 	bindHubActions = () => {
@@ -29,13 +60,7 @@ export class TopicIndex {
 		this.app.hub.on('new-reply', this.hubNewReply);
 	}
 
-	hubNewReply = () => {
-		if (this.settings.currentPage == 1) {
-			this.loadTopicsPage(this.settings.boardId, 1, this.settings.unreadFilter);
-		}
-	}
-
-	loadTopicsPage = (boardId: number, pageId: number, unread: number) => {
+	loadTopicsPage = (boardId: number, pageId: number, unread: number, pushState: boolean = true) => {
 		let self = this;
 
 		let requestOptions = new XhrOptions({
@@ -49,7 +74,6 @@ export class TopicIndex {
 				let resultDocument = <HTMLElement>(<Document>xhrResult.response).documentElement;
 				let resultBody = <HTMLBodyElement>resultDocument.querySelector('body');
 				let resultBodyElements = resultBody.childNodes;
-				let topicList = <Element>self.doc.querySelector('#topic-list');
 
 				resultBodyElements.forEach(node => {
 					let element = node as Element;
@@ -57,20 +81,52 @@ export class TopicIndex {
 					if (element && element.tagName) {
 						if (element.tagName.toLowerCase() == 'script') {
 							eval(element.textContent || '');
-							new Navigation(self.doc).addListenerClickableLinkParent();
 						}
 						else if (element.tagName.toLowerCase() == 'section') {
-							topicList.after(element);
-							topicList.remove();
+							let targetElement = <Element>self.doc.querySelector('#topic-list');
+							targetElement.after(element);
+							targetElement.remove();
+						}
+						else if (element.tagName.toLowerCase() == 'footer') {
+							let targetElement = <Element>self.doc.querySelector('footer');
+							targetElement.after(element);
+							targetElement.remove();
 						}
 					}
 				});
 
-				let partialSettings = new TopicIndexSettings(window);
+				self.settings = new TopicIndexSettings({
+					boardId: (<any>window).boardId,
+					currentPage: (<any>window).currentPage,
+					totalPages: (<any>window).totalPages,
+					unreadFilter: (<any>window).unreadFilter
+				});
 
-				self.settings.currentPage = partialSettings.currentPage;
-				self.settings.totalPages = partialSettings.totalPages;
+				self.bindPageButtons(pushState);
+				self.app.navigation.setupPageNavigators();
+				self.app.navigation.addListenerClickableLinkParent();
 			})
 			.catch(Xhr.logRejected);
+	}
+
+	hubNewReply = () => {
+		if (this.settings.currentPage == 1) {
+			this.loadTopicsPage(this.settings.boardId, 1, this.settings.unreadFilter);
+		}
+	}
+
+	eventPageClick = (event: Event) => {
+		let eventTarget = event.currentTarget as HTMLAnchorElement;
+
+		if (!eventTarget) {
+			return;
+		}
+
+		event.preventDefault();
+
+		let self = this;
+		let pageId = Number(eventTarget.getAttribute('data-page-id'));
+
+		self.loadTopicsPage(self.settings.boardId, pageId, self.settings.unreadFilter);
 	}
 }
