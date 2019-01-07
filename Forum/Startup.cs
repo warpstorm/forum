@@ -19,7 +19,7 @@ namespace Forum {
 	using DataModels = Models.DataModels;
 
 	public class Startup {
-		public IConfiguration Configuration { get; }
+		IConfiguration Configuration { get; }
 
 		public Startup(
 			IConfiguration configuration
@@ -98,11 +98,11 @@ namespace Forum {
 
 		string GetDbConnectionString() {
 			// Loads from the environment
-			var dbConnectionString = Configuration["DefaultConnection"];
+			var dbConnectionString = Configuration[Constants.InternalKeys.DbConnection];
 
 			// Or use the one defined in ConnectionStrings setting of app configuration.
 			if (string.IsNullOrEmpty(dbConnectionString)) {
-				dbConnectionString = Configuration.GetConnectionString("DefaultConnection");
+				dbConnectionString = Configuration.GetConnectionString(Constants.InternalKeys.DbConnection);
 			}
 
 			return dbConnectionString;
