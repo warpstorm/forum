@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -41,6 +42,7 @@ namespace Forum.Repositories {
 		GzipWebClient WebClient { get; }
 		ImgurClient ImgurClient { get; }
 		YouTubeClient YouTubeClient { get; }
+		ILogger<MessageRepository> Log { get; }
 
 		public MessageRepository(
 			ApplicationDbContext dbContext,
@@ -56,7 +58,8 @@ namespace Forum.Repositories {
 			BBCodeParser bbcParser,
 			GzipWebClient webClient,
 			ImgurClient imgurClient,
-			YouTubeClient youTubeClient
+			YouTubeClient youTubeClient,
+			ILogger<MessageRepository> log
 		) {
 			DbContext = dbContext;
 			UserContext = userContext;
@@ -71,6 +74,7 @@ namespace Forum.Repositories {
 			WebClient = webClient;
 			ImgurClient = imgurClient;
 			YouTubeClient = youTubeClient;
+			Log = log;
 		}
 
 		public List<int> GetMessageIds(int topicId, DateTime? fromTime = null) {
@@ -515,16 +519,24 @@ namespace Forum.Repositories {
 		/// I really should make this async. Load a remote page by URL and attempt to get details about it.
 		/// </summary>
 		public async Task<ServiceModels.RemotePageDetails> GetRemotePageDetails(string remoteUrl) {
-			var uri = new Uri(remoteUrl);
+			var returnResult = new ServiceModels.RemotePageDetails {
+				Title = remoteUrl,
+			};
+
+			Uri uri;
+
+			try {
+				uri = new Uri(remoteUrl);
+			}
+			catch (UriFormatException) {
+				return returnResult;
+			}
+
 			var remoteUrlAuthority = uri.GetLeftPart(UriPartial.Authority);
 			var domain = uri.Host.Replace("/www.", "/").ToLower();
 
 			var faviconPath = $"{remoteUrlAuthority}/favicon.ico";
 			var faviconStoragePath = await CacheFavicon(domain, uri.GetLeftPart(UriPartial.Path), faviconPath);
-
-			var returnResult = new ServiceModels.RemotePageDetails {
-				Title = remoteUrl,
-			};
 
 			var document = WebClient.DownloadDocument(remoteUrl);
 
@@ -1087,7 +1099,7 @@ namespace Forum.Repositories {
 
 			var recordCount = await records.CountAsync();
 
-			var totalSteps = (int)Math.Ceiling(1D * recordCount / 25);
+			var totalSteps = (int)Math.Ceiling(1D * recordCount / 5);
 
 			return totalSteps;
 		}
@@ -1097,14 +1109,20 @@ namespace Forum.Repositories {
 			input.ThrowIfNull(nameof(input));
 
 			var messageQuery = from message in DbContext.Messages
-							   where force || !message.Processed
+							   where !message.Processed
 							   orderby message.Id descending
 							   select message;
 
-			var take = 25;
+			if (force) {
+				messageQuery = from message in DbContext.Messages
+							   orderby message.Id descending
+							   select message;
+			}
+
+			var take = 5;
 			var skip = take * input.CurrentStep;
 
-			var messages = messageQuery.Skip(skip).Take(take).ToList();
+			var messages = messageQuery.Skip(skip).Take(take);
 
 			foreach (var message in messages) {
 				var serviceResponse = new ServiceModels.ServiceResponse();
@@ -1220,12 +1238,12 @@ namespace Forum.Repositories {
 			var skip = (page - 1) * take;
 
 			var messageQuery = from message in DbContext.Messages
-								 where message.PostedById == userId
-								 orderby message.Id descending
-								 select new {
-									 message.Id,
-									 message.ParentId
-								 };
+							   where message.PostedById == userId
+							   orderby message.Id descending
+							   select new {
+								   message.Id,
+								   message.ParentId
+							   };
 
 			var messageIds = new List<int>();
 			var attempts = 0;

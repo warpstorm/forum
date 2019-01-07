@@ -26,42 +26,6 @@ namespace Forum.Repositories {
 	using ViewModels = Models.ViewModels;
 
 	public class AccountRepository : IRepository<DataModels.ApplicationUser> {
-		public async Task<List<DataModels.ApplicationUser>> Records() {
-			if (_Records is null) {
-				var records = await DbContext.Users.ToListAsync();
-				_Records = records.OrderBy(r => r.DisplayName).ToList();
-
-				var birthdayCakeImg = @"<img src=""/images/hbd.png"" alt=""Happy birthday!"" title=""Happy birthday!"" />";
-
-				var onlineTimeLimit = DateTime.Now.AddMinutes(-5);
-				var onlineChiclet = @"<span class=""whos-online-chiclet chiclet chiclet-green"" time=""**TIME**"" title=""This user is online!""></span>";
-
-				foreach (var user in _Records) {
-					user.DecoratedName = string.Empty;
-
-					var isOnline = user.LastOnline >= onlineTimeLimit;
-
-					if (isOnline) {
-						var personalizedChiclet = onlineChiclet.Replace("**TIME**", user.LastOnline.ToHtmlLocalTimeString());
-						user.DecoratedName += $"{personalizedChiclet} ";
-					}
-
-					if (user.ShowBirthday) {
-						var isBirthday = DateTime.Now.Date == new DateTime(DateTime.Now.Year, user.Birthday.Month, user.Birthday.Day).Date;
-
-						if (isBirthday) {
-							user.DecoratedName += $"{birthdayCakeImg} ";
-						}
-					}
-
-					user.DecoratedName += user.DisplayName;
-				}
-			}
-
-			return _Records;
-		}
-		List<DataModels.ApplicationUser> _Records;
-
 		ApplicationDbContext DbContext { get; }
 		UserContext UserContext { get; }
 		UserManager<DataModels.ApplicationUser> UserManager { get; }
@@ -98,6 +62,42 @@ namespace Forum.Repositories {
 
 			Log = log;
 		}
+
+		public async Task<List<DataModels.ApplicationUser>> Records() {
+			if (_Records is null) {
+				var records = await DbContext.Users.ToListAsync();
+				_Records = records.OrderBy(r => r.DisplayName).ToList();
+
+				var birthdayCakeImg = @"<img src=""/images/hbd.png"" alt=""Happy birthday!"" title=""Happy birthday!"" />";
+
+				var onlineTimeLimit = DateTime.Now.AddMinutes(-5);
+				var onlineChiclet = @"<span class=""whos-online-chiclet chiclet chiclet-green"" time=""**TIME**"" title=""This user is online!""></span>";
+
+				foreach (var user in _Records) {
+					user.DecoratedName = string.Empty;
+
+					var isOnline = user.LastOnline >= onlineTimeLimit;
+
+					if (isOnline) {
+						var personalizedChiclet = onlineChiclet.Replace("**TIME**", user.LastOnline.ToHtmlLocalTimeString());
+						user.DecoratedName += $"{personalizedChiclet} ";
+					}
+
+					if (user.ShowBirthday) {
+						var isBirthday = DateTime.Now.Date == new DateTime(DateTime.Now.Year, user.Birthday.Month, user.Birthday.Day).Date;
+
+						if (isBirthday) {
+							user.DecoratedName += $"{birthdayCakeImg} ";
+						}
+					}
+
+					user.DecoratedName += user.DisplayName;
+				}
+			}
+
+			return _Records;
+		}
+		List<DataModels.ApplicationUser> _Records;
 
 		public async Task<List<ViewModels.Profile.OnlineUser>> GetOnlineList() {
 			// Users are considered "offline" after 5 minutes.
