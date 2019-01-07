@@ -14,17 +14,21 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Forum {
 	using DataModels = Models.DataModels;
 
 	public class Startup {
 		IConfiguration Configuration { get; }
+		ILogger<Startup> Log { get; }
 
 		public Startup(
-			IConfiguration configuration
+			IConfiguration configuration,
+			ILogger<Startup> log
 		) {
 			Configuration = configuration;
+			Log = log;
 		}
 
 		public void ConfigureServices(IServiceCollection services) {
@@ -69,11 +73,15 @@ namespace Forum {
 
 		public void Configure(IApplicationBuilder app, IHostingEnvironment env) {
 			if (env.IsDevelopment()) {
+				Log.LogInformation("Environment is development.");
+
 				app.UseDeveloperExceptionPage();
 				app.UseBrowserLink();
 				app.UseDatabaseErrorPage();
 			}
 			else {
+				Log.LogInformation("Environment is not development.");
+
 				app.UseExceptionHandler("/Home/Error");
 			}
 

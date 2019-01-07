@@ -385,8 +385,8 @@ namespace Forum.Repositories {
 				await FindMentionedUsers(processedMessage);
 				PostProcessMessageInput(processedMessage);
 			}
-			catch (ArgumentException e) {
-				serviceResponse.Error(nameof(InputModels.MessageInput.Body), $"An error occurred while processing the message. {e.Message}");
+			catch (ArgumentException ex) {
+				serviceResponse.Error(nameof(InputModels.MessageInput.Body), $"An error occurred while processing the message. {ex.Message}");
 			}
 
 			if (processedMessage is null) {
@@ -528,7 +528,8 @@ namespace Forum.Repositories {
 			try {
 				uri = new Uri(remoteUrl);
 			}
-			catch (UriFormatException) {
+			catch (UriFormatException ex) {
+				Log.LogWarning(ex, $"{nameof(GetRemotePageDetails)} couldn't create a URI.", remoteUrl);
 				return returnResult;
 			}
 
@@ -725,8 +726,8 @@ namespace Forum.Repositories {
 					});
 				}
 			}
-			catch (Exception e) {
-				Debug.WriteLine(e.Message);
+			catch (Exception ex) {
+				Log.LogError(ex, $"{nameof(CacheFavicon)} threw an exception.");
 			}
 
 			return string.Empty;
