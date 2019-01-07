@@ -529,7 +529,8 @@ namespace Forum.Repositories {
 				uri = new Uri(remoteUrl);
 			}
 			catch (UriFormatException ex) {
-				Log.LogWarning(ex, $"{nameof(GetRemotePageDetails)} couldn't create a URI.", remoteUrl);
+				var logUrl = remoteUrl.Substring(0, 255);
+				Log.LogWarning(ex, $"{nameof(GetRemotePageDetails)} couldn't create a URI from -- {logUrl}");
 				return returnResult;
 			}
 
