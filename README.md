@@ -5,18 +5,18 @@ A light-weight and mobile-friendly message board solution intended for small com
 ## Features
 
 * Standard forum functionality such as boards, topics, messages, and user accounts.
-* Robust client-side functionality to enhance interactivity.
+* Robust client-side functionality using XHRs to enhance interactivity.
 * Emphasis on progressive enhancement over graceful degradation.<sup>[[2]](#notes)</sup>
 * Double posting and rapid posting spam prevention.
 * Notifications for events that happened while users were away.
 * Avatar and smiley image support using Azure Storage, with identicon fallback.
-* Thoughts simplify the user experience by allowing one-touch simple responses to messages.
-* Personal message pinning and marking topics as unread allows users to revisit topics later.
+* One-touch simple responses to messages called "thoughts".
+* Topic bookmarks, global topic pinning, and marking topics as unread allows users to revisit topics later.
 * Imgur and YouTube integration enable simplified mobile usage and image sharing.
 * ASP.NET Identity and Role integration.
 * BBCode Parser<sup>[[3]](#notes)</sup> for users who are comfortable with that. Can be replaced with other custom parsers easily.
-* Individualized profile settings, allowing users to pick their default landing page, number of messages per page, etc.
-* Modular design allowing much of the code to be easily replaced or customized.
+* Individualized account settings, allowing users to pick their default landing page, number of messages per page, etc.
+* Modular design allowing much of the code to be easily replaced or customized without significant impact to other areas.
 * Static theme simplifies the development experience. No theme engine complexity here!
 
 ## Unlicensing and Usage
@@ -33,4 +33,4 @@ Instructions for setup can be found [here](https://github.com/jyarbro/forum/wiki
 
 2: Progressive enhancement means we focus on getting basic functionality to the user up front in the most universally supported format possible. Only then do we enhance the experience and build up the fanciness. This is opposed to the concept of graceful degradation, where you start fully featured and fail down to the lowest capable level. In practical terms, this means we do our best to make the site function even with javascript disabled.
 
-3: In order to use the BBC code tag processor, this solution requires [CodeKicker.BBCode](http://codekicker.de/) and the source from that project is included in this one, albeit heavily reformatted by me and modernized to work with ASP.NET Core and the latest C# features. To remove this encumbering library, please find the `ParseBBC` method in the `MessageRepository` class.
+3: In order to use the BBC code tag processor, this solution requires [CodeKicker.BBCode](http://codekicker.de/) and the source from that project is included in this one, albeit heavily reformatted by me and modernized to work with ASP.NET Core and the latest C# features. My modifications to that library are licensed under the MIT license as the original implementation was. To remove this encumbering library, please find the `ParseBBC` method in the `MessageRepository` class.
