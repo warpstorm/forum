@@ -1,7 +1,6 @@
 import { throwIfNull } from '../helpers';
 import { HttpMethod } from '../definitions/http-method';
 import { App } from '../app';
-import { Navigation } from '../services/navigation';
 import { Xhr } from '../services/xhr';
 
 import { XhrOptions } from '../models/xhr-options';
@@ -27,23 +26,20 @@ export class TopicIndex {
 			self.bindHubActions();
 		}
 
-		self.bindPageButtons();
+		// Ensures the first load also has the settings state.
+		window.history.replaceState(self.settings, self.doc.title, window.location.href);
 
-		window.onpopstate = function (event: PopStateEvent) {
-			var settings = event.state as TopicIndexSettings;
+		self.bindPageButtons(false);
 
-			if (settings) {
-				self.settings = settings;
-				self.loadTopicsPage(self.settings.boardId, self.settings.currentPage, self.settings.unreadFilter, false);
-			}
-		};
+		window.onpopstate = this.eventPopState;
 	}
 
 	bindPageButtons = (pushState: boolean = true) => {
 		let self = this;
 
 		if (pushState) {
-			window.history.pushState(self.settings, self.doc.title, `/Topics/Index/${self.settings.boardId}/${self.settings.currentPage}?unread=${self.settings.unreadFilter}`);
+			let address = `/Topics/Index/${self.settings.boardId}/${self.settings.currentPage}?unread=${self.settings.unreadFilter}`;
+			window.history.pushState(self.settings, self.doc.title, address);
 		}
 
 		self.doc.querySelectorAll('.page a').forEach(element => {
@@ -128,5 +124,14 @@ export class TopicIndex {
 		let pageId = Number(eventTarget.getAttribute('data-page-id'));
 
 		self.loadTopicsPage(self.settings.boardId, pageId, self.settings.unreadFilter);
+	}
+
+	eventPopState = (event: PopStateEvent) => {
+		var settings = event.state as TopicIndexSettings;
+
+		if (settings) {
+			this.settings = settings;
+			this.loadTopicsPage(this.settings.boardId, this.settings.currentPage, this.settings.unreadFilter, false);
+		}
 	}
 }
