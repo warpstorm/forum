@@ -73,7 +73,7 @@ namespace Forum.Services {
 				throw new Exception($"{nameof(model)} is still a task. Did you forget an await?");
 			}
 
-			if (controller.Request.Headers["X-Requested-With"] != "XMLHttpRequest") {
+			if (controller.Request.Headers["X-Requested-With"] == "XMLHttpRequest") {
 				controller.ViewData[Constants.InternalKeys.Layout] = "_LayoutEmpty";
 			}
 
