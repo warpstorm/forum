@@ -15,8 +15,13 @@ namespace Forum.TagHelpers {
 		public override void Process(TagHelperContext context, TagHelperOutput output) {
 			output.TagName = "a";
 
-			if (!output.Attributes.ContainsName("class")) {
-				output.Attributes.SetAttribute("class", "button");
+			if (output.Attributes.ContainsName("class")) {
+				var currentClasses = output.Attributes.TryGetAttribute("class", out var classes);
+				var newClasses = $"{classes.Value} button cancel-button";
+				output.Attributes.SetAttribute("class", newClasses);
+			}
+			else {
+				output.Attributes.SetAttribute("class", "button cancel-button");
 			}
 
 			var returnUrl = GetReturnUrl();
