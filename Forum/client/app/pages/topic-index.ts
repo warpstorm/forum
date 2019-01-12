@@ -6,17 +6,29 @@ import { Xhr } from '../services/xhr';
 import { XhrOptions } from '../models/xhr-options';
 import { TopicIndexSettings } from '../models/topic-index-settings';
 
+function getSettings(): TopicIndexSettings {
+	let genericWindow = <any>window;
+
+	return new TopicIndexSettings({
+		boardId: genericWindow.boardId,
+		currentPage: genericWindow.currentPage,
+		totalPages: genericWindow.totalPages,
+		unreadFilter: genericWindow.unreadFilter
+	});
+}
+
 export class TopicIndex {
 	private settings: TopicIndexSettings;
 
 	constructor(private doc: Document, private app: App) {
 		throwIfNull(doc, 'doc');
-		this.settings = new TopicIndexSettings({
-			boardId: (<any>window).boardId,
-			currentPage: (<any>window).currentPage,
-			totalPages: (<any>window).totalPages,
-			unreadFilter: (<any>window).unreadFilter
-		});
+		throwIfNull(app, 'app');
+
+		this.settings = getSettings();
+
+		// Ensures the first load also has the settings state.
+		window.history.replaceState(this.settings, this.doc.title, window.location.href);
+		window.onpopstate = this.eventPopState;
 	}
 
 	init(): void {
@@ -24,18 +36,10 @@ export class TopicIndex {
 			this.bindHubActions();
 		}
 
-		// Ensures the first load also has the settings state.
-		window.history.replaceState(this.settings, this.doc.title, window.location.href);
-		window.onpopstate = this.eventPopState;
-		this.bindPageButtons(false);
+		this.bindPageButtons();
 	}
 
-	bindPageButtons(pushState: boolean = true) {
-		if (pushState) {
-			let address = `/Topics/Index/${this.settings.boardId}/${this.settings.currentPage}?unread=${this.settings.unreadFilter}`;
-			window.history.pushState(this.settings, this.doc.title, address);
-		}
-
+	bindPageButtons() {
 		this.doc.querySelectorAll('.page a').forEach(element => {
 			element.removeEventListener('click', this.eventPageClick);
 			element.addEventListener('click', this.eventPageClick);
@@ -51,14 +55,12 @@ export class TopicIndex {
 	}
 
 	async loadPage(pageId: number, pushState: boolean = true) {
-		let self = this;
-
-		let list = <Element>self.doc.querySelector('#topic-list');
+		let list = <Element>this.doc.querySelector('#topic-list');
 		list.classList.add('faded');
 
 		let requestOptions = new XhrOptions({
 			method: HttpMethod.Get,
-			url: `/Topics/IndexPartial/${self.settings.boardId}/${pageId}?unread=${self.settings.unreadFilter}`,
+			url: `/Topics/IndexPartial/${this.settings.boardId}/${pageId}?unread=${this.settings.unreadFilter}`,
 			responseType: 'document'
 		});
 
@@ -80,23 +82,21 @@ export class TopicIndex {
 					list.remove();
 				}
 				else if (element.tagName.toLowerCase() == 'footer') {
-					let targetElement = <Element>self.doc.querySelector('footer');
+					let targetElement = <Element>this.doc.querySelector('footer');
 					targetElement.after(element);
 					targetElement.remove();
 				}
 			}
 		});
 
-		self.settings = new TopicIndexSettings({
-			boardId: (<any>window).boardId,
-			currentPage: (<any>window).currentPage,
-			totalPages: (<any>window).totalPages,
-			unreadFilter: (<any>window).unreadFilter
-		});
+		this.settings = getSettings();
 
-		self.bindPageButtons(pushState);
-		self.app.navigation.setupPageNavigators();
-		self.app.navigation.addListenerClickableLinkParent();
+		if (pushState) {
+			window.history.pushState(this.settings, this.doc.title, `/Topics/Index/${this.settings.boardId}/${this.settings.currentPage}?unread=${this.settings.unreadFilter}`);
+		}
+
+		this.app.navigation.setupPageNavigators();
+		this.app.navigation.addListenerClickableLinkParent();
 	}
 
 	hubNewReply = () => {
