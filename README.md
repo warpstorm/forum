@@ -21,9 +21,11 @@ A light-weight and mobile-friendly message board solution intended for small com
 
 ## Unlicensing and Usage
 
-Anything in this project which is originally written by me is open and free, so you're welcome to use it however you want. If you do, you would help me feel better about all my time spent by simply emailing<sup>[[0]](#notes)</sup> me to let me know you found some value.
+Anything in this project which is originally written by me is open and free under the terms of the Unlicense, so you're welcome to use it however you want. If you do, you would help me feel better about all my time spent by simply emailing<sup>[[0]](#notes)</sup> me to let me know you found some value.
 
-Instructions for setup can be found [here](https://github.com/jyarbro/forum/wiki/Setup).
+The [CodeKicker.BBCode](http://codekicker.de/) library is originally licensed under the [MIT license](https://github.com/Pablissimo/CodeKicker.BBCode-Mod/blob/master/LICENCE), and my modifications to that specific class library included in this solution inherit this license as well.
+
+Instructions for setup can be found [here](https://github.com/jyarbro/forum/wiki/Setup).1
 
 ## Notes
 
@@ -33,4 +35,4 @@ Instructions for setup can be found [here](https://github.com/jyarbro/forum/wiki
 
 2: Progressive enhancement means we focus on getting basic functionality to the user up front in the most universally supported format possible. Only then do we enhance the experience and build up the fanciness. This is opposed to the concept of graceful degradation, where you start fully featured and fail down to the lowest capable level. In practical terms, this means we do our best to make the site function even with javascript disabled.
 
-3: In order to use the BBC code tag processor, this solution requires [CodeKicker.BBCode](http://codekicker.de/) and the source from that project is included in this one, albeit heavily reformatted by me and modernized to work with ASP.NET Core and the latest C# features. My modifications to that library are licensed under the MIT license as the original implementation was. To remove this encumbering library, please find the `ParseBBC` method in the `MessageRepository` class.
+3: The CodeKicker.BBCode project is heavily reworked and modernized by me to work with ASP.NET Core and the latest C# features. To remove this encumbering library, please find the `ParseBBC` method in the `MessageRepository` class.
