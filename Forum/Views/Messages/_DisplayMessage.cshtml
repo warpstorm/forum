@@ -77,7 +77,7 @@
 				</span>
 			</header>
 
-			<br class="clear mobile-show" />
+			<br class="clear-left mobile-show" />
 
 			@if (Model.ReplyId > 0) {
 				<p class="pad-left font-small subdued-text"><a asp-action="@nameof(Topics.Display)" asp-route-id="@Model.ReplyId">In reply to this post by @Html.Raw(Model.ReplyPostedBy):</a></p>
@@ -103,7 +103,7 @@
 				<a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Display)" asp-route-id="@Model.Id">#@Model.Id</a>
 			</div>
 
-			<br class="clear" />
+			<br class="clear-left" />
 		</section>
 
 		<section class="pad-left font-small subdued-text">

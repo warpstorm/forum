@@ -135,6 +135,14 @@ a.borderless * {
 	clear: both;
 }
 
+.clear-left {
+	clear: left;
+}
+
+.clear-right {
+	clear: right;
+}
+
 br.clear {
 	font-size: 1px;
 	line-height: 1px;

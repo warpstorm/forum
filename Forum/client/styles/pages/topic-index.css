@@ -12,10 +12,6 @@ div.hover-highlight:hover {
 	box-shadow: #4d6690 0 -2px 0 inset;
 }
 
-#topic-list {
-	margin-right: 20%;
-}
-
 .topic-info {
 	width: 300px;
 }
@@ -25,10 +21,6 @@ div.hover-highlight:hover {
 }
 
 @media only screen and (max-width: 900px) {
-	#topic-list {
-		margin-right: 0;
-	}
-
 	.topic-info {
 		display: none;
 	}

@@ -18,15 +18,13 @@
 <body>
 	<header id="page-header" class="margin-center pad">
 		<partial name="_Header" />
-
-		<nav class="breadcrumbs">
-			@await RenderSectionAsync("Breadcrumbs", required: false)
-		</nav>
 	</header>
 
 	<br class="clear" />
 
 	<div role="main" class="margin-center">
+		<partial name="SideBar/_Sidebar" for="@ViewData[Constants.InternalKeys.Sidebar]" />
+
 		<main class="align-center">
 			<header>
 				@await RenderSectionAsync("Header", required: false)

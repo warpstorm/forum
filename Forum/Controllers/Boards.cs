@@ -11,18 +11,15 @@ namespace Forum.Controllers {
 	using PageViewModels = Models.ViewModels.Boards.Pages;
 
 	public class Boards : Controller {
-		Sidebar Sidebar { get; }
 		BoardRepository BoardRepository { get; }
 		RoleRepository RoleRepository { get; }
 		IForumViewResult ForumViewResult { get; }
 
 		public Boards(
-			Sidebar sidebar,
 			BoardRepository boardRepository,
 			RoleRepository roleRepository,
 			IForumViewResult forumViewResult
 		) {
-			Sidebar = sidebar;
 			BoardRepository = boardRepository;
 			RoleRepository = roleRepository;
 			ForumViewResult = forumViewResult;
@@ -30,11 +27,8 @@ namespace Forum.Controllers {
 
 		[HttpGet]
 		public async Task<IActionResult> Index() {
-			var sidebar = await Sidebar.Generate();
-
 			var viewModel = new PageViewModels.IndexPage {
-				Categories = await BoardRepository.CategoryIndex(true),
-				Sidebar = sidebar
+				Categories = await BoardRepository.CategoryIndex(true)
 			};
 
 			if (!viewModel.Categories.Any()) {

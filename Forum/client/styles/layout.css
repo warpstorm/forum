@@ -83,6 +83,16 @@ div[role="main"] {
     MAIN CONTENT
 */
 
+main {
+	margin-right: 20%;
+}
+
+@media only screen and (max-width: 900px) {
+	main {
+		margin-right: 0;
+	}
+}
+
 main > header {
 	padding: 0 20px 0 20px;
 	font-size: 1.4em;

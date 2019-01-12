@@ -14,11 +14,14 @@ namespace Forum.Services {
 
 	public class ForumViewResult : IForumViewResult {
 		BoardRepository BoardRepository { get; }
+		Sidebar Sidebar { get; }
 
 		public ForumViewResult(
-			BoardRepository boardRepository
+			BoardRepository boardRepository,
+			Sidebar sidebar
 		) {
 			BoardRepository = boardRepository;
+			Sidebar = sidebar;
 		}
 
 		public IActionResult RedirectToReferrer(Controller controller) {
@@ -91,6 +94,7 @@ namespace Forum.Services {
 			controller.ViewData["LogoPath"] = GetLogoPath();
 			controller.ViewData["Referrer"] = GetReferrer(controller);
 			controller.ViewData["Categories"] = await BoardRepository.CategoryIndex();
+			controller.ViewData[Constants.InternalKeys.Sidebar] = await Sidebar.Generate();
 
 			if (controller.HttpContext.Items["PageTimer"] is Stopwatch pageTimer) {
 				pageTimer.Stop();

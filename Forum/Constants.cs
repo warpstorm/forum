@@ -2,21 +2,22 @@
 	public class Constants {
 		public class Versions {
 			public const string Theme = "12";
-			public const string Code = "4.19.2";
+			public const string Code = "4.20.0";
 		}
 
 		public class InternalKeys {
 			public const string Admin = "Admin";
-			public const string User = "User";
-			public const string UserId = "UserId";
+			public const string AvatarContainer = "avatars";
+			public const string DbConnection = "DefaultConnection";
 			public const string LastPostTimestamp = "LastPostTimestamp";
 			public const string LastProcessedToken = "LastProcessedToken";
-			public const string StatusMessage = "StatusMessage";
-			public const string DbConnection = "DefaultConnection";
-			public const string StorageConnection = "StorageConnection";
-			public const string AvatarContainer = "avatars";
-			public const string SmileyContainer = "smileys";
 			public const string Layout = "Layout";
+			public const string Sidebar = "Sidebar";
+			public const string SmileyContainer = "smileys";
+			public const string StatusMessage = "StatusMessage";
+			public const string StorageConnection = "StorageConnection";
+			public const string User = "User";
+			public const string UserId = "UserId";
 		}
 
 		public class Settings {

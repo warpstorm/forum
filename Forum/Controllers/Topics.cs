@@ -22,7 +22,6 @@ namespace Forum.Controllers {
 	public class Topics : Controller {
 		ApplicationDbContext DbContext { get; }
 		UserContext UserContext { get; }
-		Sidebar Sidebar { get; }
 
 		BoardRepository BoardRepository { get; }
 		BookmarkRepository BookmarkRepository { get; }
@@ -43,7 +42,6 @@ namespace Forum.Controllers {
 			RoleRepository roleRepository,
 			SmileyRepository smileyRepository,
 			TopicRepository topicRepository,
-			Sidebar sidebar,
 			IForumViewResult forumViewResult,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory
@@ -58,15 +56,12 @@ namespace Forum.Controllers {
 			SmileyRepository = smileyRepository;
 			TopicRepository = topicRepository;
 
-			Sidebar = sidebar;
 			ForumViewResult = forumViewResult;
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
 		[HttpGet]
 		public async Task<IActionResult> Index(int id = 0, int pageId = 1, int unread = 0) {
-			var sidebar = await Sidebar.Generate();
-
 			var messageIds = await TopicRepository.GetIndexIds(id, pageId, unread);
 			var morePages = true;
 
@@ -84,7 +79,6 @@ namespace Forum.Controllers {
 				CurrentPage = pageId,
 				Topics = topicPreviews,
 				UnreadFilter = unread,
-				Sidebar = sidebar,
 				MorePages = morePages
 			};
 

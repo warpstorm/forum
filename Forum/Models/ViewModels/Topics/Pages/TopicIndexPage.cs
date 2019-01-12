@@ -15,7 +15,5 @@ namespace Forum.Models.ViewModels.Topics.Pages {
 		public bool MorePages { get; set; }
 
 		public List<MessagePreview> Topics { get; set; }
-
-		public Sidebar.Sidebar Sidebar { get; set; }
 	}
 }

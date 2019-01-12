@@ -1,9 +1,6 @@
-﻿nav.actions {
-	margin-right: 20%;
-}
-
-#side-bar {
+﻿#side-bar {
 	width: 20%;
+	clear: right;
 }
 
 @media only screen and (max-width: 900px) {

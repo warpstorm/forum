@@ -85,8 +85,6 @@
 	</section>
 </header>
 
-<br class="clear" />
-
 <div id="message-list">
 	@for (var i = 0; i < Model.Messages.Count(); i++) {
 		<partial name="../Messages/_DisplayMessage" for="@Model.Messages[i]" />
