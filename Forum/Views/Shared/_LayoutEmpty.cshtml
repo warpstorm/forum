@@ -1,4 +1,30 @@
-﻿<!DOCTYPE html>
+﻿@{
+	if (IsSectionDefined("Styles")) {
+		IgnoreSection("Styles");
+	}
+
+	if (IsSectionDefined("HeadScripts")) {
+		IgnoreSection("HeadScripts");
+	}
+
+	if (IsSectionDefined("Breadcrumbs")) {
+		IgnoreSection("Breadcrumbs");
+	}
+
+	if (IsSectionDefined("PageActions")) {
+		IgnoreSection("PageActions");
+	}
+
+	if (IsSectionDefined("Footer")) {
+		IgnoreSection("Footer");
+	}
+
+	if (IsSectionDefined("Header")) {
+		IgnoreSection("Header");
+	}
+}
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
 	<title>@Html.Raw(ViewData["Title"])</title>
@@ -12,5 +38,6 @@
 </head>
 <body>
 	@RenderBody()
+	@await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
