@@ -29,14 +29,17 @@ export class TopicIndex {
 		// Ensures the first load also has the settings state.
 		window.history.replaceState(this.settings, this.doc.title, window.location.href);
 		window.onpopstate = this.eventPopState;
+
+		if (this.app.hub) {
+			this.app.hub.on('new-reply', this.hubNewReply);
+		}
 	}
 
 	init(): void {
-		if (this.app.hub) {
-			this.bindHubActions();
-		}
-
 		this.bindPageButtons();
+
+		this.app.navigation.setupPageNavigators();
+		this.app.navigation.addListenerClickableLinkParent();
 	}
 
 	bindPageButtons() {
@@ -46,48 +49,19 @@ export class TopicIndex {
 		});
 	}
 
-	bindHubActions() {
-		if (!this.app.hub) {
-			throw new Error('Hub not defined.');
-		}
-
-		this.app.hub.on('new-reply', this.hubNewReply);
-	}
-
 	async loadPage(pageId: number, pushState: boolean = true) {
-		let list = <Element>this.doc.querySelector('#topic-list');
-		list.classList.add('faded');
+		let mainElement = <Element>this.doc.querySelector('main');
+		mainElement.classList.add('faded');
 
 		let requestOptions = new XhrOptions({
 			method: HttpMethod.Get,
-			url: `/Topics/IndexPartial/${this.settings.boardId}/${pageId}?unread=${this.settings.unreadFilter}`,
-			responseType: 'document'
+			url: `/Topics/Index/${this.settings.boardId}/${pageId}?unread=${this.settings.unreadFilter}`,
 		});
 
-		let xhrResult = await Xhr.request(requestOptions);
+		await Xhr.requestPartialView(requestOptions, this.doc);
 
-		let resultDocument = <HTMLElement>(<Document>xhrResult.response).documentElement;
-		let resultBody = <HTMLBodyElement>resultDocument.querySelector('body');
-		let resultBodyElements = resultBody.childNodes;
-
-		resultBodyElements.forEach(node => {
-			let element = node as Element;
-
-			if (element && element.tagName) {
-				if (element.tagName.toLowerCase() == 'script') {
-					eval(element.textContent || '');
-				}
-				else if (element.tagName.toLowerCase() == 'section') {
-					list.after(element);
-					list.remove();
-				}
-				else if (element.tagName.toLowerCase() == 'footer') {
-					let targetElement = <Element>this.doc.querySelector('footer');
-					targetElement.after(element);
-					targetElement.remove();
-				}
-			}
-		});
+		window.scrollTo(0, 0);
+		mainElement.classList.remove('faded');
 
 		this.settings = getSettings();
 
@@ -95,8 +69,7 @@ export class TopicIndex {
 			window.history.pushState(this.settings, this.doc.title, `/Topics/Index/${this.settings.boardId}/${this.settings.currentPage}?unread=${this.settings.unreadFilter}`);
 		}
 
-		this.app.navigation.setupPageNavigators();
-		this.app.navigation.addListenerClickableLinkParent();
+		this.init();
 	}
 
 	hubNewReply = () => {
