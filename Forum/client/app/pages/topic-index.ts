@@ -31,16 +31,14 @@ export class TopicIndex {
 	}
 
 	bindPageButtons(pushState: boolean = true) {
-		let self = this;
-
 		if (pushState) {
-			let address = `/Topics/Index/${self.settings.boardId}/${self.settings.currentPage}?unread=${self.settings.unreadFilter}`;
-			window.history.pushState(self.settings, self.doc.title, address);
+			let address = `/Topics/Index/${this.settings.boardId}/${this.settings.currentPage}?unread=${this.settings.unreadFilter}`;
+			window.history.pushState(this.settings, this.doc.title, address);
 		}
 
-		self.doc.querySelectorAll('.page a').forEach(element => {
-			element.removeEventListener('click', self.eventPageClick);
-			element.addEventListener('click', self.eventPageClick);
+		this.doc.querySelectorAll('.page a').forEach(element => {
+			element.removeEventListener('click', this.eventPageClick);
+			element.addEventListener('click', this.eventPageClick);
 		});
 	}
 
