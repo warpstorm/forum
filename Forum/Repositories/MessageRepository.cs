@@ -1211,11 +1211,6 @@ namespace Forum.Repositories {
 				message.CanReply = UserContext.IsAuthenticated;
 				message.CanThought = UserContext.IsAuthenticated;
 				message.CanQuote = UserContext.IsAuthenticated;
-
-				message.ReplyForm = new ViewModels.Topics.Items.ReplyForm {
-					Id = message.Id,
-				};
-
 				message.Thoughts = thoughts.Where(item => item.MessageId == message.Id).ToList();
 
 				var postedBy = users.FirstOrDefault(item => item.Id == message.PostedById);

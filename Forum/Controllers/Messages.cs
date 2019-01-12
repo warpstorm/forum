@@ -56,7 +56,7 @@ namespace Forum.Controllers {
 				return await Create(new InputModels.MessageInput { BoardId = id, Body = source });
 			}
 
-			var viewModel = new ViewModels.Messages.CreateTopicPage {
+			var viewModel = new ViewModels.Messages.CreateTopicForm {
 				Id = "0",
 				BoardId = id.ToString()
 			};
@@ -89,7 +89,9 @@ namespace Forum.Controllers {
 			return await FailureCallback();
 
 			async Task<IActionResult> FailureCallback() {
-				var viewModel = new ViewModels.Messages.CreateTopicPage() {
+				ViewData["Smileys"] = await SmileyRepository.GetSelectorList();
+
+				var viewModel = new ViewModels.Messages.CreateTopicForm {
 					Id = "0",
 					BoardId = input.BoardId.ToString(),
 					Body = input.Body
@@ -98,6 +100,81 @@ namespace Forum.Controllers {
 				return await ForumViewResult.ViewResult(this, viewModel);
 			}
 		}
+
+		[HttpGet]
+		public async Task<IActionResult> Reply(int id = 0) {
+			ViewData["Smileys"] = await SmileyRepository.GetSelectorList();
+
+			var record = await DbContext.Messages.SingleOrDefaultAsync(m => m.Id == id);
+
+			if (record is null) {
+				throw new HttpNotFoundError();
+			}
+
+			var viewModel = new ViewModels.Messages.ReplyForm {
+				Id = id.ToString(),
+				ElementId = $"message-reply-{id}"
+			};
+
+			return await ForumViewResult.ViewResult(this, viewModel);
+		}
+
+		[HttpGet]
+		public async Task<IActionResult> ReplyPartial(int id) {
+			var record = await DbContext.Messages.SingleOrDefaultAsync(m => m.Id == id);
+
+			if (record is null) {
+				throw new HttpNotFoundError();
+			}
+
+			ViewData[Constants.InternalKeys.Layout] = "_LayoutEmpty";
+
+			var viewModel = new ViewModels.Messages.ReplyForm {
+				Id = id.ToString(),
+				ElementId = $"message-reply-{id}"
+			};
+
+			return await ForumViewResult.ViewResult(this, "_MessageForm", viewModel);
+		}
+
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		[PreventRapidRequests]
+		public async Task<IActionResult> Reply(InputModels.MessageInput input) {
+			if (ModelState.IsValid) {
+				var serviceResponse = await MessageRepository.CreateReply(input);
+
+				if (input.SideLoad) {
+					foreach (var kvp in serviceResponse.Errors) {
+						ModelState.AddModelError(kvp.Key, kvp.Value);
+					}
+				}
+				else {
+					return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				}
+			}
+
+			if (input.SideLoad) {
+				var errors = ModelState.Keys.Where(k => ModelState[k].Errors.Count > 0).Select(k => new { propertyName = k, errorMessage = ModelState[k].Errors[0].ErrorMessage });
+				return new JsonResult(errors);
+			}
+			else {
+				return await FailureCallback();
+			}
+
+			async Task<IActionResult> FailureCallback() {
+				ViewData["Smileys"] = await SmileyRepository.GetSelectorList();
+
+				var viewModel = new ViewModels.Messages.ReplyForm {
+					Id = input.Id.ToString(),
+					Body = input.Body,
+					ElementId = $"message-reply-{input.Id}"
+				};
+
+				return await ForumViewResult.ViewResult(this, viewModel);
+			}
+		}
+
 
 		[HttpGet]
 		public async Task<IActionResult> Edit(int id) {
@@ -109,7 +186,7 @@ namespace Forum.Controllers {
 				throw new HttpNotFoundError();
 			}
 
-			var viewModel = new ViewModels.Messages.EditMessagePage {
+			var viewModel = new ViewModels.Messages.EditMessageForm {
 				Id = id.ToString(),
 				Body = record.OriginalBody,
 				ElementId = $"edit-message-{id}"
@@ -128,7 +205,7 @@ namespace Forum.Controllers {
 
 			ViewData[Constants.InternalKeys.Layout] = "_LayoutEmpty";
 
-			var viewModel = new ViewModels.Messages.EditMessagePage {
+			var viewModel = new ViewModels.Messages.EditMessageForm {
 				Id = id.ToString(),
 				Body = record.OriginalBody,
 				ElementId = $"edit-message-{id}"
@@ -143,13 +220,27 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> Edit(InputModels.MessageInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await MessageRepository.EditMessage(input);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+
+				if (input.SideLoad) {
+					foreach (var kvp in serviceResponse.Errors) {
+						ModelState.AddModelError(kvp.Key, kvp.Value);
+					}
+				}
+				else {
+					return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				}
 			}
 
-			return await FailureCallback();
+			if (input.SideLoad) {
+				var errors = ModelState.Keys.Where(k => ModelState[k].Errors.Count > 0).Select(k => new { propertyName = k, errorMessage = ModelState[k].Errors[0].ErrorMessage });
+				return new JsonResult(errors);
+			}
+			else {
+				return await FailureCallback();
+			}
 
 			async Task<IActionResult> FailureCallback() {
-				var viewModel = new ViewModels.Messages.CreateTopicPage {
+				var viewModel = new ViewModels.Messages.CreateTopicForm {
 					Id = "0",
 					Body = input.Body,
 					ElementId = "create-topic"

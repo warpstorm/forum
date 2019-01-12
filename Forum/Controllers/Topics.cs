@@ -312,39 +312,6 @@ namespace Forum.Controllers {
 			return new NoContentResult();
 		}
 
-		[HttpPost]
-		[ValidateAntiForgeryToken]
-		[PreventRapidRequests]
-		public async Task<IActionResult> TopicReply(InputModels.MessageInput input) {
-			if (ModelState.IsValid) {
-				var serviceResponse = await MessageRepository.CreateReply(input);
-
-				if (input.SideLoad) {
-					foreach (var kvp in serviceResponse.Errors) {
-						ModelState.AddModelError(kvp.Key, kvp.Value);
-					}
-				}
-				else {
-					return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
-				}
-			}
-
-			if (input.SideLoad) {
-				var errors = ModelState.Keys.Where(k => ModelState[k].Errors.Count > 0).Select(k => new { propertyName = k, errorMessage = ModelState[k].Errors[0].ErrorMessage });
-				return new JsonResult(errors);
-			}
-			else {
-				return await FailureCallback();
-			}
-
-			async Task<IActionResult> FailureCallback() {
-				var viewModel = await GetDisplayPageModel(input.Id);
-				viewModel.ReplyForm.Body = input.Body;
-
-				return await ForumViewResult.ViewResult(this, nameof(Display), viewModel);
-			}
-		}
-
 		public string GetRedirectPath(int messageId, int parentMessageId, List<int> messageIds) {
 			if (parentMessageId == 0) {
 				parentMessageId = messageId;
@@ -432,8 +399,9 @@ namespace Forum.Controllers {
 					ReplyCount = record.ReplyCount,
 					ViewCount = record.ViewCount,
 					CurrentPage = pageId,
-					ReplyForm = new ItemModels.ReplyForm {
-						Id = record.Id.ToString()
+					ReplyForm = new ViewModels.Messages.ReplyForm {
+						Id = record.Id.ToString(),
+						ElementId = $"topic-reply"
 					}
 				};
 

@@ -1,4 +1,4 @@
-﻿@model Forum.Interfaces.Models.ViewModels.IMessageViewModel
+﻿@model Forum.Interfaces.Models.ViewModels.IMessageFormViewModel
 
 <div asp-validation-summary="ModelOnly" class="error"></div>
 
@@ -48,7 +48,10 @@
 		</div>
 
 		<p>
-			<button class="save-button">Save</button>
+			<button class="save-button" message-id="@Model.Id">Save</button>
+			@if(Model.Id != "0") {
+				<cancel-button />
+			}
 		</p>
 	</form>
 </div>

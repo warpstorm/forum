@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
 namespace Forum.Interfaces.Models.ViewModels {
-	public interface IMessageViewModel {
+	public interface IMessageFormViewModel {
 		string Id { get; }
 
 		string BoardId { get; }

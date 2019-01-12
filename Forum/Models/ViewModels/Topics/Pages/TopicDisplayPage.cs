@@ -20,7 +20,7 @@ namespace Forum.Models.ViewModels.Topics.Pages {
 		public int ViewCount { get; set; }
 		public int ReplyCount { get; set; }
 		public int CurrentPage { get; internal set; }
-		public IMessageViewModel ReplyForm { get; set; }
+		public IMessageFormViewModel ReplyForm { get; set; }
 		public string RedirectPath { get; set; }
 	}
 }

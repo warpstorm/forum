@@ -1,15 +1,14 @@
 ﻿import { HubConnectionState } from "@aspnet/signalr";
-import { throwIfNull, hide, show, queryify, warning } from "../helpers";
+import { throwIfNull, hide, show, queryify, warning, clear } from "../helpers";
 import { App } from "../app";
-import { HttpMethod } from "../definitions/http-method";
 import { Xhr } from "../services/xhr";
+import { HttpMethod } from "../definitions/http-method";
 
 import { HubMessage } from "../models/hub-message";
 import { ModelErrorResponse } from "../models/model-error-response";
 import { TopicDisplaySettings } from "../models/topic-display-settings";
 import { TokenRequestResponse } from "../models/token-request-response";
 import { XhrOptions } from "../models/xhr-options";
-import { XhrResult } from "../models/xhr-result";
 
 import { TopicDisplayPartialSettings } from "../models/topic-display-partial-settings";
 
@@ -29,44 +28,27 @@ export class TopicDisplay {
 	}
 
 	init(): void {
-		if (this.app.hub) {
-			this.bindHubActions();
-		}
-
+		// Maybe rework this so it just gets replaced by XHR.
 		let incomingBoards: string[] = this.settings.assignedBoards;
 
 		if (incomingBoards && incomingBoards.length > 0) {
 			this.assignedBoards = incomingBoards;
 		}
 
-		this.bindMessageEventListeners();
-
-		this.doc.querySelectorAll('.bookmark-button').forEach(element => {
-			element.addEventListener('mouseenter', this.eventToggleBookmarkImage);
-			element.addEventListener('mouseleave', this.eventToggleBookmarkImage);
-		});
-
-		this.doc.querySelectorAll('[toggle-board]').forEach(element => {
-			element.addEventListener('click', this.eventToggleBoard);
-		});
-
-		this.doc.querySelectorAll('.message-form .save-button').forEach(element => {
-			element.addEventListener('click', this.eventSaveMessage);
-		});
-
+		this.bindHubActions();
+		this.bindMessageButtonHandlers();
+		this.bindPageButtonHandlers();
 		this.hideFavIcons();
 	}
 
-	bindHubActions = () => {
-		if (!this.app.hub) {
-			throw new Error('Hub not defined.');
+	bindHubActions = (): void => {
+		if (this.app.hub) {
+			this.app.hub.on('new-reply', this.hubNewReply);
+			this.app.hub.on('updated-message', this.hubUpdatedMessage);
 		}
-
-		this.app.hub.on('new-reply', this.hubNewReply);
-		this.app.hub.on('updated-message', this.hubUpdatedMessage);
 	}
 
-	bindMessageEventListeners(): void {
+	bindMessageButtonHandlers(): void {
 		this.doc.querySelectorAll('.reply-button').forEach(element => {
 			element.removeEventListener('click', this.eventShowReplyForm)
 			element.addEventListener('click', this.eventShowReplyForm)
@@ -78,8 +60,8 @@ export class TopicDisplay {
 		});
 
 		this.doc.querySelectorAll('.edit-button').forEach(element => {
-			element.removeEventListener('click', this.eventEditForm);
-			element.addEventListener('click', this.eventEditForm);
+			element.removeEventListener('click', this.eventShowEditForm);
+			element.addEventListener('click', this.eventShowEditForm);
 		});
 
 		this.doc.querySelectorAll('blockquote.reply').forEach(element => {
@@ -88,15 +70,32 @@ export class TopicDisplay {
 		});
 	}
 
+	bindPageButtonHandlers(): void {
+		this.doc.querySelectorAll('.bookmark-button').forEach(element => {
+			element.removeEventListener('mouseenter', this.eventToggleBookmarkImage);
+			element.addEventListener('mouseenter', this.eventToggleBookmarkImage);
+			element.removeEventListener('mouseleave', this.eventToggleBookmarkImage);
+			element.addEventListener('mouseleave', this.eventToggleBookmarkImage);
+		});
+
+		this.doc.querySelectorAll('[toggle-board]').forEach(element => {
+			element.removeEventListener('click', this.eventToggleBoard);
+			element.addEventListener('click', this.eventToggleBoard);
+		});
+
+		this.doc.querySelectorAll('#topic-reply .save-button').forEach(element => {
+			element.removeEventListener('click', this.eventSaveTopicReplyForm);
+			element.addEventListener('click', this.eventSaveTopicReplyForm);
+		});
+	}
+
 	hideFavIcons(): void {
 		if (!this.settings.showFavicons) {
-			this.doc.querySelectorAll('.link-favicon').forEach(element => {
-				hide(element);
-			});
+			hide('.link-favicon');
 		}
 	}
 
-	getLatestReplies(): void {
+	async getLatestReplies(): Promise<void> {
 		let self = this;
 
 		show(self.doc.querySelector('#loading-message'));
@@ -107,51 +106,118 @@ export class TopicDisplay {
 			responseType: 'document'
 		});
 
-		Xhr.request(requestOptions)
-			.then((xhrResult) => {
-				let resultDocument = <HTMLElement>(<Document>xhrResult.response).documentElement;
-				let resultBody = <HTMLBodyElement>resultDocument.querySelector('body');
-				let resultBodyElements = resultBody.childNodes;
-				let messageList = <Element>self.doc.querySelector('#message-list');
+		let xhrResult = await Xhr.request(requestOptions);
 
-				resultBodyElements.forEach(node => {
-					let element = node as Element;
+		let resultDocument = <HTMLElement>(<Document>xhrResult.response).documentElement;
+		let resultBody = <HTMLBodyElement>resultDocument.querySelector('body');
+		let resultBodyElements = resultBody.childNodes;
+		let messageList = <Element>self.doc.querySelector('#message-list');
 
-					if (element && element.tagName) {
-						if (element.tagName.toLowerCase() == 'script') {
-							eval(element.textContent || '');
-						}
-						else {
-							messageList.insertAdjacentElement('beforeend', element);
-						}
-					}
-				});
+		resultBodyElements.forEach(node => {
+			let element = node as Element;
 
-				let partialSettings = new TopicDisplayPartialSettings(window);
-
-				self.settings.latest = partialSettings.latest;
-				let firstMessageId = partialSettings.firstMessageId;
-				let newMessages = partialSettings.newMessages;
-
-				for (let i = 0; i < newMessages.length; i++) {
-					self.settings.messages.push(newMessages[i]);
+			if (element && element.tagName) {
+				if (element.tagName.toLowerCase() == 'script') {
+					eval(element.textContent || '');
 				}
+				else {
+					messageList.insertAdjacentElement('beforeend', element);
+				}
+			}
+		});
 
-				self.bindMessageEventListeners();
+		let partialSettings = new TopicDisplayPartialSettings(window);
 
-				var time = new Date();
-				var passedTime = this.app.passedTimeMonitor.convertToPassedTime(time);
+		self.settings.latest = partialSettings.latest;
+		let firstMessageId = partialSettings.firstMessageId;
+		let newMessages = partialSettings.newMessages;
 
-				warning(`<a href='#message${firstMessageId}'>New messages were posted <time datetime='${time}'>${passedTime}</time>.</a>`);
+		for (let i = 0; i < newMessages.length; i++) {
+			self.settings.messages.push(newMessages[i]);
+		}
 
-				window.location.hash = `message${firstMessageId}`;
-			})
-			.then(() => {
-				hide(self.doc.querySelector('#loading-message'));
-			});
+		self.bindMessageButtonHandlers();
+
+		var time = new Date();
+		var passedTime = this.app.passedTimeMonitor.convertToPassedTime(time);
+
+		hide(self.doc.querySelector('#loading-message'));
+
+		warning(`<a href='#message${firstMessageId}'>New messages were posted <time datetime='${time}'>${passedTime}</time>.</a>`);
+		window.location.hash = `message${firstMessageId}`;
 	}
 
-	getToken(form: HTMLFormElement): string {
+	async saveMessage(form: HTMLFormElement, success: () => void): Promise<void> {
+		throwIfNull(form, 'form');
+
+		let self = this;
+
+		if (self.submitting) {
+			return;
+		}
+		
+		let bodyElement = form.querySelector('[name=body]') as HTMLTextAreaElement;
+
+		if (!bodyElement || bodyElement.value == '') {
+			return;
+		}
+
+		bodyElement.setAttribute('disabled', 'disabled');
+
+		form.classList.add('faded');
+
+		form.querySelectorAll('.button').forEach(element => {
+			element.setAttribute('disabled', 'disabled');
+		});
+
+		let idElement = form.querySelector('[name=Id]') as HTMLInputElement;
+
+		let requestBodyValues = {
+			id: idElement ? idElement.value : '',
+			body: bodyElement ? bodyElement.value : '',
+			sideload: true
+		};
+
+		self.submitting = true;
+
+		let submitRequestOptions = new XhrOptions({
+			method: HttpMethod.Post,
+			url: form.action,
+			body: queryify(requestBodyValues)
+		});
+
+		submitRequestOptions.headers['Content-Type'] = 'application/x-www-form-urlencoded;charset=UTF-8';
+		submitRequestOptions.headers['RequestVerificationToken'] = await self.getToken(form);
+
+		let xhrResult = await Xhr.request(submitRequestOptions);
+
+		let modelErrors: ModelErrorResponse[] = JSON.parse(xhrResult.responseText);
+
+		if (modelErrors.length == 0) {
+			success();
+		}
+		else {
+			for (let i = 0; i < modelErrors.length; i++) {
+				let modelErrorField = form.querySelector(`[data-valmsg-for="${modelErrors[i].propertyName}"]`);
+
+				if (modelErrorField) {
+					modelErrorField.textContent = modelErrors[i].errorMessage;
+				}
+			}
+		}
+
+		bodyElement.removeAttribute('disabled');
+
+		form.querySelectorAll('.button').forEach(element => {
+			element.removeAttribute('disabled');
+		});
+
+		form.classList.remove('faded');
+
+		self.submitting = false;
+	}
+
+	async getToken(form: HTMLFormElement): Promise<string> {
 		let tokenElement = form.querySelector('[name=__RequestVerificationToken]') as HTMLInputElement;
 		let returnToken = tokenElement ? tokenElement.value : '';
 
@@ -159,18 +225,29 @@ export class TopicDisplay {
 			url: '/Home/Token'
 		});
 
-		Xhr.request(tokenRequestOptions)
-			.then((xhrResult: XhrResult) => {
-				let tokenRequestResponse: TokenRequestResponse = JSON.parse(xhrResult.responseText);
-				tokenElement.value = tokenRequestResponse.token;
-			});
+		let xhrResult = await Xhr.request(tokenRequestOptions);
+
+		let tokenRequestResponse: TokenRequestResponse = JSON.parse(xhrResult.responseText);
+		tokenElement.value = tokenRequestResponse.token;
 
 		return returnToken;
 	}
 
-	hubNewReply = (data: HubMessage): void => {
+	resetMessageReplyForms(): void {
+		this.doc.querySelectorAll('.reply-button').forEach(element => {
+			element.removeEventListener('click', this.resetMessageReplyForms);
+			element.removeEventListener('click', this.eventShowReplyForm);
+			element.addEventListener('click', this.eventShowReplyForm);
+		});
+
+		this.doc.querySelectorAll('.reply-form').forEach(element => {
+			hide(element);
+		});
+	}
+
+	hubNewReply = async (data: HubMessage): Promise<void> => {
 		if (data.topicId == this.settings.topicId && this.settings.currentPage == this.settings.totalPages) {
-			this.getLatestReplies();
+			await this.getLatestReplies();
 		}
 	}
 
@@ -202,7 +279,7 @@ export class TopicDisplay {
 				}
 			});
 
-			self.bindMessageEventListeners();
+			self.bindMessageButtonHandlers();
 
 			var time = new Date();
 			var passedTime = this.app.passedTimeMonitor.convertToPassedTime(time);
@@ -211,7 +288,7 @@ export class TopicDisplay {
 		}
 	}
 
-	eventSaveMessage = async (event: Event): Promise<void> => {
+	eventShowEditForm = async (event: Event): Promise<void> => {
 		let self = this;
 
 		// make sure the user has chosen to enable the hub connection.
@@ -221,85 +298,15 @@ export class TopicDisplay {
 
 		event.preventDefault();
 
-		if (self.submitting) {
-			return;
-		}
+		let button = <Element>event.currentTarget;
 
-		let saveButton = <HTMLElement>event.currentTarget;
-		let form = <HTMLFormElement>saveButton.closest('form');
-		let idElement = form.querySelector('[name=Id]') as HTMLInputElement;
-		let bodyElement = form.querySelector('[name=body]') as HTMLTextAreaElement;
+		button.removeEventListener('click', self.eventShowEditForm);
+		button.addEventListener('click', self.eventHideEditForm);
 
-		if (!bodyElement || bodyElement.value == '') {
-			return;
-		}
+		let messageId = button.getAttribute('message-id');
 
-		form.classList.add('faded');
-		saveButton.setAttribute('disabled', 'disabled');
-		bodyElement.setAttribute('disabled', 'disabled');
-
-		let requestBodyValues = {
-			id: idElement ? idElement.value : '',
-			body: bodyElement ? bodyElement.value : '',
-			sideload: true
-		};
-
-		self.submitting = true;
-
-		let submitRequestOptions = new XhrOptions({
-			method: HttpMethod.Post,
-			url: form.action,
-			body: queryify(requestBodyValues)
-		});
-
-		submitRequestOptions.headers['Content-Type'] = 'application/x-www-form-urlencoded;charset=UTF-8';
-		submitRequestOptions.headers['RequestVerificationToken'] = self.getToken(form);
-
-		let xhrResult = await Xhr.request(submitRequestOptions);
-
-		let modelErrors: ModelErrorResponse[] = JSON.parse(xhrResult.responseText);
-
-		for (let i = 0; i < modelErrors.length; i++) {
-			let modelErrorField = form.querySelector(`[data-valmsg-for="${modelErrors[i].propertyName}"]`);
-
-			if (modelErrorField) {
-				modelErrorField.textContent = modelErrors[i].errorMessage;
-			}
-		}
-
-		if (modelErrors.length == 0) {
-			self.doc.querySelectorAll('.reply-button').forEach(element => {
-				element.removeEventListener('click', self.eventHideReplyForm);
-				element.removeEventListener('click', self.eventShowReplyForm);
-				element.addEventListener('click', self.eventShowReplyForm);
-			});
-
-			self.doc.querySelectorAll('.reply-form').forEach(element => { hide(element); });
-		}
-
-		form.classList.remove('faded');
-
-		if (bodyElement) {
-			bodyElement.value = '';
-			bodyElement.removeAttribute('disabled');
-		}
-
-		saveButton.removeAttribute('disabled');
-		self.submitting = false;
-	}
-
-	eventEditForm = async (event: Event) => {
-		let self = this;
-
-		// make sure the user has chosen to enable the hub connection.
-		if (!self.app.hub || self.app.hub.state == HubConnectionState.Disconnected) {
-			return;
-		}
-
-		event.preventDefault();
-
-		let editButton = <Element>event.currentTarget;
-		let messageId = editButton.getAttribute('message-id');
+		let workingDots = self.doc.querySelector(`#working-${messageId}`);
+		show(workingDots);
 
 		let requestOptions = new XhrOptions({
 			method: HttpMethod.Get,
@@ -307,33 +314,202 @@ export class TopicDisplay {
 		});
 
 		await Xhr.requestPartialView(requestOptions, self.doc);
+
+		hide(workingDots);
+
+		let saveButton = self.doc.querySelector(`#edit-message-${messageId} .save-button`);
+
+		if (saveButton) {
+			saveButton.addEventListener('click', self.eventSaveEditForm);
+		}
+
+		let cancelButton = self.doc.querySelector(`#edit-message-${messageId} .cancel-button`);
+
+		if (cancelButton) {
+			cancelButton.addEventListener('click', (event: Event) => {
+				event.preventDefault();
+
+				button.removeEventListener('click', self.eventHideEditForm);
+				button.addEventListener('click', self.eventShowEditForm);
+
+				let form = self.doc.querySelector(`#edit-message-${messageId}`) as HTMLElement;
+				clear(form);
+				hide(form);
+			});
+		}
 	}
 
-	eventShowReplyForm = (event: Event) => {
-		this.doc.querySelectorAll('.reply-form').forEach(element => {
-			hide(element);
+	eventHideEditForm = (event: Event) => {
+		event.preventDefault();
+
+		let button = <Element>event.currentTarget;
+
+		button.removeEventListener('click', this.eventHideEditForm);
+		button.addEventListener('click', this.eventShowEditForm);
+
+		let messageId = button.getAttribute('message-id');
+		let form = this.doc.querySelector(`#edit-message-${messageId}`) as HTMLElement;
+
+		clear(form);
+		hide(form);
+	}
+
+	eventSaveEditForm = async (event: Event): Promise<void> => {
+		let self = this;
+
+		// make sure the user has chosen to enable the hub connection.
+		if (!self.app.hub || self.app.hub.state == HubConnectionState.Disconnected) {
+			return;
+		}
+
+		event.preventDefault();
+
+		let button = <HTMLElement>event.currentTarget;
+		let form = <HTMLFormElement>button.closest('form');
+		let messageId = button.getAttribute('message-id');
+
+		let workingDots = self.doc.querySelector(`#working-${messageId}`);
+		show(workingDots);
+
+		let onSuccess = () => {
+			let form = this.doc.querySelector(`#edit-message-${messageId}`) as HTMLElement;
+			clear(form);
+			hide(form);
+
+			hide(workingDots);
+		};
+
+		await self.saveMessage(form, onSuccess);
+	}
+
+	eventShowReplyForm = async (event: Event): Promise<void> => {
+		let self = this;
+
+		if (!self.app.hub || self.app.hub.state == HubConnectionState.Disconnected) {
+			return;
+		}
+
+		event.preventDefault();
+
+		let button = <Element>event.currentTarget;
+
+		button.removeEventListener('click', self.eventShowReplyForm);
+		button.addEventListener('click', self.eventHideReplyForm);
+
+		let messageId = button.getAttribute('message-id');
+
+		let workingDots = self.doc.querySelector(`#working-${messageId}`);
+		show(workingDots);
+
+		let requestOptions = new XhrOptions({
+			method: HttpMethod.Get,
+			url: `/Messages/ReplyPartial/${messageId}`
 		});
 
-		this.doc.querySelectorAll('.reply-button').forEach(element => {
-			element.removeEventListener('click', this.eventShowReplyForm);
-			element.addEventListener('click', this.eventShowReplyForm);
-		});
+		await Xhr.requestPartialView(requestOptions, self.doc);
 
-		this.doc.querySelectorAll('.reply-button').forEach(element => {
-			element.removeEventListener('click', this.eventHideReplyForm);
-		});
+		hide(workingDots);
 
-		let target = <Element>event.currentTarget;
-		target.removeEventListener('click', this.eventShowReplyForm);
-		(<Element>target.closest('section')).querySelectorAll('.reply-form').forEach(element => { show(element); });
-		target.addEventListener('click', this.eventHideReplyForm);
+		let saveButton = self.doc.querySelector(`#message-reply-${messageId} .save-button`);
+
+		if (saveButton) {
+			saveButton.addEventListener('click', self.eventSaveReplyForm);
+		}
+
+		let cancelButton = self.doc.querySelector(`#message-reply-${messageId} .cancel-button`);
+
+		if (cancelButton) {
+			cancelButton.addEventListener('click', (event: Event) => {
+				event.preventDefault();
+
+				button.removeEventListener('click', self.eventHideReplyForm);
+				button.addEventListener('click', self.eventShowReplyForm);
+
+				let form = self.doc.querySelector(`#message-reply-${messageId}`) as HTMLElement;
+				clear(form);
+				hide(form);
+			});
+		}
 	}
 
 	eventHideReplyForm = (event: Event) => {
-		let target = <Element>event.currentTarget;
-		target.removeEventListener('click', this.eventHideReplyForm);
-		(<Element>target.closest('section')).querySelectorAll('.reply-form').forEach(element => { hide(element); });
-		target.addEventListener('click', this.eventShowReplyForm);
+		event.preventDefault();
+
+		let button = <Element>event.currentTarget;
+
+		button.removeEventListener('click', this.eventHideReplyForm);
+		button.addEventListener('click', this.eventShowReplyForm);
+
+		let messageId = button.getAttribute('message-id');
+		let form = this.doc.querySelector(`#message-reply-${messageId}`) as HTMLElement;
+
+		clear(form);
+		hide(form);
+	}
+
+	eventSaveReplyForm = async (event: Event): Promise<void> => {
+		let self = this;
+
+		if (!self.app.hub || self.app.hub.state == HubConnectionState.Disconnected) {
+			return;
+		}
+
+		event.preventDefault();
+
+		let button = <HTMLElement>event.currentTarget;
+		let form = <HTMLFormElement>button.closest('form');
+		let bodyElement = form.querySelector('[name=body]') as HTMLTextAreaElement;
+		let messageId = button.getAttribute('message-id');
+
+		let workingDots = self.doc.querySelector(`#working-${messageId}`);
+		show(workingDots);
+
+		let onSuccess = () => {
+			let form = this.doc.querySelector(`#message-reply-${messageId}`) as HTMLElement;
+			clear(form);
+			hide(form);
+
+			self.doc.querySelectorAll('.reply-button').forEach(element => {
+				element.removeEventListener('click', self.resetMessageReplyForms);
+				element.removeEventListener('click', self.eventShowReplyForm);
+				element.addEventListener('click', self.eventShowReplyForm);
+			});
+
+			self.doc.querySelectorAll('.reply-form').forEach(element => {
+				hide(element);
+			});
+
+			if (bodyElement) {
+				bodyElement.value = '';
+			}
+
+			hide(workingDots);
+		};
+
+		await self.saveMessage(form, onSuccess);
+	}
+
+	eventSaveTopicReplyForm = async (event: Event): Promise<void> => {
+		let self = this;
+
+		if (!self.app.hub || self.app.hub.state == HubConnectionState.Disconnected) {
+			return;
+		}
+
+		event.preventDefault();
+
+		let button = <HTMLElement>event.currentTarget;
+		let form = <HTMLFormElement>button.closest('form');
+
+		let onSuccess = () => {
+			let bodyElement = form.querySelector('[name=body]') as HTMLTextAreaElement;
+
+			if (bodyElement) {
+				bodyElement.value = '';
+			}
+		};
+
+		await self.saveMessage(form, onSuccess);
 	}
 
 	eventShowThoughtSelector = (event: Event) => {
@@ -341,26 +517,50 @@ export class TopicDisplay {
 		let target = <HTMLElement>event.currentTarget;
 		this.thoughtTarget = <HTMLElement>target.closest('article');
 		this.thoughtSelectorMessageId = target.getAttribute('message-id') || '';
-		this.app.smileySelector.showSmileySelectorNearElement(target, this.eventAddThought);
+		this.app.smileySelector.showSmileySelectorNearElement(target, this.eventSaveThought);
+	}
+
+	eventSaveThought = (event: Event): void => {
+		if (this.thoughtTarget) {
+			this.thoughtTarget.classList.add('faded');
+		}
+
+		let smileyImg = <HTMLElement>event.currentTarget;
+		let smileyId = smileyImg.getAttribute('smiley-id');
+
+		// Only send an XHR if we anticipate the thought will be returned via the hub.
+		if (this.app.hub && this.app.hub.state == HubConnectionState.Connected) {
+			let requestOptions = new XhrOptions({
+				method: HttpMethod.Get,
+				url: `/Messages/AddThought/${this.thoughtSelectorMessageId}?smiley=${smileyId}`
+			});
+
+			Xhr.request(requestOptions);
+
+			this.app.smileySelector.eventCloseSmileySelector();
+		}
+		else {
+			window.location.href = `/Messages/AddThought/${this.thoughtSelectorMessageId}?smiley=${smileyId}`;
+		}
 	}
 
 	eventShowFullReply = (event: Event) => {
 		let target = <Element>event.currentTarget;
 
 		target.removeEventListener('click', this.eventShowFullReply);
-		target.addEventListener('click', this.eventCloseFullReply);
+		target.addEventListener('click', this.eventHideFullReply);
 
 		target.querySelectorAll('.reply-preview').forEach(element => { hide(element) });
 		target.querySelectorAll('.reply-body').forEach(element => { show(element) });
 	}
 
-	eventCloseFullReply = (event: Event) => {
+	eventHideFullReply = (event: Event) => {
 		let target = <Element>event.currentTarget;
 
 		target.querySelectorAll('.reply-body').forEach(element => { hide(element) });
 		target.querySelectorAll('.reply-preview').forEach(element => { show(element) });
 
-		target.removeEventListener('click', this.eventCloseFullReply);
+		target.removeEventListener('click', this.eventHideFullReply);
 		target.addEventListener('click', this.eventShowFullReply);
 	}
 
@@ -414,30 +614,6 @@ export class TopicDisplay {
 		await Xhr.request(requestOptions);
 
 		target.removeAttribute('toggling');
-	}
-
-	eventAddThought = (event: Event): void => {
-		if (this.thoughtTarget) {
-			this.thoughtTarget.classList.add('faded');
-		}
-
-		let smileyImg = <HTMLElement>event.currentTarget;
-		let smileyId = smileyImg.getAttribute('smiley-id');
-
-		// Only send an XHR if we anticipate the thought will be returned via the hub.
-		if (this.app.hub && this.app.hub.state == HubConnectionState.Connected) {
-			let requestOptions = new XhrOptions({
-				method: HttpMethod.Get,
-				url: `/Messages/AddThought/${this.thoughtSelectorMessageId}?smiley=${smileyId}`
-			});
-
-			Xhr.request(requestOptions);
-
-			this.app.smileySelector.eventCloseSmileySelector();
-		}
-		else {
-			window.location.href = `/Messages/AddThought/${this.thoughtSelectorMessageId}?smiley=${smileyId}`;
-		}
 	}
 
 	eventToggleBookmarkImage = (event: Event): void => {
