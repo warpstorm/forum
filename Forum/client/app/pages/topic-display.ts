@@ -45,19 +45,26 @@ export class TopicDisplay {
 		// Ensures the first load also has the settings state.
 		window.history.replaceState(this.settings, this.doc.title, window.location.href);
 		window.onpopstate = this.eventPopState;
+
+		if (this.app.hub) {
+			this.app.hub.on('new-reply', this.hubNewReply);
+			this.app.hub.on('updated-message', this.hubUpdatedMessage);
+		}
 	}
 
 	init(): void {
 		this.bindPageButtons();
-		this.bindHubActions();
 		this.bindGlobalButtonHandlers();
 		this.bindMessageButtonHandlers();
 		this.hideFavIcons();
+
+		this.app.navigation.setupPageNavigators();
+		this.app.navigation.addListenerClickableLinkParent();
 	}
 
 	async loadPage(pageId: number, pushState: boolean = true) {
-		let target = <Element>this.doc.querySelector('main');
-		target.classList.add('faded');
+		let mainElement = <Element>this.doc.querySelector('main');
+		mainElement.classList.add('faded');
 
 		let requestOptions = new XhrOptions({
 			method: HttpMethod.Get,
@@ -67,7 +74,7 @@ export class TopicDisplay {
 		await Xhr.requestPartialView(requestOptions, this.doc);
 
 		window.scrollTo(0, 0);
-		target.classList.remove('faded');
+		mainElement.classList.remove('faded');
 
 		this.settings = getSettings();
 
@@ -85,8 +92,6 @@ export class TopicDisplay {
 		}
 
 		this.init();
-		this.app.navigation.setupPageNavigators();
-		this.app.navigation.addListenerClickableLinkParent();
 	}
 
 	bindPageButtons() {
@@ -94,15 +99,6 @@ export class TopicDisplay {
 			element.removeEventListener('click', this.eventPageClick);
 			element.addEventListener('click', this.eventPageClick);
 		});
-	}
-
-	bindHubActions = (): void => {
-		if (this.app.hub) {
-			this.app.hub.off('new-reply');
-			this.app.hub.on('new-reply', this.hubNewReply);
-			this.app.hub.off('updated-message');
-			this.app.hub.on('updated-message', this.hubUpdatedMessage);
-		}
 	}
 
 	bindMessageButtonHandlers(): void {
