@@ -77,7 +77,7 @@
 					<li class="small-button highlight page hidden">@i</li>
 				}
 				else {
-					<li class="page hidden"><a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Display)" asp-route-id="@Model.Id" asp-route-pageId="@i" class="small-button">@i.ToString()</a></li>
+					<li class="page hidden"><a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Display)" asp-route-id="@Model.Id" asp-route-pageId="@i" class="small-button" data-page-id="@i">@i.ToString()</a></li>
 				}
 			}
 			<li class="hidden pointer unhide-pages more-pages-after">&#8230;</li>
@@ -95,7 +95,7 @@
 
 <div id="loading-message" class="hidden pad-bottom font-small"><img src="~/images/loadingDots.gif" alt="Loading new message" title="Loading new message" /> Loading messages...</div>
 
-<footer>
+<footer id="topic-footer">
 	<ul class="inline pages">
 		<li class="hidden pointer unhide-pages more-pages-before">&#8230;</li>
 		@for (var i = 1; i <= Model.TotalPages; i++) {
@@ -103,7 +103,7 @@
 				<li class="small-button highlight page hidden">@i</li>
 			}
 			else {
-				<li class="page hidden"><a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Display)" asp-route-id="@Model.Id" asp-route-pageId="@i" class="small-button">@i.ToString()</a></li>
+				<li class="page hidden"><a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Display)" asp-route-id="@Model.Id" asp-route-pageId="@i" class="small-button" data-page-id="@i">@i.ToString()</a></li>
 			}
 		}
 		<li class="hidden pointer unhide-pages more-pages-after">&#8230;</li>
@@ -119,9 +119,11 @@
 		</div>
 	</div>
 }
+else {
+	<div class="hidden" id="topic-reply-form"></div>
+}
 
 @{ViewData["Title"] = Html.Raw(Model.TopicHeader.Subject);}
-
 @section Header {@ViewData["Title"]}
 
 @section scripts {
