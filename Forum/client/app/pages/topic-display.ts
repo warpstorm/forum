@@ -12,8 +12,24 @@ import { XhrOptions } from "../models/xhr-options";
 
 import { TopicDisplayPartialSettings } from "../models/topic-display-partial-settings";
 
+function getSettings(): TopicDisplaySettings {
+	let genericWindow = <any>window;
+
+	return new TopicDisplaySettings({
+		assignedBoards: genericWindow.assignedBoards,
+		bookmarked: genericWindow.bookmarked,
+		currentPage: genericWindow.currentPage,
+		latest: genericWindow.latest,
+		messages: genericWindow.messages,
+		pageActions: genericWindow.pageActions,
+		showFavicons: genericWindow.showFavicons,
+		togglePath: genericWindow.togglePath,
+		topicId: genericWindow.topicId,
+		totalPages: genericWindow.totalPages
+	});
+}
+
 export class TopicDisplay {
-	private assignedBoards: string[] = [];
 	private settings: TopicDisplaySettings;
 	private submitting: boolean = false;
 	private thoughtSelectorMessageId: string = "";
@@ -24,26 +40,58 @@ export class TopicDisplay {
 		throwIfNull(app, 'app');
 		throwIfNull(app.smileySelector, 'app.smileySelector');
 
-		this.settings = new TopicDisplaySettings(window);
+		this.settings = getSettings();
+
+		// Ensures the first load also has the settings state.
+		window.history.replaceState(this.settings, this.doc.title, window.location.href);
+		window.onpopstate = this.eventPopState;
 	}
 
 	init(): void {
-		// Maybe rework this so it just gets replaced by XHR.
-		let incomingBoards: string[] = this.settings.assignedBoards;
+		this.bindPageButtons();
+		this.bindHubActions();
+		this.bindGlobalButtonHandlers();
+		this.bindMessageButtonHandlers();
+		this.hideFavIcons();
+	}
 
-		if (incomingBoards && incomingBoards.length > 0) {
-			this.assignedBoards = incomingBoards;
+	async loadPage(pageId: number, pushState: boolean = true) {
+		let target = <Element>this.doc.querySelector('main');
+		target.classList.add('faded');
+
+		let requestOptions = new XhrOptions({
+			method: HttpMethod.Get,
+			url: `/Topics/Display/${this.settings.topicId}/${pageId}`
+		});
+
+		await Xhr.requestPartialView(requestOptions, this.doc);
+
+		window.scrollTo(0, 0);
+		target.classList.remove('faded');
+
+		this.settings = getSettings();
+
+		if (pushState) {
+			window.history.pushState(this.settings, this.doc.title, `/Topics/Display/${this.settings.topicId}/${this.settings.currentPage}`);
 		}
 
-		this.bindHubActions();
-		this.bindMessageButtonHandlers();
-		this.bindPageButtonHandlers();
-		this.hideFavIcons();
+		this.init();
+		this.app.navigation.setupPageNavigators();
+		this.app.navigation.addListenerClickableLinkParent();
+	}
+
+	bindPageButtons() {
+		this.doc.querySelectorAll('.page a').forEach(element => {
+			element.removeEventListener('click', this.eventPageClick);
+			element.addEventListener('click', this.eventPageClick);
+		});
 	}
 
 	bindHubActions = (): void => {
 		if (this.app.hub) {
+			this.app.hub.off('new-reply');
 			this.app.hub.on('new-reply', this.hubNewReply);
+			this.app.hub.off('updated-message');
 			this.app.hub.on('updated-message', this.hubUpdatedMessage);
 		}
 	}
@@ -70,7 +118,7 @@ export class TopicDisplay {
 		});
 	}
 
-	bindPageButtonHandlers(): void {
+	bindGlobalButtonHandlers(): void {
 		this.doc.querySelectorAll('.bookmark-button').forEach(element => {
 			element.removeEventListener('mouseenter', this.eventToggleBookmarkImage);
 			element.addEventListener('mouseenter', this.eventToggleBookmarkImage);
@@ -592,16 +640,16 @@ export class TopicDisplay {
 			return;
 		}
 
-		let assignedBoardIndex: number = this.assignedBoards.indexOf(boardId, 0);
+		let assignedBoardIndex: number = this.settings.assignedBoards.indexOf(boardId, 0);
 
 		let imgSrc = boardFlag.getAttribute('src') || '';
 
 		if (assignedBoardIndex > -1) {
-			this.assignedBoards.splice(assignedBoardIndex, 1);
+			this.settings.assignedBoards.splice(assignedBoardIndex, 1);
 			imgSrc = imgSrc.replace('checked', 'unchecked');
 		}
 		else {
-			this.assignedBoards.push(boardId);
+			this.settings.assignedBoards.push(boardId);
 			imgSrc = imgSrc.replace('unchecked', 'checked');
 		}
 
@@ -629,6 +677,28 @@ export class TopicDisplay {
 			else {
 				bookmarkImage.src = bookmarkImage.src.replace(status, 'hover');
 			}
+		}
+	}
+
+	eventPageClick = (event: Event) => {
+		let eventTarget = event.currentTarget as HTMLAnchorElement;
+
+		if (!eventTarget) {
+			return;
+		}
+
+		event.preventDefault();
+
+		let pageId = Number(eventTarget.getAttribute('data-page-id'));
+		this.loadPage(pageId);
+	}
+
+	eventPopState = (event: PopStateEvent) => {
+		var settings = event.state as TopicDisplaySettings;
+
+		if (settings) {
+			this.settings = settings;
+			this.loadPage(this.settings.currentPage, false);
 		}
 	}
 }
