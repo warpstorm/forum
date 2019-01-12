@@ -31,6 +31,6 @@ Instructions for setup can be found [here](https://github.com/jyarbro/forum/wiki
 
 1: If you would like to use this software on another hosting platform besides Azure Web Applications, please email<sup>[0]</sup> me with specifics.
 
-2: Progressive enhancement means we focus on getting basic functionality to the user up front in the most universally supported format possible. Only then do we enhance the experience and build up the fanciness. This is opposed to the concept of graceful degradation, where you start fully featured and fail down to the lowest capable level. What this means for developers is this isn't a SPA and never will be.
+2: Progressive enhancement means we focus on getting basic functionality to the user up front in the most universally supported format possible. Only then do we enhance the experience and build up the fanciness. This is opposed to the concept of graceful degradation, where you start fully featured and fail down to the lowest capable level. In practical terms, this means we do our best to make the site function even with javascript disabled.
 
 3: In order to use the BBC code tag processor, this solution requires [CodeKicker.BBCode](http://codekicker.de/) and the source from that project is included in this one, albeit heavily reformatted by me and modernized to work with ASP.NET Core and the latest C# features. To remove this encumbering library, please find the `ParseBBC` method in the `MessageRepository` class.
