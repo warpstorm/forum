@@ -20,18 +20,14 @@ export class TopicIndex {
 	}
 
 	init(): void {
-		let self = this;
-
-		if (self.app.hub) {
-			self.bindHubActions();
+		if (this.app.hub) {
+			this.bindHubActions();
 		}
 
 		// Ensures the first load also has the settings state.
-		window.history.replaceState(self.settings, self.doc.title, window.location.href);
-
-		self.bindPageButtons(false);
-
+		window.history.replaceState(this.settings, this.doc.title, window.location.href);
 		window.onpopstate = this.eventPopState;
+		this.bindPageButtons(false);
 	}
 
 	bindPageButtons = (pushState: boolean = true) => {
