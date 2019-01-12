@@ -75,6 +75,15 @@ export class TopicDisplay {
 			window.history.pushState(this.settings, this.doc.title, `/Topics/Display/${this.settings.topicId}/${this.settings.currentPage}`);
 		}
 
+		let topicReplyForm = <Element>this.doc.querySelector('.topic-reply-form');
+
+		if (this.settings.currentPage == this.settings.totalPages) {
+			show(topicReplyForm);
+		}
+		else {
+			hide(topicReplyForm);
+		}
+
 		this.init();
 		this.app.navigation.setupPageNavigators();
 		this.app.navigation.addListenerClickableLinkParent();

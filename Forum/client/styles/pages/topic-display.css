@@ -175,6 +175,6 @@ blockquote.card {
 	height: 71px;
 }
 
-#topic-reply-form .cancel-button {
+.topic-reply-form .cancel-button {
 	display: none;
 }

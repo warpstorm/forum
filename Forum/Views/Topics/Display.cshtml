@@ -110,18 +110,13 @@
 	</ul>
 </footer>
 
-@if (Model.TotalPages == Model.CurrentPage) {
-	<div id="topic-reply-form">
-		<p class="gap-top">Reply to this topic:</p>
-		<div class="content-box pad">
-			<div asp-validation-summary="All" class="error"></div>
-			<partial name="_MessageForm" for="@Model.ReplyForm" />
-		</div>
+<div class="topic-reply-form @(Model.TotalPages == Model.CurrentPage ? "" : "hidden")">
+	<p class="gap-top">Reply to this topic:</p>
+	<div class="content-box pad">
+		<div asp-validation-summary="All" class="error"></div>
+		<partial name="_MessageForm" for="@Model.ReplyForm" />
 	</div>
-}
-else {
-	<div class="hidden" id="topic-reply-form"></div>
-}
+</div>
 
 @{ViewData["Title"] = Html.Raw(Model.TopicHeader.Subject);}
 @section Header {@ViewData["Title"]}
