@@ -30,7 +30,7 @@ export class TopicIndex {
 		this.bindPageButtons(false);
 	}
 
-	bindPageButtons = (pushState: boolean = true) => {
+	bindPageButtons(pushState: boolean = true) {
 		let self = this;
 
 		if (pushState) {
@@ -44,7 +44,7 @@ export class TopicIndex {
 		});
 	}
 
-	bindHubActions = () => {
+	bindHubActions() {
 		if (!this.app.hub) {
 			throw new Error('Hub not defined.');
 		}
@@ -52,15 +52,15 @@ export class TopicIndex {
 		this.app.hub.on('new-reply', this.hubNewReply);
 	}
 
-	loadTopicsPage = async (boardId: number, pageId: number, unread: number, pushState: boolean = true) => {
+	async loadPage(pageId: number, pushState: boolean = true) {
 		let self = this;
 
-		let topicList = <Element>self.doc.querySelector('#topic-list');
-		topicList.classList.add('faded');
+		let list = <Element>self.doc.querySelector('#topic-list');
+		list.classList.add('faded');
 
 		let requestOptions = new XhrOptions({
 			method: HttpMethod.Get,
-			url: `/Topics/IndexPartial/${boardId}/${pageId}?unread=${unread}`,
+			url: `/Topics/IndexPartial/${self.settings.boardId}/${pageId}?unread=${self.settings.unreadFilter}`,
 			responseType: 'document'
 		});
 
@@ -78,8 +78,8 @@ export class TopicIndex {
 					eval(element.textContent || '');
 				}
 				else if (element.tagName.toLowerCase() == 'section') {
-					topicList.after(element);
-					topicList.remove();
+					list.after(element);
+					list.remove();
 				}
 				else if (element.tagName.toLowerCase() == 'footer') {
 					let targetElement = <Element>self.doc.querySelector('footer');
@@ -103,7 +103,7 @@ export class TopicIndex {
 
 	hubNewReply = () => {
 		if (this.settings.currentPage == 1) {
-			this.loadTopicsPage(this.settings.boardId, 1, this.settings.unreadFilter);
+			this.loadPage(1);
 		}
 	}
 
@@ -116,10 +116,8 @@ export class TopicIndex {
 
 		event.preventDefault();
 
-		let self = this;
 		let pageId = Number(eventTarget.getAttribute('data-page-id'));
-
-		self.loadTopicsPage(self.settings.boardId, pageId, self.settings.unreadFilter);
+		this.loadPage(pageId);
 	}
 
 	eventPopState = (event: PopStateEvent) => {
@@ -127,7 +125,7 @@ export class TopicIndex {
 
 		if (settings) {
 			this.settings = settings;
-			this.loadTopicsPage(this.settings.boardId, this.settings.currentPage, this.settings.unreadFilter, false);
+			this.loadPage(this.settings.currentPage, false);
 		}
 	}
 }
