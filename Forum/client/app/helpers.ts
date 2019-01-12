@@ -119,6 +119,12 @@ export function queryify(parameters: any = {}): string {
 }
 
 export function hide(element: any): void {
+	if (isString(element)) {
+		document.querySelectorAll(element).forEach(elem => {
+			hide(elem);
+		});
+	}
+
 	if (element instanceof Element) {
 		if (!element.classList) {
 			throw new Error('Element does not contain a class list.');
@@ -131,6 +137,12 @@ export function hide(element: any): void {
 };
 
 export function show(element: any): void {
+	if (isString(element)) {
+		document.querySelectorAll(element).forEach(elem => {
+			show(elem);
+		});
+	}
+
 	if (element instanceof Element) {
 		if (!element.classList) {
 			throw new Error('Element does not contain a class list.');
@@ -141,3 +153,17 @@ export function show(element: any): void {
 		}
 	}
 };
+
+export function clear(element: any): void {
+	if (isString(element)) {
+		document.querySelectorAll(element).forEach(elem => {
+			clear(elem);
+		});
+	}
+
+	if (element instanceof Element) {
+		while (element.firstChild) {
+			element.removeChild(element.firstChild);
+		}
+	}
+}
