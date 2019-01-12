@@ -60,7 +60,7 @@ export class TopicIndex {
 		this.app.hub.on('new-reply', this.hubNewReply);
 	}
 
-	loadTopicsPage = (boardId: number, pageId: number, unread: number, pushState: boolean = true) => {
+	loadTopicsPage = async (boardId: number, pageId: number, unread: number, pushState: boolean = true) => {
 		let self = this;
 
 		let topicList = <Element>self.doc.querySelector('#topic-list');
@@ -72,43 +72,41 @@ export class TopicIndex {
 			responseType: 'document'
 		});
 
-		Xhr.request(requestOptions)
-			.then((xhrResult) => {
-				let resultDocument = <HTMLElement>(<Document>xhrResult.response).documentElement;
-				let resultBody = <HTMLBodyElement>resultDocument.querySelector('body');
-				let resultBodyElements = resultBody.childNodes;
+		let xhrResult = await Xhr.request(requestOptions);
 
-				resultBodyElements.forEach(node => {
-					let element = node as Element;
+		let resultDocument = <HTMLElement>(<Document>xhrResult.response).documentElement;
+		let resultBody = <HTMLBodyElement>resultDocument.querySelector('body');
+		let resultBodyElements = resultBody.childNodes;
 
-					if (element && element.tagName) {
-						if (element.tagName.toLowerCase() == 'script') {
-							eval(element.textContent || '');
-						}
-						else if (element.tagName.toLowerCase() == 'section') {
-							topicList.after(element);
-							topicList.remove();
-						}
-						else if (element.tagName.toLowerCase() == 'footer') {
-							let targetElement = <Element>self.doc.querySelector('footer');
-							targetElement.after(element);
-							targetElement.remove();
-						}
-					}
-				});
+		resultBodyElements.forEach(node => {
+			let element = node as Element;
 
-				self.settings = new TopicIndexSettings({
-					boardId: (<any>window).boardId,
-					currentPage: (<any>window).currentPage,
-					totalPages: (<any>window).totalPages,
-					unreadFilter: (<any>window).unreadFilter
-				});
+			if (element && element.tagName) {
+				if (element.tagName.toLowerCase() == 'script') {
+					eval(element.textContent || '');
+				}
+				else if (element.tagName.toLowerCase() == 'section') {
+					topicList.after(element);
+					topicList.remove();
+				}
+				else if (element.tagName.toLowerCase() == 'footer') {
+					let targetElement = <Element>self.doc.querySelector('footer');
+					targetElement.after(element);
+					targetElement.remove();
+				}
+			}
+		});
 
-				self.bindPageButtons(pushState);
-				self.app.navigation.setupPageNavigators();
-				self.app.navigation.addListenerClickableLinkParent();
-			})
-			.catch(Xhr.logRejected);
+		self.settings = new TopicIndexSettings({
+			boardId: (<any>window).boardId,
+			currentPage: (<any>window).currentPage,
+			totalPages: (<any>window).totalPages,
+			unreadFilter: (<any>window).unreadFilter
+		});
+
+		self.bindPageButtons(pushState);
+		self.app.navigation.setupPageNavigators();
+		self.app.navigation.addListenerClickableLinkParent();
 	}
 
 	hubNewReply = () => {

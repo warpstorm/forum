@@ -2,51 +2,53 @@
 
 <div asp-validation-summary="ModelOnly" class="error"></div>
 
-<form method="post"
-	  class="message-form"
-	  asp-action="@Model.FormAction"
-	  asp-controller="@Model.FormController"
-	  asp-route-returnurl="@ViewData["Referrer"]">
+<div id="@(!string.IsNullOrEmpty(Model.ElementId) ? Model.ElementId : "message-form")">
+	<form method="post"
+		  class="message-form"
+		  asp-action="@Model.FormAction"
+		  asp-controller="@Model.FormController"
+		  asp-route-returnurl="@ViewData["Referrer"]">
 
-	<input type="hidden" name="Id" value="@Model.Id" />
+		<input type="hidden" name="Id" value="@Model.Id" />
 
-	@if (ViewData["Categories"] is List<ViewModels.Boards.Items.IndexCategory>) {
-		@foreach (var category in ViewData["Categories"] as List<ViewModels.Boards.Items.IndexCategory>) {
-			@foreach (var board in category.Boards) {
-				<input type="hidden" name="Selected_@board.Id" value="@(board.Id == Model.BoardId ? "True" : "False")" />
+		@if (ViewData["Categories"] is List<ViewModels.Boards.Items.IndexCategory>) {
+			@foreach (var category in ViewData["Categories"] as List<ViewModels.Boards.Items.IndexCategory>) {
+				@foreach (var board in category.Boards) {
+					<input type="hidden" name="Selected_@board.Id" value="@(board.Id == Model.BoardId ? "True" : "False")" />
+				}
 			}
 		}
-	}
 
-	<div>
-		<p class="pad-top">
-			<button class="add-bbcode small-button" bbcode="quote">Quote</button>
-			<button class="add-bbcode small-button" bbcode="url">Link</button>
-			<button class="add-bbcode small-button" bbcode="img">Image</button>
-			<button class="add-bbcode small-button" bbcode="code">Code</button>
-			<button class="add-bbcode small-button" bbcode="spoiler">Spoiler</button>
-			<button class="add-bbcode small-button" bbcode="list">List</button>
-			<button class="add-bbcode small-button" bbcode="numlist"># List</button>
+		<div>
+			<p class="pad-top">
+				<button class="add-bbcode small-button" bbcode="quote">Quote</button>
+				<button class="add-bbcode small-button" bbcode="url">Link</button>
+				<button class="add-bbcode small-button" bbcode="img">Image</button>
+				<button class="add-bbcode small-button" bbcode="code">Code</button>
+				<button class="add-bbcode small-button" bbcode="spoiler">Spoiler</button>
+				<button class="add-bbcode small-button" bbcode="list">List</button>
+				<button class="add-bbcode small-button" bbcode="numlist"># List</button>
+			</p>
+			<p class="pad-top">
+				<button class="add-bbcode small-button" bbcode="bold"><span class="bbc-bold">Bold</span></button>
+				<button class="add-bbcode small-button" bbcode="italics"><span class="bbc-italic">Italics</span></button>
+				<button class="add-bbcode small-button" bbcode="underline"><span class="bbc-underline">Underline</span></button>
+				<button class="add-bbcode small-button" bbcode="strike"><span class="bbc-strike">Strike</span></button>
+				<button class="add-bbcode small-button" bbcode="color"><span>Color</span></button>
+				<button class="add-bbcode small-button" bbcode="size"><span>Size</span></button>
+
+				<img class="add-smiley pointer align-middle pad-left" src="~/images/smiley.png" alt="Smiley" title="Smiley" />
+			</p>
+
+			<p class="pad-top">
+				<span class="warning font-small"></span>
+				<span class="error" data-valmsg-for="@nameof(Model.Body)"></span>
+			</p>
+			<p class="pad-top"><textarea asp-for="@Model.Body" name="body"></textarea></p>
+		</div>
+
+		<p>
+			<button class="save-button">Save</button>
 		</p>
-		<p class="pad-top">
-			<button class="add-bbcode small-button" bbcode="bold"><span class="bbc-bold">Bold</span></button>
-			<button class="add-bbcode small-button" bbcode="italics"><span class="bbc-italic">Italics</span></button>
-			<button class="add-bbcode small-button" bbcode="underline"><span class="bbc-underline">Underline</span></button>
-			<button class="add-bbcode small-button" bbcode="strike"><span class="bbc-strike">Strike</span></button>
-			<button class="add-bbcode small-button" bbcode="color"><span>Color</span></button>
-			<button class="add-bbcode small-button" bbcode="size"><span>Size</span></button>
-
-			<img class="add-smiley pointer align-middle pad-left" src="~/images/smiley.png" alt="Smiley" title="Smiley" />
-		</p>
-
-		<p class="pad-top">
-			<span class="warning font-small"></span>
-			<span class="error" data-valmsg-for="@nameof(Model.Body)"></span>
-		</p>
-		<p class="pad-top"><textarea asp-for="@Model.Body" name="body"></textarea></p>
-	</div>
-
-	<p>
-		<button class="save-button">Save</button>
-	</p>
-</form>
+	</form>
+</div>

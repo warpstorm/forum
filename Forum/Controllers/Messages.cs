@@ -111,10 +111,30 @@ namespace Forum.Controllers {
 
 			var viewModel = new ViewModels.Messages.EditMessagePage {
 				Id = id.ToString(),
-				Body = record.OriginalBody
+				Body = record.OriginalBody,
+				ElementId = $"edit-message-{id}"
 			};
 
 			return await ForumViewResult.ViewResult(this, viewModel);
+		}
+
+		[HttpGet]
+		public async Task<IActionResult> EditPartial(int id) {
+			var record = await DbContext.Messages.SingleOrDefaultAsync(m => m.Id == id);
+
+			if (record is null) {
+				throw new HttpNotFoundError();
+			}
+
+			ViewData[Constants.InternalKeys.Layout] = "_LayoutEmpty";
+
+			var viewModel = new ViewModels.Messages.EditMessagePage {
+				Id = id.ToString(),
+				Body = record.OriginalBody,
+				ElementId = $"edit-message-{id}"
+			};
+
+			return await ForumViewResult.ViewResult(this, "_MessageForm", viewModel);
 		}
 
 		[HttpPost]
@@ -131,7 +151,8 @@ namespace Forum.Controllers {
 			async Task<IActionResult> FailureCallback() {
 				var viewModel = new ViewModels.Messages.CreateTopicPage {
 					Id = "0",
-					Body = input.Body
+					Body = input.Body,
+					ElementId = "create-topic"
 				};
 
 				return await ForumViewResult.ViewResult(this, viewModel);

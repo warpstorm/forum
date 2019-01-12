@@ -50,7 +50,7 @@ export class WhosOnlineMonitor {
 		});
 	}
 
-	hubWhosOnline = () => {
+	hubWhosOnline = async () => {
 		let self = this;
 
 		if (!self.recentRequest) {
@@ -62,25 +62,23 @@ export class WhosOnlineMonitor {
 				responseType: 'document'
 			});
 
-			Xhr.request(requestOptions)
-				.then((xhrResult) => {
-					let resultDocument = <HTMLElement>(<Document>xhrResult.response).documentElement;
-					let resultBody = <HTMLBodyElement>resultDocument.querySelector('body');
-					let resultBodyElements = resultBody.childNodes;
-					let targetElement = <Element>self.doc.querySelector(`div[sidebar="whos-online"]`);
+			let xhrResult = await Xhr.request(requestOptions);
 
-					resultBodyElements.forEach(node => {
-						let element = node as Element;
+			let resultDocument = <HTMLElement>(<Document>xhrResult.response).documentElement;
+			let resultBody = <HTMLBodyElement>resultDocument.querySelector('body');
+			let resultBodyElements = resultBody.childNodes;
+			let targetElement = <Element>self.doc.querySelector(`div[sidebar="whos-online"]`);
 
-						if (element && element.tagName && element.tagName.toLowerCase() == 'div') {
-							targetElement.after(element);
-							targetElement.remove();
-						}
-					});
+			resultBodyElements.forEach(node => {
+				let element = node as Element;
 
-					this.bindChicletMonitor();
-				})
-				.catch(Xhr.logRejected);
+				if (element && element.tagName && element.tagName.toLowerCase() == 'div') {
+					targetElement.after(element);
+					targetElement.remove();
+				}
+			});
+
+			this.bindChicletMonitor();
 						
 			setTimeout(() => {
 				self.recentRequest = false;

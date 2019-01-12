@@ -7,6 +7,6 @@ namespace Forum.Models.ViewModels.Topics.Items {
 		public string Body { get; set; }
 		public string FormAction { get; } = nameof(Controllers.Topics.TopicReply);
 		public string FormController { get; } = nameof(Controllers.Topics);
-		public string CancelPath { get; set; }
+		public string ElementId { get; set; }
 	}
 }

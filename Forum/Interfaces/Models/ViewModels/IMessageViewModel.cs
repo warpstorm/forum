@@ -12,5 +12,6 @@ namespace Forum.Interfaces.Models.ViewModels {
 
 		string FormAction { get; }
 		string FormController { get; }
+		string ElementId { get; set; }
 	}
 }

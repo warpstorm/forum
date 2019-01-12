@@ -77,6 +77,11 @@ export class TopicDisplay {
 			element.addEventListener('click', this.eventShowThoughtSelector);
 		});
 
+		this.doc.querySelectorAll('.edit-button').forEach(element => {
+			element.removeEventListener('click', this.eventEditForm);
+			element.addEventListener('click', this.eventEditForm);
+		});
+
 		this.doc.querySelectorAll('blockquote.reply').forEach(element => {
 			element.removeEventListener('click', this.eventShowFullReply);
 			element.addEventListener('click', this.eventShowFullReply);
@@ -141,7 +146,6 @@ export class TopicDisplay {
 
 				window.location.hash = `message${firstMessageId}`;
 			})
-			.catch(Xhr.logRejected)
 			.then(() => {
 				hide(self.doc.querySelector('#loading-message'));
 			});
@@ -159,19 +163,18 @@ export class TopicDisplay {
 			.then((xhrResult: XhrResult) => {
 				let tokenRequestResponse: TokenRequestResponse = JSON.parse(xhrResult.responseText);
 				tokenElement.value = tokenRequestResponse.token;
-			})
-			.catch(Xhr.logRejected);
+			});
 
 		return returnToken;
 	}
 
-	hubNewReply = (data: HubMessage) => {
+	hubNewReply = (data: HubMessage): void => {
 		if (data.topicId == this.settings.topicId && this.settings.currentPage == this.settings.totalPages) {
 			this.getLatestReplies();
 		}
 	}
 
-	hubUpdatedMessage = (data: HubMessage) => {
+	hubUpdatedMessage = async (data: HubMessage): Promise<void> => {
 		let self = this;
 
 		if (data.topicId == self.settings.topicId
@@ -183,34 +186,32 @@ export class TopicDisplay {
 				responseType: 'document'
 			});
 
-			Xhr.request(requestOptions)
-				.then((xhrResult) => {
-					let resultDocument = <HTMLElement>(<Document>xhrResult.response).documentElement;
-					let resultBody = <HTMLBodyElement>resultDocument.querySelector('body');
-					let resultBodyElements = resultBody.childNodes;
-					let targetArticle = <Element>self.doc.querySelector(`article[message="${data.messageId}"]`);
+			let xhrResult = await Xhr.request(requestOptions);
 
-					resultBodyElements.forEach(node => {
-						let element = node as Element;
+			let resultDocument = <HTMLElement>(<Document>xhrResult.response).documentElement;
+			let resultBody = <HTMLBodyElement>resultDocument.querySelector('body');
+			let resultBodyElements = resultBody.childNodes;
+			let targetArticle = <Element>self.doc.querySelector(`article[message="${data.messageId}"]`);
 
-						if (element && element.tagName && element.tagName.toLowerCase() == 'article') {
-							targetArticle.after(element);
-							targetArticle.remove();
-						}
-					});
+			resultBodyElements.forEach(node => {
+				let element = node as Element;
 
-					self.bindMessageEventListeners();
+				if (element && element.tagName && element.tagName.toLowerCase() == 'article') {
+					targetArticle.after(element);
+					targetArticle.remove();
+				}
+			});
 
-					var time = new Date();
-					var passedTime = this.app.passedTimeMonitor.convertToPassedTime(time);
+			self.bindMessageEventListeners();
 
-					warning(`<a href='#message${data.messageId}'>A message was updated <time datetime='${time}'>${passedTime}</time>.</a>`);
-				})
-				.catch(Xhr.logRejected);
+			var time = new Date();
+			var passedTime = this.app.passedTimeMonitor.convertToPassedTime(time);
+
+			warning(`<a href='#message${data.messageId}'>A message was updated <time datetime='${time}'>${passedTime}</time>.</a>`);
 		}
 	}
 
-	eventSaveMessage = (event: Event): void => {
+	eventSaveMessage = async (event: Event): Promise<void> => {
 		let self = this;
 
 		// make sure the user has chosen to enable the hub connection.
@@ -254,42 +255,58 @@ export class TopicDisplay {
 		submitRequestOptions.headers['Content-Type'] = 'application/x-www-form-urlencoded;charset=UTF-8';
 		submitRequestOptions.headers['RequestVerificationToken'] = self.getToken(form);
 
-		Xhr.request(submitRequestOptions)
-			.then((xhrResult) => {
-				let modelErrors: ModelErrorResponse[] = JSON.parse(xhrResult.responseText);
+		let xhrResult = await Xhr.request(submitRequestOptions);
 
-				for (let i = 0; i < modelErrors.length; i++) {
-					let modelErrorField = form.querySelector(`[data-valmsg-for="${modelErrors[i].propertyName}"]`);
+		let modelErrors: ModelErrorResponse[] = JSON.parse(xhrResult.responseText);
 
-					if (modelErrorField) {
-						modelErrorField.textContent = modelErrors[i].errorMessage;
-					}
-				}
+		for (let i = 0; i < modelErrors.length; i++) {
+			let modelErrorField = form.querySelector(`[data-valmsg-for="${modelErrors[i].propertyName}"]`);
 
-				if (modelErrors.length == 0) {
-					new Promise(() => {
-						self.doc.querySelectorAll('.reply-button').forEach(element => {
-							element.removeEventListener('click', self.eventHideReplyForm);
-							element.removeEventListener('click', self.eventShowReplyForm);
-							element.addEventListener('click', self.eventShowReplyForm);
-						});
+			if (modelErrorField) {
+				modelErrorField.textContent = modelErrors[i].errorMessage;
+			}
+		}
 
-						self.doc.querySelectorAll('.reply-form').forEach(element => { hide(element); });
-					});
-				}
-			})
-			.catch(Xhr.logRejected)
-			.then(() => {
-				form.classList.remove('faded');
-
-				if (bodyElement) {
-					bodyElement.value = '';
-					bodyElement.removeAttribute('disabled');
-				}
-
-				saveButton.removeAttribute('disabled');
-				self.submitting = false;
+		if (modelErrors.length == 0) {
+			self.doc.querySelectorAll('.reply-button').forEach(element => {
+				element.removeEventListener('click', self.eventHideReplyForm);
+				element.removeEventListener('click', self.eventShowReplyForm);
+				element.addEventListener('click', self.eventShowReplyForm);
 			});
+
+			self.doc.querySelectorAll('.reply-form').forEach(element => { hide(element); });
+		}
+
+		form.classList.remove('faded');
+
+		if (bodyElement) {
+			bodyElement.value = '';
+			bodyElement.removeAttribute('disabled');
+		}
+
+		saveButton.removeAttribute('disabled');
+		self.submitting = false;
+	}
+
+	eventEditForm = async (event: Event) => {
+		let self = this;
+
+		// make sure the user has chosen to enable the hub connection.
+		if (!self.app.hub || self.app.hub.state == HubConnectionState.Disconnected) {
+			return;
+		}
+
+		event.preventDefault();
+
+		let editButton = <Element>event.currentTarget;
+		let messageId = editButton.getAttribute('message-id');
+
+		let requestOptions = new XhrOptions({
+			method: HttpMethod.Get,
+			url: `/Messages/EditPartial/${messageId}`
+		});
+
+		await Xhr.requestPartialView(requestOptions, self.doc);
 	}
 
 	eventShowReplyForm = (event: Event) => {
@@ -347,7 +364,7 @@ export class TopicDisplay {
 		target.addEventListener('click', this.eventShowFullReply);
 	}
 
-	eventToggleBoard = (event: Event) => {
+	eventToggleBoard = async (event: Event) => {
 		event.stopPropagation();
 
 		let target = <Element>event.currentTarget;
@@ -394,10 +411,9 @@ export class TopicDisplay {
 			url: `${(<any>window).togglePath}&BoardId=${boardId}`
 		});
 
-		Xhr.request(requestOptions)
-			.then(() => {
-				target.removeAttribute('toggling');
-			});
+		await Xhr.request(requestOptions);
+
+		target.removeAttribute('toggling');
 	}
 
 	eventAddThought = (event: Event): void => {
@@ -415,7 +431,7 @@ export class TopicDisplay {
 				url: `/Messages/AddThought/${this.thoughtSelectorMessageId}?smiley=${smileyId}`
 			});
 
-			Xhr.request(requestOptions).catch(Xhr.logRejected);
+			Xhr.request(requestOptions);
 
 			this.app.smileySelector.eventCloseSmileySelector();
 		}

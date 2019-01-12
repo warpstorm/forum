@@ -37,7 +37,7 @@
 					}
 
 					@if (Model.CanEdit) {
-						<a class="pad-right" asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.Edit)" asp-route-id="@Model.Id">
+						<a class="edit-button pad-right" asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.Edit)" asp-route-id="@Model.Id" message-id="@Model.Id">
 							<img class="align-middle" src="~/images/edit.png" alt="Edit" title="Edit" />
 						</a>
 					}
@@ -88,6 +88,8 @@
 			}
 
 			<div class="message-body">@Html.Raw(Model.Body)</div>
+
+			<div class="hidden" id="edit-message-@Model.Id"></div>
 
 			<div class="hidden reply-form pad gap-top">
 				<p>Reply directly to this message:</p>
