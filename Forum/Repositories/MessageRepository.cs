@@ -231,11 +231,7 @@ namespace Forum.Repositories {
 			var record = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == messageId);
 
 			if (record is null) {
-				serviceResponse.Error($@"No record was found with the id '{messageId}'");
-			}
-
-			if (!serviceResponse.Success) {
-				return serviceResponse;
+				throw new HttpNotFoundError();
 			}
 
 			var parentId = record.ParentId;
@@ -243,9 +239,11 @@ namespace Forum.Repositories {
 			if (parentId != 0) {
 				serviceResponse.RedirectPath = $"{UrlHelper.Action(nameof(Topics.Latest), nameof(Topics), new { id = parentId })}#message{parentId}";
 
-				var directReplies = await DbContext.Messages.Where(m => m.ReplyId == messageId).ToListAsync();
+				var directRepliesQuery = from message in DbContext.Messages
+										 where message.ReplyId == messageId
+										 select message;
 
-				foreach (var reply in directReplies) {
+				foreach (var reply in directRepliesQuery) {
 					reply.OriginalBody =
 						$"[quote]{record.OriginalBody}\n" +
 						$"Message deleted by {UserContext.ApplicationUser.DisplayName} on {DateTime.Now.ToString("MMMM dd, yyyy")}[/quote]" +
@@ -281,28 +279,6 @@ namespace Forum.Repositories {
 			}
 
 			return serviceResponse;
-		}
-
-		async Task RemoveMessageArtifacts(DataModels.Message record) {
-			var messageBoards = await DbContext.MessageBoards.Where(m => m.MessageId == record.Id).ToListAsync();
-
-			foreach (var messageBoard in messageBoards) {
-				DbContext.MessageBoards.Remove(messageBoard);
-			}
-
-			var messageThoughts = await DbContext.MessageThoughts.Where(mt => mt.MessageId == record.Id).ToListAsync();
-
-			foreach (var messageThought in messageThoughts) {
-				DbContext.MessageThoughts.Remove(messageThought);
-			}
-
-			var notifications = DbContext.Notifications.Where(item => item.MessageId == record.Id).ToList();
-
-			foreach (var notification in notifications) {
-				DbContext.Notifications.Remove(notification);
-			}
-
-			DbContext.Messages.Remove(record);
 		}
 
 		public async Task<ServiceModels.ServiceResponse> AddThought(int messageId, int smileyId) {
@@ -965,6 +941,28 @@ namespace Forum.Repositories {
 			}
 		}
 
+		async Task RemoveMessageArtifacts(DataModels.Message record) {
+			var messageBoards = await DbContext.MessageBoards.Where(m => m.MessageId == record.Id).ToListAsync();
+
+			foreach (var messageBoard in messageBoards) {
+				DbContext.MessageBoards.Remove(messageBoard);
+			}
+
+			var messageThoughts = await DbContext.MessageThoughts.Where(mt => mt.MessageId == record.Id).ToListAsync();
+
+			foreach (var messageThought in messageThoughts) {
+				DbContext.MessageThoughts.Remove(messageThought);
+			}
+
+			var notifications = DbContext.Notifications.Where(item => item.MessageId == record.Id).ToList();
+
+			foreach (var notification in notifications) {
+				DbContext.Notifications.Remove(notification);
+			}
+
+			DbContext.Messages.Remove(record);
+		}
+
 		public async Task<int> RecountReplies() {
 			var query = from message in DbContext.Messages
 						where message.ParentId == 0
@@ -998,20 +996,22 @@ namespace Forum.Repositories {
 		public async Task RecountRepliesForTopic(DataModels.Message parentMessage) {
 			var messagesQuery = from message in DbContext.Messages
 								where message.ParentId == parentMessage.Id
-								select message;
+								select new {
+									message.Id,
+									message.TimePosted,
+									message.PostedById
+								};
 
-			var messages = await messagesQuery.ToListAsync();
+			var replyCount = await messagesQuery.CountAsync();
 
 			var updated = false;
 
-			var replies = messages.Count();
-
-			if (parentMessage.ReplyCount != replies) {
-				parentMessage.ReplyCount = replies;
+			if (parentMessage.ReplyCount != replyCount) {
+				parentMessage.ReplyCount = replyCount;
 				updated = true;
 			}
 
-			var lastReply = messages.LastOrDefault();
+			var lastReply = await messagesQuery.LastOrDefaultAsync();
 
 			if (lastReply is null) {
 				parentMessage.LastReplyId = 0;
