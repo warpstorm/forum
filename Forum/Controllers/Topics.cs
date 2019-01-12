@@ -102,8 +102,6 @@ namespace Forum.Controllers {
 
 			var topicPreviews = await TopicRepository.GetPreviews(messageIds);
 
-			ViewData[Constants.InternalKeys.Layout] = "_LayoutEmpty";
-
 			var viewModel = new PageModels.TopicIndexPage {
 				BoardId = id,
 				UnreadFilter = unread,
@@ -209,8 +207,6 @@ namespace Forum.Controllers {
 			var messageIds = new List<int> { id };
 			var messages = await MessageRepository.GetMessages(messageIds);
 
-			ViewData[Constants.InternalKeys.Layout] = "_LayoutEmpty";
-
 			var viewModel = new PageModels.TopicDisplayPartialPage {
 				Latest = DateTime.Now.Ticks,
 				Messages = messages
@@ -245,8 +241,6 @@ namespace Forum.Controllers {
 
 			var latestMessageTime = messages.Max(r => r.RecordTime);
 			TopicRepository.MarkRead(topicId, latestMessageTime, messageIds);
-
-			ViewData[Constants.InternalKeys.Layout] = "_LayoutEmpty";
 
 			var viewModel = new PageModels.TopicDisplayPartialPage {
 				Latest = DateTime.Now.Ticks,

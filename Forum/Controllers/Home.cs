@@ -44,9 +44,6 @@ namespace Forum.Controllers {
 		[HttpGet]
 		public async Task<IActionResult> WhosOnline() {
 			var viewModel = await AccountRepository.GetOnlineList();
-
-			ViewData[Constants.InternalKeys.Layout] = "_LayoutEmpty";
-
 			return await ForumViewResult.ViewResult(this, "Sidebar/_OnlineUsersList", viewModel);
 		}
 

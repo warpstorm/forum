@@ -127,8 +127,6 @@ namespace Forum.Controllers {
 				throw new HttpNotFoundError();
 			}
 
-			ViewData[Constants.InternalKeys.Layout] = "_LayoutEmpty";
-
 			var viewModel = new ViewModels.Messages.ReplyForm {
 				Id = id.ToString(),
 				ElementId = $"message-reply-{id}"
@@ -202,8 +200,6 @@ namespace Forum.Controllers {
 			if (record is null) {
 				throw new HttpNotFoundError();
 			}
-
-			ViewData[Constants.InternalKeys.Layout] = "_LayoutEmpty";
 
 			var viewModel = new ViewModels.Messages.EditMessageForm {
 				Id = id.ToString(),
