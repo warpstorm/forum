@@ -26,16 +26,13 @@
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.2.0" PrivateAssets="All" />
+		<PackageReference Include="Narochno.BBCode" Version="2.0.1" />
 		<PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
 		<PackageReference Include="Sendgrid" Version="9.10.0" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.0" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<ProjectReference Include="..\CodeKicker.BBCode\CodeKicker.BBCode.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -1,4 +1,4 @@
-﻿using CodeKicker.BBCode;
+﻿using Narochno.BBCode;
 
 namespace Forum.Services {
 	public class BBCParserFactory {
@@ -46,7 +46,7 @@ namespace Forum.Services {
 		static BBTag Quote() {
 			return new BBTag(
 				name: "quote",
-				openTagTemplate: @"<blockquote class=""bbc-quote"">", 
+				openTagTemplate: @"<blockquote class=""bbc-quote"">",
 				closeTagTemplate: "</blockquote>",
 				autoRenderContent: true,
 				requireClosingTag: true,
@@ -83,7 +83,7 @@ namespace Forum.Services {
 			};
 
 			return new BBTag(
-				name: "url", 
+				name: "url",
 				openTagTemplate: @"<a class=""bbc-anchor"" href=""${href}"" target=""_blank"">",
 				closeTagTemplate: "</a>",
 				attributes: attributes
@@ -97,9 +97,9 @@ namespace Forum.Services {
 			};
 
 			return new BBTag(
-				name: "size", 
+				name: "size",
 				openTagTemplate: @"<span style=""font-size: ${size}pt"">",
-				closeTagTemplate: "</span>", 
+				closeTagTemplate: "</span>",
 				attributes: attributes
 			);
 		}

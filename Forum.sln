@@ -8,8 +8,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CodeKicker.BBCode", "CodeKicker.BBCode\CodeKicker.BBCode.csproj", "{A4EFD7BC-0C23-4E9F-81E4-0681298B216D}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Forum", "Forum\Forum.csproj", "{AB34A263-BB31-4C92-92A5-715DAEC280F8}"
 EndProject
 Global
@@ -18,10 +16,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{A4EFD7BC-0C23-4E9F-81E4-0681298B216D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A4EFD7BC-0C23-4E9F-81E4-0681298B216D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A4EFD7BC-0C23-4E9F-81E4-0681298B216D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A4EFD7BC-0C23-4E9F-81E4-0681298B216D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{AB34A263-BB31-4C92-92A5-715DAEC280F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{AB34A263-BB31-4C92-92A5-715DAEC280F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AB34A263-BB31-4C92-92A5-715DAEC280F8}.Release|Any CPU.ActiveCfg = Release|Any CPU

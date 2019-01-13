@@ -1,5 +1,4 @@
-﻿using CodeKicker.BBCode;
-using Forum.Contexts;
+﻿using Forum.Contexts;
 using Forum.Controllers;
 using Forum.Errors;
 using Forum.Extensions;
@@ -13,6 +12,7 @@ using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Narochno.BBCode;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -401,10 +401,6 @@ namespace Forum.Repositories {
 		}
 
 		public void ParseBBC(InputModels.ProcessedMessageInput processedMessageInput) {
-
-			// NOTE: 
-			// If you do not want to encumber your software with the CodeKicker library, start with replacing this call.
-
 			processedMessageInput.DisplayBody = BBCParser.ToHtml(processedMessageInput.DisplayBody);
 		}
 
