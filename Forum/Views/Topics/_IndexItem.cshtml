@@ -49,12 +49,39 @@
 			</a>
 		</p>
 
-		<div class="mobile-topic-info font-small subdued-text small-pad-left small-pad-top">
+		<div class="mobile-only font-small subdued-text pad-left">
 			<p>Started <passed-time time="@Model.TimePosted" /> by @Html.Raw(Model.PostedByName).</p>
 
 			@if (Model.LastReplyId != Model.Id) {
 				<p>Last reply was <passed-time time="@Model.LastReplyPosted" /> by @Html.Raw(Model.LastReplyByName).</p>
 			}
+
+			<p>
+				@if (Model.Pages <= 1) {
+					<text>1 page</text>
+				}
+				else {
+					@Model.Pages <text> pages</text>
+				}
+
+				&nbsp;
+
+				@if (Model.Views == 1) {
+					<text>1 view</text>
+				}
+				else {
+					@Model.Views <text> views</text>
+				}
+
+				&nbsp;
+
+				@if (Model.Replies == 1) {
+					<text>1 reply</text>
+				}
+				else {
+					@Model.Replies <text> replies</text>
+				}
+			</p>
 		</div>
 
 		<p class="small-pad-left small-pad-top subdued-text font-small">

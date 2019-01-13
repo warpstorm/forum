@@ -20,16 +20,8 @@ div.hover-highlight:hover {
 	width: 300px;
 }
 
-.mobile-topic-info {
-	display: none;
-}
-
 @media only screen and (max-width: 900px) {
 	.topic-info {
 		display: none;
-	}
-
-	.mobile-topic-info {
-		display: block;
 	}
 }
