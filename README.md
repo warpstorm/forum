@@ -22,7 +22,7 @@ A light-weight and mobile-friendly message board solution intended for small com
 
 Anything in this project is open and free under the terms of the Unlicense, so you're welcome to use it however you want. See the license for specifics.
 
-If anything here helps you, even in unrelated projects, please feel free to emailing<sup>[[0]](#notes)</sup> me to let me know you found some value.
+If anything here helps you, even in unrelated projects, please feel free to [buy me a coffee](https://patreon.com/nrrdio).
 
 Instructions for setup can be found [here](https://github.com/jyarbro/forum/wiki/Setup).
 
