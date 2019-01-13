@@ -23,7 +23,7 @@ A light-weight and mobile-friendly message board solution intended for small com
 
 Anything in this project which is originally written by me is open and free under the terms of the Unlicense, so you're welcome to use it however you want. If you do, you would help me feel better about all my time spent by simply emailing<sup>[[0]](#notes)</sup> me to let me know you found some value.
 
-The [CodeKicker.BBCode](http://codekicker.de/) library is originally licensed under the [MIT license](https://github.com/Pablissimo/CodeKicker.BBCode-Mod/blob/master/LICENCE), and my modifications to that specific class library included in this solution inherit this license as well.
+The [CodeKicker.BBCode](http://codekicker.de/) library is originally licensed under the [CCA3.0](https://github.com/jyarbro/forum/blob/master/CodeKicker.BBCode/LICENSE), and my modifications to that specific class library included in this solution inherit this license as well.
 
 Instructions for setup can be found [here](https://github.com/jyarbro/forum/wiki/Setup).1
 
