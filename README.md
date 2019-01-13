@@ -1,4 +1,4 @@
-# Forum
+# nrrdio's Forum
 
 A light-weight and mobile-friendly message board solution intended for small communities hosted in Microsoft Azure.<sup>[[1]](#notes)</sup>
 
