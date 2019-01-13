@@ -10,7 +10,7 @@
 	}
 </div>
 
-<div class="content-box pad gap overflow-hidden mobile-show">
+<div class="content-box pad gap overflow-hidden mobile-only">
 	@foreach (var board in Model.Boards) {
 		<partial name="_IndexBoard" for="@board" />
 	}

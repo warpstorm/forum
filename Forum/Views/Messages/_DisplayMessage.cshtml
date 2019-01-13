@@ -58,7 +58,7 @@
 			}
 
 			<header class="message-header font-small">
-				<aside class="user-avatar align-center float-left mobile-show">
+				<aside class="user-avatar align-center float-left mobile-only">
 					@if (string.IsNullOrEmpty(Model.PostedByAvatarPath)) {
 						<img identicon-value="@Model.PostedById" width="80" height="80" alt="Identicon" />
 					}
@@ -77,7 +77,7 @@
 				</span>
 			</header>
 
-			<br class="clear-left mobile-show" />
+			<br class="clear-left mobile-only" />
 
 			@if (Model.ReplyId > 0) {
 				<p class="pad-left font-small subdued-text"><a asp-action="@nameof(Topics.Display)" asp-route-id="@Model.ReplyId">In reply to this post by @Html.Raw(Model.ReplyPostedBy):</a></p>

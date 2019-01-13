@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Forum.Models.ViewModels.Topics.Items {
 	public class MessagePreview {
@@ -30,5 +31,7 @@ namespace Forum.Models.ViewModels.Topics.Items {
 
 		public DateTime TimePosted { get; set; }
 		public DateTime LastReplyPosted { get; set; }
+
+		public List<Boards.Items.IndexBoard> Boards { get; set; }
 	}
 }

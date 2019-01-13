@@ -1,15 +1,43 @@
 ﻿@model MessagePreview
 
 <div class="content-box gap hover-highlight">
-	<div class="details pad" clickable-link-parent>
+	<div class="details full-details small-pad" clickable-link-parent>
 		<div class="topic-info mobile-hide float-right font-small subdued-text">
 			<p>Started <passed-time time="@Model.TimePosted" /> by @Html.Raw(Model.PostedByName).</p>
 
 			@if (Model.LastReplyId != Model.Id) {
 				<p>Last reply was <passed-time time="@Model.LastReplyPosted" /> by @Html.Raw(Model.LastReplyByName).</p>
 			}
+
+			<p>
+				@if (Model.Pages <= 1) {
+					<text>1 page</text>
+				}
+				else {
+					@Model.Pages <text> pages</text>
+				}
+
+				&nbsp;
+
+				@if (Model.Views == 1) {
+					<text>1 view</text>
+				}
+				else {
+					@Model.Views <text> views</text>
+				}
+
+				&nbsp;
+
+				@if (Model.Replies == 1) {
+					<text>1 reply</text>
+				}
+				else {
+					@Model.Replies <text> replies</text>
+				}
+			</p>
 		</div>
-		<p>
+
+		<p class="small-pad-top small-pad-left">
 			<a asp-action="@nameof(Topics.Latest)" asp-route-id="@Model.Id">
 				@Html.Raw(Model.ShortPreview)
 				@if (Model.Popular) {
@@ -30,40 +58,9 @@
 		</div>
 
 		<p class="small-pad-left small-pad-top subdued-text font-small">
-				@if (Model.Views == 0) {
-					<text>No views yet</text>
-				}
-				else if (Model.Views == 1) {
-					<text>1 view</text>
-				}
-				else {
-					@Model.Views <text> views</text>
-				}
-
-				&nbsp;
-
-				@if (Model.Replies == 0) {
-					<text>No replies yet</text>
-				}
-				else if (Model.Replies == 1) {
-					<text>1 reply</text>
-				}
-				else {
-					@Model.Replies <text> replies</text>
-				}
-
-				&nbsp;
-
-				@if (Model.Pages > 1) {
-					<text>Pages:</text>
-					for (var i = Model.Pages - 4; i <= Model.Pages; i++) {
-						if (i <= 0) {
-							continue;
-						}
-
-						<a class="small-pad-left hover-underline" asp-action="@nameof(Topics.Display)" asp-route-id="@Model.Id" asp-route-pageId="@i">@i</a>
-					}
-				}
-			</p>
+			@foreach (var board in Model.Boards) {
+				<a class="small-button subdued-button subdued-text" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)" asp-route-id="@board.Id">@board.Name</a>
+			}
+		</p>
 	</div>
 </div>

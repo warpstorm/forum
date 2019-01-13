@@ -4,7 +4,7 @@
 	<p><a class="button" asp-action="@nameof(Account.Login)" asp-route-returnurl="@ViewData["Referrer"]">Already registered?</a></p>
 
 	<form method="post"
-		  class="mobile-show"
+		  class="mobile-only"
 		  asp-controller="@nameof(Account)"
 		  asp-action="@nameof(Account.Register)"
 		  asp-route-returnurl="@ViewData["Referrer"]">

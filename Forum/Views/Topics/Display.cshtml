@@ -1,6 +1,6 @@
 ﻿@model TopicDisplayPage
 
-<header id="topic-header" class="content-box pad gap-bottom">
+<header id="topic-header" class="topic-header content-box pad clear-left">
 	@if (User.Identity.IsAuthenticated) {
 		<span class="bookmark-button">
 			@{var bookmarkImage = Model.IsBookmarked ? "bookmark_on" : "bookmark_off";}
@@ -47,26 +47,17 @@
 
 	<section>
 		<p class="font-small subdued-text">
-			<span>
+			<span class="nowrap">
 				@Model.ViewCount views
 			</span>
 
-			<span class="small-pad-left">
+			<span class="small-pad-left nowrap">
 				@Model.ReplyCount
 				@if (Model.ReplyCount == 1) {
 					<text>reply</text>
 				}
 				else {
 					<text>replies</text>
-				}
-			</span>
-
-			<span class="small-pad-left">
-				Boards:
-				@if (Model.AssignedBoards.Any()) {
-					foreach (var board in Model.AssignedBoards) {
-						<a asp-action="@nameof(Topics.Index)" asp-controller="@nameof(Topics)" asp-route-id="@board.Id" class="small-button">@board.Name</a>
-					}
 				}
 			</span>
 		</p>
@@ -85,6 +76,14 @@
 	</section>
 </header>
 
+<header id="board-list" class="topic-header content-box pad gap-bottom clear-left">
+	@if (Model.AssignedBoards.Any()) {
+		foreach (var board in Model.AssignedBoards) {
+			<a asp-action="@nameof(Topics.Index)" asp-controller="@nameof(Topics)" asp-route-id="@board.Id" class="small-button light-text">@board.Name</a>
+		}
+	}
+</header>
+
 <div id="message-list">
 	@for (var i = 0; i < Model.Messages.Count(); i++) {
 		<partial name="../Messages/_DisplayMessage" for="@Model.Messages[i]" />
@@ -93,7 +92,7 @@
 
 <div id="loading-message" class="hidden pad-bottom font-small"><img src="~/images/loadingDots.gif" alt="Loading new message" title="Loading new message" /> Loading messages...</div>
 
-<footer id="topic-footer">
+<footer id="topic-footer" class="pad-left">
 	<ul class="inline pages">
 		<li class="hidden pointer unhide-pages more-pages-before">&#8230;</li>
 		@for (var i = 1; i <= Model.TotalPages; i++) {

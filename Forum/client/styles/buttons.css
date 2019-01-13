@@ -41,7 +41,7 @@ a.small-button {
 	border: 1px solid #253248;
 	border-radius: 2px;
 	box-shadow: none;
-	color: #e1edf3 !important;
+	color: #e1edf3;
 }
 
 	button.highlight,
@@ -49,7 +49,7 @@ a.small-button {
 	a.button.highlight,
 	.small-button.highlight,
 	a.small-button.highlight {
-		color: #000 !important;
+		color: #000;
 		border: 1px solid #7090c6 !important;
 		background: linear-gradient(0deg, #92abba, #e1edf3);
 		text-shadow: none;
@@ -73,3 +73,10 @@ a.small-button {
 		box-shadow: none;
 		background: #121212;
 	}
+
+.subdued-button,
+a.subdued-button {
+	border-color: #4d6690;
+	box-shadow: none;
+	background: transparent;
+}

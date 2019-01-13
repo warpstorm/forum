@@ -8,7 +8,11 @@
 	background-image: url("../../images/poseys.png")
 }
 
-#topic-header, #topic-footer, main > header, .message-container, #loading-message {
+.topic-header,
+#topic-footer,
+main > header,
+.message-container,
+#loading-message {
 	margin-left: 115px;
 }
 
@@ -25,25 +29,27 @@
 		max-width: 70%;
 	}
 
-@media only screen and (max-width: 480px) {
+@media only screen and (max-width: 768px) {
 	.user-avatar {
 		padding: 0;
 		width: 25px;
+		height: 25px;
 	}
-}
 
-#topic-header {
-	border: 2px solid #2a3951;
-}
+		.user-avatar img {
+			max-width: 25px;
+			max-height: 25px;
+		}
 
-@media only screen and (max-width: 480px) {
 	.message-container {
 		border-top-color: #7090c6;
 	}
 
-	.message-container,
+	.topic-header,
+	#topic-footer,
 	main > header,
-	#topic-header {
+	.message-container,
+	#loading-message {
 		margin-left: 0;
 	}
 }
@@ -135,7 +141,7 @@ blockquote.card {
 		max-height: 728px;
 	}
 
-@media only screen and (max-width: 480px) {
+@media only screen and (max-width: 768px) {
 	.embedded-video, .imgur-image {
 		padding: 5px;
 		margin: 15px 0;

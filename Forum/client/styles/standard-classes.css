@@ -1,37 +1,9 @@
-﻿.medium-resolution-show {
+﻿.mobile-only {
 	display: none;
-}
-
-.low-resolution-show {
-	display: none;
-}
-
-.mobile-show {
-	display: none;
-}
-
-@media only screen and (max-width: 1024px) {
-	.medium-resolution-show {
-		display: inherit;
-	}
-
-	.medium-resolution-hide {
-		display: none !important;
-	}
 }
 
 @media only screen and (max-width: 768px) {
-	.low-resolution-show {
-		display: inherit;
-	}
-
-	.low-resolution-hide {
-		display: none !important;
-	}
-}
-
-@media only screen and (max-width: 480px) {
-	.mobile-show {
+	.mobile-only {
 		display: inherit;
 	}
 
@@ -143,7 +115,9 @@ a.borderless * {
 	clear: right;
 }
 
-br.clear {
+br.clear,
+br.clear-left,
+br.clear-right {
 	font-size: 1px;
 	line-height: 1px;
 	margin: 0;
@@ -199,20 +173,28 @@ br.clear {
 	text-align: justify;
 }
 
-.subdued-text, .subdued-text a {
+.subdued-text, .subdued-text a, a.subdued-text {
 	color: #92abba;
 }
 
-	.subdued-text a:hover {
+	.subdued-text a:hover, a.subdued-text:hover {
 		color: #e1edf3;
 	}
 
-.dark-text, .dark-text a {
+.dark-text, .dark-text a, a.dark-text {
 	color: #516169;
 }
 
-	.dark-text a:hover {
+	.dark-text a:hover, a.dark-text:hover {
 		color: #92abba;
+	}
+
+.light-text, .light-text a, a.light-text {
+	color: #e1edf3;
+}
+
+	.light-text a:hover, a.light-text:hover {
+		color: #ffffff;
 	}
 
 .font-small {

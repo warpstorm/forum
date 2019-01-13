@@ -137,6 +137,8 @@ namespace Forum.Repositories {
 			var messagePreviews = new List<ItemModels.MessagePreview>();
 			var today = DateTime.Now.Date;
 
+			var boards = await BoardRepository.Records();
+
 			foreach (var messageId in messageIds) {
 				var message = messages.First(item => item.Id == messageId);
 				var postedBy = users.First(r => r.Id == message.PostedById);
@@ -157,15 +159,15 @@ namespace Forum.Repositories {
 				};
 
 				messagePreviews.Add(messagePreview);
-				
+
 				var lastMessageTime = message.TimePosted;
 
 				if (message.LastReplyId != 0) {
 					var lastReply = (from item in DbContext.Messages
-											where item.Id == message.LastReplyId
-											select new {
-												item.ShortPreview
-											}).FirstOrDefault();
+									 where item.Id == message.LastReplyId
+									 select new {
+										 item.ShortPreview
+									 }).FirstOrDefault();
 
 					if (lastReply != null) {
 						var lastReplyBy = users.FirstOrDefault(r => r.Id == message.LastReplyById);
@@ -188,6 +190,25 @@ namespace Forum.Repositories {
 				if (lastMessageTime > historyTimeLimit) {
 					messagePreview.Unread = GetUnreadLevel(message.Id, lastMessageTime);
 				}
+
+				var boardIdQuery = from messageBoard in DbContext.MessageBoards
+								   where messageBoard.MessageId == message.Id
+								   select messageBoard.BoardId;
+
+				var messageBoards = new List<Models.ViewModels.Boards.Items.IndexBoard>();
+
+				foreach (var boardId in boardIdQuery) {
+					var boardRecord = boards.Single(r => r.Id == boardId);
+
+					messageBoards.Add(new Models.ViewModels.Boards.Items.IndexBoard {
+						Id = boardRecord.Id.ToString(),
+						Name = boardRecord.Name,
+						Description = boardRecord.Description,
+						DisplayOrder = boardRecord.DisplayOrder,
+					});
+				}
+
+				messagePreview.Boards = messageBoards.OrderBy(r => r.DisplayOrder).ToList();
 			}
 
 			return messagePreviews;
@@ -266,7 +287,7 @@ namespace Forum.Repositories {
 
 			return messageIds;
 		}
-		
+
 		public int GetUnreadLevel(int messageId, DateTime lastMessageTime) {
 			var unread = 1;
 
