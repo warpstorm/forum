@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace Forum.Annotations {
+	[AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
 	public class MaxFileSizeAttribute : ValidationAttribute {
 		int MaxFileSize { get; }
 
