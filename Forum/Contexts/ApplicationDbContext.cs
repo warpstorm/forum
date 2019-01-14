@@ -2,12 +2,14 @@
 using Forum.Models.DataModels;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
+using Newtonsoft.Json;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Forum.Contexts {
 	public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, string> {
+		public DbSet<ActionLogItem> ActionLog { get; set; }
 		public DbSet<Board> Boards { get; set; }
 		public DbSet<BoardRole> BoardRoles { get; set; }
 		public DbSet<Bookmark> Bookmarks { get; set; }
@@ -64,6 +66,16 @@ namespace Forum.Contexts {
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder) {
 			base.OnModelCreating(modelBuilder);
+
+			modelBuilder.Entity<ActionLogItem>()
+				.HasIndex(r => r.UserId);
+
+			modelBuilder.Entity<ActionLogItem>()
+				.Property(r => r.Arguments)
+				.HasConversion(
+					v => JsonConvert.SerializeObject(v),
+					v => JsonConvert.DeserializeObject<Dictionary<string, object>>(v)
+				);
 
 			modelBuilder.Entity<ApplicationUser>()
 				.HasIndex(r => r.DisplayName);
@@ -128,7 +140,7 @@ namespace Forum.Contexts {
 				.HasIndex(r => new { r.MessageId, r.Type });
 
 			modelBuilder.Entity<Participant>()
-				.HasIndex(r => r.MessageId );
+				.HasIndex(r => r.MessageId);
 
 			modelBuilder.Entity<Participant>()
 				.HasIndex(r => r.UserId);

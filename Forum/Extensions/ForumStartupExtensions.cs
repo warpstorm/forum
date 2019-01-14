@@ -33,6 +33,7 @@ namespace Forum.Extensions {
 
 			services.AddTransient<IForumViewResult, ForumViewResult>();
 
+			services.AddScoped<ActionLogService>();
 			services.AddScoped<SetupService>();
 			services.AddScoped<Sidebar>();
 			services.AddScoped<GzipWebClient>();

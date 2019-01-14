@@ -3,7 +3,6 @@ using Forum.Contexts;
 using Forum.Errors;
 using Forum.Interfaces.Services;
 using Forum.Repositories;
-using Forum.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -60,6 +59,7 @@ namespace Forum.Controllers {
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
+		[ActionLog("{user} is viewing the topic index of {board}.")]
 		[HttpGet]
 		public async Task<IActionResult> Index(int id = 0, int pageId = 1, int unread = 0) {
 			var messageIds = await TopicRepository.GetIndexIds(id, pageId, unread);
@@ -85,6 +85,7 @@ namespace Forum.Controllers {
 			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
+		[Obsolete]
 		[HttpGet]
 		public async Task<IActionResult> IndexPartial(int id = 0, int pageId = 0, int unread = 0) {
 			var messageIds = await TopicRepository.GetIndexIds(id, pageId, unread);

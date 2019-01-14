@@ -25,5 +25,6 @@ namespace Forum.Models.DataModels {
 		public bool Poseys { get; set; }
 		public bool ShowFavicons { get; set; }
 		public int TopicsPerPage { get; set; }
+		public int LastActionLogItemId { get; set; }
 	}
 }
