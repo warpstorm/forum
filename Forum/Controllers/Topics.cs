@@ -85,29 +85,6 @@ namespace Forum.Controllers {
 			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
-		[Obsolete]
-		[HttpGet]
-		public async Task<IActionResult> IndexPartial(int id = 0, int pageId = 0, int unread = 0) {
-			var messageIds = await TopicRepository.GetIndexIds(id, pageId, unread);
-			var morePages = true;
-
-			if (messageIds.Count < UserContext.ApplicationUser.TopicsPerPage) {
-				morePages = false;
-			}
-
-			var topicPreviews = await TopicRepository.GetPreviews(messageIds);
-
-			var viewModel = new PageModels.TopicIndexPage {
-				BoardId = id,
-				UnreadFilter = unread,
-				CurrentPage = pageId,
-				Topics = topicPreviews,
-				MorePages = morePages,
-			};
-
-			return await ForumViewResult.ViewResult(this, viewModel);
-		}
-
 		[HttpGet]
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		public async Task<IActionResult> Merge(int id, int pageId = 1) {
