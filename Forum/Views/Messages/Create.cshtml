@@ -12,7 +12,7 @@
 						@for (var i = 0; i < category.Boards.Count; i++) {
 							var checkbox = Model.BoardId == category.Boards[i].Id ? "checked" : "unchecked";
 
-							<li class="hover-highlight pointer" toggle-board board-id="@category.Boards[i].Id">
+							<li class="hover-highlight pointer" toggle-board board-id="@category.Boards[i].Id" title="@category.Boards[i].Description">
 								<img src="~/images/checkbox_@(checkbox).png" board-flag="@category.Boards[i].Id" />
 								@category.Boards[i].Name
 							</li>
