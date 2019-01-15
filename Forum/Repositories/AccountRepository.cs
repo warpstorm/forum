@@ -105,7 +105,7 @@ namespace Forum.Repositories {
 		}
 		List<DataModels.ApplicationUser> _Records;
 
-		public async Task<List<ViewModels.Profile.OnlineUser>> GetOnlineList() {
+		public async Task<List<ViewModels.Account.OnlineUser>> GetOnlineList() {
 			// Users are considered "offline" after 5 minutes.
 			var onlineTimeLimit = DateTime.Now.AddMinutes(-5);
 			var onlineTodayTimeLimit = DateTime.Now.AddMinutes(-10080);
@@ -113,7 +113,7 @@ namespace Forum.Repositories {
 			var onlineUsersQuery = from user in await Records()
 								   where user.LastOnline >= onlineTodayTimeLimit
 								   orderby user.LastOnline descending
-								   select new ViewModels.Profile.OnlineUser {
+								   select new ViewModels.Account.OnlineUser {
 									   Id = user.Id,
 									   Name = user.DecoratedName,
 									   LastOnline = user.LastOnline,
