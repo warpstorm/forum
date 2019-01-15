@@ -59,7 +59,7 @@ namespace Forum.Controllers {
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
-		[ActionLog("{user} is viewing the topic index of {board}.")]
+		[ActionLog("is viewing the topic index of {board}.")]
 		[HttpGet]
 		public async Task<IActionResult> Index(int id = 0, int pageId = 1, int unread = 0) {
 			var messageIds = await TopicRepository.GetIndexIds(id, pageId, unread);
