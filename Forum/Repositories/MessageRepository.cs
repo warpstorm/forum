@@ -301,7 +301,7 @@ namespace Forum.Repositories {
 			}
 
 			var existingRecord = await DbContext.MessageThoughts
-				.SingleOrDefaultAsync(mt =>
+				.FirstOrDefaultAsync(mt =>
 					mt.MessageId == messageRecord.Id
 					&& mt.SmileyId == smileyRecord.Id
 					&& mt.UserId == UserContext.ApplicationUser.Id);
