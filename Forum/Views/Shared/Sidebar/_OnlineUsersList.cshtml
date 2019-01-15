@@ -5,14 +5,20 @@
 	<ul id="whos-online">
 		<li class="font-small subdued-text"><a asp-controller="@nameof(Account)" asp-action="@nameof(Account.Index)">View All Users</a></li>
 		@foreach (var onlineUser in Model) {
-			<li class="font-small subdued-text small-pad-top">
-				<p class="nowrap">
-					<a asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.History)" asp-route-id="@onlineUser.Id">@Html.Raw(onlineUser.Name)</a>
-					<passed-time class="font-tiny dark-text" time="@onlineUser.LastOnline" />
-				</p>
+			<li class="font-small subdued-text small-pad-top" clickable-link-parent>
 				@if (onlineUser.IsOnline) {
+					<p class="nowrap">
+						<a href="@onlineUser.LastActionUrl">@Html.Raw(onlineUser.Name)</a>
+						<passed-time class="font-tiny dark-text" time="@onlineUser.LastOnline" />
+					</p>
 					<p class="font-tiny dark-text small-pad-left">
-						@onlineUser.Action
+						@onlineUser.LastActionText
+					</p>
+				}
+				else {
+					<p class="nowrap">
+						<a asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.History)" asp-route-id="@onlineUser.Id">@Html.Raw(onlineUser.Name)</a>
+						<passed-time class="font-tiny dark-text" time="@onlineUser.LastOnline" />
 					</p>
 				}
 			</li>

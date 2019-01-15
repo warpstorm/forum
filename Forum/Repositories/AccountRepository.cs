@@ -131,7 +131,8 @@ namespace Forum.Repositories {
 					Name = user.DecoratedName,
 					LastOnline = user.LastOnline,
 					IsOnline = user.LastOnline > onlineTimeLimit,
-					Action = GetActionText(lastActionItem)
+					LastActionText = ActionLogItemText(lastActionItem),
+					LastActionUrl = ActionLogItemUrl(lastActionItem)
 			});
 			}
 
@@ -628,7 +629,7 @@ namespace Forum.Repositories {
 			});
 		}
 
-		public string GetActionText(DataModels.ActionLogItem logItem) {
+		public string ActionLogItemText(DataModels.ActionLogItem logItem) {
 			if (!(logItem is null)) {
 				var controller = Type.GetType($"Forum.Controllers.{logItem.Controller}");
 				var action = controller.GetMethod(logItem.Action);
@@ -643,6 +644,7 @@ namespace Forum.Repositories {
 			return string.Empty;
 		}
 
+		public string ActionLogItemUrl(DataModels.ActionLogItem logItem) => logItem is null ? string.Empty : UrlHelper.Action(logItem.Action, logItem.Controller, logItem.Arguments);
 		public string EmailConfirmationLink(string userId, string code) => UrlHelper.AbsoluteAction(nameof(Account.ConfirmEmail), nameof(Account), new { userId, code });
 		public string ResetPasswordCallbackLink(string userId, string code) => UrlHelper.AbsoluteAction(nameof(Account.ResetPassword), nameof(Account), new { userId, code });
 	}

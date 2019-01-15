@@ -7,6 +7,7 @@ namespace Forum.Models.ViewModels.Account {
 		public DateTime LastOnline { get; set; }
 		public bool IsOnline { get; set; }
 		public int LastActionLogItemId { get; set; }
-		public string Action { get; set; }
+		public string LastActionUrl { get; set; }
+		public string LastActionText { get; set; }
 	}
 }
