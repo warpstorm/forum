@@ -1,4 +1,5 @@
-﻿using Forum.Interfaces.Services;
+﻿using Forum.Annotations;
+using Forum.Interfaces.Services;
 using Forum.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,6 +20,7 @@ namespace Forum.Controllers {
 			ForumViewResult = forumViewResult;
 		}
 
+		[ActionLog]
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
 		public async Task<IActionResult> Index() {

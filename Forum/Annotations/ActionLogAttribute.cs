@@ -1,6 +1,4 @@
-﻿using Forum.Contexts;
-using Forum.Filters;
-using Forum.Models.DataModels;
+﻿using Forum.Models.DataModels;
 using Forum.Services;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -11,10 +9,11 @@ using System.Threading.Tasks;
 namespace Forum.Annotations {
 	[AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
 	public class ActionLogAttribute : ActionFilterAttribute {
-		public bool IsReusable => false;
 		public string Description { get; set; }
 
-		public ActionLogAttribute(string description) {
+		public ActionLogAttribute(
+			string description = "is doing stuff."
+		) {
 			Description = description;
 		}
 
@@ -32,9 +31,7 @@ namespace Forum.Annotations {
 			await service.Add(new ActionLogItem {
 				Action = context.ActionDescriptor.RouteValues["action"],
 				Controller = context.ActionDescriptor.RouteValues["controller"],
-				Arguments = context.ActionArguments,
-				Timestamp = DateTime.Now,
-				Description = Description,
+				Arguments = context.ActionArguments
 			});
 
 			await next();

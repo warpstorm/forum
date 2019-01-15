@@ -1,4 +1,5 @@
-﻿using Forum.Interfaces.Services;
+﻿using Forum.Annotations;
+using Forum.Interfaces.Services;
 using Forum.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
@@ -18,6 +19,7 @@ namespace Forum.Controllers {
 			ForumViewResult = forumViewResult;
 		}
 
+		[ActionLog("is viewing their notifications.")]
 		[HttpGet]
 		public async Task<IActionResult> Index() {
 			var showRead = false;

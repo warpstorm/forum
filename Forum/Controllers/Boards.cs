@@ -1,4 +1,5 @@
-﻿using Forum.Interfaces.Services;
+﻿using Forum.Annotations;
+using Forum.Interfaces.Services;
 using Forum.Repositories;
 using Forum.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -25,6 +26,7 @@ namespace Forum.Controllers {
 			ForumViewResult = forumViewResult;
 		}
 
+		[ActionLog("is viewing the board index.")]
 		[HttpGet]
 		public async Task<IActionResult> Index() {
 			var viewModel = new PageViewModels.IndexPage {
@@ -38,6 +40,7 @@ namespace Forum.Controllers {
 			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
+		[ActionLog("is managing the board index.")]
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
 		public async Task<IActionResult> Manage() {
@@ -48,6 +51,7 @@ namespace Forum.Controllers {
 			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
+		[ActionLog("is creating a board.")]
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
 		public async Task<IActionResult> Create() {
@@ -84,6 +88,7 @@ namespace Forum.Controllers {
 			}
 		}
 
+		[ActionLog("is editing a board.")]
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
 		public async Task<IActionResult> Edit(int id) {

@@ -1,21 +1,28 @@
 ﻿using Forum.Contexts;
 using Forum.Models.DataModels;
+using Forum.Repositories;
+using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Forum.Services {
 	public class ActionLogService {
-		public ApplicationDbContext DbContext { get; set; }
-		public UserContext UserContext { get; set; }
+		ApplicationDbContext DbContext { get; set; }
+		UserContext UserContext { get; set; }
+		AccountRepository AccountRepository { get; set; }
 
 		public ActionLogService(
 			ApplicationDbContext dbContext,
-			UserContext userContext
+			UserContext userContext,
+			AccountRepository accountRepository
 		) {
 			DbContext = dbContext;
 			UserContext = userContext;
+			AccountRepository = accountRepository;
 		}
 
 		public async Task Add(ActionLogItem logItem) {
+			logItem.Timestamp = DateTime.Now;
 			logItem.UserId = UserContext.ApplicationUser.Id;
 
 			// Check if user is logged in or not
@@ -29,6 +36,7 @@ namespace Forum.Services {
 			await DbContext.SaveChangesAsync();
 
 			UserContext.ApplicationUser.LastActionLogItemId = logItem.Id;
+			(await AccountRepository.Records()).First(r => r.Id == UserContext.ApplicationUser.Id).LastActionLogItemId = logItem.Id;
 
 			await DbContext.SaveChangesAsync();
 		}

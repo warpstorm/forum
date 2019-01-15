@@ -1,4 +1,5 @@
-﻿using Forum.Errors;
+﻿using Forum.Annotations;
+using Forum.Errors;
 using Forum.Extensions;
 using Forum.Interfaces.Services;
 using Forum.Repositories;
@@ -37,6 +38,7 @@ namespace Forum.Controllers {
 		}
 
 
+		[ActionLog]
 		[HttpGet]
 		public async Task<IActionResult> Index() {
 			var viewModel = new PageViewModels.IndexPage();
@@ -79,6 +81,7 @@ namespace Forum.Controllers {
 			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
+		[ActionLog]
 		[HttpGet]
 		public async Task<IActionResult> Create() {
 			var viewModel = new PageViewModels.CreatePage();
@@ -105,6 +108,7 @@ namespace Forum.Controllers {
 			}
 		}
 
+		[ActionLog]
 		[HttpGet]
 		public async Task<IActionResult> Edit(string id) {
 			var viewModel = GetEditPageModel(id);
@@ -140,6 +144,7 @@ namespace Forum.Controllers {
 			return ForumViewResult.RedirectToReferrer(this);
 		}
 
+		[ActionLog]
 		[HttpGet]
 		public async Task<IActionResult> UserList(string id) {
 			var viewModel = await RoleRepository.UserList(id);

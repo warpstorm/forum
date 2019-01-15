@@ -59,7 +59,7 @@ namespace Forum.Controllers {
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
-		[ActionLog("is viewing the topic index of {board}.")]
+		[ActionLog("is viewing the topic index.")]
 		[HttpGet]
 		public async Task<IActionResult> Index(int id = 0, int pageId = 1, int unread = 0) {
 			var messageIds = await TopicRepository.GetIndexIds(id, pageId, unread);
@@ -124,6 +124,7 @@ namespace Forum.Controllers {
 			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
+		[ActionLog("is viewing their bookmarks.")]
 		[HttpGet]
 		public async Task<IActionResult> Bookmarks() {
 			var messageIds = (await BookmarkRepository.Records()).Select(r => r.MessageId).ToList();
@@ -143,6 +144,7 @@ namespace Forum.Controllers {
 			return await ForumViewResult.RedirectFromService(this, serviceResponse);
 		}
 
+		[ActionLog("is viewing a topic.")]
 		[HttpGet]
 		public async Task<IActionResult> Display(int id, int pageId = 1, int target = -1) {
 			ViewData["Smileys"] = await SmileyRepository.GetSelectorList();

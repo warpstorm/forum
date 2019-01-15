@@ -28,6 +28,7 @@ namespace Forum.Controllers {
 			ForumViewResult = forumViewResult;
 		}
 
+		[ActionLog]
 		[HttpGet]
 		public async Task<IActionResult> Index() {
 			var records = DbContext.StrippedUrls.ToList();

@@ -10,6 +10,11 @@
 					<a asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.History)" asp-route-id="@onlineUser.Id">@Html.Raw(onlineUser.Name)</a>
 					<passed-time class="font-tiny dark-text" time="@onlineUser.LastOnline" />
 				</p>
+				@if (onlineUser.IsOnline) {
+					<p class="font-tiny dark-text small-pad-left">
+						@onlineUser.Action
+					</p>
+				}
 			</li>
 		}
 	</ul>

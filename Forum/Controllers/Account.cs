@@ -1,4 +1,5 @@
-﻿using Forum.Contexts;
+﻿using Forum.Annotations;
+using Forum.Contexts;
 using Forum.Enums;
 using Forum.Errors;
 using Forum.Extensions;
@@ -46,6 +47,7 @@ namespace Forum.Controllers {
 			Log = log;
 		}
 
+		[ActionLog("is viewing the user list.")]
 		[HttpGet]
 		public async Task<IActionResult> Index() {
 			var viewModel = new ViewModels.Account.IndexPage();
@@ -66,6 +68,7 @@ namespace Forum.Controllers {
 			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
+		[ActionLog("is viewing a profile.")]
 		[HttpGet]
 		public async Task<IActionResult> Details(string id) {
 			var userRecord = id is null ? UserContext.ApplicationUser : await UserManager.FindByIdAsync(id);

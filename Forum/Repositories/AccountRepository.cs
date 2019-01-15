@@ -1,4 +1,5 @@
-﻿using Forum.Contexts;
+﻿using Forum.Annotations;
+using Forum.Contexts;
 using Forum.Controllers;
 using Forum.Errors;
 using Forum.Extensions;
@@ -113,14 +114,28 @@ namespace Forum.Repositories {
 			var onlineUsersQuery = from user in await Records()
 								   where user.LastOnline >= onlineTodayTimeLimit
 								   orderby user.LastOnline descending
-								   select new ViewModels.Account.OnlineUser {
-									   Id = user.Id,
-									   Name = user.DecoratedName,
-									   LastOnline = user.LastOnline,
-									   IsOnline = user.LastOnline > onlineTimeLimit
+								   select new {
+									   user.Id,
+									   user.DecoratedName,
+									   user.LastOnline,
+									   user.LastActionLogItemId
 								   };
 
-			return onlineUsersQuery.ToList();
+			var onlineUsers = new List<ViewModels.Account.OnlineUser>();
+
+			foreach (var user in onlineUsersQuery) {
+				var lastActionItem = await DbContext.ActionLog.FindAsync(user.LastActionLogItemId);
+
+				onlineUsers.Add(new ViewModels.Account.OnlineUser {
+					Id = user.Id,
+					Name = user.DecoratedName,
+					LastOnline = user.LastOnline,
+					IsOnline = user.LastOnline > onlineTimeLimit,
+					Action = GetActionText(lastActionItem)
+			});
+			}
+
+			return onlineUsers;
 		}
 
 		public async Task<ServiceModels.ServiceResponse> Login(InputModels.LoginInput input) {
@@ -611,6 +626,21 @@ namespace Forum.Repositories {
 				HttpContextAccessor.HttpContext.Session.CommitAsync(),
 				SignInManager.SignOutAsync()
 			});
+		}
+
+		public string GetActionText(DataModels.ActionLogItem logItem) {
+			if (!(logItem is null)) {
+				var controller = Type.GetType($"Forum.Controllers.{logItem.Controller}");
+				var action = controller.GetMethod(logItem.Action);
+
+				var attribute = action.GetCustomAttributes(typeof(ActionLogAttribute), false).FirstOrDefault() as ActionLogAttribute;
+
+				if (!(attribute is null)) {
+					return attribute.Description;
+				}
+			}
+
+			return string.Empty;
 		}
 
 		public string EmailConfirmationLink(string userId, string code) => UrlHelper.AbsoluteAction(nameof(Account.ConfirmEmail), nameof(Account), new { userId, code });

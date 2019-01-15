@@ -46,6 +46,7 @@ namespace Forum.Controllers {
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
+		[ActionLog("is starting a new topic.")]
 		[HttpGet]
 		public async Task<IActionResult> Create(int id = 0) {
 			ViewData["Smileys"] = await SmileyRepository.GetSelectorList();
@@ -105,7 +106,7 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> Reply(int id = 0) {
 			ViewData["Smileys"] = await SmileyRepository.GetSelectorList();
 
-			var record = await DbContext.Messages.SingleOrDefaultAsync(m => m.Id == id);
+			var record = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == id);
 
 			if (record is null) {
 				throw new HttpNotFoundError();
@@ -121,7 +122,7 @@ namespace Forum.Controllers {
 
 		[HttpGet]
 		public async Task<IActionResult> ReplyPartial(int id) {
-			var record = await DbContext.Messages.SingleOrDefaultAsync(m => m.Id == id);
+			var record = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == id);
 
 			if (record is null) {
 				throw new HttpNotFoundError();
@@ -174,11 +175,12 @@ namespace Forum.Controllers {
 		}
 
 
+		[ActionLog("is editing a message.")]
 		[HttpGet]
 		public async Task<IActionResult> Edit(int id) {
 			ViewData["Smileys"] = await SmileyRepository.GetSelectorList();
 
-			var record = await DbContext.Messages.SingleOrDefaultAsync(m => m.Id == id);
+			var record = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == id);
 
 			if (record is null) {
 				throw new HttpNotFoundError();
@@ -195,7 +197,7 @@ namespace Forum.Controllers {
 
 		[HttpGet]
 		public async Task<IActionResult> EditPartial(int id) {
-			var record = await DbContext.Messages.SingleOrDefaultAsync(m => m.Id == id);
+			var record = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == id);
 
 			if (record is null) {
 				throw new HttpNotFoundError();
@@ -266,6 +268,7 @@ namespace Forum.Controllers {
 			return ForumViewResult.RedirectToReferrer(this);
 		}
 
+		[ActionLog("is viewing a user's message history.")]
 		[HttpGet]
 		public async Task<IActionResult> History(string id, int pageId = 1) {
 			if (string.IsNullOrEmpty(id)) {
@@ -300,10 +303,12 @@ namespace Forum.Controllers {
 			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
+		[ActionLog]
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
 		public async Task<IActionResult> Admin(InputModels.Continue input = null) => await ForumViewResult.ViewResult(this);
 
+		[ActionLog]
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
 		public async Task<IActionResult> ProcessMessages(InputModels.Continue input) {
@@ -336,6 +341,7 @@ namespace Forum.Controllers {
 			return await ForumViewResult.ViewResult(this, "Delay", viewModel);
 		}
 
+		[ActionLog]
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
 		public async Task<IActionResult> ReprocessMessages(InputModels.Continue input) {
@@ -368,6 +374,7 @@ namespace Forum.Controllers {
 			return await ForumViewResult.ViewResult(this, "Delay", viewModel);
 		}
 
+		[ActionLog]
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
 		public async Task<IActionResult> RecountReplies(InputModels.Continue input) {
@@ -399,6 +406,7 @@ namespace Forum.Controllers {
 			return await ForumViewResult.ViewResult(this, "Delay", viewModel);
 		}
 
+		[ActionLog]
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
 		public async Task<IActionResult> RebuildParticipants(InputModels.Continue input) {

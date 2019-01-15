@@ -26,6 +26,7 @@ namespace Forum.Controllers {
 			ForumViewResult = forumViewResult;
 		}
 
+		[ActionLog]
 		[HttpGet]
 		public async Task<IActionResult> Index() {
 			var viewModel = new ViewModels.IndexPage();
@@ -47,6 +48,7 @@ namespace Forum.Controllers {
 			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
+		[ActionLog]
 		[HttpGet]
 		public async Task<IActionResult> Create() {
 			var viewModel = new ViewModels.CreatePage();
