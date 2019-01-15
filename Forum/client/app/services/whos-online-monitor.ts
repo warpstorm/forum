@@ -86,6 +86,7 @@ export class WhosOnlineMonitor {
 			this.settings = getSettings();
 			this.updateChicletTimes();
 			this.bindChicletMonitor();
+			this.app.navigation.addListeners();
 						
 			setTimeout(() => {
 				this.recentRequest = false;
