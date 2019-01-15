@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace Forum.Repositories {
@@ -632,13 +633,17 @@ namespace Forum.Repositories {
 		public string ActionLogItemText(DataModels.ActionLogItem logItem) {
 			if (!(logItem is null)) {
 				var controller = Type.GetType($"Forum.Controllers.{logItem.Controller}");
-				var action = controller.GetMethod(logItem.Action);
 
-				var attribute = action.GetCustomAttributes(typeof(ActionLogAttribute), false).FirstOrDefault() as ActionLogAttribute;
+				try {
+					var action = controller.GetMethod(logItem.Action);
 
-				if (!(attribute is null)) {
-					return attribute.Description;
+					var attribute = action.GetCustomAttributes(typeof(ActionLogAttribute), false).FirstOrDefault() as ActionLogAttribute;
+
+					if (!(attribute is null)) {
+						return attribute.Description;
+					}
 				}
+				catch (AmbiguousMatchException) { }
 			}
 
 			return string.Empty;
