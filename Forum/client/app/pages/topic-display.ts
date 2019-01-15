@@ -6,11 +6,11 @@ import { HttpMethod } from "../definitions/http-method";
 
 import { HubMessage } from "../models/hub-message";
 import { ModelErrorResponse } from "../models/model-error-response";
-import { TopicDisplaySettings } from "../models/topic-display-settings";
 import { TokenRequestResponse } from "../models/token-request-response";
 import { XhrOptions } from "../models/xhr-options";
 
-import { TopicDisplayPartialSettings } from "../models/topic-display-partial-settings";
+import { TopicDisplaySettings } from "../models/page-settings/topic-display-settings";
+import { TopicDisplayPartialSettings } from "../models/page-settings/topic-display-partial-settings";
 
 function getSettings(): TopicDisplaySettings {
 	let genericWindow = <any>window;

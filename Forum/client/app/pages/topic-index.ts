@@ -4,7 +4,7 @@ import { App } from '../app';
 import { Xhr } from '../services/xhr';
 
 import { XhrOptions } from '../models/xhr-options';
-import { TopicIndexSettings } from '../models/topic-index-settings';
+import { TopicIndexSettings } from '../models/page-settings/topic-index-settings';
 
 function getSettings(): TopicIndexSettings {
 	let genericWindow = <any>window;
