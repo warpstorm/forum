@@ -71,15 +71,21 @@ namespace Forum.Repositories {
 				var birthdayCakeImg = @"<img src=""/images/hbd.png"" alt=""Happy birthday!"" title=""Happy birthday!"" />";
 
 				var onlineTimeLimit = DateTime.Now.AddMinutes(-5);
-				var onlineChiclet = @"<span class=""whos-online-chiclet chiclet chiclet-green"" time=""**TIME**"" title=""This user is online!""></span>";
+				var onlineChiclet = @"<span class=""whos-online-chiclet chiclet chiclet-green"" time=""{0}"" user=""{1}""></span>";
+				var offlineChiclet = @"<span class=""whos-online-chiclet chiclet chiclet-gray"" time=""{0}"" user=""{1}""></span>";
 
 				foreach (var user in _Records) {
 					user.DecoratedName = string.Empty;
 
+					var lastOnlineTime = user.LastOnline.ToHtmlLocalTimeString();
 					var isOnline = user.LastOnline >= onlineTimeLimit;
 
 					if (isOnline) {
-						var personalizedChiclet = onlineChiclet.Replace("**TIME**", user.LastOnline.ToHtmlLocalTimeString());
+						var personalizedChiclet = string.Format(onlineChiclet, lastOnlineTime, user.Id);
+						user.DecoratedName += $"{personalizedChiclet} ";
+					}
+					else {
+						var personalizedChiclet = string.Format(offlineChiclet, lastOnlineTime, user.Id);
 						user.DecoratedName += $"{personalizedChiclet} ";
 					}
 
@@ -110,7 +116,8 @@ namespace Forum.Repositories {
 								   select new ViewModels.Profile.OnlineUser {
 									   Id = user.Id,
 									   Name = user.DecoratedName,
-									   LastOnline = user.LastOnline
+									   LastOnline = user.LastOnline,
+									   IsOnline = user.LastOnline > onlineTimeLimit
 								   };
 
 			return onlineUsersQuery.ToList();

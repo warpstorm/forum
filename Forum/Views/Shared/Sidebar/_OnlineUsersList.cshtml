@@ -1,14 +1,28 @@
 ﻿@model List<ViewModels.Profile.OnlineUser>
 
-<div sidebar="whos-online">
+<div id="sidebar-whos-online">
 	<h4>Who's online <span class="font-small subdued-text">(@Model.Count)</span></h4>
 	<ul id="whos-online">
 		<li class="font-small subdued-text"><a asp-controller="@nameof(Account)" asp-action="@nameof(Account.Index)">View All Users</a></li>
 		@foreach (var onlineUser in Model) {
-			<li class="font-small subdued-text nowrap small-pad-top" clickable-link-parent>
-				<a asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.History)" asp-route-id="@onlineUser.Id">@Html.Raw(onlineUser.Name)</a>
-				<passed-time class="font-tiny dark-text" time="@onlineUser.LastOnline" />
+			<li class="font-small subdued-text small-pad-top">
+				<p class="nowrap">
+					<a asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.History)" asp-route-id="@onlineUser.Id">@Html.Raw(onlineUser.Name)</a>
+					<passed-time class="font-tiny dark-text" time="@onlineUser.LastOnline" />
+				</p>
 			</li>
 		}
 	</ul>
 </div>
+
+<script>
+	window.users = [
+		@foreach(var onlineUser in Model) {
+			@:	{
+			@:		id: '@onlineUser.Id',
+			@:		time: '@onlineUser.LastOnline.ToHtmlLocalTimeString()',
+			@:		isOnline: ('@onlineUser.IsOnline' == 'True')
+			@:	},
+		}
+	];
+</script>

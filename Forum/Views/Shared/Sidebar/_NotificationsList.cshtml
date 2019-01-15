@@ -1,6 +1,6 @@
 ﻿@model List<ViewModels.Notifications.Items.IndexItem>
 
-<div sidebar="notifications">
+<div id="sidebar-notifications">
 	<h4><a asp-controller="@nameof(Notifications)" asp-action="@nameof(Notifications.Index)">Notifications</a></h4>
 	<ul class="gap-bottom font-small subdued-text">
 		@if (Model.Any()) {

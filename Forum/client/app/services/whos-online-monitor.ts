@@ -4,17 +4,29 @@ import { App } from "../app";
 import { Xhr } from "./xhr";
 
 import { XhrOptions } from "../models/xhr-options";
+import { WhosOnlineMonitorSettings } from "../models/page-settings/whos-online-monitor-settings";
+
+function getSettings(): WhosOnlineMonitorSettings {
+	let genericWindow = <any>window;
+
+	return new WhosOnlineMonitorSettings({
+		users: genericWindow.users
+	});
+}
 
 export class WhosOnlineMonitor {
+	private settings: WhosOnlineMonitorSettings;
 	private recentRequest: boolean = false;
 
 	constructor(private doc: Document, private app: App) {
 		throwIfNull(doc, 'doc');
 		throwIfNull(app, 'app');
+
+		this.settings = getSettings();
 	}
 
 	init(): void {
-		if (document.querySelector("[sidebar='whos-online']")) {
+		if (document.querySelector("#sidebar-whos-online")) {
 			if (this.app.hub) {
 				this.bindHubActions();
 			}
@@ -23,7 +35,7 @@ export class WhosOnlineMonitor {
 		}
 	}
 
-	bindHubActions = () => {
+	bindHubActions(): void {
 		if (!this.app.hub) {
 			throw new Error('Hub not defined.');
 		}
@@ -31,8 +43,8 @@ export class WhosOnlineMonitor {
 		this.app.hub.on('whos-online', this.hubWhosOnline);
 	}
 
-	bindChicletMonitor = () => {
-		document.querySelectorAll('.whos-online-chiclet').forEach(element => {
+	bindChicletMonitor(): void {
+		this.doc.querySelectorAll('.whos-online-chiclet').forEach(element => {
 			let chicletTimeValue = element.getAttribute('time');
 
 			if (chicletTimeValue) {
@@ -44,17 +56,24 @@ export class WhosOnlineMonitor {
 				let difference = expiration.getTime() - new Date().getTime();
 
 				setTimeout(() => {
-					element.classList.add('hidden');
+					element.classList.remove('chiclet-green');
+					element.classList.add('chiclet-gray');
 				}, difference);
 			}
 		});
 	}
 
-	hubWhosOnline = async () => {
-		let self = this;
+	updateChicletTimes(): void {
+		this.settings.users.forEach(user => {
+			this.doc.querySelectorAll(`.whos-online-chiclet[user="${user.id}"]`).forEach(element => {
+				element.setAttribute('time', user.time);
+			});
+		});
+	}
 
-		if (!self.recentRequest) {
-			self.recentRequest = true;
+	hubWhosOnline = async () => {
+		if (!this.recentRequest) {
+			this.recentRequest = true;
 
 			let requestOptions = new XhrOptions({
 				method: HttpMethod.Get,
@@ -62,26 +81,14 @@ export class WhosOnlineMonitor {
 				responseType: 'document'
 			});
 
-			let xhrResult = await Xhr.request(requestOptions);
+			await Xhr.requestPartialView(requestOptions, this.doc);
 
-			let resultDocument = <HTMLElement>(<Document>xhrResult.response).documentElement;
-			let resultBody = <HTMLBodyElement>resultDocument.querySelector('body');
-			let resultBodyElements = resultBody.childNodes;
-			let targetElement = <Element>self.doc.querySelector(`div[sidebar="whos-online"]`);
-
-			resultBodyElements.forEach(node => {
-				let element = node as Element;
-
-				if (element && element.tagName && element.tagName.toLowerCase() == 'div') {
-					targetElement.after(element);
-					targetElement.remove();
-				}
-			});
-
+			this.settings = getSettings();
+			this.updateChicletTimes();
 			this.bindChicletMonitor();
 						
 			setTimeout(() => {
-				self.recentRequest = false;
+				this.recentRequest = false;
 			}, 10000);
 		}
 	}

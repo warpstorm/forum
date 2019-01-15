@@ -403,6 +403,7 @@ br.clear-right {
 	width: 5px;
 	display: inline-block;
 	border-radius: 2px;
+	vertical-align: middle;
 }
 
 .chiclet-green {
@@ -411,6 +412,10 @@ br.clear-right {
 
 .chiclet-gold {
 	background-color: #ffd800;
+}
+
+.chiclet-gray {
+	background-color: #516169;
 }
 
 .menu-wrapper {
