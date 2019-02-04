@@ -8,10 +8,10 @@
 	</div>
 
 	<div class="half inline align-middle border-left pad">
-		<p class="subdued-text font-small">Welcome back!</p>
+		<p class="subdued-text font-small">Hi, if you're here, then there was a problem with the <a asp-controller="@nameof(Account)" asp-action="@nameof(Account.Login)">standard login page</a>.</p>
 		<form method="post"
 			  asp-controller="@nameof(Account)"
-			  asp-action="@nameof(Account.Login)"
+			  asp-action="@nameof(Account.LoginClassic)"
 			  asp-route-returnurl="@ViewData["Referrer"]">
 
 			<div asp-validation-summary="All" class="error"></div>
@@ -28,22 +28,16 @@
 				<dt><input asp-for="@Model.RememberMe" /> Remember Me</dt>
 			</dl>
 
+			<partial name="_Recaptcha2" />
+
 			<p><button>Log in</button></p>
 			<p class="subdued-text font-small pad-top"><a asp-action="@nameof(Account.ForgotPassword)">Forgot your password?</a></p>
-
-			<partial name="_Recaptcha3" />
 		</form>
 	</div>
 </section>
 
 @{ViewData["Title"] = "Warpstorm";}
 @section Header {Login}
-
-@section HeadScripts {
-	<environment exclude="Development">
-		<script src="https://www.google.com/recaptcha/api.js?render=@RecaptchaOptions.Value.Recaptcha3SiteKey"></script>
-	</environment>
-}
 
 @section Styles {
 	<link rel="stylesheet" href="~/styles/login.css" asp-append-version="true" />

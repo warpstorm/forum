@@ -237,6 +237,39 @@ namespace Forum.Controllers {
 			return await FailureCallback();
 
 			async Task<IActionResult> FailureCallback() {
+				return await Task.Run(() => {
+					var classicLogin = Url.Action(nameof(LoginClassic));
+					return ForumViewResult.RedirectToLocal(this, classicLogin);
+				});
+			}
+		}
+
+		[HttpGet]
+		[AllowAnonymous]
+		public async Task<IActionResult> LoginClassic() {
+			if (UserContext.IsAuthenticated) {
+				return Redirect("/");
+			}
+
+			await AccountRepository.SignOut();
+
+			var viewModel = new ViewModels.Account.LoginPage();
+			return await ForumViewResult.ViewResult(this, viewModel);
+		}
+
+		[HttpPost]
+		[AllowAnonymous]
+		[ValidateAntiForgeryToken]
+		[ValidateRecaptcha2]
+		public async Task<IActionResult> LoginClassic(InputModels.LoginInput input) {
+			if (ModelState.IsValid) {
+				var serviceResponse = await AccountRepository.Login(input);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+			}
+
+			return await FailureCallback();
+
+			async Task<IActionResult> FailureCallback() {
 				if (UserContext.IsAuthenticated) {
 					return Redirect("/");
 				}

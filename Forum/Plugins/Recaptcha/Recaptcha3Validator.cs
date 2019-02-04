@@ -41,7 +41,7 @@ namespace Forum.Plugins.Recaptcha {
 			var validatorResponse = JsonConvert.DeserializeObject<Recaptcha3ValidatorResponse>(responseText);
 
 			if (validatorResponse.Score < 0.5) {
-				throw new HttpBadRequestError("You appear to be a bot. Contact me if this is wrong.");
+				throw new HttpBadRequestError("The automated recaptcha says there's a chance you're a bot. Please try using this alternative login page and try the manual recaptcha check.");
 			}
 
 			if (!validatorResponse.Success) {
