@@ -4,11 +4,11 @@ using System;
 using System.Threading.Tasks;
 
 namespace Forum.Plugins.Recaptcha {
-	public class ValidateRecaptchaActionFilter : IAsyncAuthorizationFilter {
-		IRecaptchaValidator RecaptchaValidator { get; }
+	public class ValidateRecaptcha2ActionFilter : IAsyncAuthorizationFilter {
+		IRecaptcha2Validator RecaptchaValidator { get; }
 
-		public ValidateRecaptchaActionFilter(
-			IRecaptchaValidator recaptchaValidator
+		public ValidateRecaptcha2ActionFilter(
+			IRecaptcha2Validator recaptchaValidator
 		) {
 			RecaptchaValidator = recaptchaValidator;
 		}

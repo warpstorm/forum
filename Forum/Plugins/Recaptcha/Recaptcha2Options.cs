@@ -1,5 +1,5 @@
 ﻿namespace Forum.Plugins.Recaptcha {
-	public class RecaptchaOptions {
+	public class Recaptcha2Options {
 		public string RecaptchaSiteKey { get; set; }
 		public string RecaptchaSecretKey { get; set; }
 	}

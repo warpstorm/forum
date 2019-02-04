@@ -4,13 +4,13 @@ using System;
 
 namespace Forum.Plugins.Recaptcha {
 	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-	public class ValidateRecaptchaAttribute : Attribute, IFilterFactory, IOrderedFilter {
+	public class ValidateRecaptcha2Attribute : Attribute, IFilterFactory, IOrderedFilter {
 		public int Order { get; set; }
 		public bool IsReusable => true;
 
 		/// <summary>
 		/// Returns an instance from the IOC container. Cleaner than using a ServiceFilterAttribute.
 		/// </summary>
-		public IFilterMetadata CreateInstance(IServiceProvider serviceProvider) => serviceProvider.GetRequiredService<ValidateRecaptchaActionFilter>();
+		public IFilterMetadata CreateInstance(IServiceProvider serviceProvider) => serviceProvider.GetRequiredService<ValidateRecaptcha2ActionFilter>();
 	}
 }

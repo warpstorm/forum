@@ -8,14 +8,14 @@ using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace Forum.Plugins.Recaptcha {
-	public class RecaptchaValidator : IRecaptchaValidator {
+	public class Recaptcha2Validator : IRecaptcha2Validator {
 		public string Response { get; }
 
 		HttpClient HttpClient { get; }
-		RecaptchaOptions Options { get; }
+		Recaptcha2Options Options { get; }
 
-		public RecaptchaValidator(
-			IOptions<RecaptchaOptions> optionsAccessor
+		public Recaptcha2Validator(
+			IOptions<Recaptcha2Options> optionsAccessor
 		) {
 			HttpClient = new HttpClient(new HttpClientHandler()) {
 				Timeout = TimeSpan.FromSeconds(3)
@@ -40,7 +40,7 @@ namespace Forum.Plugins.Recaptcha {
 
 			var responseText = await requestResponse.Content.ReadAsStringAsync();
 
-			var validatorResponse = JsonConvert.DeserializeObject<RecaptchaValidatorResponse>(responseText);
+			var validatorResponse = JsonConvert.DeserializeObject<Recaptcha2ValidatorResponse>(responseText);
 
 			if (!validatorResponse.Success) {
 				var exceptionMessage = $"There was a problem validating the recaptcha. Error code(s) were:\n{string.Join("\n", validatorResponse.ErrorCodes)}\n";

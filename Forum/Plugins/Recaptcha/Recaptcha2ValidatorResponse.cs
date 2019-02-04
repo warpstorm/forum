@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 
 namespace Forum.Plugins.Recaptcha {
-	public class RecaptchaValidatorResponse {
+	public class Recaptcha2ValidatorResponse {
 		[JsonProperty("hostname")]
 		public string Hostname { get; set; }
 
