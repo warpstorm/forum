@@ -14,23 +14,21 @@ namespace Forum.Plugins.Recaptcha {
 		}
 
 		public async Task OnAuthorizationAsync(AuthorizationFilterContext context) {
-			if (context.HttpContext.Request.IsLocal()) {
-				return;
-			}
+			if (!context.HttpContext.Request.IsLocal()) {
+				var form = await context.HttpContext.Request.ReadFormAsync();
+				var recaptchaResponse = form["g-recaptcha-response"];
+				var ipAddress = context.HttpContext.Connection?.RemoteIpAddress?.ToString();
 
-			var form = await context.HttpContext.Request.ReadFormAsync();
-			var recaptchaResponse = form["g-recaptcha-response"];
-			var ipAddress = context.HttpContext.Connection?.RemoteIpAddress?.ToString();
+				if (string.IsNullOrEmpty(recaptchaResponse)) {
+					context.ModelState.AddModelError("g-recaptcha-response", "The recaptcha response appears empty.");
+				}
 
-			if (string.IsNullOrEmpty(recaptchaResponse)) {
-				context.ModelState.AddModelError("g-recaptcha-response", "The recaptcha response appears empty.");
-			}
-
-			try {
-				await RecaptchaValidator.Validate(recaptchaResponse, ipAddress);
-			}
-			catch (Exception e) {
-				context.ModelState.AddModelError("g-recaptcha-response", e.Message);
+				try {
+					await RecaptchaValidator.Validate(recaptchaResponse, ipAddress);
+				}
+				catch (Exception e) {
+					context.ModelState.AddModelError("g-recaptcha-response", e.Message);
+				}
 			}
 		}
 	}
