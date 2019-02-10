@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace Forum.Annotations {
+namespace Forum.Controllers.Annotations {
 	/// <summary>
 	/// Allows local requests to not use HTTPS (i.e. development)
 	/// </summary>

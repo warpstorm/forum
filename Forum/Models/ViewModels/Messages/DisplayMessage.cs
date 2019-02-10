@@ -1,5 +1,4 @@
-﻿using Forum.Interfaces.Models.ViewModels;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace Forum.Models.ViewModels.Messages {

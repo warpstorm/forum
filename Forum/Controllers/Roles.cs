@@ -1,4 +1,4 @@
-﻿using Forum.Annotations;
+﻿using Forum.Controllers.Annotations;
 using Forum.Errors;
 using Forum.Extensions;
 using Forum.Interfaces.Services;

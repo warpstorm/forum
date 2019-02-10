@@ -1,4 +1,4 @@
-﻿using Forum.Annotations;
+﻿using Forum.Controllers.Annotations;
 using Forum.Contexts;
 using Forum.Enums;
 using Forum.Errors;

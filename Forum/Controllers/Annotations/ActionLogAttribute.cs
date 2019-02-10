@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading.Tasks;
 
-namespace Forum.Annotations {
+namespace Forum.Controllers.Annotations {
 	[AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
 	public class ActionLogAttribute : ActionFilterAttribute {
 		public string Description { get; set; }

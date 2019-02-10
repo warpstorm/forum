@@ -1,7 +1,6 @@
-﻿using Forum.Annotations;
+﻿using Forum.Controllers.Annotations;
 using Forum.Interfaces.Services;
 using Forum.Repositories;
-using Forum.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;

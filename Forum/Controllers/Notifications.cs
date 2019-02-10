@@ -1,4 +1,4 @@
-﻿using Forum.Annotations;
+﻿using Forum.Controllers.Annotations;
 using Forum.Interfaces.Services;
 using Forum.Repositories;
 using Microsoft.AspNetCore.Mvc;

@@ -1,4 +1,4 @@
-﻿using Forum.Annotations;
+﻿using Forum.Models.Annotations;
 using Microsoft.AspNetCore.Http;
 using System.ComponentModel.DataAnnotations;
 

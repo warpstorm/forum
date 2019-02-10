@@ -10,7 +10,6 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace Forum.Repositories {
-	using DataModels = Models.DataModels;
 	using ServiceModels = Models.ServiceModels;
 	using ViewModels = Models.ViewModels.Notifications;
 

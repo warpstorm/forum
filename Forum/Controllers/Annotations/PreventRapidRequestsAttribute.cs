@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using System;
 using System.Threading.Tasks;
 
-namespace Forum.Annotations {
+namespace Forum.Controllers.Annotations {
 	[AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
 	public class PreventRapidRequestsAttribute : ActionFilterAttribute {
 		public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next) {

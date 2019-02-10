@@ -1,4 +1,4 @@
-﻿using Forum.Annotations;
+﻿using Forum.Models.Annotations;
 using Forum.Enums;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
