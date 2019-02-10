@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using System;
 
-namespace Forum.TagHelpers {
+namespace Forum.ViewHelpers {
 	public class PassedTimeTagHelper : TagHelper {
 		public DateTime Time { get; set; }
 

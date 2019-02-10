@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 
-namespace Forum.TagHelpers {
+namespace Forum.ViewHelpers {
 	public class CancelButtonTagHelper : TagHelper {
 		HttpContext HttpContext { get; }
 
