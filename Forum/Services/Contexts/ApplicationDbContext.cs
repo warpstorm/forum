@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Forum.Contexts {
+namespace Forum.Services.Contexts {
 	public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, string> {
 		public DbSet<ActionLogItem> ActionLog { get; set; }
 		public DbSet<Board> Boards { get; set; }

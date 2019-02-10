@@ -1,4 +1,4 @@
-﻿using Forum.Contexts;
+﻿using Forum.Services.Contexts;
 using Microsoft.WindowsAzure.Storage.Blob;
 using System;
 using System.Drawing;
