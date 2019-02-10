@@ -1,6 +1,6 @@
-﻿using Forum.Services.Contexts;
-using Forum.Models;
-using Forum.Plugins.ImageStore;
+﻿using Forum.Models;
+using Forum.Services.Contexts;
+using Forum.Services.Plugins.ImageStore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;

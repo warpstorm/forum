@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Text.RegularExpressions;
 
-namespace Forum.Plugins.UrlReplacement {
+namespace Forum.Services.Plugins.UrlReplacement {
 	public class ImgurClient : IUrlReplacementClient {
 		const string ENDPOINT = "https://api.imgur.com/3";
 

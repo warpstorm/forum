@@ -1,9 +1,9 @@
-﻿using Forum.Services.Contexts;
-using Forum.Controllers;
+﻿using Forum.Controllers;
 using Forum.Extensions;
-using Forum.Services.Filters;
-using Forum.Plugins;
 using Forum.Services;
+using Forum.Services.Contexts;
+using Forum.Services.Filters;
+using Forum.Services.Plugins;
 using Jdenticon.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;

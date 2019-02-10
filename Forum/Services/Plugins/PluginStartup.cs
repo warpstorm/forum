@@ -1,11 +1,11 @@
-﻿using Forum.Plugins.EmailSender;
-using Forum.Plugins.ImageStore;
-using Forum.Plugins.Recaptcha;
-using Forum.Plugins.UrlReplacement;
+﻿using Forum.Services.Plugins.EmailSender;
+using Forum.Services.Plugins.ImageStore;
+using Forum.Services.Plugins.Recaptcha;
+using Forum.Services.Plugins.UrlReplacement;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Forum.Plugins {
+namespace Forum.Services.Plugins {
 	public static class PluginStartup {
 		public static IServiceCollection AddPlugins(this IServiceCollection services, IConfiguration configuration) {
 			services.AddRecaptcha(configuration);

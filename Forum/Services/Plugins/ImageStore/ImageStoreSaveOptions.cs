@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace Forum.Plugins.ImageStore {
+namespace Forum.Services.Plugins.ImageStore {
 	public class ImageStoreSaveOptions {
 		public string ContainerName { get; set; }
 		public Stream InputStream { get; set; }

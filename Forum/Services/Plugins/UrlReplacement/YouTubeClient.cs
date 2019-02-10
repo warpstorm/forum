@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace Forum.Plugins.UrlReplacement {
+namespace Forum.Services.Plugins.UrlReplacement {
 	public class YouTubeClient : IUrlReplacementClient {
 		public bool TryGetReplacement(string remoteUrl, string pageTitle, string favicon, out UrlReplacement replacement) {
 			replacement = null;

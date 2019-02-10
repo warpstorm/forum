@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Forum.Plugins.Recaptcha {
+namespace Forum.Services.Plugins.Recaptcha {
 	public static class RecaptchaStartupExtension {
 		public static IServiceCollection AddRecaptcha(this IServiceCollection services, IConfiguration configuration) {
 			services.Configure<Recaptcha2Options>(configuration);

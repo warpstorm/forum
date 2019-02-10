@@ -7,7 +7,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace Forum.Plugins.ImageStore {
+namespace Forum.Services.Plugins.ImageStore {
 	public class ImageStore : IImageStore {
 		UserContext UserContext { get; }
 		CloudBlobClient CloudBlobClient { get; }

@@ -7,7 +7,7 @@ using System.Net;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 
-namespace Forum.Plugins.EmailSender {
+namespace Forum.Services.Plugins.EmailSender {
 	public class EmailSender : IEmailSender {
 		public bool Ready { get; }
 

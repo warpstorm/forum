@@ -2,11 +2,11 @@
 using Forum.Extensions;
 using Forum.Models.Errors;
 using Forum.Models.Options;
-using Forum.Plugins.ImageStore;
-using Forum.Plugins.UrlReplacement;
 using Forum.Services;
 using Forum.Services.Contexts;
 using Forum.Services.Helpers;
+using Forum.Services.Plugins.ImageStore;
+using Forum.Services.Plugins.UrlReplacement;
 using HtmlAgilityPack;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;

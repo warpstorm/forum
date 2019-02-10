@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Forum.Plugins.EmailSender {
+namespace Forum.Services.Plugins.EmailSender {
 	public static class EmailSenderStartupExtension {
 		public static IServiceCollection AddEmailSender(this IServiceCollection services, IConfiguration configuration) {
 			services.Configure<EmailSenderOptions>(configuration);

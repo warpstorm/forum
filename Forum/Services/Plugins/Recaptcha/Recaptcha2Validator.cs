@@ -7,7 +7,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace Forum.Plugins.Recaptcha {
+namespace Forum.Services.Plugins.Recaptcha {
 	public class Recaptcha2Validator : IRecaptcha2Validator {
 		public string Response { get; }
 

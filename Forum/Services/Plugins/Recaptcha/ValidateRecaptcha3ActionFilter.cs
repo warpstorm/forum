@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using System;
 using System.Threading.Tasks;
 
-namespace Forum.Plugins.Recaptcha {
+namespace Forum.Services.Plugins.Recaptcha {
 	public class ValidateRecaptcha3ActionFilter : IAsyncAuthorizationFilter {
 		IRecaptcha3Validator RecaptchaValidator { get; }
 

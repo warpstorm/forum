@@ -3,7 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.WindowsAzure.Storage;
 
-namespace Forum.Plugins.ImageStore {
+namespace Forum.Services.Plugins.ImageStore {
 	public static class ImageStoreStartupExtension {
 		public static IServiceCollection AddImageStore(this IServiceCollection services, IConfiguration configuration) {
 			services.AddTransient<IImageStore, ImageStore>();
