@@ -70,8 +70,8 @@ namespace Forum.Controllers {
 
 		[ActionLog("is viewing a profile.")]
 		[HttpGet]
-		public async Task<IActionResult> Details(string id) {
-			var userRecord = id is null ? UserContext.ApplicationUser : await UserManager.FindByIdAsync(id);
+		public async Task<IActionResult> Details(string id = "") {
+			var userRecord = string.IsNullOrEmpty(id) ? UserContext.ApplicationUser : await UserManager.FindByIdAsync(id);
 
 			if (userRecord is null) {
 				userRecord = UserContext.ApplicationUser;
@@ -373,8 +373,10 @@ namespace Forum.Controllers {
 
 		[HttpGet]
 		[AllowAnonymous]
-		public async Task<IActionResult> ResetPassword(string code) {
-			code.ThrowIfNull(nameof(code));
+		public async Task<IActionResult> ResetPassword(string code = "") {
+			if (string.IsNullOrEmpty(code)) {
+				throw new HttpBadRequestError();
+			}
 
 			await AccountRepository.SignOut();
 
@@ -413,7 +415,11 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> ResetPasswordConfirmation() => await ForumViewResult.ViewResult(this);
 
 		[HttpGet]
-		public async Task<IActionResult> Delete(string userId) {
+		public async Task<IActionResult> Delete(string userId = "") {
+			if (string.IsNullOrEmpty(userId)) {
+				throw new HttpBadRequestError();
+			}
+
 			var deletedAccount = (await AccountRepository.Records()).FirstOrDefault(item => item.DisplayName == "Deleted Account");
 
 			if (deletedAccount is null) {
@@ -434,7 +440,11 @@ namespace Forum.Controllers {
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> ConfirmDelete(string userId) {
+		public async Task<IActionResult> ConfirmDelete(string userId = "") {
+			if (string.IsNullOrEmpty(userId)) {
+				throw new HttpBadRequestError();
+			}
+
 			if (UserContext.ApplicationUser.Id != userId && !UserContext.IsAdmin) {
 				throw new HttpForbiddenError();
 			}
@@ -452,7 +462,11 @@ namespace Forum.Controllers {
 
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
-		public async Task<IActionResult> Merge(string userId) {
+		public async Task<IActionResult> Merge(string userId = "") {
+			if (string.IsNullOrEmpty(userId)) {
+				throw new HttpBadRequestError();
+			}
+
 			var viewModel = new ViewModels.Account.MergePage {
 				SourceId = userId
 			};
@@ -475,7 +489,15 @@ namespace Forum.Controllers {
 
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
-		public async Task<IActionResult> ConfirmMerge(string sourceId, string targetId) {
+		public async Task<IActionResult> ConfirmMerge(string sourceId = "", string targetId = "") {
+			if (string.IsNullOrEmpty(sourceId)) {
+				throw new HttpBadRequestError();
+			}
+
+			if (string.IsNullOrEmpty(targetId)) {
+				throw new HttpBadRequestError();
+			}
+
 			await AccountRepository.MergeAccounts(sourceId, targetId, false);
 
 			return RedirectToAction(nameof(Account.Details), nameof(Account), new { id = targetId });

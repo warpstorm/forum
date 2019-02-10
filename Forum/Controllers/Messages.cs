@@ -270,7 +270,7 @@ namespace Forum.Controllers {
 
 		[ActionLog("is viewing a user's message history.")]
 		[HttpGet]
-		public async Task<IActionResult> History(string id, int pageId = 1) {
+		public async Task<IActionResult> History(string id = "", int pageId = 1) {
 			if (string.IsNullOrEmpty(id)) {
 				id = UserContext.ApplicationUser.Id;
 			}

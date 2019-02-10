@@ -36,7 +36,11 @@ namespace Forum.Services {
 			await DbContext.SaveChangesAsync();
 
 			UserContext.ApplicationUser.LastActionLogItemId = logItem.Id;
-			(await AccountRepository.Records()).First(r => r.Id == UserContext.ApplicationUser.Id).LastActionLogItemId = logItem.Id;
+
+			var records = await AccountRepository.Records();
+
+			var record = records.First(r => r.Id == UserContext.ApplicationUser.Id);
+			record.LastActionLogItemId = logItem.Id;
 
 			await DbContext.SaveChangesAsync();
 		}

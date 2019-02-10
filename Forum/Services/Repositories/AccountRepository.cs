@@ -635,16 +635,15 @@ namespace Forum.Services.Repositories {
 			if (!(logItem is null)) {
 				var controller = Type.GetType($"Forum.Controllers.{logItem.Controller}");
 
-				try {
-					var action = controller.GetMethod(logItem.Action);
+				foreach (var method in controller.GetMethods()) {
+					if (method.Name == logItem.Action) {
+						var attribute = method.GetCustomAttributes(typeof(ActionLogAttribute), false).FirstOrDefault() as ActionLogAttribute;
 
-					var attribute = action.GetCustomAttributes(typeof(ActionLogAttribute), false).FirstOrDefault() as ActionLogAttribute;
-
-					if (!(attribute is null)) {
-						return attribute.Description;
+						if (!(attribute is null)) {
+							return attribute.Description;
+						}
 					}
 				}
-				catch (AmbiguousMatchException) { }
 			}
 
 			return string.Empty;
