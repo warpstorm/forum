@@ -1,6 +1,6 @@
 ﻿using Forum.Controllers.Annotations;
-using Forum.Interfaces.Services;
-using Forum.Repositories;
+using Forum.Services;
+using Forum.Services.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 

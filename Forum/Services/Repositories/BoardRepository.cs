@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Forum.Repositories {
+namespace Forum.Services.Repositories {
 	using DataModels = Models.DataModels;
 	using InputModels = Models.InputModels;
 	using ItemViewModels = Models.ViewModels.Boards.Items;

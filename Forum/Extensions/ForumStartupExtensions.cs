@@ -1,7 +1,7 @@
-﻿using Forum.Interfaces.Services;
-using Forum.Services;
+﻿using Forum.Services;
 using Forum.Services.Contexts;
 using Forum.Services.Middleware;
+using Forum.Services.Repositories;
 using Jdenticon;
 using Jdenticon.Rendering;
 using Microsoft.AspNetCore.Builder;
@@ -51,15 +51,15 @@ namespace Forum.Extensions {
 		}
 
 		static void RegisterRepositories(IServiceCollection services) {
-			services.AddScoped<Repositories.AccountRepository>();
-			services.AddScoped<Repositories.BoardRepository>();
-			services.AddScoped<Repositories.MessageRepository>();
-			services.AddScoped<Repositories.NotificationRepository>();
-			services.AddScoped<Repositories.BookmarkRepository>();
-			services.AddScoped<Repositories.QuoteRepository>();
-			services.AddScoped<Repositories.RoleRepository>();
-			services.AddScoped<Repositories.SmileyRepository>();
-			services.AddScoped<Repositories.TopicRepository>();
+			services.AddScoped<AccountRepository>();
+			services.AddScoped<BoardRepository>();
+			services.AddScoped<MessageRepository>();
+			services.AddScoped<NotificationRepository>();
+			services.AddScoped<BookmarkRepository>();
+			services.AddScoped<QuoteRepository>();
+			services.AddScoped<RoleRepository>();
+			services.AddScoped<SmileyRepository>();
+			services.AddScoped<TopicRepository>();
 		}
 	}
 }

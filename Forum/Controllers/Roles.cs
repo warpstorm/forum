@@ -1,8 +1,8 @@
 ﻿using Forum.Controllers.Annotations;
-using Forum.Models.Errors;
 using Forum.Extensions;
-using Forum.Interfaces.Services;
-using Forum.Repositories;
+using Forum.Models.Errors;
+using Forum.Services;
+using Forum.Services.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;

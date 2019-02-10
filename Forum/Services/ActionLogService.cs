@@ -1,6 +1,6 @@
-﻿using Forum.Services.Contexts;
-using Forum.Models.DataModels;
-using Forum.Repositories;
+﻿using Forum.Models.DataModels;
+using Forum.Services.Contexts;
+using Forum.Services.Repositories;
 using System;
 using System.Linq;
 using System.Threading.Tasks;

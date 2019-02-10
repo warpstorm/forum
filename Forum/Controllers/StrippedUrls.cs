@@ -1,8 +1,8 @@
 ﻿using Forum.Controllers.Annotations;
-using Forum.Services.Contexts;
-using Forum.Interfaces.Services;
 using Forum.Models.DataModels;
 using Forum.Models.ServiceModels;
+using Forum.Services;
+using Forum.Services.Contexts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;

@@ -1,6 +1,6 @@
-﻿using Forum.Services.Contexts;
-using Forum.Models.Options;
-using Forum.Repositories;
+﻿using Forum.Models.Options;
+using Forum.Services.Contexts;
+using Forum.Services.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
@@ -56,7 +56,7 @@ namespace Forum.Services {
 					}
 
 					await LoadUserRoles(UserContext);
-					await LoadViewLogs(UserContext);					
+					await LoadViewLogs(UserContext);
 				}
 			}
 		}

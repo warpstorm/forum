@@ -22,7 +22,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace Forum.Repositories {
+namespace Forum.Services.Repositories {
 	using DataModels = Models.DataModels;
 	using HubModels = Models.HubModels;
 	using InputModels = Models.InputModels;

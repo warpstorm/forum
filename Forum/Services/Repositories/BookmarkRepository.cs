@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Forum.Repositories {
+namespace Forum.Services.Repositories {
 	using DataModels = Models.DataModels;
 
 	public class BookmarkRepository : IRepository<DataModels.Bookmark> {

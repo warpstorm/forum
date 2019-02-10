@@ -1,6 +1,6 @@
-﻿using Forum.Services.Contexts;
-using Forum.Interfaces.Services;
-using Forum.Repositories;
+﻿using Forum.Services;
+using Forum.Services.Contexts;
+using Forum.Services.Repositories;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;

@@ -22,7 +22,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace Forum.Repositories {
+namespace Forum.Services.Repositories {
 	using DataModels = Models.DataModels;
 	using InputModels = Models.InputModels;
 	using ServiceModels = Models.ServiceModels;

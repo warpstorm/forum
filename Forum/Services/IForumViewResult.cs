@@ -2,8 +2,8 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Forum.Interfaces.Services {
-	using ServiceModels = Forum.Models.ServiceModels;
+namespace Forum.Services {
+	using ServiceModels = Models.ServiceModels;
 
 	public interface IForumViewResult {
 		IActionResult RedirectToLocal(Controller controller, string returnUrl);

@@ -1,4 +1,4 @@
-﻿using Forum.Repositories;
+﻿using Forum.Services.Repositories;
 using System.Threading.Tasks;
 
 namespace Forum.Services {

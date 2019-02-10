@@ -1,6 +1,5 @@
 ﻿using Forum.Services.Contexts;
-using Forum.Interfaces.Services;
-using Forum.Repositories;
+using Forum.Services.Repositories;
 using System.Linq;
 using System.Threading.Tasks;
 
