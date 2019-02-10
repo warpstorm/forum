@@ -1,5 +1,5 @@
 ﻿using Forum.Contexts;
-using Forum.Interfaces.Models;
+using Forum.Models;
 using Forum.Plugins.ImageStore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;

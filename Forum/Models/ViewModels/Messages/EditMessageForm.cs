@@ -1,6 +1,4 @@
-﻿using Forum.Interfaces.Models.ViewModels;
-
-namespace Forum.Models.ViewModels.Messages {
+﻿namespace Forum.Models.ViewModels.Messages {
 	public class EditMessageForm : IMessageFormViewModel {
 		public string Id { get; set; }
 		public string BoardId { get; set; }

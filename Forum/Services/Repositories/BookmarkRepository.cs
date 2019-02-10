@@ -1,5 +1,5 @@
 ﻿using Forum.Contexts;
-using Forum.Interfaces.Models;
+using Forum.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;

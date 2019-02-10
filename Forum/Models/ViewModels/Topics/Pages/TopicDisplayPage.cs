@@ -1,5 +1,4 @@
-﻿using Forum.Interfaces.Models.ViewModels;
-using Forum.Models.ViewModels.Boards.Items;
+﻿using Forum.Models.ViewModels.Boards.Items;
 using Forum.Models.ViewModels.Topics.Items;
 using System.Collections.Generic;
 

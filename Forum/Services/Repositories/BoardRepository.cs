@@ -1,5 +1,5 @@
 ﻿using Forum.Contexts;
-using Forum.Interfaces.Models;
+using Forum.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Rendering;

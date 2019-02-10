@@ -1,9 +1,9 @@
-﻿using Forum.Controllers.Annotations;
-using Forum.Contexts;
+﻿using Forum.Contexts;
 using Forum.Controllers;
-using Forum.Models.Errors;
+using Forum.Controllers.Annotations;
 using Forum.Extensions;
-using Forum.Interfaces.Models;
+using Forum.Models;
+using Forum.Models.Errors;
 using Forum.Plugins.EmailSender;
 using Forum.Plugins.ImageStore;
 using Microsoft.AspNetCore.Http;
@@ -134,7 +134,7 @@ namespace Forum.Repositories {
 					IsOnline = user.LastOnline > onlineTimeLimit,
 					LastActionText = ActionLogItemText(lastActionItem),
 					LastActionUrl = ActionLogItemUrl(lastActionItem)
-			});
+				});
 			}
 
 			return onlineUsers;
@@ -421,7 +421,7 @@ namespace Forum.Repositories {
 
 			if ((await Records()).Any(r => r.DisplayName == input.DisplayName)) {
 				var message = $"The display name '{input.DisplayName}' is already taken.";
-				serviceResponse.Error(nameof(input.DisplayName),message);
+				serviceResponse.Error(nameof(input.DisplayName), message);
 				Log.LogWarning(message);
 			}
 
