@@ -1,4 +1,4 @@
-﻿using Forum.Enums;
+﻿using Forum.Models.Options;
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.ComponentModel.DataAnnotations;

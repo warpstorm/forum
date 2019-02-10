@@ -1,4 +1,4 @@
-﻿namespace Forum.Enums {
+﻿namespace Forum.Models.Options {
 	public enum EFrontPage {
 		Boards,
 		All,

@@ -1,5 +1,5 @@
 ﻿using Forum.Models.Annotations;
-using Forum.Enums;
+using Forum.Models.Options;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Collections.Generic;

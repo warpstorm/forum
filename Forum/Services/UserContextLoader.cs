@@ -1,5 +1,5 @@
 ﻿using Forum.Contexts;
-using Forum.Enums;
+using Forum.Models.Options;
 using Forum.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;

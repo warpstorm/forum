@@ -1,4 +1,4 @@
-﻿using Forum.Enums;
+﻿using Forum.Models.Options;
 using System;
 
 namespace Forum.Models.ViewModels.Notifications.Items {

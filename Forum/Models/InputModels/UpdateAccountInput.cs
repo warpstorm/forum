@@ -1,4 +1,4 @@
-﻿using Forum.Enums;
+﻿using Forum.Models.Options;
 using System.ComponentModel.DataAnnotations;
 
 namespace Forum.Models.InputModels {
