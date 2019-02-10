@@ -19,6 +19,7 @@ using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Forum.Models.Options;
 
 namespace Forum.Repositories {
 	using DataModels = Models.DataModels;
@@ -321,7 +322,7 @@ namespace Forum.Repositories {
 						UserId = messageRecord.PostedById,
 						TargetUserId = UserContext.ApplicationUser.Id,
 						Time = DateTime.Now,
-						Type = Enums.ENotificationType.Thought,
+						Type = ENotificationType.Thought,
 						Unread = true,
 					};
 
@@ -331,7 +332,7 @@ namespace Forum.Repositories {
 			else {
 				DbContext.Remove(existingRecord);
 
-				var notification = DbContext.Notifications.FirstOrDefault(item => item.MessageId == existingRecord.MessageId && item.TargetUserId == existingRecord.UserId && item.Type == Enums.ENotificationType.Thought);
+				var notification = DbContext.Notifications.FirstOrDefault(item => item.MessageId == existingRecord.MessageId && item.TargetUserId == existingRecord.UserId && item.Type == ENotificationType.Thought);
 
 				if (notification != null) {
 					DbContext.Remove(notification);
@@ -851,7 +852,7 @@ namespace Forum.Repositories {
 						UserId = replyRecord.PostedById,
 						TargetUserId = UserContext.ApplicationUser.Id,
 						Time = DateTime.Now,
-						Type = Enums.ENotificationType.Quote,
+						Type = ENotificationType.Quote,
 						Unread = true,
 					};
 
@@ -873,7 +874,7 @@ namespace Forum.Repositories {
 						UserId = parentMessage.PostedById,
 						TargetUserId = UserContext.ApplicationUser.Id,
 						Time = DateTime.Now,
-						Type = Enums.ENotificationType.Reply,
+						Type = ENotificationType.Reply,
 						Unread = true,
 					};
 
@@ -929,7 +930,7 @@ namespace Forum.Repositories {
 					TargetUserId = UserContext.ApplicationUser.Id,
 					UserId = user,
 					Time = DateTime.Now,
-					Type = Enums.ENotificationType.Mention,
+					Type = ENotificationType.Mention,
 					Unread = true
 				};
 
