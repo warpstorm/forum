@@ -2,6 +2,7 @@
 	min-width: 200px;
 	position: absolute;
 	box-shadow: #0c0f14 0 5px 12px;
+	z-index: 1000;
 }
 
 	#smiley-selector > div {
