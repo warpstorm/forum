@@ -1,7 +1,7 @@
-﻿using Forum.Services.Contexts;
-using Forum.Interfaces.Services;
-using Forum.Middleware;
+﻿using Forum.Interfaces.Services;
 using Forum.Services;
+using Forum.Services.Contexts;
+using Forum.Services.Middleware;
 using Jdenticon;
 using Jdenticon.Rendering;
 using Microsoft.AspNetCore.Builder;

@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http;
 using System.Diagnostics;
 using System.Threading.Tasks;
 
-namespace Forum.Middleware {
+namespace Forum.Services.Middleware {
 	public class PageTimer {
 		RequestDelegate _next { get; }
 

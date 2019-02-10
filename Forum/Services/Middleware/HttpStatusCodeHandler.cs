@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Http;
 using System;
 using System.Threading.Tasks;
 
-namespace Forum.Middleware {
+namespace Forum.Services.Middleware {
 	public class HttpStatusCodeHandler {
 		RequestDelegate _next { get; }
 
