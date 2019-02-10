@@ -1,7 +1,7 @@
 ﻿using Forum.Services.Contexts;
 using Forum.Controllers;
 using Forum.Extensions;
-using Forum.Filters;
+using Forum.Services.Filters;
 using Forum.Plugins;
 using Forum.Services;
 using Jdenticon.AspNetCore;

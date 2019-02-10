@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using System;
 using System.Threading.Tasks;
 
-namespace Forum.Filters {
+namespace Forum.Services.Filters {
 	public class UserContextActionFilter : IAsyncActionFilter {
 		UserContextLoader UserContextLoader { get; }
 
