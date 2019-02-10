@@ -1,4 +1,4 @@
-﻿using Forum.Extensions;
+﻿using Forum.Services.Helpers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System;
 using System.Threading.Tasks;

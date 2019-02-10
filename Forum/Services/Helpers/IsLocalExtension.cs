@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System.Net;
 
-namespace Forum.Extensions {
+namespace Forum.Services.Helpers {
 	/// <summary>
 	/// Source: http://www.strathweb.com/2016/04/request-islocal-in-asp-net-core/
 	/// </summary>
