@@ -1,6 +1,6 @@
 ﻿using Forum.Contexts;
 using Forum.Controllers;
-using Forum.Errors;
+using Forum.Models.Errors;
 using Forum.Extensions;
 using Forum.Plugins.ImageStore;
 using Forum.Plugins.UrlReplacement;

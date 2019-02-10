@@ -1,4 +1,4 @@
-﻿namespace Forum.Errors {
+﻿namespace Forum.Models.Errors {
 	public class HttpBadRequestError : HttpException {
 		public override int StatusCode => 400;
 

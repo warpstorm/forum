@@ -1,6 +1,6 @@
 ﻿using Forum.Controllers.Annotations;
 using Forum.Contexts;
-using Forum.Errors;
+using Forum.Models.Errors;
 using Forum.Interfaces.Services;
 using Forum.Repositories;
 using Microsoft.AspNetCore.Authorization;

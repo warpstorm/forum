@@ -1,7 +1,7 @@
 ﻿using Forum.Controllers.Annotations;
 using Forum.Contexts;
 using Forum.Enums;
-using Forum.Errors;
+using Forum.Models.Errors;
 using Forum.Extensions;
 using Forum.Interfaces.Services;
 using Forum.Plugins.Recaptcha;

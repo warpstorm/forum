@@ -1,4 +1,4 @@
-﻿using Forum.Errors;
+﻿using Forum.Models.Errors;
 using Forum.Extensions;
 using Microsoft.AspNetCore.Http;
 using System;

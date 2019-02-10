@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Forum.Errors {
+namespace Forum.Models.Errors {
 	public class HttpInternalServerError : HttpException {
 		public override int StatusCode => 500;
 

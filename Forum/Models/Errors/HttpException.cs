@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 
-namespace Forum.Errors {
+namespace Forum.Models.Errors {
 	public partial class HttpException : ApplicationException {
 		public virtual int StatusCode { get; }
 		public string ContentType { get; } = @"text/plain";

@@ -1,4 +1,4 @@
-﻿using Forum.Errors;
+﻿using Forum.Models.Errors;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SendGrid;

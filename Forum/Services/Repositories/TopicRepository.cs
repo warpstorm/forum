@@ -1,7 +1,7 @@
 ﻿using Forum.Contexts;
 using Forum.Controllers;
 using Forum.Enums;
-using Forum.Errors;
+using Forum.Models.Errors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;

@@ -1,4 +1,4 @@
-﻿namespace Forum.Errors {
+﻿namespace Forum.Models.Errors {
 	public class HttpForbiddenError : HttpException {
 		public override int StatusCode => 403;
 
