@@ -968,6 +968,24 @@ namespace Forum.Services.Repositories {
 				DbContext.Notifications.Remove(notification);
 			}
 
+			var participants = DbContext.Participants.Where(item => item.MessageId == record.Id).ToList();
+
+			foreach (var participant in participants) {
+				DbContext.Participants.Remove(participant);
+			}
+
+			var bookmarks = DbContext.Bookmarks.Where(item => item.MessageId == record.Id).ToList();
+
+			foreach (var bookmark in bookmarks) {
+				DbContext.Bookmarks.Remove(bookmark);
+			}
+
+			var quotes = DbContext.Quotes.Where(item => item.MessageId == record.Id).ToList();
+
+			foreach (var quote in quotes) {
+				DbContext.Quotes.Remove(quote);
+			}
+
 			record.Deleted = true;
 		}
 
