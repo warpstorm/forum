@@ -83,15 +83,15 @@ namespace Forum.Services.Repositories {
 
 			if (fromTime is null) {
 				messageIdQuery = from message in DbContext.Messages
-								 where !message.Deleted
 								 where message.Id == topicId || message.ParentId == topicId
+								 where !message.Deleted
 								 select message.Id;
 			}
 			else {
 				messageIdQuery = from message in DbContext.Messages
-								 where !message.Deleted
 								 where message.Id == topicId || message.ParentId == topicId
 								 where message.TimePosted >= fromTime
+								 where !message.Deleted
 								 select message.Id;
 			}
 
@@ -244,8 +244,8 @@ namespace Forum.Services.Repositories {
 				serviceResponse.RedirectPath = $"{UrlHelper.Action(nameof(Topics.Latest), nameof(Topics), new { id = parentId })}#message{parentId}";
 
 				var directRepliesQuery = from message in DbContext.Messages
-										 where !message.Deleted
 										 where message.ReplyId == messageId
+										 where !message.Deleted
 										 select message;
 
 				foreach (var reply in directRepliesQuery) {
@@ -620,8 +620,8 @@ namespace Forum.Services.Repositories {
 			}
 
 			var messageRecordQuery = from message in DbContext.Messages
-									 where !message.Deleted
 									 where message.Id == messageId
+									 where !message.Deleted
 									 select new {
 										 message.ShortPreview,
 										 message.LongPreview
@@ -992,8 +992,8 @@ namespace Forum.Services.Repositories {
 
 		public async Task<int> RecountReplies() {
 			var query = from message in DbContext.Messages
-						where !message.Deleted
 						where message.ParentId == 0
+						where !message.Deleted
 						select message.Id;
 
 			var recordCount = await query.CountAsync();
@@ -1007,8 +1007,8 @@ namespace Forum.Services.Repositories {
 			input.ThrowIfNull(nameof(input));
 
 			var parentMessageQuery = from message in DbContext.Messages
-									 where !message.Deleted
 									 where message.ParentId == 0
+									 where !message.Deleted
 									 orderby message.Id descending
 									 select message;
 
@@ -1024,8 +1024,8 @@ namespace Forum.Services.Repositories {
 
 		public async Task RecountRepliesForTopic(DataModels.Message parentMessage) {
 			var messagesQuery = from message in DbContext.Messages
-								where !message.Deleted
 								where message.ParentId == parentMessage.Id
+								where !message.Deleted
 								select new {
 									message.Id,
 									message.TimePosted,
@@ -1064,8 +1064,8 @@ namespace Forum.Services.Repositories {
 
 		public async Task<int> RebuildParticipants() {
 			var query = from message in DbContext.Messages
-						where !message.Deleted
 						where message.ParentId == 0
+						where !message.Deleted
 						select message.Id;
 
 			var recordCount = await query.CountAsync();
@@ -1079,8 +1079,8 @@ namespace Forum.Services.Repositories {
 			input.ThrowIfNull(nameof(input));
 
 			var parentMessageQuery = from message in DbContext.Messages
-									 where !message.Deleted
 									 where message.ParentId == 0
+									 where !message.Deleted
 									 orderby message.Id descending
 									 select message;
 
@@ -1096,8 +1096,8 @@ namespace Forum.Services.Repositories {
 
 		public async Task RebuildParticipantsForTopic(int topicId) {
 			var messagesQuery = from message in DbContext.Messages
-								where !message.Deleted
 								where message.Id == topicId || message.ParentId == topicId
+								where !message.Deleted
 								select message;
 
 			var messages = await messagesQuery.ToListAsync();
@@ -1128,8 +1128,8 @@ namespace Forum.Services.Repositories {
 		public async Task<int> ReprocessMessages() => await ProcessMessages(true);
 		public async Task<int> ProcessMessages(bool force = false) {
 			var records = from message in DbContext.Messages
-						  where !message.Deleted
 						  where force || !message.Processed
+						  where !message.Deleted
 						  select message.Id;
 
 			var recordCount = await records.CountAsync();
@@ -1144,8 +1144,8 @@ namespace Forum.Services.Repositories {
 			input.ThrowIfNull(nameof(input));
 
 			var messageQuery = from message in DbContext.Messages
-							   where !message.Deleted
 							   where !message.Processed
+							   where !message.Deleted
 							   orderby message.Id descending
 							   select message;
 
@@ -1270,8 +1270,8 @@ namespace Forum.Services.Repositories {
 			var skip = (page - 1) * take;
 
 			var messageQuery = from message in DbContext.Messages
-							   where !message.Deleted
 							   where message.PostedById == userId
+							   where !message.Deleted
 							   orderby message.Id descending
 							   select new {
 								   message.Id,

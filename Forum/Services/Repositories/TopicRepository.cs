@@ -100,9 +100,9 @@ namespace Forum.Services.Repositories {
 			}
 
 			var messageIdQuery = from message in DbContext.Messages
-								 where !message.Deleted
 								 where message.Id == record.Id || message.ParentId == record.Id
 								 where message.TimePosted > latestViewTime
+								 where !message.Deleted
 								 select message.Id;
 
 			var latestMessageId = messageIdQuery.FirstOrDefault();
@@ -122,8 +122,8 @@ namespace Forum.Services.Repositories {
 
 		public async Task<List<ItemModels.MessagePreview>> GetPreviews(List<int> messageIds) {
 			var messageQuery = from message in DbContext.Messages
-							   where !message.Deleted
 							   where messageIds.Contains(message.Id)
+							   where !message.Deleted
 							   select new {
 								   message.Id,
 								   message.ShortPreview,
@@ -170,8 +170,8 @@ namespace Forum.Services.Repositories {
 
 				if (message.LastReplyId != 0) {
 					var lastReply = (from item in DbContext.Messages
-									 where !item.Deleted
 									 where item.Id == message.LastReplyId
+									 where !item.Deleted
 									 select new {
 										 item.ShortPreview
 									 }).FirstOrDefault();
@@ -227,8 +227,8 @@ namespace Forum.Services.Repositories {
 			var historyTimeLimit = DateTime.Now.AddDays(-14);
 
 			var messageQuery = from message in DbContext.Messages
-							   where !message.Deleted
 							   where message.ParentId == 0
+							   where !message.Deleted
 							   select new {
 								   message.Id,
 								   message.LastReplyPosted,
@@ -237,10 +237,10 @@ namespace Forum.Services.Repositories {
 
 			if (boardId > 0) {
 				messageQuery = from message in DbContext.Messages
-							   where !message.Deleted
 							   join messageBoard in DbContext.MessageBoards on message.Id equals messageBoard.MessageId
 							   where message.ParentId == 0
 							   where messageBoard.BoardId == boardId
+							   where !message.Deleted
 							   select new {
 								   message.Id,
 								   message.LastReplyPosted,

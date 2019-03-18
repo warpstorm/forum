@@ -125,6 +125,9 @@ namespace Forum.Services.Contexts {
 				.HasIndex(r => r.ParentId);
 
 			modelBuilder.Entity<Message>()
+				.HasIndex(r => r.ReplyId);
+
+			modelBuilder.Entity<Message>()
 				.HasIndex(r => r.PostedById);
 
 			modelBuilder.Entity<MessageBoard>()
