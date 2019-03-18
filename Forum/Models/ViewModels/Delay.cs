@@ -8,12 +8,15 @@
 
 		public double Percent {
 			get {
+				if (CurrentPage < 0) {
+					return 0;
+				}
+
 				if (TotalPages > 0) {
 					return 100D * CurrentPage / TotalPages;
 				}
-				else {
-					return 100;
-				}
+
+				return 100;
 			}
 		}		
 	}
