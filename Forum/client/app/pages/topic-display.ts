@@ -360,14 +360,21 @@ export class TopicDisplay {
 			else {
 				let targetArticle = <HTMLElement>self.doc.querySelector(`article[message="${data.messageId}"]`);
 
+				let userAvatar = <HTMLElement>targetArticle.querySelector('.user-avatar');
+				userAvatar.remove();
+
 				let messageContents = <HTMLElement>targetArticle.querySelector('.message-contents');
 				messageContents.classList.add('faded');
 				messageContents.innerHTML = '<p class="note">This message was removed.</p>';
 
+				self.doc.querySelectorAll(`[reply="${data.messageId}"]`).forEach(element => {
+					element.innerHTML = '<p class="note">This message was removed.</p>';
+				});
+
 				var time = new Date();
 				var passedTime = this.app.passedTimeMonitor.convertToPassedTime(time);
 
-				warning(`<a href='#message${data.messageId}'>A message was updated <time datetime='${time}'>${passedTime}</time>.</a>`);
+				warning(`<a href='#message${data.messageId}'>A message was removed <time datetime='${time}'>${passedTime}</time>.</a>`);
 			}
 		}
 	}
