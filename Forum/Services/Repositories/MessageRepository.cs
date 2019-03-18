@@ -16,6 +16,7 @@ using Microsoft.Extensions.Logging;
 using Narochno.BBCode;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
@@ -1308,6 +1309,11 @@ namespace Forum.Services.Repositories {
 			}
 
 			return messages;
+		}
+
+		public async Task CleanupDeletedMessages() {
+			var pTrue = new SqlParameter("@True", true);
+			await DbContext.Database.ExecuteSqlCommandAsync($"DELETE FROM [{nameof(ApplicationDbContext.Messages)}] WHERE {nameof(DataModels.Message.Deleted)} = @True", pTrue);
 		}
 	}
 }
