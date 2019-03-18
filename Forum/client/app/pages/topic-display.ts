@@ -49,6 +49,7 @@ export class TopicDisplay {
 		if (this.app.hub) {
 			this.app.hub.on('new-reply', this.hubNewReply);
 			this.app.hub.on('updated-message', this.hubUpdatedMessage);
+			this.app.hub.on('deleted-message', this.hubDeletedMessage);
 		}
 	}
 
@@ -115,6 +116,11 @@ export class TopicDisplay {
 		this.doc.querySelectorAll('.edit-button').forEach(element => {
 			element.removeEventListener('click', this.eventShowEditForm);
 			element.addEventListener('click', this.eventShowEditForm);
+		});
+
+		this.doc.querySelectorAll('.delete-button').forEach(element => {
+			element.removeEventListener('click', this.eventDeleteMessage);
+			element.addEventListener('click', this.eventDeleteMessage);
 		});
 
 		this.doc.querySelectorAll('blockquote.reply').forEach(element => {
@@ -338,6 +344,31 @@ export class TopicDisplay {
 			var passedTime = this.app.passedTimeMonitor.convertToPassedTime(time);
 
 			warning(`<a href='#message${data.messageId}'>A message was updated <time datetime='${time}'>${passedTime}</time>.</a>`);
+		}
+	}
+
+	hubDeletedMessage = async (data: HubMessage): Promise<void> => {
+		let self = this;
+
+		if (data.topicId == self.settings.topicId
+			&& self.settings.messages.indexOf(data.messageId) >= 0) {
+
+			if (data.messageId == self.settings.topicId) {
+				let targetElement = <HTMLElement>self.doc.querySelector('main');
+				targetElement.innerHTML = '<div class="content-box pad"><p class="note">This topic was removed.</p></div>';
+			}
+			else {
+				let targetArticle = <HTMLElement>self.doc.querySelector(`article[message="${data.messageId}"]`);
+
+				let messageContents = <HTMLElement>targetArticle.querySelector('.message-contents');
+				messageContents.classList.add('faded');
+				messageContents.innerHTML = '<p class="note">This message was removed.</p>';
+
+				var time = new Date();
+				var passedTime = this.app.passedTimeMonitor.convertToPassedTime(time);
+
+				warning(`<a href='#message${data.messageId}'>A message was updated <time datetime='${time}'>${passedTime}</time>.</a>`);
+			}
 		}
 	}
 
@@ -594,6 +625,25 @@ export class TopicDisplay {
 		}
 		else {
 			window.location.href = `/Messages/AddThought/${this.thoughtSelectorMessageId}?smiley=${smileyId}`;
+		}
+	}
+
+	eventDeleteMessage = async (event: Event): Promise<void> => {
+		// Only send an XHR if we anticipate the update will be posted via the hub.
+		if (this.app.hub && this.app.hub.state == HubConnectionState.Connected) {
+			event.preventDefault();
+
+			let targetButton = <HTMLAnchorElement>event.currentTarget;
+			let targetMessage = <HTMLElement>targetButton.closest('article');
+
+			targetMessage.classList.add('faded');
+
+			let requestOptions = new XhrOptions({
+				method: HttpMethod.Get,
+				url: targetButton.href
+			});
+
+			Xhr.request(requestOptions);
 		}
 	}
 

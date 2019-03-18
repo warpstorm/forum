@@ -177,7 +177,7 @@ namespace Forum.Services.Repositories {
 				serviceResponse.RedirectPath = UrlHelper.DisplayMessage(record.Id);
 
 				await ForumHub.Clients.All.SendAsync("new-reply", new HubModels.Message {
-					TopicId = record.ParentId,
+					TopicId = record.ParentId > 0 ? record.ParentId : record.Id,
 					MessageId = record.Id
 				});
 			}
@@ -205,7 +205,7 @@ namespace Forum.Services.Repositories {
 				serviceResponse.RedirectPath = UrlHelper.DisplayMessage(record.Id);
 
 				await ForumHub.Clients.All.SendAsync("updated-message", new HubModels.Message {
-					TopicId = record.ParentId,
+					TopicId = record.ParentId > 0 ? record.ParentId : record.Id,
 					MessageId = record.Id
 				});
 			}
@@ -280,6 +280,13 @@ namespace Forum.Services.Repositories {
 				if (parent != null) {
 					await RecountRepliesForTopic(parent);
 				}
+			}
+
+			if (serviceResponse.Success) {
+				await ForumHub.Clients.All.SendAsync("deleted-message", new HubModels.Message {
+					TopicId = record.ParentId > 0 ? record.ParentId : record.Id,
+					MessageId = record.Id
+				});
 			}
 
 			return serviceResponse;

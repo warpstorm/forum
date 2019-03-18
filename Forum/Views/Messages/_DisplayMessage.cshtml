@@ -11,7 +11,7 @@
 	</aside>
 
 	@{
-		var messageClasses = "content-box pad";
+		var messageClasses = "message-contents content-box pad";
 
 		if (Model.Poseys) {
 			messageClasses += " poseys";
@@ -44,12 +44,12 @@
 
 					@if (Model.CanDelete) {
 						@if (Model.ParentId == 0) {
-							<a class="pad-right" asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.Delete)" asp-route-id="@Model.Id" onclick="return confirm('Are you sure you want to remove this ENTIRE topic?');">
+							<a class="delete-button pad-right" asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.Delete)" asp-route-id="@Model.Id" onclick="return confirm('Are you sure you want to remove this ENTIRE topic?');">
 								<img class="align-middle" src="~/images/delete.png" alt="Delete" title="Delete" />
 							</a>
 						}
 						else {
-							<a class="pad-right" asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.Delete)" asp-route-id="@Model.Id" onclick="return confirm('Are you sure you want to remove this reply?');">
+							<a class="delete-button pad-right" asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.Delete)" asp-route-id="@Model.Id" onclick="return confirm('Are you sure you want to remove this reply?');">
 								<img class="align-middle" src="~/images/delete.png" alt="Delete" title="Delete" />
 							</a>
 						}
@@ -82,8 +82,8 @@
 			@if (Model.ReplyId > 0) {
 				<p class="pad-left font-small subdued-text"><a asp-action="@nameof(Topics.Display)" asp-route-id="@Model.ReplyId">In reply to this post by @Html.Raw(Model.ReplyPostedBy):</a></p>
 				<blockquote class="reply pointer">
-					<div class="reply-preview font-small subdued-text">@Html.Raw(Model.ReplyPreview)</div>
-					<div class="reply-body hidden">@Html.Raw(Model.ReplyBody)</div>
+					<div class="reply-preview font-small subdued-text" reply="@Model.ReplyId">@Html.Raw(Model.ReplyPreview)</div>
+					<div class="reply-body hidden" reply="@Model.ReplyId">@Html.Raw(Model.ReplyBody)</div>
 				</blockquote>
 			}
 
