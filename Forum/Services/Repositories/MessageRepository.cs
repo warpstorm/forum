@@ -2,7 +2,6 @@
 using Forum.Extensions;
 using Forum.Models.Errors;
 using Forum.Models.Options;
-using Forum.Services;
 using Forum.Services.Contexts;
 using Forum.Services.Helpers;
 using Forum.Services.Plugins.ImageStore;
@@ -83,11 +82,13 @@ namespace Forum.Services.Repositories {
 
 			if (fromTime is null) {
 				messageIdQuery = from message in DbContext.Messages
+								 where !message.Deleted
 								 where message.Id == topicId || message.ParentId == topicId
 								 select message.Id;
 			}
 			else {
 				messageIdQuery = from message in DbContext.Messages
+								 where !message.Deleted
 								 where message.Id == topicId || message.ParentId == topicId
 								 where message.TimePosted >= fromTime
 								 select message.Id;
@@ -148,7 +149,7 @@ namespace Forum.Services.Repositories {
 
 			var replyRecord = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == input.Id);
 
-			if (replyRecord is null) {
+			if (replyRecord is null || replyRecord.Deleted) {
 				serviceResponse.Error($"A record does not exist with ID '{input.Id}'");
 			}
 
@@ -157,7 +158,7 @@ namespace Forum.Services.Repositories {
 
 			if (recentReply && replyRecord.ParentId == 0) {
 				var targetId = replyRecord.LastReplyId > 0 ? replyRecord.LastReplyId : replyRecord.Id;
-				var previousMessageRecord = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == targetId);
+				var previousMessageRecord = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == targetId && !m.Deleted);
 
 				if (previousMessageRecord?.PostedById == UserContext.ApplicationUser.Id) {
 					await MergeReply(previousMessageRecord, input, serviceResponse);
@@ -193,7 +194,7 @@ namespace Forum.Services.Repositories {
 
 			var record = DbContext.Messages.FirstOrDefault(m => m.Id == input.Id);
 
-			if (record is null) {
+			if (record is null || record.Deleted) {
 				serviceResponse.Error(nameof(input.Id), $"No record found with the ID '{input.Id}'.");
 			}
 
@@ -232,7 +233,7 @@ namespace Forum.Services.Repositories {
 
 			var record = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == messageId);
 
-			if (record is null) {
+			if (record is null || record.Deleted) {
 				throw new HttpNotFoundError();
 			}
 
@@ -242,6 +243,7 @@ namespace Forum.Services.Repositories {
 				serviceResponse.RedirectPath = $"{UrlHelper.Action(nameof(Topics.Latest), nameof(Topics), new { id = parentId })}#message{parentId}";
 
 				var directRepliesQuery = from message in DbContext.Messages
+										 where !message.Deleted
 										 where message.ReplyId == messageId
 										 select message;
 
@@ -262,7 +264,7 @@ namespace Forum.Services.Repositories {
 				serviceResponse.RedirectPath = UrlHelper.Action(nameof(Topics.Index), nameof(Topics));
 			}
 
-			var topicReplies = await DbContext.Messages.Where(m => m.ParentId == messageId).ToListAsync();
+			var topicReplies = await DbContext.Messages.Where(m => m.ParentId == messageId && !m.Deleted).ToListAsync();
 
 			foreach (var reply in topicReplies) {
 				await RemoveMessageArtifacts(reply);
@@ -273,7 +275,7 @@ namespace Forum.Services.Repositories {
 			await DbContext.SaveChangesAsync();
 
 			if (parentId > 0) {
-				var parent = await DbContext.Messages.FirstOrDefaultAsync(item => item.Id == parentId);
+				var parent = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == parentId && !m.Deleted);
 
 				if (parent != null) {
 					await RecountRepliesForTopic(parent);
@@ -288,7 +290,7 @@ namespace Forum.Services.Repositories {
 
 			var messageRecord = DbContext.Messages.Find(messageId);
 
-			if (messageRecord is null) {
+			if (messageRecord is null || messageRecord.Deleted) {
 				serviceResponse.Error($@"No message was found with the id '{messageId}'");
 			}
 
@@ -610,6 +612,7 @@ namespace Forum.Services.Repositories {
 			}
 
 			var messageRecordQuery = from message in DbContext.Messages
+									 where !message.Deleted
 									 where message.Id == messageId
 									 select new {
 										 message.ShortPreview,
@@ -958,11 +961,12 @@ namespace Forum.Services.Repositories {
 				DbContext.Notifications.Remove(notification);
 			}
 
-			DbContext.Messages.Remove(record);
+			record.Deleted = true;
 		}
 
 		public async Task<int> RecountReplies() {
 			var query = from message in DbContext.Messages
+						where !message.Deleted
 						where message.ParentId == 0
 						select message.Id;
 
@@ -977,6 +981,7 @@ namespace Forum.Services.Repositories {
 			input.ThrowIfNull(nameof(input));
 
 			var parentMessageQuery = from message in DbContext.Messages
+									 where !message.Deleted
 									 where message.ParentId == 0
 									 orderby message.Id descending
 									 select message;
@@ -993,6 +998,7 @@ namespace Forum.Services.Repositories {
 
 		public async Task RecountRepliesForTopic(DataModels.Message parentMessage) {
 			var messagesQuery = from message in DbContext.Messages
+								where !message.Deleted
 								where message.ParentId == parentMessage.Id
 								select new {
 									message.Id,
@@ -1032,6 +1038,7 @@ namespace Forum.Services.Repositories {
 
 		public async Task<int> RebuildParticipants() {
 			var query = from message in DbContext.Messages
+						where !message.Deleted
 						where message.ParentId == 0
 						select message.Id;
 
@@ -1046,6 +1053,7 @@ namespace Forum.Services.Repositories {
 			input.ThrowIfNull(nameof(input));
 
 			var parentMessageQuery = from message in DbContext.Messages
+									 where !message.Deleted
 									 where message.ParentId == 0
 									 orderby message.Id descending
 									 select message;
@@ -1062,6 +1070,7 @@ namespace Forum.Services.Repositories {
 
 		public async Task RebuildParticipantsForTopic(int topicId) {
 			var messagesQuery = from message in DbContext.Messages
+								where !message.Deleted
 								where message.Id == topicId || message.ParentId == topicId
 								select message;
 
@@ -1093,6 +1102,7 @@ namespace Forum.Services.Repositories {
 		public async Task<int> ReprocessMessages() => await ProcessMessages(true);
 		public async Task<int> ProcessMessages(bool force = false) {
 			var records = from message in DbContext.Messages
+						  where !message.Deleted
 						  where force || !message.Processed
 						  select message.Id;
 
@@ -1108,12 +1118,14 @@ namespace Forum.Services.Repositories {
 			input.ThrowIfNull(nameof(input));
 
 			var messageQuery = from message in DbContext.Messages
+							   where !message.Deleted
 							   where !message.Processed
 							   orderby message.Id descending
 							   select message;
 
 			if (force) {
 				messageQuery = from message in DbContext.Messages
+							   where !message.Deleted
 							   orderby message.Id descending
 							   select message;
 			}
@@ -1189,7 +1201,7 @@ namespace Forum.Services.Repositories {
 				message.ShowControls = true;
 
 				if (message.ReplyId > 0) {
-					var reply = DbContext.Messages.FirstOrDefault(item => item.Id == message.ReplyId);
+					var reply = DbContext.Messages.FirstOrDefault(item => item.Id == message.ReplyId && !item.Deleted);
 
 					if (reply != null) {
 						var replyPostedBy = users.FirstOrDefault(item => item.Id == reply.PostedById);
@@ -1232,6 +1244,7 @@ namespace Forum.Services.Repositories {
 			var skip = (page - 1) * take;
 
 			var messageQuery = from message in DbContext.Messages
+							   where !message.Deleted
 							   where message.PostedById == userId
 							   orderby message.Id descending
 							   select new {

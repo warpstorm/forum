@@ -85,7 +85,7 @@ namespace Forum.Services.Repositories {
 
 			var message = DbContext.Messages.FirstOrDefault(r => r.Id == messageId);
 
-			if (message is null) {
+			if (message is null || message.Deleted) {
 				serviceResponse.Error($@"No record was found with the id '{messageId}'.");
 			}
 

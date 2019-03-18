@@ -108,7 +108,7 @@ namespace Forum.Controllers {
 
 			var record = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == id);
 
-			if (record is null) {
+			if (record is null || record.Deleted) {
 				throw new HttpNotFoundError();
 			}
 
@@ -124,7 +124,7 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> ReplyPartial(int id) {
 			var record = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == id);
 
-			if (record is null) {
+			if (record is null || record.Deleted) {
 				throw new HttpNotFoundError();
 			}
 
@@ -182,7 +182,7 @@ namespace Forum.Controllers {
 
 			var record = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == id);
 
-			if (record is null) {
+			if (record is null || record.Deleted) {
 				throw new HttpNotFoundError();
 			}
 
@@ -199,7 +199,7 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> EditPartial(int id) {
 			var record = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == id);
 
-			if (record is null) {
+			if (record is null || record.Deleted) {
 				throw new HttpNotFoundError();
 			}
 

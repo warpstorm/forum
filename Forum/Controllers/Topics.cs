@@ -90,7 +90,7 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> Merge(int id, int pageId = 1) {
 			var record = DbContext.Messages.FirstOrDefault(item => item.Id == id);
 
-			if (record is null) {
+			if (record is null || record.Deleted) {
 				throw new HttpNotFoundError();
 			}
 
@@ -166,7 +166,7 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> DisplayOne(int id) {
 			var record = DbContext.Messages.Find(id);
 
-			if (record is null) {
+			if (record is null || record.Deleted) {
 				throw new HttpNotFoundError();
 			}
 
@@ -198,7 +198,7 @@ namespace Forum.Controllers {
 
 			var record = DbContext.Messages.Find(id);
 
-			if (record is null) {
+			if (record is null || record.Deleted) {
 				throw new HttpNotFoundError();
 			}
 
@@ -299,7 +299,7 @@ namespace Forum.Controllers {
 
 			var record = DbContext.Messages.Find(id);
 
-			if (record is null) {
+			if (record is null || record.Deleted) {
 				throw new HttpNotFoundError();
 			}
 

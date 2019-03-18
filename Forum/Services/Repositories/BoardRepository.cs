@@ -1,5 +1,5 @@
-﻿using Forum.Services.Contexts;
-using Forum.Models;
+﻿using Forum.Models;
+using Forum.Services.Contexts;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -120,6 +120,7 @@ namespace Forum.Services.Repositories {
 			if (includeReplies) {
 				var messages = from messageBoard in DbContext.MessageBoards
 							   join message in DbContext.Messages on messageBoard.MessageId equals message.Id
+							   where !message.Deleted
 							   where messageBoard.BoardId == boardRecord.Id
 							   orderby message.LastReplyPosted descending
 							   select new {
@@ -144,6 +145,7 @@ namespace Forum.Services.Repositories {
 
 					if (UserContext.IsAdmin || !messageRoleIds.Any() || messageRoleIds.Intersect(UserContext.Roles).Any()) {
 						var lastReplyQuery = from message in DbContext.Messages
+											 where !message.Deleted
 											 where message.Id == item.LastReplyId
 											 select new Models.ViewModels.Topics.Items.MessagePreview {
 												 Id = message.Id,

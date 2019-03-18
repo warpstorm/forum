@@ -61,6 +61,8 @@ namespace Forum.Models.DataModels {
 		public bool Pinned { get; set; }
 		public bool Processed { get; set; }
 
+		public bool Deleted { get; set; }
+
 		public int LegacyId { get; set; }
 		public int LegacyParentId { get; set; }
 		public int LegacyReplyId { get; set; }

@@ -1,7 +1,7 @@
-﻿using Forum.Services.Contexts;
-using Forum.Controllers;
-using Forum.Models.Options;
+﻿using Forum.Controllers;
 using Forum.Models.Errors;
+using Forum.Models.Options;
+using Forum.Services.Contexts;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
@@ -61,12 +61,16 @@ namespace Forum.Services.Repositories {
 
 			var record = DbContext.Messages.Find(messageId);
 
-			if (record is null) {
+			if (record is null || record.Deleted) {
 				throw new HttpNotFoundError();
 			}
 
 			if (record.ParentId > 0) {
 				record = DbContext.Messages.Find(record.ParentId);
+			}
+
+			if (record is null || record.Deleted) {
+				throw new HttpNotFoundError();
 			}
 
 			if (!UserContext.IsAuthenticated) {
@@ -96,6 +100,7 @@ namespace Forum.Services.Repositories {
 			}
 
 			var messageIdQuery = from message in DbContext.Messages
+								 where !message.Deleted
 								 where message.Id == record.Id || message.ParentId == record.Id
 								 where message.TimePosted > latestViewTime
 								 select message.Id;
@@ -117,6 +122,7 @@ namespace Forum.Services.Repositories {
 
 		public async Task<List<ItemModels.MessagePreview>> GetPreviews(List<int> messageIds) {
 			var messageQuery = from message in DbContext.Messages
+							   where !message.Deleted
 							   where messageIds.Contains(message.Id)
 							   select new {
 								   message.Id,
@@ -164,6 +170,7 @@ namespace Forum.Services.Repositories {
 
 				if (message.LastReplyId != 0) {
 					var lastReply = (from item in DbContext.Messages
+									 where !item.Deleted
 									 where item.Id == message.LastReplyId
 									 select new {
 										 item.ShortPreview
@@ -220,6 +227,7 @@ namespace Forum.Services.Repositories {
 			var historyTimeLimit = DateTime.Now.AddDays(-14);
 
 			var messageQuery = from message in DbContext.Messages
+							   where !message.Deleted
 							   where message.ParentId == 0
 							   select new {
 								   message.Id,
@@ -229,6 +237,7 @@ namespace Forum.Services.Repositories {
 
 			if (boardId > 0) {
 				messageQuery = from message in DbContext.Messages
+							   where !message.Deleted
 							   join messageBoard in DbContext.MessageBoards on message.Id equals messageBoard.MessageId
 							   where message.ParentId == 0
 							   where messageBoard.BoardId == boardId
@@ -323,7 +332,7 @@ namespace Forum.Services.Repositories {
 		public async Task<ServiceModels.ServiceResponse> Pin(int messageId) {
 			var record = DbContext.Messages.Find(messageId);
 
-			if (record is null) {
+			if (record is null || record.Deleted) {
 				throw new HttpNotFoundError();
 			}
 
@@ -341,7 +350,7 @@ namespace Forum.Services.Repositories {
 		public async Task Bookmark(int messageId) {
 			var record = await DbContext.Messages.FindAsync(messageId);
 
-			if (record is null) {
+			if (record is null || record.Deleted) {
 				throw new HttpNotFoundError();
 			}
 
@@ -392,7 +401,7 @@ namespace Forum.Services.Repositories {
 		public ServiceModels.ServiceResponse MarkUnread(int messageId) {
 			var record = DbContext.Messages.Find(messageId);
 
-			if (record is null) {
+			if (record is null || record.Deleted) {
 				throw new HttpNotFoundError();
 			}
 
@@ -418,7 +427,7 @@ namespace Forum.Services.Repositories {
 		public async Task Toggle(InputModels.ToggleBoardInput input) {
 			var messageRecord = await DbContext.Messages.FindAsync(input.MessageId);
 
-			if (messageRecord is null) {
+			if (messageRecord is null || messageRecord.Deleted) {
 				throw new HttpNotFoundError();
 			}
 
@@ -502,13 +511,13 @@ namespace Forum.Services.Repositories {
 
 			var sourceRecord = DbContext.Messages.FirstOrDefault(item => item.Id == sourceId);
 
-			if (sourceRecord is null) {
+			if (sourceRecord is null || sourceRecord.Deleted) {
 				serviceResponse.Error("Source record not found");
 			}
 
 			var targetRecord = DbContext.Messages.FirstOrDefault(item => item.Id == targetId);
 
-			if (targetRecord is null) {
+			if (targetRecord is null || targetRecord.Deleted) {
 				serviceResponse.Error("Target record not found");
 			}
 
