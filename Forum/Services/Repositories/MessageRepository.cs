@@ -666,6 +666,11 @@ namespace Forum.Services.Repositories {
 
 			if (imageNode != null && imageNode.Attributes["content"] != null) {
 				returnObject.Image = imageNode.Attributes["content"].Value.Trim();
+
+				// Twitch og:image starts without a protocol.
+				if (returnObject.Image.StartsWith("//")) {
+					returnObject.Image = $"https:{returnObject.Image}";
+				}
 			}
 
 			if (string.IsNullOrEmpty(returnObject.Title)) {
