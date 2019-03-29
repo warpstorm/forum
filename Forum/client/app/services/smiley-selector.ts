@@ -15,15 +15,9 @@ export class SmileySelector {
 
 	// Used in message forms to insert smileys into textareas.
 	init(): void {
-		let self = this;
-
-		self.doc.querySelectorAll('.add-smiley').forEach(element => {
-			element.addEventListener('click', (event: Event): void => {
-				let target = <HTMLElement>event.currentTarget;
-
-				self.smileySelectorTargetTextArea = (<HTMLFormElement>target.closest('form')).querySelector('textarea');
-				self.showSmileySelectorNearElement(target, self.eventInsertSmileyCode);
-			});
+		this.doc.querySelectorAll('.add-smiley').forEach(element => {
+			element.removeEventListener('click', this.eventShowSmileySelector);
+			element.addEventListener('click', this.eventShowSmileySelector);
 		});
 	}
 
@@ -60,6 +54,13 @@ export class SmileySelector {
 		setTimeout(function () {
 			self.body.addEventListener('click', self.eventCloseSmileySelector);
 		}, 50);
+	}
+
+	eventShowSmileySelector = (event: Event): void => {
+		let target = <HTMLElement>event.currentTarget;
+
+		this.smileySelectorTargetTextArea = (<HTMLFormElement>target.closest('form')).querySelector('textarea');
+		this.showSmileySelectorNearElement(target, this.eventInsertSmileyCode);
 	}
 
 	eventCloseSmileySelector = (): void => {

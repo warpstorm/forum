@@ -3,12 +3,10 @@ import { throwIfNull, hide, show, queryify, warning, clear } from "../helpers";
 import { App } from "../app";
 import { Xhr } from "../services/xhr";
 import { HttpMethod } from "../definitions/http-method";
-
 import { HubMessage } from "../models/hub-message";
 import { ModelErrorResponse } from "../models/model-error-response";
 import { TokenRequestResponse } from "../models/token-request-response";
 import { XhrOptions } from "../models/xhr-options";
-
 import { TopicDisplaySettings } from "../models/page-settings/topic-display-settings";
 import { TopicDisplayPartialSettings } from "../models/page-settings/topic-display-partial-settings";
 
@@ -408,6 +406,9 @@ export class TopicDisplay {
 
 		hide(workingDots);
 
+		this.app.bbCode.init();
+		this.app.smileySelector.init();
+
 		let saveButton = self.doc.querySelector(`#edit-message-${messageId} .save-button`);
 
 		if (saveButton) {
@@ -500,6 +501,9 @@ export class TopicDisplay {
 		await Xhr.requestPartialView(requestOptions, self.doc);
 
 		hide(workingDots);
+
+		this.app.bbCode.init();
+		this.app.smileySelector.init();
 
 		let saveButton = self.doc.querySelector(`#message-reply-${messageId} .save-button`);
 
