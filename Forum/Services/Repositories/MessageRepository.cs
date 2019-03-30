@@ -848,9 +848,7 @@ namespace Forum.Services.Repositories {
 				LastReplyById = UserContext.ApplicationUser.Id,
 
 				ParentId = parentId,
-				ReplyId = replyId,
-
-				Processed = true
+				ReplyId = replyId
 			};
 
 			DbContext.Messages.Add(record);
@@ -917,7 +915,6 @@ namespace Forum.Services.Repositories {
 			record.Cards = message.Cards;
 			record.TimeEdited = DateTime.Now;
 			record.EditedById = UserContext.ApplicationUser.Id;
-			record.Processed = true;
 
 			DbContext.Update(record);
 
@@ -1130,10 +1127,8 @@ namespace Forum.Services.Repositories {
 			}
 		}
 
-		public async Task<int> ReprocessMessages() => await ProcessMessages(true);
-		public async Task<int> ProcessMessages(bool force = false) {
+		public async Task<int> ProcessMessages() {
 			var records = from message in DbContext.Messages
-						  where force || !message.Processed
 						  where !message.Deleted
 						  select message.Id;
 
@@ -1144,22 +1139,13 @@ namespace Forum.Services.Repositories {
 			return totalSteps;
 		}
 
-		public async Task ReprocessMessagesContinue(InputModels.Continue input) => await ProcessMessagesContinue(input, true);
-		public async Task ProcessMessagesContinue(InputModels.Continue input, bool force = false) {
+		public async Task ProcessMessagesContinue(InputModels.Continue input) {
 			input.ThrowIfNull(nameof(input));
 
 			var messageQuery = from message in DbContext.Messages
-							   where !message.Processed
 							   where !message.Deleted
 							   orderby message.Id descending
 							   select message;
-
-			if (force) {
-				messageQuery = from message in DbContext.Messages
-							   where !message.Deleted
-							   orderby message.Id descending
-							   select message;
-			}
 
 			var take = 5;
 			var skip = take * input.CurrentStep;
@@ -1177,7 +1163,6 @@ namespace Forum.Services.Repositories {
 					message.ShortPreview = processedMessage.ShortPreview;
 					message.LongPreview = processedMessage.LongPreview;
 					message.Cards = processedMessage.Cards;
-					message.Processed = true;
 
 					DbContext.Update(message);
 				}
@@ -1222,8 +1207,7 @@ namespace Forum.Services.Repositories {
 								   PostedById = message.PostedById,
 								   TimePosted = message.TimePosted,
 								   TimeEdited = message.TimeEdited,
-								   RecordTime = message.TimeEdited,
-								   Processed = message.Processed
+								   RecordTime = message.TimeEdited
 							   };
 
 			var messages = messageQuery.ToList();

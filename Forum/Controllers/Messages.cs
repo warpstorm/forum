@@ -347,16 +347,16 @@ namespace Forum.Controllers {
 		[HttpGet]
 		public async Task<IActionResult> ReprocessMessages(InputModels.Continue input) {
 			if (string.IsNullOrEmpty(input.Stage)) {
-				var totalSteps = await MessageRepository.ReprocessMessages();
+				var totalSteps = await MessageRepository.ProcessMessages();
 
 				input = new InputModels.Continue {
-					Stage = nameof(MessageRepository.ReprocessMessages),
+					Stage = nameof(MessageRepository.ProcessMessages),
 					CurrentStep = -1,
 					TotalSteps = totalSteps
 				};
 			}
 			else {
-				await MessageRepository.ReprocessMessagesContinue(input);
+				await MessageRepository.ProcessMessagesContinue(input);
 			}
 
 			var viewModel = new ViewModels.Delay {

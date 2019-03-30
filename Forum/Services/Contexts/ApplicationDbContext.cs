@@ -110,9 +110,6 @@ namespace Forum.Services.Contexts {
 				.HasIndex(r => r.UserId);
 
 			modelBuilder.Entity<Message>()
-				.HasIndex(r => r.Processed);
-
-			modelBuilder.Entity<Message>()
 				.HasIndex(r => r.Deleted);
 
 			modelBuilder.Entity<Message>()

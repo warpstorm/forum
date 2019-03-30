@@ -11,7 +11,6 @@ namespace Forum.Models.ViewModels.Messages {
 		public bool CanReply { get; set; }
 		public bool CanQuote { get; set; }
 		public bool CanDelete { get; set; }
-		public bool Processed { get; set; }
 		public bool Poseys { get; set; }
 		public bool Birthday { get; set; }
 		public string Id { get; set; }
