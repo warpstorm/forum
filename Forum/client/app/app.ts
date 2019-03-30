@@ -4,15 +4,16 @@ import { Navigation } from './services/navigation';
 import { PassedTimeMonitor } from './services/passed-time-monitor';
 import { SmileySelector } from './services/smiley-selector';
 import { WhosOnlineMonitor } from './services/whos-online-monitor';
+import { ErrorMonitor } from './services/error-monitor';
 
 import { TopicIndex } from './pages/topic-index';
 import { TopicDisplay } from './pages/topic-display';
 import { ManageBoards } from './pages/manage-boards';
 import { MessageCreate } from './pages/message-create';
+import { AccountDetails } from './pages/account-details';
+import { MultiStep } from './pages/multi-step';
 
 import * as SignalR from "@aspnet/signalr";
-import { ErrorMonitor } from './services/error-monitor';
-import { AccountDetails } from './pages/account-details';
 
 window.onload = function () {
 	let app = new App();
@@ -54,28 +55,33 @@ export class App {
 		let pageActions = (<any>window).pageActions;
 
 		switch (pageActions) {
+			case 'multi-step':
+				let multiStep = new MultiStep();
+				multiStep.init();
+				break;
+
 			case 'manage-boards':
-				let manageBoards = new ManageBoards(document, this);
+				let manageBoards = new ManageBoards();
 				manageBoards.init();
 				break;
 
 			case 'message-create':
-				let messageCreate = new MessageCreate(document, this);
+				let messageCreate = new MessageCreate();
 				messageCreate.init();
 				break;
 
 			case 'topic-display':
-				let topicDisplay = new TopicDisplay(document, this);
+				let topicDisplay = new TopicDisplay(this);
 				topicDisplay.init();
 				break;
 
 			case 'topic-index':
-				let topicIndex = new TopicIndex(document, this);
+				let topicIndex = new TopicIndex(this);
 				topicIndex.init();
 				break;
 
 			case 'account-details':
-				let accountDetails = new AccountDetails(document);
+				let accountDetails = new AccountDetails();
 				accountDetails.init();
 				break;
 		}
