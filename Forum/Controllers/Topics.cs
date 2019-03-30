@@ -387,7 +387,7 @@ namespace Forum.Controllers {
 		}
 
 		public async Task<List<Models.DataModels.Board>> LoadTopicBoards(int topicId) {
-			var messageBoardsQuery = from messageBoard in DbContext.MessageBoards
+			var messageBoardsQuery = from messageBoard in DbContext.TopicBoards
 									 where messageBoard.MessageId == topicId
 									 select messageBoard.BoardId;
 

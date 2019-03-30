@@ -116,7 +116,7 @@ namespace Forum.Services.Repositories {
 
 			var record = CreateMessageRecord(processedMessage, null);
 
-			var existingMessageBoards = DbContext.MessageBoards.Where(item => item.MessageId == record.Id).ToList();
+			var existingMessageBoards = DbContext.TopicBoards.Where(item => item.MessageId == record.Id).ToList();
 
 			foreach (var item in existingMessageBoards) {
 				DbContext.Remove(item);
@@ -126,7 +126,7 @@ namespace Forum.Services.Repositories {
 				var board = (await BoardRepository.Records()).FirstOrDefault(item => item.Id == selectedBoard);
 
 				if (board != null) {
-					DbContext.MessageBoards.Add(new DataModels.MessageBoard {
+					DbContext.TopicBoards.Add(new DataModels.TopicBoard {
 						MessageId = record.Id,
 						BoardId = board.Id,
 						TimeAdded = DateTime.Now,
@@ -953,10 +953,10 @@ namespace Forum.Services.Repositories {
 		}
 
 		async Task RemoveMessageArtifacts(DataModels.Message record) {
-			var messageBoards = await DbContext.MessageBoards.Where(m => m.MessageId == record.Id).ToListAsync();
+			var messageBoards = await DbContext.TopicBoards.Where(m => m.MessageId == record.Id).ToListAsync();
 
 			foreach (var messageBoard in messageBoards) {
-				DbContext.MessageBoards.Remove(messageBoard);
+				DbContext.TopicBoards.Remove(messageBoard);
 			}
 
 			var messageThoughts = await DbContext.MessageThoughts.Where(mt => mt.MessageId == record.Id).ToListAsync();

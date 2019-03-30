@@ -597,7 +597,7 @@ namespace Forum.Services.Repositories {
 			}
 
 			updateTasks.AddRange(new List<Task> {
-				DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [{nameof(ApplicationDbContext.MessageBoards)}] SET {nameof(DataModels.MessageBoard.UserId)} = @TargetId WHERE {nameof(DataModels.MessageBoard.UserId)} = @SourceId", pSourceId, pTargetId),
+				DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [{nameof(ApplicationDbContext.TopicBoards)}] SET {nameof(DataModels.TopicBoard.UserId)} = @TargetId WHERE {nameof(DataModels.TopicBoard.UserId)} = @SourceId", pSourceId, pTargetId),
 				DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [{nameof(ApplicationDbContext.MessageThoughts)}] SET {nameof(DataModels.MessageThought.UserId)} = @TargetId WHERE {nameof(DataModels.MessageThought.UserId)} = @SourceId", pSourceId, pTargetId),
 				DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [{nameof(ApplicationDbContext.Notifications)}] SET {nameof(DataModels.Notification.TargetUserId)} = @TargetId WHERE {nameof(DataModels.Notification.TargetUserId)} = @SourceId", pSourceId, pTargetId),
 				DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [{nameof(ApplicationDbContext.Quotes)}] SET {nameof(DataModels.Quote.SubmittedById)} = @TargetId WHERE {nameof(DataModels.Quote.SubmittedById)} = @SourceId", pSourceId, pTargetId),

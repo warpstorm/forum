@@ -198,7 +198,7 @@ namespace Forum.Services.Repositories {
 					messagePreview.Unread = GetUnreadLevel(message.Id, lastMessageTime);
 				}
 
-				var boardIdQuery = from messageBoard in DbContext.MessageBoards
+				var boardIdQuery = from messageBoard in DbContext.TopicBoards
 								   where messageBoard.MessageId == message.Id
 								   select messageBoard.BoardId;
 
@@ -237,7 +237,7 @@ namespace Forum.Services.Repositories {
 
 			if (boardId > 0) {
 				messageQuery = from message in DbContext.Messages
-							   join messageBoard in DbContext.MessageBoards on message.Id equals messageBoard.MessageId
+							   join messageBoard in DbContext.TopicBoards on message.Id equals messageBoard.MessageId
 							   where message.ParentId == 0
 							   where messageBoard.BoardId == boardId
 							   where !message.Deleted
@@ -443,19 +443,19 @@ namespace Forum.Services.Repositories {
 
 			var boardId = input.BoardId;
 
-			var existingRecord = await DbContext.MessageBoards.FirstOrDefaultAsync(p => p.MessageId == messageId && p.BoardId == boardId);
+			var existingRecord = await DbContext.TopicBoards.FirstOrDefaultAsync(p => p.MessageId == messageId && p.BoardId == boardId);
 
 			if (existingRecord is null) {
-				var messageBoardRecord = new DataModels.MessageBoard {
+				var messageBoardRecord = new DataModels.TopicBoard {
 					MessageId = messageId,
 					BoardId = boardId,
 					UserId = UserContext.ApplicationUser.Id
 				};
 
-				DbContext.MessageBoards.Add(messageBoardRecord);
+				DbContext.TopicBoards.Add(messageBoardRecord);
 			}
 			else {
-				DbContext.MessageBoards.Remove(existingRecord);
+				DbContext.TopicBoards.Remove(existingRecord);
 			}
 
 			await DbContext.SaveChangesAsync();
@@ -577,7 +577,7 @@ namespace Forum.Services.Repositories {
 		}
 
 		public void RemoveTopicMessageBoards(DataModels.Message sourceMessage) {
-			var records = DbContext.MessageBoards.Where(item => item.MessageId == sourceMessage.Id);
+			var records = DbContext.TopicBoards.Where(item => item.MessageId == sourceMessage.Id);
 			DbContext.RemoveRange(records);
 			DbContext.SaveChanges();
 		}

@@ -14,7 +14,6 @@ namespace Forum.Services.Contexts {
 		public DbSet<BoardRole> BoardRoles { get; set; }
 		public DbSet<Bookmark> Bookmarks { get; set; }
 		public DbSet<Category> Categories { get; set; }
-		public DbSet<MessageBoard> MessageBoards { get; set; }
 		public DbSet<Message> Messages { get; set; }
 		public DbSet<MessageThought> MessageThoughts { get; set; }
 		public DbSet<Notification> Notifications { get; set; }
@@ -22,6 +21,7 @@ namespace Forum.Services.Contexts {
 		public DbSet<Quote> Quotes { get; set; }
 		public DbSet<Smiley> Smileys { get; set; }
 		public DbSet<StrippedUrl> StrippedUrls { get; set; }
+		public DbSet<TopicBoard> TopicBoards { get; set; }
 		public DbSet<ViewLog> ViewLogs { get; set; }
 
 		public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
@@ -127,10 +127,10 @@ namespace Forum.Services.Contexts {
 			modelBuilder.Entity<Message>()
 				.HasIndex(r => r.PostedById);
 
-			modelBuilder.Entity<MessageBoard>()
+			modelBuilder.Entity<TopicBoard>()
 				.HasIndex(r => r.BoardId);
 
-			modelBuilder.Entity<MessageBoard>()
+			modelBuilder.Entity<TopicBoard>()
 				.HasIndex(r => r.MessageId);
 
 			modelBuilder.Entity<MessageThought>()

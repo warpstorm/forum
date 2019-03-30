@@ -118,7 +118,7 @@ namespace Forum.Services.Repositories {
 			};
 
 			if (includeReplies) {
-				var messages = from messageBoard in DbContext.MessageBoards
+				var messages = from messageBoard in DbContext.TopicBoards
 							   join message in DbContext.Messages on messageBoard.MessageId equals message.Id
 							   where messageBoard.BoardId == boardRecord.Id
 							   where !message.Deleted
@@ -133,7 +133,7 @@ namespace Forum.Services.Repositories {
 
 				// Only checks the most recent 10 topics. If all 10 are forbidden, then LastMessage stays null.
 				foreach (var item in messages.Take(10)) {
-					var messageBoardQuery = from messageBoard in DbContext.MessageBoards
+					var messageBoardQuery = from messageBoard in DbContext.TopicBoards
 											where messageBoard.MessageId == item.MessageId
 											select messageBoard.BoardId;
 
@@ -384,7 +384,7 @@ namespace Forum.Services.Repositories {
 				return serviceResponse;
 			}
 
-			var messageBoards = DbContext.MessageBoards.Where(m => m.BoardId == fromBoard.Id).ToList();
+			var messageBoards = DbContext.TopicBoards.Where(m => m.BoardId == fromBoard.Id).ToList();
 
 			// Reassign messages to new board
 			foreach (var messageBoard in messageBoards) {
@@ -528,7 +528,7 @@ namespace Forum.Services.Repositories {
 
 			var forbiddenBoardIds = forbiddenBoardIdsQuery.ToList();
 
-			var messageBoards = await DbContext.MessageBoards.Where(mb => mb.MessageId == messageId).Select(mb => mb.BoardId).ToListAsync();
+			var messageBoards = await DbContext.TopicBoards.Where(mb => mb.MessageId == messageId).Select(mb => mb.BoardId).ToListAsync();
 
 			return !messageBoards.Any() || !messageBoards.Intersect(forbiddenBoardIds).Any();
 		}
