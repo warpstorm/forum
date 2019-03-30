@@ -1,0 +1,13 @@
+@model ViewModels.Messages.EventDetailsForm
+
+<div asp-validation-summary="All" class="error"></div>
+
+@{ViewData["Title"] = "Event Details";}
+@section Header {@ViewData["Title"]}
+
+@section scripts {
+	<script>
+		window.messageId = ["@Model.MessageId"];
+		window.pageActions = 'event-details';
+	</script>
+}

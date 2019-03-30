@@ -1,0 +1,41 @@
+﻿@model ViewModels.Messages.EventDetails
+
+<dl>
+	<dt>Event Details</dt>
+	<dd>
+		<p>Start Date:</p>
+		<p>
+			<select asp-for="StartYear" asp-items="@Model.Years" />
+			<select asp-for="StartMonth" asp-items="@Model.Months" />
+			<select asp-for="StartDay" asp-items="@Model.Days" />
+		</p>
+		<p><input asp-for="AllDay" /> All Day</p>
+
+		<section class="time-picker">
+			<p>Start Time:</p>
+			<p>
+				<select asp-for="StartHour" asp-items="@Model.Hours" />
+				<select asp-for="StartMinute" asp-items="@Model.Minutes" />
+				<select asp-for="StartAfternoon" asp-items="@Model.AmPm" />
+			</p>
+		</section>
+	</dd>
+
+	<dd>
+		<p>End Date:</p>
+		<p>
+			<select asp-for="EndYear" asp-items="@Model.Years" />
+			<select asp-for="EndMonth" asp-items="@Model.Months" />
+			<select asp-for="EndDay" asp-items="@Model.Days" />
+		</p>
+
+		<section class="time-picker">
+			<p>End Time:</p>
+			<p>
+				<select asp-for="EndHour" asp-items="@Model.Hours" />
+				<select asp-for="EndMinute" asp-items="@Model.Minutes" />
+				<select asp-for="EndAfternoon" asp-items="@Model.AmPm" />
+			</p>
+		</section>
+	</dd>
+</dl>
