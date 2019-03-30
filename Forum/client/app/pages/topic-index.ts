@@ -20,14 +20,13 @@ function getSettings(): TopicIndexSettings {
 export class TopicIndex {
 	private settings: TopicIndexSettings;
 
-	constructor(private doc: Document, private app: App) {
-		throwIfNull(doc, 'doc');
+	constructor(private app: App) {
 		throwIfNull(app, 'app');
 
 		this.settings = getSettings();
 
 		// Ensures the first load also has the settings state.
-		window.history.replaceState(this.settings, this.doc.title, window.location.href);
+		window.history.replaceState(this.settings, document.title, window.location.href);
 		window.onpopstate = this.eventPopState;
 
 		if (this.app.hub) {
@@ -43,14 +42,14 @@ export class TopicIndex {
 	}
 
 	bindPageButtons() {
-		this.doc.querySelectorAll('.page a').forEach(element => {
+		document.querySelectorAll('.page a').forEach(element => {
 			element.removeEventListener('click', this.eventPageClick);
 			element.addEventListener('click', this.eventPageClick);
 		});
 	}
 
 	async loadPage(pageId: number, pushState: boolean = true) {
-		let mainElement = <Element>this.doc.querySelector('main');
+		let mainElement = <Element>document.querySelector('main');
 		mainElement.classList.add('faded');
 
 		let requestOptions = new XhrOptions({
@@ -58,7 +57,7 @@ export class TopicIndex {
 			url: `/Topics/Index/${this.settings.boardId}/${pageId}?unread=${this.settings.unreadFilter}`,
 		});
 
-		await Xhr.requestPartialView(requestOptions, this.doc);
+		await Xhr.requestPartialView(requestOptions, document);
 
 		window.scrollTo(0, 0);
 		mainElement.classList.remove('faded');
@@ -66,7 +65,7 @@ export class TopicIndex {
 		this.settings = getSettings();
 
 		if (pushState) {
-			window.history.pushState(this.settings, this.doc.title, `/Topics/Index/${this.settings.boardId}/${this.settings.currentPage}?unread=${this.settings.unreadFilter}`);
+			window.history.pushState(this.settings, document.title, `/Topics/Index/${this.settings.boardId}/${this.settings.currentPage}?unread=${this.settings.unreadFilter}`);
 		}
 
 		this.init();
@@ -92,7 +91,7 @@ export class TopicIndex {
 	}
 
 	eventPopState = (event: PopStateEvent) => {
-		var settings = event.state as TopicIndexSettings;
+		let settings = event.state as TopicIndexSettings;
 
 		if (settings) {
 			this.settings = settings;

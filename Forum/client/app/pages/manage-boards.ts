@@ -1,22 +1,15 @@
-﻿import { App } from "../app";
-
-import { postToPath, throwIfNull, isEmpty } from "../helpers";
+﻿import { postToPath, isEmpty } from "../helpers";
 
 export class ManageBoards {
 	private mergeFromBoardId: string = "";
 	private mergeFromCategoryId: string = "";
 
-	constructor(private doc: Document, private app: App) {
-		throwIfNull(doc, 'doc');
-		throwIfNull(app, 'app');
-	}
-
 	init() {
-		this.doc.querySelectorAll('.merge-board').forEach(element => {
+		document.querySelectorAll('.merge-board').forEach(element => {
 			element.addEventListener('click', this.eventMergeBoard);
 		});
 
-		this.doc.querySelectorAll('.merge-category').forEach(element => {
+		document.querySelectorAll('.merge-category').forEach(element => {
 			element.addEventListener('click', this.eventMergeCategory);
 		});
 	}

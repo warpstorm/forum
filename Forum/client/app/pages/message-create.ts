@@ -1,15 +1,6 @@
-﻿import { App } from '../app';
-
-import { throwIfNull } from '../helpers';
-
-export class MessageCreate {
+﻿export class MessageCreate {
 	private toggleLock: boolean = false;
 	private assignedBoards: string[] = [];
-
-	constructor(private doc: Document, private app: App) {
-		throwIfNull(doc, 'doc');
-		throwIfNull(app, 'app');
-	}
 
 	init() {
 		let incomingBoards: string[] = (<any>window).assignedBoards;
@@ -18,7 +9,7 @@ export class MessageCreate {
 			this.assignedBoards = incomingBoards;
 		}
 
-		this.doc.querySelectorAll('[toggle-board]').forEach(element => {
+		document.querySelectorAll('[toggle-board]').forEach(element => {
 			element.addEventListener('click', this.eventToggleBoard);
 		});
 	}
@@ -35,11 +26,11 @@ export class MessageCreate {
 		let target = <Element>event.currentTarget
 
 		let boardId = <string>target.getAttribute('board-id');
-		let boardFlagElement = <Element>this.doc.querySelector(`[board-flag="${boardId}"]`);
+		let boardFlagElement = <Element>document.querySelector(`[board-flag="${boardId}"]`);
 		let imgSrc = <string>boardFlagElement.getAttribute('src');
 
 		let assignedBoardIndex: number = this.assignedBoards.indexOf(boardId, 0);
-		let checkbox = <HTMLInputElement>this.doc.querySelector(`input[name="Selected_${boardId}"]`);
+		let checkbox = <HTMLInputElement>document.querySelector(`input[name="Selected_${boardId}"]`);
 
 		if (assignedBoardIndex > -1) {
 			this.assignedBoards.splice(assignedBoardIndex, 1);

@@ -33,15 +33,14 @@ export class TopicDisplay {
 	private thoughtSelectorMessageId: string = "";
 	private thoughtTarget?: HTMLElement = undefined;
 
-	constructor(private doc: Document, private app: App) {
-		throwIfNull(doc, 'doc');
+	constructor(private app: App) {
 		throwIfNull(app, 'app');
 		throwIfNull(app.smileySelector, 'app.smileySelector');
 
 		this.settings = getSettings();
 
 		// Ensures the first load also has the settings state.
-		window.history.replaceState(this.settings, this.doc.title, window.location.href);
+		window.history.replaceState(this.settings, document.title, window.location.href);
 		window.onpopstate = this.eventPopState;
 
 		if (this.app.hub) {
@@ -62,7 +61,7 @@ export class TopicDisplay {
 	}
 
 	async loadPage(pageId: number, pushState: boolean = true) {
-		let mainElement = <Element>this.doc.querySelector('main');
+		let mainElement = <Element>document.querySelector('main');
 		mainElement.classList.add('faded');
 
 		let requestOptions = new XhrOptions({
@@ -70,7 +69,7 @@ export class TopicDisplay {
 			url: `/Topics/Display/${this.settings.topicId}/${pageId}`
 		});
 
-		await Xhr.requestPartialView(requestOptions, this.doc);
+		await Xhr.requestPartialView(requestOptions, document);
 
 		window.scrollTo(0, 0);
 		mainElement.classList.remove('faded');
@@ -78,10 +77,10 @@ export class TopicDisplay {
 		this.settings = getSettings();
 
 		if (pushState) {
-			window.history.pushState(this.settings, this.doc.title, `/Topics/Display/${this.settings.topicId}/${this.settings.currentPage}`);
+			window.history.pushState(this.settings, document.title, `/Topics/Display/${this.settings.topicId}/${this.settings.currentPage}`);
 		}
 
-		let topicReplyForm = <Element>this.doc.querySelector('.topic-reply-form');
+		let topicReplyForm = <Element>document.querySelector('.topic-reply-form');
 
 		if (this.settings.currentPage == this.settings.totalPages) {
 			show(topicReplyForm);
@@ -94,53 +93,53 @@ export class TopicDisplay {
 	}
 
 	bindPageButtons() {
-		this.doc.querySelectorAll('.page a').forEach(element => {
+		document.querySelectorAll('.page a').forEach(element => {
 			element.removeEventListener('click', this.eventPageClick);
 			element.addEventListener('click', this.eventPageClick);
 		});
 	}
 
 	bindMessageButtonHandlers(): void {
-		this.doc.querySelectorAll('.reply-button').forEach(element => {
+		document.querySelectorAll('.reply-button').forEach(element => {
 			element.removeEventListener('click', this.eventShowReplyForm)
 			element.addEventListener('click', this.eventShowReplyForm)
 		});
 
-		this.doc.querySelectorAll('.thought-button').forEach(element => {
+		document.querySelectorAll('.thought-button').forEach(element => {
 			element.removeEventListener('click', this.eventShowThoughtSelector);
 			element.addEventListener('click', this.eventShowThoughtSelector);
 		});
 
-		this.doc.querySelectorAll('.edit-button').forEach(element => {
+		document.querySelectorAll('.edit-button').forEach(element => {
 			element.removeEventListener('click', this.eventShowEditForm);
 			element.addEventListener('click', this.eventShowEditForm);
 		});
 
-		this.doc.querySelectorAll('.delete-button').forEach(element => {
+		document.querySelectorAll('.delete-button').forEach(element => {
 			element.removeEventListener('click', this.eventDeleteMessage);
 			element.addEventListener('click', this.eventDeleteMessage);
 		});
 
-		this.doc.querySelectorAll('blockquote.reply').forEach(element => {
+		document.querySelectorAll('blockquote.reply').forEach(element => {
 			element.removeEventListener('click', this.eventShowFullReply);
 			element.addEventListener('click', this.eventShowFullReply);
 		});
 	}
 
 	bindGlobalButtonHandlers(): void {
-		this.doc.querySelectorAll('.bookmark-button').forEach(element => {
+		document.querySelectorAll('.bookmark-button').forEach(element => {
 			element.removeEventListener('mouseenter', this.eventToggleBookmarkImage);
 			element.addEventListener('mouseenter', this.eventToggleBookmarkImage);
 			element.removeEventListener('mouseleave', this.eventToggleBookmarkImage);
 			element.addEventListener('mouseleave', this.eventToggleBookmarkImage);
 		});
 
-		this.doc.querySelectorAll('[toggle-board]').forEach(element => {
+		document.querySelectorAll('[toggle-board]').forEach(element => {
 			element.removeEventListener('click', this.eventToggleBoard);
 			element.addEventListener('click', this.eventToggleBoard);
 		});
 
-		this.doc.querySelectorAll('#topic-reply .save-button').forEach(element => {
+		document.querySelectorAll('#topic-reply .save-button').forEach(element => {
 			element.removeEventListener('click', this.eventSaveTopicReplyForm);
 			element.addEventListener('click', this.eventSaveTopicReplyForm);
 		});
@@ -155,7 +154,7 @@ export class TopicDisplay {
 	async getLatestReplies(): Promise<void> {
 		let self = this;
 
-		show(self.doc.querySelector('#loading-message'));
+		show(document.querySelector('#loading-message'));
 
 		let requestOptions = new XhrOptions({
 			method: HttpMethod.Get,
@@ -168,7 +167,7 @@ export class TopicDisplay {
 		let resultDocument = <HTMLElement>(<Document>xhrResult.response).documentElement;
 		let resultBody = <HTMLBodyElement>resultDocument.querySelector('body');
 		let resultBodyElements = resultBody.childNodes;
-		let messageList = <Element>self.doc.querySelector('#message-list');
+		let messageList = <Element>document.querySelector('#message-list');
 
 		resultBodyElements.forEach(node => {
 			let element = node as Element;
@@ -195,10 +194,10 @@ export class TopicDisplay {
 
 		self.bindMessageButtonHandlers();
 
-		var time = new Date();
-		var passedTime = this.app.passedTimeMonitor.convertToPassedTime(time);
+		let time = new Date();
+		let passedTime = this.app.passedTimeMonitor.convertToPassedTime(time);
 
-		hide(self.doc.querySelector('#loading-message'));
+		hide(document.querySelector('#loading-message'));
 
 		warning(`<a href='#message${firstMessageId}'>New messages were posted <time datetime='${time}'>${passedTime}</time>.</a>`);
 		window.location.hash = `message${firstMessageId}`;
@@ -291,13 +290,13 @@ export class TopicDisplay {
 	}
 
 	resetMessageReplyForms(): void {
-		this.doc.querySelectorAll('.reply-button').forEach(element => {
+		document.querySelectorAll('.reply-button').forEach(element => {
 			element.removeEventListener('click', this.resetMessageReplyForms);
 			element.removeEventListener('click', this.eventShowReplyForm);
 			element.addEventListener('click', this.eventShowReplyForm);
 		});
 
-		this.doc.querySelectorAll('.reply-form').forEach(element => {
+		document.querySelectorAll('.reply-form').forEach(element => {
 			hide(element);
 		});
 	}
@@ -325,7 +324,7 @@ export class TopicDisplay {
 			let resultDocument = <HTMLElement>(<Document>xhrResult.response).documentElement;
 			let resultBody = <HTMLBodyElement>resultDocument.querySelector('body');
 			let resultBodyElements = resultBody.childNodes;
-			let targetArticle = <Element>self.doc.querySelector(`article[message="${data.messageId}"]`);
+			let targetArticle = <Element>document.querySelector(`article[message="${data.messageId}"]`);
 
 			resultBodyElements.forEach(node => {
 				let element = node as Element;
@@ -338,8 +337,8 @@ export class TopicDisplay {
 
 			self.bindMessageButtonHandlers();
 
-			var time = new Date();
-			var passedTime = this.app.passedTimeMonitor.convertToPassedTime(time);
+			let time = new Date();
+			let passedTime = this.app.passedTimeMonitor.convertToPassedTime(time);
 
 			warning(`<a href='#message${data.messageId}'>A message was updated <time datetime='${time}'>${passedTime}</time>.</a>`);
 		}
@@ -352,11 +351,11 @@ export class TopicDisplay {
 			&& self.settings.messages.indexOf(data.messageId) >= 0) {
 
 			if (data.messageId == self.settings.topicId) {
-				let targetElement = <HTMLElement>self.doc.querySelector('main');
+				let targetElement = <HTMLElement>document.querySelector('main');
 				targetElement.innerHTML = '<div class="content-box pad"><p class="note">This topic was removed.</p></div>';
 			}
 			else {
-				let targetArticle = <HTMLElement>self.doc.querySelector(`article[message="${data.messageId}"]`);
+				let targetArticle = <HTMLElement>document.querySelector(`article[message="${data.messageId}"]`);
 
 				let userAvatar = <HTMLElement>targetArticle.querySelector('.user-avatar');
 				userAvatar.remove();
@@ -365,12 +364,12 @@ export class TopicDisplay {
 				messageContents.classList.add('faded');
 				messageContents.innerHTML = '<p class="note">This message was removed.</p>';
 
-				self.doc.querySelectorAll(`[reply="${data.messageId}"]`).forEach(element => {
+				document.querySelectorAll(`[reply="${data.messageId}"]`).forEach(element => {
 					element.innerHTML = '<p class="note">This message was removed.</p>';
 				});
 
-				var time = new Date();
-				var passedTime = this.app.passedTimeMonitor.convertToPassedTime(time);
+				let time = new Date();
+				let passedTime = this.app.passedTimeMonitor.convertToPassedTime(time);
 
 				warning(`<a href='#message${data.messageId}'>A message was removed <time datetime='${time}'>${passedTime}</time>.</a>`);
 			}
@@ -394,7 +393,7 @@ export class TopicDisplay {
 
 		let messageId = button.getAttribute('message-id');
 
-		let workingDots = self.doc.querySelector(`#working-${messageId}`);
+		let workingDots = document.querySelector(`#working-${messageId}`);
 		show(workingDots);
 
 		let requestOptions = new XhrOptions({
@@ -402,20 +401,20 @@ export class TopicDisplay {
 			url: `/Messages/EditPartial/${messageId}`
 		});
 
-		await Xhr.requestPartialView(requestOptions, self.doc);
+		await Xhr.requestPartialView(requestOptions, document);
 
 		hide(workingDots);
 
 		this.app.bbCode.init();
 		this.app.smileySelector.init();
 
-		let saveButton = self.doc.querySelector(`#edit-message-${messageId} .save-button`);
+		let saveButton = document.querySelector(`#edit-message-${messageId} .save-button`);
 
 		if (saveButton) {
 			saveButton.addEventListener('click', self.eventSaveEditForm);
 		}
 
-		let cancelButton = self.doc.querySelector(`#edit-message-${messageId} .cancel-button`);
+		let cancelButton = document.querySelector(`#edit-message-${messageId} .cancel-button`);
 
 		if (cancelButton) {
 			cancelButton.addEventListener('click', (event: Event) => {
@@ -424,7 +423,7 @@ export class TopicDisplay {
 				button.removeEventListener('click', self.eventHideEditForm);
 				button.addEventListener('click', self.eventShowEditForm);
 
-				let form = self.doc.querySelector(`#edit-message-${messageId}`) as HTMLElement;
+				let form = document.querySelector(`#edit-message-${messageId}`) as HTMLElement;
 				clear(form);
 				hide(form);
 			});
@@ -440,7 +439,7 @@ export class TopicDisplay {
 		button.addEventListener('click', this.eventShowEditForm);
 
 		let messageId = button.getAttribute('message-id');
-		let form = this.doc.querySelector(`#edit-message-${messageId}`) as HTMLElement;
+		let form = document.querySelector(`#edit-message-${messageId}`) as HTMLElement;
 
 		clear(form);
 		hide(form);
@@ -460,11 +459,11 @@ export class TopicDisplay {
 		let form = <HTMLFormElement>button.closest('form');
 		let messageId = button.getAttribute('message-id');
 
-		let workingDots = self.doc.querySelector(`#working-${messageId}`);
+		let workingDots = document.querySelector(`#working-${messageId}`);
 		show(workingDots);
 
 		let onSuccess = () => {
-			let form = this.doc.querySelector(`#edit-message-${messageId}`) as HTMLElement;
+			let form = document.querySelector(`#edit-message-${messageId}`) as HTMLElement;
 			clear(form);
 			hide(form);
 
@@ -490,7 +489,7 @@ export class TopicDisplay {
 
 		let messageId = button.getAttribute('message-id');
 
-		let workingDots = self.doc.querySelector(`#working-${messageId}`);
+		let workingDots = document.querySelector(`#working-${messageId}`);
 		show(workingDots);
 
 		let requestOptions = new XhrOptions({
@@ -498,20 +497,20 @@ export class TopicDisplay {
 			url: `/Messages/ReplyPartial/${messageId}`
 		});
 
-		await Xhr.requestPartialView(requestOptions, self.doc);
+		await Xhr.requestPartialView(requestOptions, document);
 
 		hide(workingDots);
 
 		this.app.bbCode.init();
 		this.app.smileySelector.init();
 
-		let saveButton = self.doc.querySelector(`#message-reply-${messageId} .save-button`);
+		let saveButton = document.querySelector(`#message-reply-${messageId} .save-button`);
 
 		if (saveButton) {
 			saveButton.addEventListener('click', self.eventSaveReplyForm);
 		}
 
-		let cancelButton = self.doc.querySelector(`#message-reply-${messageId} .cancel-button`);
+		let cancelButton = document.querySelector(`#message-reply-${messageId} .cancel-button`);
 
 		if (cancelButton) {
 			cancelButton.addEventListener('click', (event: Event) => {
@@ -520,7 +519,7 @@ export class TopicDisplay {
 				button.removeEventListener('click', self.eventHideReplyForm);
 				button.addEventListener('click', self.eventShowReplyForm);
 
-				let form = self.doc.querySelector(`#message-reply-${messageId}`) as HTMLElement;
+				let form = document.querySelector(`#message-reply-${messageId}`) as HTMLElement;
 				clear(form);
 				hide(form);
 			});
@@ -536,7 +535,7 @@ export class TopicDisplay {
 		button.addEventListener('click', this.eventShowReplyForm);
 
 		let messageId = button.getAttribute('message-id');
-		let form = this.doc.querySelector(`#message-reply-${messageId}`) as HTMLElement;
+		let form = document.querySelector(`#message-reply-${messageId}`) as HTMLElement;
 
 		clear(form);
 		hide(form);
@@ -556,21 +555,21 @@ export class TopicDisplay {
 		let bodyElement = form.querySelector('[name=body]') as HTMLTextAreaElement;
 		let messageId = button.getAttribute('message-id');
 
-		let workingDots = self.doc.querySelector(`#working-${messageId}`);
+		let workingDots = document.querySelector(`#working-${messageId}`);
 		show(workingDots);
 
 		let onSuccess = () => {
-			let form = this.doc.querySelector(`#message-reply-${messageId}`) as HTMLElement;
+			let form = document.querySelector(`#message-reply-${messageId}`) as HTMLElement;
 			clear(form);
 			hide(form);
 
-			self.doc.querySelectorAll('.reply-button').forEach(element => {
+			document.querySelectorAll('.reply-button').forEach(element => {
 				element.removeEventListener('click', self.resetMessageReplyForms);
 				element.removeEventListener('click', self.eventShowReplyForm);
 				element.addEventListener('click', self.eventShowReplyForm);
 			});
 
-			self.doc.querySelectorAll('.reply-form').forEach(element => {
+			document.querySelectorAll('.reply-form').forEach(element => {
 				hide(element);
 			});
 
@@ -700,7 +699,7 @@ export class TopicDisplay {
 			return;
 		}
 
-		let boardFlag = this.doc.querySelector(`[board-flag="${boardId}"]`);
+		let boardFlag = document.querySelector(`[board-flag="${boardId}"]`);
 
 		if (!boardFlag) {
 			return;
@@ -731,11 +730,11 @@ export class TopicDisplay {
 	}
 
 	eventToggleBookmarkImage = (event: Event): void => {
-		var bookmarkImageSpan = <HTMLElement>event.currentTarget;
-		var bookmarkImage = bookmarkImageSpan.querySelector('img');
+		let bookmarkImageSpan = <HTMLElement>event.currentTarget;
+		let bookmarkImage = bookmarkImageSpan.querySelector('img');
 
 		if (bookmarkImage) {
-			var status = this.settings.bookmarked ? 'on' : 'off';
+			let status = this.settings.bookmarked ? 'on' : 'off';
 
 			if (bookmarkImage.src.includes('hover')) {
 				bookmarkImage.src = bookmarkImage.src.replace('hover', status);
@@ -760,7 +759,7 @@ export class TopicDisplay {
 	}
 
 	eventPopState = (event: PopStateEvent) => {
-		var settings = event.state as TopicDisplaySettings;
+		let settings = event.state as TopicDisplaySettings;
 
 		if (settings) {
 			this.settings = settings;
