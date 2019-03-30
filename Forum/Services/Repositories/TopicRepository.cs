@@ -198,16 +198,16 @@ namespace Forum.Services.Repositories {
 					messagePreview.Unread = GetUnreadLevel(message.Id, lastMessageTime);
 				}
 
-				var boardIdQuery = from messageBoard in DbContext.TopicBoards
-								   where messageBoard.MessageId == message.Id
-								   select messageBoard.BoardId;
+				var boardIdQuery = from topicBoard in DbContext.TopicBoards
+								   where topicBoard.MessageId == message.Id
+								   select topicBoard.BoardId;
 
-				var messageBoards = new List<Models.ViewModels.Boards.Items.IndexBoard>();
+				var topicBoards = new List<Models.ViewModels.Boards.Items.IndexBoard>();
 
 				foreach (var boardId in boardIdQuery) {
 					var boardRecord = boards.Single(r => r.Id == boardId);
 
-					messageBoards.Add(new Models.ViewModels.Boards.Items.IndexBoard {
+					topicBoards.Add(new Models.ViewModels.Boards.Items.IndexBoard {
 						Id = boardRecord.Id.ToString(),
 						Name = boardRecord.Name,
 						Description = boardRecord.Description,
@@ -215,7 +215,7 @@ namespace Forum.Services.Repositories {
 					});
 				}
 
-				messagePreview.Boards = messageBoards.OrderBy(r => r.DisplayOrder).ToList();
+				messagePreview.Boards = topicBoards.OrderBy(r => r.DisplayOrder).ToList();
 			}
 
 			return messagePreviews;
@@ -237,9 +237,9 @@ namespace Forum.Services.Repositories {
 
 			if (boardId > 0) {
 				messageQuery = from message in DbContext.Messages
-							   join messageBoard in DbContext.TopicBoards on message.Id equals messageBoard.MessageId
+							   join topicBoard in DbContext.TopicBoards on message.Id equals topicBoard.MessageId
 							   where message.ParentId == 0
-							   where messageBoard.BoardId == boardId
+							   where topicBoard.BoardId == boardId
 							   where !message.Deleted
 							   select new {
 								   message.Id,
@@ -446,13 +446,13 @@ namespace Forum.Services.Repositories {
 			var existingRecord = await DbContext.TopicBoards.FirstOrDefaultAsync(p => p.MessageId == messageId && p.BoardId == boardId);
 
 			if (existingRecord is null) {
-				var messageBoardRecord = new DataModels.TopicBoard {
+				var topicBoardRecord = new DataModels.TopicBoard {
 					MessageId = messageId,
 					BoardId = boardId,
 					UserId = UserContext.ApplicationUser.Id
 				};
 
-				DbContext.TopicBoards.Add(messageBoardRecord);
+				DbContext.TopicBoards.Add(topicBoardRecord);
 			}
 			else {
 				DbContext.TopicBoards.Remove(existingRecord);
@@ -544,7 +544,7 @@ namespace Forum.Services.Repositories {
 			await MessageRepository.RebuildParticipantsForTopic(targetMessage.Id);
 			RemoveTopicViewlogs(sourceMessage, targetMessage);
 			RemoveTopicBookmarks(sourceMessage);
-			RemoveTopicMessageBoards(sourceMessage);
+			RemoveTopicBoards(sourceMessage);
 		}
 
 		public void UpdateMessagesParentId(DataModels.Message sourceMessage, DataModels.Message targetMessage) {
@@ -576,7 +576,7 @@ namespace Forum.Services.Repositories {
 			DbContext.SaveChanges();
 		}
 
-		public void RemoveTopicMessageBoards(DataModels.Message sourceMessage) {
+		public void RemoveTopicBoards(DataModels.Message sourceMessage) {
 			var records = DbContext.TopicBoards.Where(item => item.MessageId == sourceMessage.Id);
 			DbContext.RemoveRange(records);
 			DbContext.SaveChanges();

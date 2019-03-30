@@ -17,6 +17,11 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Remove="Migrations\20190330194822_createTopics.cs" />
+	  <Compile Remove="Migrations\20190330194822_createTopics.Designer.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="CoreCompat.System.Drawing" Version="1.0.0-beta006" />
 		<PackageReference Include="HtmlAgilityPack" Version="1.8.11" />
 		<PackageReference Include="Jdenticon.AspNetCore" Version="2.2.1" />

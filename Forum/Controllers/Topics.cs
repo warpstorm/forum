@@ -387,11 +387,11 @@ namespace Forum.Controllers {
 		}
 
 		public async Task<List<Models.DataModels.Board>> LoadTopicBoards(int topicId) {
-			var messageBoardsQuery = from messageBoard in DbContext.TopicBoards
-									 where messageBoard.MessageId == topicId
-									 select messageBoard.BoardId;
+			var topicBoardsQuery = from topicBoard in DbContext.TopicBoards
+									 where topicBoard.MessageId == topicId
+									 select topicBoard.BoardId;
 
-			var boardIds = messageBoardsQuery.ToList();
+			var boardIds = topicBoardsQuery.ToList();
 			var assignedBoards = (await BoardRepository.Records()).Where(r => boardIds.Contains(r.Id)).ToList();
 
 			if (!await RoleRepository.CanAccessBoards(assignedBoards)) {

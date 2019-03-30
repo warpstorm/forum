@@ -116,9 +116,9 @@ namespace Forum.Services.Repositories {
 
 			var record = CreateMessageRecord(processedMessage, null);
 
-			var existingMessageBoards = DbContext.TopicBoards.Where(item => item.MessageId == record.Id).ToList();
+			var existingTopicBoards = DbContext.TopicBoards.Where(item => item.MessageId == record.Id).ToList();
 
-			foreach (var item in existingMessageBoards) {
+			foreach (var item in existingTopicBoards) {
 				DbContext.Remove(item);
 			}
 
@@ -953,10 +953,10 @@ namespace Forum.Services.Repositories {
 		}
 
 		async Task RemoveMessageArtifacts(DataModels.Message record) {
-			var messageBoards = await DbContext.TopicBoards.Where(m => m.MessageId == record.Id).ToListAsync();
+			var topicBoards = await DbContext.TopicBoards.Where(m => m.MessageId == record.Id).ToListAsync();
 
-			foreach (var messageBoard in messageBoards) {
-				DbContext.TopicBoards.Remove(messageBoard);
+			foreach (var topicBoard in topicBoards) {
+				DbContext.TopicBoards.Remove(topicBoard);
 			}
 
 			var messageThoughts = await DbContext.MessageThoughts.Where(mt => mt.MessageId == record.Id).ToListAsync();

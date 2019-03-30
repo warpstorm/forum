@@ -118,13 +118,13 @@ namespace Forum.Services.Repositories {
 			};
 
 			if (includeReplies) {
-				var messages = from messageBoard in DbContext.TopicBoards
-							   join message in DbContext.Messages on messageBoard.MessageId equals message.Id
-							   where messageBoard.BoardId == boardRecord.Id
+				var messages = from topicBoard in DbContext.TopicBoards
+							   join message in DbContext.Messages on topicBoard.MessageId equals message.Id
+							   where topicBoard.BoardId == boardRecord.Id
 							   where !message.Deleted
 							   orderby message.LastReplyPosted descending
 							   select new {
-								   messageBoard.MessageId,
+								   topicBoard.MessageId,
 								   LastReplyId = message.LastReplyId > 0 ? message.LastReplyId : message.Id,
 								   TopicPreview = message.ShortPreview
 							   };
@@ -133,14 +133,14 @@ namespace Forum.Services.Repositories {
 
 				// Only checks the most recent 10 topics. If all 10 are forbidden, then LastMessage stays null.
 				foreach (var item in messages.Take(10)) {
-					var messageBoardQuery = from messageBoard in DbContext.TopicBoards
-											where messageBoard.MessageId == item.MessageId
-											select messageBoard.BoardId;
+					var topicBoardQuery = from topicBoard in DbContext.TopicBoards
+											where topicBoard.MessageId == item.MessageId
+											select topicBoard.BoardId;
 
-					var messageBoards = messageBoardQuery.ToList();
+					var topicBoards = topicBoardQuery.ToList();
 
 					var messageRoleIds = from role in await RoleRepository.BoardRoles()
-										 where messageBoards.Contains(role.BoardId)
+										 where topicBoards.Contains(role.BoardId)
 										 select role.RoleId;
 
 					if (UserContext.IsAdmin || !messageRoleIds.Any() || messageRoleIds.Intersect(UserContext.Roles).Any()) {
@@ -384,12 +384,12 @@ namespace Forum.Services.Repositories {
 				return serviceResponse;
 			}
 
-			var messageBoards = DbContext.TopicBoards.Where(m => m.BoardId == fromBoard.Id).ToList();
+			var topicBoards = DbContext.TopicBoards.Where(m => m.BoardId == fromBoard.Id).ToList();
 
 			// Reassign messages to new board
-			foreach (var messageBoard in messageBoards) {
-				messageBoard.BoardId = toBoard.Id;
-				DbContext.Update(messageBoard);
+			foreach (var topicBoard in topicBoards) {
+				topicBoard.BoardId = toBoard.Id;
+				DbContext.Update(topicBoard);
 			}
 
 			DbContext.SaveChanges();
@@ -528,9 +528,9 @@ namespace Forum.Services.Repositories {
 
 			var forbiddenBoardIds = forbiddenBoardIdsQuery.ToList();
 
-			var messageBoards = await DbContext.TopicBoards.Where(mb => mb.MessageId == messageId).Select(mb => mb.BoardId).ToListAsync();
+			var topicBoards = await DbContext.TopicBoards.Where(mb => mb.MessageId == messageId).Select(mb => mb.BoardId).ToListAsync();
 
-			return !messageBoards.Any() || !messageBoards.Intersect(forbiddenBoardIds).Any();
+			return !topicBoards.Any() || !topicBoards.Intersect(forbiddenBoardIds).Any();
 		}
 	}
 }
