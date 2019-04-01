@@ -1,0 +1,40 @@
+﻿@model ViewModels.MultiStep
+
+<div class="content-box pad gap-bottom">
+	<p>@Model.ActionNote</p>
+	<div class="main-bar">
+		<div class="completed-bar">0%</div>
+	</div>
+	<p class="small-pad-top font-small">
+		<button id="start" class="font-small">Start</button>
+		<span id="steps">Step <span id="current-page">0</span> of <span id="total-pages">0</span></span>
+	</p>
+</div>
+
+<div class="content-box pad gap-bottom">
+	<p class="font-small subdued-text">Settings</p>
+	<p><input id="halt" type="checkbox" checked="checked" /> <span class="note">Halt on errors</span></p>
+</div>
+
+<div class="content-box pad">
+	<p class="font-small subdued-text">Log</p>
+	<ul id="log"></ul>
+</div>
+
+
+@{ViewData["Title"] = $"{Model.ActionName}";}
+@section Header {@ViewData["Title"]}
+
+@section styles {
+	<link rel="stylesheet" href="~/styles/multi-step.css" asp-append-version="true" />
+}
+
+@section scripts {
+	<script>
+		window.pageActions = 'multi-step';
+		window.page = @Model.Page;
+		window.totalPages = 12; //@Model.TotalPages;
+		window.take = @Model.Take;
+		window.nextAction = '@Model.Action';
+	</script>
+}
