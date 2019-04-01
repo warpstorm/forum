@@ -242,7 +242,6 @@ export class TopicDisplay {
 			body: queryify(requestBodyValues)
 		});
 
-		submitRequestOptions.headers['Content-Type'] = 'application/x-www-form-urlencoded;charset=UTF-8';
 		submitRequestOptions.headers['RequestVerificationToken'] = await self.getToken(form);
 
 		let xhrResult = await Xhr.request(submitRequestOptions);

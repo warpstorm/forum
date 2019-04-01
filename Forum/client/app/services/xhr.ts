@@ -14,6 +14,11 @@ export module Xhr {
 			xhr.responseType = options.responseType;
 
 			xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+
+			if (options.method == HttpMethod.Post) {
+				options.headers['Content-Type'] = 'application/x-www-form-urlencoded;charset=UTF-8';
+			}
+
 			Object.keys(options.headers).forEach(key => xhr.setRequestHeader(key, options.headers[key]));
 
 			xhr.ontimeout = () => logRejected('Request timed out.', reject);
