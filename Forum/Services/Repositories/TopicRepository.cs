@@ -115,110 +115,83 @@ namespace Forum.Services.Repositories {
 				latestMessageId = record.Id;
 			}
 
-			serviceResponse.RedirectPath = UrlHelper.Action(nameof(Controllers.Topics.Display), nameof(Controllers.Topics), new { id = latestMessageId });
+			serviceResponse.RedirectPath = UrlHelper.Action(nameof(Topics.Display), nameof(Topics), new { id = latestMessageId });
 
 			return serviceResponse;
 		}
 
-		public async Task<List<ItemModels.MessagePreview>> GetPreviews(List<int> messageIds) {
-			var messageQuery = from message in DbContext.Messages
-							   where messageIds.Contains(message.Id)
-							   where !message.Deleted
-							   select new {
-								   message.Id,
-								   message.ShortPreview,
-								   message.ViewCount,
-								   message.ReplyCount,
-								   message.TimePosted,
-								   message.PostedById,
-								   message.LastReplyId,
-								   message.LastReplyById,
-								   message.LastReplyPosted,
-								   message.Pinned
-							   };
+		public async Task<List<ItemModels.TopicPreview>> GetPreviews(List<int> topicIds) {
+			var topicsQuery = from topic in DbContext.Topics
+							  where topicIds.Contains(topic.Id)
+							  where !topic.Deleted
+							  select topic;
 
-			var messages = await messageQuery.ToListAsync();
+			var topics = await topicsQuery.ToListAsync();
+
+			var topicBoardsQuery = from topicBoard in DbContext.TopicBoards
+								   where topicIds.Contains(topicBoard.TopicId)
+								   select new {
+									   topicBoard.BoardId,
+									   topicBoard.TopicId
+								   };
+
+			var topicBoards = await topicBoardsQuery.ToListAsync();
+
 			var users = await AccountRepository.Records();
 
-			var messagePreviews = new List<ItemModels.MessagePreview>();
+			var topicPreviews = new List<ItemModels.TopicPreview>();
 			var today = DateTime.Now.Date;
 
 			var boards = await BoardRepository.Records();
 
-			foreach (var messageId in messageIds) {
-				var message = messages.First(item => item.Id == messageId);
-				var postedBy = users.First(r => r.Id == message.PostedById);
+			foreach (var topicId in topicIds) {
+				var topic = topics.First(item => item.Id == topicId);
+				var firstMessagePostedBy = users.First(r => r.Id == topic.FirstMessagePostedById);
+				var lastMessagePostedBy = users.First(r => r.Id == topic.LastMessagePostedById);
 
-				var messagePreview = new ItemModels.MessagePreview {
-					Id = message.Id,
-					ShortPreview = string.IsNullOrEmpty(message.ShortPreview.Trim()) ? "No subject" : message.ShortPreview,
-					Views = message.ViewCount,
-					Replies = message.ReplyCount,
-					Pages = Convert.ToInt32(Math.Ceiling(1.0 * message.ReplyCount / UserContext.ApplicationUser.MessagesPerPage)),
-					LastReplyId = message.Id,
-					Popular = message.ReplyCount > UserContext.ApplicationUser.PopularityLimit,
-					Pinned = message.Pinned,
-					TimePosted = message.TimePosted,
-					PostedById = message.PostedById,
-					PostedByName = postedBy.DecoratedName,
-					PostedByBirthday = today == new DateTime(today.Year, postedBy.Birthday.Month, postedBy.Birthday.Day).Date
+				var topicPreview = new ItemModels.TopicPreview {
+					Id = topic.Id,
+					Pinned = topic.Pinned,
+					ViewCount = topic.ViewCount,
+					ReplyCount = topic.ReplyCount,
+					Popular = topic.ReplyCount > UserContext.ApplicationUser.PopularityLimit,
+					Pages = Convert.ToInt32(Math.Ceiling(1.0 * topic.ReplyCount / UserContext.ApplicationUser.MessagesPerPage)),
+					FirstMessageId = topic.FirstMessageId,
+					FirstMessageTimePosted = topic.FirstMessageTimePosted,
+					FirstMessagePostedById = topic.FirstMessagePostedById,
+					FirstMessagePostedByName = firstMessagePostedBy?.DecoratedName ?? "User",
+					FirstMessagePostedByBirthday = today == new DateTime(today.Year, firstMessagePostedBy.Birthday.Month, firstMessagePostedBy.Birthday.Day).Date,
+					FirstMessageShortPreview = string.IsNullOrEmpty(topic.FirstMessageShortPreview.Trim()) ? "No subject" : topic.FirstMessageShortPreview,
+					LastMessageId = topic.Id,
+					LastMessageTimePosted = topic.LastMessageTimePosted,
+					LastMessagePostedById = topic.LastMessagePostedById,
+					LastMessagePostedByName = lastMessagePostedBy?.DecoratedName ?? "User",
+					LastMessagePostedByBirthday = today == new DateTime(today.Year, firstMessagePostedBy.Birthday.Month, firstMessagePostedBy.Birthday.Day).Date,
 				};
 
-				messagePreviews.Add(messagePreview);
-
-				var lastMessageTime = message.TimePosted;
-
-				if (message.LastReplyId != 0) {
-					var lastReply = (from item in DbContext.Messages
-									 where item.Id == message.LastReplyId
-									 where !item.Deleted
-									 select new {
-										 item.ShortPreview
-									 }).FirstOrDefault();
-
-					if (lastReply != null) {
-						var lastReplyBy = users.FirstOrDefault(r => r.Id == message.LastReplyById);
-
-						messagePreview.LastReplyId = message.LastReplyId;
-						messagePreview.LastReplyPreview = lastReply.ShortPreview;
-						messagePreview.LastReplyById = message.LastReplyById;
-						messagePreview.LastReplyPosted = message.LastReplyPosted;
-						lastMessageTime = message.LastReplyPosted;
-						messagePreview.LastReplyByName = lastReplyBy?.DecoratedName ?? "User";
-
-						if (!(lastReplyBy is null)) {
-							messagePreview.LastReplyByBirthday = today.Date == new DateTime(today.Year, lastReplyBy.Birthday.Month, lastReplyBy.Birthday.Day).Date;
-						}
-					}
-				}
+				topicPreviews.Add(topicPreview);
 
 				var historyTimeLimit = DateTime.Now.AddDays(-14);
 
-				if (lastMessageTime > historyTimeLimit) {
-					messagePreview.Unread = GetUnreadLevel(message.Id, lastMessageTime);
+				if (topic.LastMessageTimePosted > historyTimeLimit) {
+					topicPreview.Unread = GetUnreadLevel(topic.Id, topic.LastMessageTimePosted);
 				}
 
-				var boardIdQuery = from topicBoard in DbContext.TopicBoards
-								   where topicBoard.MessageId == message.Id
-								   select topicBoard.BoardId;
+				var topicPreviewBoardsQuery = from topicBoard in topicBoards
+											  where topicBoard.TopicId == topic.Id
+											  join board in boards on topicBoard.BoardId equals board.Id
+											  orderby board.DisplayOrder
+											  select new Models.ViewModels.Boards.Items.IndexBoard {
+												  Id = board.Id.ToString(),
+												  Name = board.Name,
+												  Description = board.Description,
+												  DisplayOrder = board.DisplayOrder,
+											  };
 
-				var topicBoards = new List<Models.ViewModels.Boards.Items.IndexBoard>();
-
-				foreach (var boardId in boardIdQuery) {
-					var boardRecord = boards.Single(r => r.Id == boardId);
-
-					topicBoards.Add(new Models.ViewModels.Boards.Items.IndexBoard {
-						Id = boardRecord.Id.ToString(),
-						Name = boardRecord.Name,
-						Description = boardRecord.Description,
-						DisplayOrder = boardRecord.DisplayOrder,
-					});
-				}
-
-				messagePreview.Boards = topicBoards.OrderBy(r => r.DisplayOrder).ToList();
+				topicPreview.Boards = topicPreviewBoardsQuery.ToList();
 			}
 
-			return messagePreviews;
+			return topicPreviews;
 		}
 
 		public async Task<List<int>> GetIndexIds(int boardId, int page, int unreadFilter) {
@@ -226,46 +199,44 @@ namespace Forum.Services.Repositories {
 			var skip = (page - 1) * take;
 			var historyTimeLimit = DateTime.Now.AddDays(-14);
 
-			var messageQuery = from message in DbContext.Messages
-							   where message.ParentId == 0
-							   where !message.Deleted
-							   select new {
-								   message.Id,
-								   message.LastReplyPosted,
-								   message.Pinned
-							   };
+			var topicQuery = from topic in DbContext.Topics
+							 where !topic.Deleted
+							 select new {
+								 topic.Id,
+								 topic.LastMessageTimePosted,
+								 topic.Pinned
+							 };
 
 			if (boardId > 0) {
-				messageQuery = from message in DbContext.Messages
-							   join topicBoard in DbContext.TopicBoards on message.Id equals topicBoard.MessageId
-							   where message.ParentId == 0
-							   where topicBoard.BoardId == boardId
-							   where !message.Deleted
-							   select new {
-								   message.Id,
-								   message.LastReplyPosted,
-								   message.Pinned
-							   };
+				topicQuery = from topic in DbContext.Topics
+							 join topicBoard in DbContext.TopicBoards on topic.Id equals topicBoard.MessageId
+							 where topicBoard.BoardId == boardId
+							 where !topic.Deleted
+							 select new {
+								 topic.Id,
+								 topic.LastMessageTimePosted,
+								 topic.Pinned
+							 };
 			}
 
 			if (unreadFilter > 0) {
-				messageQuery = messageQuery.Where(m => m.LastReplyPosted > historyTimeLimit);
+				topicQuery = topicQuery.Where(m => m.LastMessageTimePosted > historyTimeLimit);
 			}
 
-			var sortedMessageQuery = from message in messageQuery
-									 orderby message.LastReplyPosted descending
-									 orderby message.Pinned descending
-									 select new {
-										 message.Id,
-										 message.LastReplyPosted
-									 };
+			var sortedTopicQuery = from topic in topicQuery
+								   orderby topic.LastMessageTimePosted descending
+								   orderby topic.Pinned descending
+								   select new {
+									   topic.Id,
+									   topic.LastMessageTimePosted
+								   };
 
-			var messageIds = new List<int>();
+			var topicIds = new List<int>();
 			var attempts = 0;
 			var skipped = 0;
 
-			foreach (var message in sortedMessageQuery) {
-				if (!await BoardRepository.CanAccess(message.Id)) {
+			foreach (var topic in sortedTopicQuery) {
+				if (!await BoardRepository.CanAccess(topic.Id)) {
 					if (attempts++ > 100) {
 						break;
 					}
@@ -273,7 +244,7 @@ namespace Forum.Services.Repositories {
 					continue;
 				}
 
-				var unreadLevel = unreadFilter == 0 ? 0 : GetUnreadLevel(message.Id, message.LastReplyPosted);
+				var unreadLevel = unreadFilter == 0 ? 0 : GetUnreadLevel(topic.Id, topic.LastMessageTimePosted);
 
 				if (unreadLevel < unreadFilter) {
 					if (attempts++ > 100) {
@@ -287,17 +258,17 @@ namespace Forum.Services.Repositories {
 					continue;
 				}
 
-				messageIds.Add(message.Id);
+				topicIds.Add(topic.Id);
 
-				if (messageIds.Count == take) {
+				if (topicIds.Count == take) {
 					break;
 				}
 			}
 
-			return messageIds;
+			return topicIds;
 		}
 
-		public int GetUnreadLevel(int messageId, DateTime lastMessageTime) {
+		public int GetUnreadLevel(int topicId, DateTime lastMessageTime) {
 			var unread = 1;
 
 			if (UserContext.IsAuthenticated) {
@@ -307,8 +278,8 @@ namespace Forum.Services.Repositories {
 							unread = 0;
 							break;
 
-						case EViewLogTargetType.Message:
-							if (viewLog.TargetId == messageId) {
+						case EViewLogTargetType.Topic:
+							if (viewLog.TargetId == topicId) {
 								unread = 0;
 							}
 
@@ -322,7 +293,7 @@ namespace Forum.Services.Repositories {
 				}
 			}
 
-			if (unread == 1 && DbContext.Participants.Any(r => r.MessageId == messageId && r.UserId == UserContext.ApplicationUser.Id)) {
+			if (unread == 1 && DbContext.Participants.Any(r => r.TopicId == topicId && r.UserId == UserContext.ApplicationUser.Id)) {
 				unread = 2;
 			}
 

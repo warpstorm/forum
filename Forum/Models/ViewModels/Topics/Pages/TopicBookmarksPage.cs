@@ -3,6 +3,6 @@ using System.Collections.Generic;
 
 namespace Forum.Models.ViewModels.Topics.Pages {
 	public class TopicBookmarksPage {
-		public List<MessagePreview> Topics { get; set; }
+		public List<TopicPreview> Topics { get; set; }
 	}
 }

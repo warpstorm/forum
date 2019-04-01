@@ -62,16 +62,17 @@ namespace Forum.Controllers {
 		[ActionLog("is viewing the topic index.")]
 		[HttpGet]
 		public async Task<IActionResult> Index(int id = 0, int pageId = 1, int unread = 0) {
-			var messageIds = await TopicRepository.GetIndexIds(id, pageId, unread);
+			var topicIds = await TopicRepository.GetIndexIds(id, pageId, unread);
 			var morePages = true;
 
-			if (messageIds.Count < UserContext.ApplicationUser.TopicsPerPage) {
+			if (topicIds.Count < UserContext.ApplicationUser.TopicsPerPage) {
 				morePages = false;
 			}
 
-			var topicPreviews = await TopicRepository.GetPreviews(messageIds);
+			var topicPreviews = await TopicRepository.GetPreviews(topicIds);
 
-			var boardRecord = id == 0 ? null : (await BoardRepository.Records()).FirstOrDefault(record => record.Id == id);
+			var boardRecords = await BoardRepository.Records();
+			var boardRecord = id == 0 ? null : boardRecords.FirstOrDefault(item => item.Id == id);
 
 			var viewModel = new PageModels.TopicIndexPage {
 				BoardId = id,
@@ -88,26 +89,28 @@ namespace Forum.Controllers {
 		[HttpGet]
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		public async Task<IActionResult> Merge(int id, int pageId = 1) {
-			var record = DbContext.Messages.FirstOrDefault(item => item.Id == id);
+			var sourceTopic = DbContext.Topics.FirstOrDefault(item => item.Id == id);
 
-			if (record is null || record.Deleted) {
+			if (sourceTopic is null || sourceTopic.Deleted) {
 				throw new HttpNotFoundError();
 			}
 
-			var messageIds = await TopicRepository.GetIndexIds(0, pageId, 0);
+			var topicIds = await TopicRepository.GetIndexIds(0, pageId, 0);
 			var morePages = true;
 
-			if (messageIds.Count < UserContext.ApplicationUser.TopicsPerPage) {
+			if (topicIds.Count < UserContext.ApplicationUser.TopicsPerPage) {
 				morePages = false;
 			}
 
-			var topicPreviews = await TopicRepository.GetPreviews(messageIds);
+			var topicPreviews = await TopicRepository.GetPreviews(topicIds);
 
 			foreach (var topicPreview in topicPreviews.ToList()) {
 				if (topicPreview.Id == id) {
+					// Exclude the source topic
 					topicPreviews.Remove(topicPreview);
 				}
 				else {
+					// Mark the source topic for all target topics.
 					topicPreview.SourceId = id;
 				}
 			}
@@ -127,8 +130,9 @@ namespace Forum.Controllers {
 		[ActionLog("is viewing their bookmarks.")]
 		[HttpGet]
 		public async Task<IActionResult> Bookmarks() {
-			var messageIds = (await BookmarkRepository.Records()).Select(r => r.MessageId).ToList();
-			var topicPreviews = await TopicRepository.GetPreviews(messageIds);
+			var bookmarkRecords = await BookmarkRepository.Records();
+			var topicIds = bookmarkRecords.Select(r => r.TopicId).ToList();
+			var topicPreviews = await TopicRepository.GetPreviews(topicIds);
 
 			var viewModel = new PageModels.TopicBookmarksPage {
 				Topics = topicPreviews

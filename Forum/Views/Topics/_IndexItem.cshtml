@@ -1,12 +1,12 @@
-﻿@model MessagePreview
+﻿@model TopicPreview
 
 <div class="content-box gap hover-highlight">
 	<div class="details full-details small-pad" clickable-link-parent>
 		<div class="topic-info mobile-hide float-right font-small subdued-text">
-			<p>Started <passed-time time="@Model.TimePosted" /> by @Html.Raw(Model.PostedByName).</p>
+			<p>Started <passed-time time="@Model.FirstMessageTimePosted" /> by @Html.Raw(Model.FirstMessagePostedByName).</p>
 
-			@if (Model.LastReplyId != Model.Id) {
-				<p>Last reply was <passed-time time="@Model.LastReplyPosted" /> by @Html.Raw(Model.LastReplyByName).</p>
+			@if (Model.LastMessageId != Model.Id) {
+				<p>Last reply was <passed-time time="@Model.LastMessageTimePosted" /> by @Html.Raw(Model.LastMessagePostedByName).</p>
 			}
 
 			<p>
@@ -19,27 +19,27 @@
 
 				&nbsp;
 
-				@if (Model.Views == 1) {
+				@if (Model.ViewCount == 1) {
 					<text>1 view</text>
 				}
 				else {
-					@Model.Views <text> views</text>
+					@Model.ViewCount <text> views</text>
 				}
 
 				&nbsp;
 
-				@if (Model.Replies == 1) {
+				@if (Model.ReplyCount == 1) {
 					<text>1 reply</text>
 				}
 				else {
-					@Model.Replies <text> replies</text>
+					@Model.ReplyCount <text> replies</text>
 				}
 			</p>
 		</div>
 
 		<p class="small-pad-top small-pad-left">
 			<a asp-action="@nameof(Topics.Latest)" asp-route-id="@Model.Id">
-				@Html.Raw(Model.ShortPreview)
+				@Html.Raw(Model.FirstMessageShortPreview)
 				@if (Model.Popular) {
 					<img src="~/images/flame.png" title="Popular" />
 				}
@@ -50,10 +50,10 @@
 		</p>
 
 		<div class="mobile-only font-small subdued-text pad-left">
-			<p>Started <passed-time time="@Model.TimePosted" /> by @Html.Raw(Model.PostedByName).</p>
+			<p>Started <passed-time time="@Model.FirstMessageTimePosted" /> by @Html.Raw(Model.FirstMessagePostedByName).</p>
 
-			@if (Model.LastReplyId != Model.Id) {
-				<p>Last reply was <passed-time time="@Model.LastReplyPosted" /> by @Html.Raw(Model.LastReplyByName).</p>
+			@if (Model.LastMessageId != Model.Id) {
+				<p>Last reply was <passed-time time="@Model.LastMessageTimePosted" /> by @Html.Raw(Model.LastMessagePostedByName).</p>
 			}
 
 			<p>
@@ -66,20 +66,20 @@
 
 				&nbsp;
 
-				@if (Model.Views == 1) {
+				@if (Model.ViewCount == 1) {
 					<text>1 view</text>
 				}
 				else {
-					@Model.Views <text> views</text>
+					@Model.ViewCount <text> views</text>
 				}
 
 				&nbsp;
 
-				@if (Model.Replies == 1) {
+				@if (Model.ReplyCount == 1) {
 					<text>1 reply</text>
 				}
 				else {
-					@Model.Replies <text> replies</text>
+					@Model.ReplyCount <text> replies</text>
 				}
 			</p>
 		</div>

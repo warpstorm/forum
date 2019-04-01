@@ -2,13 +2,13 @@
 
 <div>
 	<div class="board-last-post pad float-right mobile-hide" clickable-link-parent>
-		@if (Model.LastMessage != null) {
+		@if (Model.RecentTopic != null) {
 			<p>
-				<a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Latest)" asp-route-id="@Model.LastMessage.Id">
-					@Html.Raw(Model.LastMessage.ShortPreview)
+				<a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Latest)" asp-route-id="@Model.RecentTopic.Id">
+					@Html.Raw(Model.RecentTopic.FirstMessageShortPreview)
 				</a>
 			</p>
-			<p class="font-small subdued-text">by @Html.Raw(Model.LastMessage.LastReplyByName), <passed-time time="@Model.LastMessage.LastReplyPosted" /></p>
+			<p class="font-small subdued-text">by @Html.Raw(Model.RecentTopic.LastMessagePostedByName), <passed-time time="@Model.RecentTopic.LastMessageTimePosted" /></p>
 		}
 	</div>
 
@@ -16,12 +16,12 @@
 		<h2><a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)" asp-route-id="@Model.Id">@Model.Name</a></h2>
 		<p class="font-small subdued-text small-pad-left">@Model.Description</p>
 
-		@if (Model.LastMessage != null) {
+		@if (Model.RecentTopic != null) {
 			<div class="board-last-post pad mobile-only" clickable-link-parent>
-				<p class="font-small subdued-text">Last post by @Html.Raw(Model.LastMessage.LastReplyByName), <passed-time time="@Model.LastMessage.LastReplyPosted" />
+				<p class="font-small subdued-text">Last post by @Html.Raw(Model.RecentTopic.LastMessagePostedByName), <passed-time time="@Model.RecentTopic.LastMessageTimePosted" />
 				<p>
-					<a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Latest)" asp-route-id="@Model.LastMessage.Id">
-						@Html.Raw(Model.LastMessage.ShortPreview)
+					<a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Latest)" asp-route-id="@Model.RecentTopic.Id">
+						@Html.Raw(Model.RecentTopic.FirstMessageShortPreview)
 					</a>
 				</p>
 			</div>

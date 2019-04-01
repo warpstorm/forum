@@ -147,16 +147,16 @@ namespace Forum.Services.Repositories {
 						var lastReplyQuery = from message in DbContext.Messages
 											 where message.Id == item.LastReplyId
 											 where !message.Deleted
-											 select new Models.ViewModels.Topics.Items.MessagePreview {
+											 select new Models.ViewModels.Topics.Items.TopicPreview {
 												 Id = message.Id,
-												 ShortPreview = item.TopicPreview,
-												 LastReplyId = message.LastReplyId,
-												 LastReplyById = message.LastReplyById,
-												 LastReplyPosted = message.LastReplyPosted,
+												 FirstMessageShortPreview = item.TopicPreview,
+												 LastMessageId = message.LastReplyId,
+												 LastMessagePostedById = message.LastReplyById,
+												 LastMessageTimePosted = message.LastReplyPosted,
 											 };
 
-						indexBoard.LastMessage = lastReplyQuery.FirstOrDefault();
-						indexBoard.LastMessage.LastReplyByName = users.FirstOrDefault(r => r.Id == indexBoard.LastMessage.LastReplyById)?.DecoratedName ?? "User";
+						indexBoard.RecentTopic = lastReplyQuery.FirstOrDefault();
+						indexBoard.RecentTopic.LastMessagePostedByName = users.FirstOrDefault(r => r.Id == indexBoard.RecentTopic.LastMessagePostedById)?.DecoratedName ?? "User";
 						break;
 					}
 				}
@@ -516,7 +516,7 @@ namespace Forum.Services.Repositories {
 			return serviceResponse;
 		}
 
-		public async Task<bool> CanAccess(int messageId) {
+		public async Task<bool> CanAccess(int topicId) {
 			if (UserContext.IsAdmin) {
 				return true;
 			}
@@ -528,7 +528,7 @@ namespace Forum.Services.Repositories {
 
 			var forbiddenBoardIds = forbiddenBoardIdsQuery.ToList();
 
-			var topicBoards = await DbContext.TopicBoards.Where(mb => mb.MessageId == messageId).Select(mb => mb.BoardId).ToListAsync();
+			var topicBoards = await DbContext.TopicBoards.Where(item => item.TopicId == topicId).Select(item => item.BoardId).ToListAsync();
 
 			return !topicBoards.Any() || !topicBoards.Intersect(forbiddenBoardIds).Any();
 		}

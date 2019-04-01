@@ -14,6 +14,6 @@ namespace Forum.Models.ViewModels.Topics.Pages {
 		public string BoardName { get; set; }
 		public bool MorePages { get; set; }
 
-		public List<MessagePreview> Topics { get; set; }
+		public List<TopicPreview> Topics { get; set; }
 	}
 }

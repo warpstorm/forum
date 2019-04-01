@@ -1,4 +1,4 @@
-﻿@model MessagePreview
+﻿@model TopicPreview
 
 <div class="highlight gap-top">
 	<div class="pin float-right small-pad-top">
@@ -7,7 +7,7 @@
 	<div class="details small-pad" clickable-link-parent>
 		<p>
 			<a asp-action="@nameof(Topics.Latest)" asp-route-id="@Model.Id">
-				@Html.Raw(Model.ShortPreview)
+				@Html.Raw(Model.FirstMessageShortPreview)
 				@if (Model.Popular) {
 					<img src="~/images/flame.png" title="Popular" />
 				}

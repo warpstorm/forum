@@ -8,6 +8,6 @@ namespace Forum.Models.ViewModels.Boards.Items {
 		public int DisplayOrder { get; set; }
 		public bool Unread { get; set; }
 
-		public MessagePreview LastMessage { get; set; }
+		public TopicPreview RecentTopic { get; set; }
 	}
 }

@@ -1,4 +1,4 @@
-﻿@model MessagePreview
+﻿@model TopicPreview
 
 <div class="content-box gap hover-highlight">
 	@if (Model.Pinned) {
@@ -9,7 +9,7 @@
 	<div class="details pad" clickable-link-parent>
 		<p>
 			<a asp-action="@nameof(Topics.FinishMerge)" asp-route-sourceId="@Model.SourceId" asp-route-targetId="@Model.Id">
-				@Html.Raw(Model.ShortPreview)
+				@Html.Raw(Model.FirstMessageShortPreview)
 				@if (Model.Popular) {
 					<img src="~/images/flame.png" title="Popular" />
 				}
@@ -17,36 +17,36 @@
 		</p>
 		<div class="font-small subdued-text pad-left small-pad-top">
 			<p>
-				Started <passed-time time="@Model.TimePosted" /> by @Html.Raw(Model.PostedByName).
+				Started <passed-time time="@Model.FirstMessageTimePosted" /> by @Html.Raw(Model.FirstMessagePostedByName).
 			</p>
 
-			@if (Model.LastReplyId != Model.Id) {
+			@if (Model.LastMessageId != Model.Id) {
 				<p>
-					Last reply was <passed-time time="@Model.LastReplyPosted" /> by @Html.Raw(Model.LastReplyByName).
+					Last reply was <passed-time time="@Model.LastMessageTimePosted" /> by @Html.Raw(Model.LastMessagePostedByName).
 				</p>
 			}
 
 			<p class="small-pad-top dark-text">
-				@if (Model.Views == 0) {
+				@if (Model.ViewCount == 0) {
 					<text>No views yet</text>
 				}
-				else if (Model.Views == 1) {
+				else if (Model.ViewCount == 1) {
 					<text>1 view</text>
 				}
 				else {
-					@Model.Views <text> views</text>
+					@Model.ViewCount <text> views</text>
 				}
 
 				&nbsp;
 
-				@if (Model.Replies == 0) {
+				@if (Model.ReplyCount == 0) {
 					<text>No replies yet</text>
 				}
-				else if (Model.Replies == 1) {
+				else if (Model.ReplyCount == 1) {
 					<text>1 reply</text>
 				}
 				else {
-					@Model.Replies <text> replies</text>
+					@Model.ReplyCount <text> replies</text>
 				}
 
 				&nbsp;
