@@ -119,6 +119,10 @@ export function queryify(parameters: any = {}): string {
 }
 
 export function hide(element: any): void {
+	if (!element) {
+		return;
+	}
+
 	if (isString(element)) {
 		document.querySelectorAll(element).forEach(elem => {
 			hide(elem);
@@ -137,6 +141,10 @@ export function hide(element: any): void {
 };
 
 export function show(element: any): void {
+	if (!element) {
+		return;
+	}
+
 	if (isString(element)) {
 		document.querySelectorAll(element).forEach(elem => {
 			show(elem);
