@@ -131,15 +131,6 @@ namespace Forum.Services.Contexts {
 			modelBuilder.Entity<Message>()
 				.HasIndex(r => r.PostedById);
 
-			modelBuilder.Entity<TopicBoard>()
-				.HasIndex(r => r.BoardId);
-
-			modelBuilder.Entity<TopicBoard>()
-				.HasIndex(r => r.MessageId);
-
-			modelBuilder.Entity<TopicBoard>()
-				.HasIndex(r => r.TopicId);
-
 			modelBuilder.Entity<MessageThought>()
 				.HasIndex(r => r.MessageId);
 
@@ -163,6 +154,21 @@ namespace Forum.Services.Contexts {
 
 			modelBuilder.Entity<Quote>()
 				.HasIndex(r => r.Approved);
+
+			modelBuilder.Entity<Topic>()
+				.HasIndex(r => r.Deleted);
+
+			modelBuilder.Entity<Topic>()
+				.HasIndex(r => r.LastMessageTimePosted);
+
+			modelBuilder.Entity<TopicBoard>()
+				.HasIndex(r => r.BoardId);
+
+			modelBuilder.Entity<TopicBoard>()
+				.HasIndex(r => r.MessageId);
+
+			modelBuilder.Entity<TopicBoard>()
+				.HasIndex(r => r.TopicId);
 
 			modelBuilder.Entity<ViewLog>()
 				.HasIndex(r => new { r.UserId, r.LogTime });
