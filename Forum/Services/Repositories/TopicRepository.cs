@@ -432,15 +432,15 @@ namespace Forum.Services.Repositories {
 			await DbContext.SaveChangesAsync();
 		}
 
-		public void MarkRead(int topicId, DateTime latestMessageTime, List<int> pageMessageIds) {
+		public async Task MarkRead(int topicId, DateTime latestMessageTime, List<int> pageMessageIds) {
 			if (!UserContext.IsAuthenticated) {
 				return;
 			}
 
-			var viewLogs = DbContext.ViewLogs.Where(v =>
+			var viewLogs = await DbContext.ViewLogs.Where(v =>
 				v.UserId == UserContext.ApplicationUser.Id
-				&& (v.TargetType == EViewLogTargetType.All || (v.TargetType == EViewLogTargetType.Message && v.TargetId == topicId))
-			).ToList();
+				&& (v.TargetType == EViewLogTargetType.All || (v.TargetType == EViewLogTargetType.Topic && v.TargetId == topicId))
+			).ToListAsync();
 
 			DateTime latestTime;
 
@@ -454,7 +454,7 @@ namespace Forum.Services.Repositories {
 
 			latestTime.AddSeconds(1);
 
-			var existingLogs = viewLogs.Where(r => r.TargetType == EViewLogTargetType.Message);
+			var existingLogs = viewLogs.Where(r => r.TargetType == EViewLogTargetType.Topic);
 
 			foreach (var viewLog in existingLogs) {
 				DbContext.ViewLogs.Remove(viewLog);
@@ -463,30 +463,31 @@ namespace Forum.Services.Repositories {
 			DbContext.ViewLogs.Add(new DataModels.ViewLog {
 				LogTime = latestTime,
 				TargetId = topicId,
-				TargetType = EViewLogTargetType.Message,
+				TargetType = EViewLogTargetType.Topic,
 				UserId = UserContext.ApplicationUser.Id
 			});
 
 			foreach (var messageId in pageMessageIds) {
+				// Mark any relevant notifications read EXCEPT about thoughts
 				foreach (var notification in DbContext.Notifications.Where(item => item.UserId == UserContext.ApplicationUser.Id && item.Type != ENotificationType.Thought && item.MessageId == messageId)) {
 					notification.Unread = false;
 					DbContext.Update(notification);
 				}
 			}
 
-			DbContext.SaveChanges();
+			await DbContext.SaveChangesAsync();
 		}
 
 		public async Task<ServiceModels.ServiceResponse> Merge(int sourceId, int targetId) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
-			var sourceRecord = DbContext.Messages.FirstOrDefault(item => item.Id == sourceId);
+			var sourceRecord = DbContext.Topics.FirstOrDefault(item => item.Id == sourceId);
 
 			if (sourceRecord is null || sourceRecord.Deleted) {
 				serviceResponse.Error("Source record not found");
 			}
 
-			var targetRecord = DbContext.Messages.FirstOrDefault(item => item.Id == targetId);
+			var targetRecord = DbContext.Topics.FirstOrDefault(item => item.Id == targetId);
 
 			if (targetRecord is null || targetRecord.Deleted) {
 				serviceResponse.Error("Target record not found");
@@ -496,7 +497,7 @@ namespace Forum.Services.Repositories {
 				return serviceResponse;
 			}
 
-			if (sourceRecord.TimePosted > targetRecord.TimePosted) {
+			if (sourceRecord.FirstMessageTimePosted > targetRecord.FirstMessageTimePosted) {
 				await Merge(sourceRecord, targetRecord);
 				serviceResponse.RedirectPath = UrlHelper.Action(nameof(Topics.Latest), nameof(Topics), new { id = targetRecord.Id });
 			}
@@ -508,49 +509,121 @@ namespace Forum.Services.Repositories {
 			return serviceResponse;
 		}
 
-		public async Task Merge(DataModels.Message sourceMessage, DataModels.Message targetMessage) {
-			UpdateMessagesParentId(sourceMessage, targetMessage);
-			await MessageRepository.RecountRepliesForTopic(targetMessage);
-			await RemoveTopicParticipants(sourceMessage, targetMessage);
-			await MessageRepository.RebuildParticipantsForTopic(targetMessage.Id);
-			RemoveTopicViewlogs(sourceMessage, targetMessage);
-			RemoveTopicBookmarks(sourceMessage);
-			RemoveTopicBoards(sourceMessage);
+		public async Task Merge(DataModels.Topic sourceTopic, DataModels.Topic targetTopic) {
+			await UpdateMessagesTopicId(sourceTopic, targetTopic);
+			await RebuildTopic(targetTopic);
+			await RemoveTopicViewLogs(targetTopic.Id);
+			await RemoveTopicArtifacts(sourceTopic);
 		}
 
-		public void UpdateMessagesParentId(DataModels.Message sourceMessage, DataModels.Message targetMessage) {
-			var sourceMessages = DbContext.Messages.Where(item => item.Id == sourceMessage.Id || item.ParentId == sourceMessage.Id).ToList();
+		public async Task UpdateMessagesTopicId(DataModels.Topic sourceTopic, DataModels.Topic targetTopic) {
+			var sourceMessages = await DbContext.Messages.Where(item => item.TopicId == sourceTopic.Id).ToListAsync();
 
 			foreach (var message in sourceMessages) {
-				message.ParentId = targetMessage.Id;
+				message.TopicId = targetTopic.Id;
 				DbContext.Update(message);
 			}
 
-			DbContext.SaveChanges();
+			await DbContext.SaveChangesAsync();
 		}
 
-		public async Task RemoveTopicParticipants(DataModels.Message sourceMessage, DataModels.Message targetMessage) {
-			var records = await DbContext.Participants.Where(item => item.MessageId == sourceMessage.Id).ToListAsync();
+		public async Task RemoveTopicArtifacts(DataModels.Topic topic) {
+			await RemoveTopicViewLogs(topic.Id);
+			await RemoveTopicBookmarks(topic.Id);
+			await RemoveTopicBoards(topic.Id);
+
+			DbContext.Remove(topic);
+			await DbContext.SaveChangesAsync();
+		}
+
+		public async Task RemoveTopicViewLogs(int topicId) {
+			var records = await DbContext.ViewLogs.Where(item => item.TargetType == EViewLogTargetType.Topic && item.TargetId == topicId).ToListAsync();
 			DbContext.RemoveRange(records);
 			await DbContext.SaveChangesAsync();
 		}
 
-		public void RemoveTopicViewlogs(DataModels.Message sourceMessage, DataModels.Message targetMessage) {
-			var records = DbContext.ViewLogs.Where(item => item.TargetType == EViewLogTargetType.Message && (item.TargetId == sourceMessage.Id || item.TargetId == targetMessage.Id)).ToList();
+		public async Task RemoveTopicBookmarks(int topicId) {
+			var records = DbContext.Bookmarks.Where(item => item.MessageId == topicId);
 			DbContext.RemoveRange(records);
-			DbContext.SaveChanges();
+			await DbContext.SaveChangesAsync();
 		}
 
-		public void RemoveTopicBookmarks(DataModels.Message sourceMessage) {
-			var records = DbContext.Bookmarks.Where(item => item.MessageId == sourceMessage.Id);
+		public async Task RemoveTopicBoards(int topicId) {
+			var records = DbContext.TopicBoards.Where(item => item.MessageId == topicId);
 			DbContext.RemoveRange(records);
-			DbContext.SaveChanges();
+			await DbContext.SaveChangesAsync();
 		}
 
-		public void RemoveTopicBoards(DataModels.Message sourceMessage) {
-			var records = DbContext.TopicBoards.Where(item => item.MessageId == sourceMessage.Id);
-			DbContext.RemoveRange(records);
-			DbContext.SaveChanges();
+		public async Task RebuildTopic(DataModels.Topic topic) {
+			var messagesQuery = from message in DbContext.Messages
+								where message.TopicId == topic.Id
+								where !message.Deleted
+								select message;
+
+			var messages = await messagesQuery.ToListAsync();
+
+			var replyCount = messages.Count();
+
+			if (topic.ReplyCount != replyCount) {
+				topic.ReplyCount = replyCount;
+			}
+
+			var firstMessage = messages.FirstOrDefault();
+
+			topic.FirstMessageId = firstMessage.Id;
+			topic.FirstMessageTimePosted = firstMessage.TimePosted;
+			topic.FirstMessagePostedById = firstMessage.PostedById;
+			topic.FirstMessageShortPreview = firstMessage.ShortPreview;
+
+			var lastMessage = messages.LastOrDefault();
+
+			topic.LastMessageId = lastMessage.Id;
+			topic.LastMessageTimePosted = lastMessage.TimePosted;
+			topic.LastMessagePostedById = lastMessage.PostedById;
+			topic.LastMessageShortPreview = lastMessage.ShortPreview;
+
+			DbContext.Update(topic);
+
+			if (topic.Deleted) {
+				foreach (var message in messages) {
+					await MessageRepository.DeleteMessage(message.Id);
+				}
+			}
+
+			await DbContext.SaveChangesAsync();
+
+			await RebuildParticipantsForTopic(topic.Id);
+		}
+
+		public async Task RebuildParticipantsForTopic(int topicId) {
+			var messagesQuery = from message in DbContext.Messages
+								where message.TopicId == topicId
+								select new {
+									message.PostedById,
+									message.TimePosted
+								};
+
+			var messages = await messagesQuery.ToListAsync();
+
+			var newParticipants = new List<DataModels.Participant>();
+
+			foreach (var message in messages) {
+				if (!newParticipants.Any(item => item.UserId == message.PostedById)) {
+					newParticipants.Add(new DataModels.Participant {
+						TopicId = topicId,
+						UserId = message.PostedById,
+						Time = message.TimePosted
+					});
+				}
+			}
+
+			var oldParticipants = await DbContext.Participants.Where(r => r.TopicId == topicId).ToListAsync();
+
+			DbContext.RemoveRange(oldParticipants);
+			await DbContext.SaveChangesAsync();
+
+			DbContext.Participants.AddRange(newParticipants);
+			await DbContext.SaveChangesAsync();
 		}
 	}
 }
