@@ -351,7 +351,7 @@ export class TopicDisplay {
 
 			if (data.messageId == self.settings.topicId) {
 				let targetElement = <HTMLElement>document.querySelector('main');
-				targetElement.innerHTML = '<div class="content-box pad"><p class="note">This topic was removed.</p></div>';
+				targetElement.innerHTML = '<div class="content-box pad"><p class="font-small subdued-text">This topic was removed.</p></div>';
 			}
 			else {
 				let targetArticle = <HTMLElement>document.querySelector(`article[message="${data.messageId}"]`);
@@ -361,10 +361,10 @@ export class TopicDisplay {
 
 				let messageContents = <HTMLElement>targetArticle.querySelector('.message-contents');
 				messageContents.classList.add('faded');
-				messageContents.innerHTML = '<p class="note">This message was removed.</p>';
+				messageContents.innerHTML = '<p class="font-small subdued-text">This message was removed.</p>';
 
 				document.querySelectorAll(`[reply="${data.messageId}"]`).forEach(element => {
-					element.innerHTML = '<p class="note">This message was removed.</p>';
+					element.innerHTML = '<p class="font-small subdued-text">This message was removed.</p>';
 				});
 
 				let time = new Date();
