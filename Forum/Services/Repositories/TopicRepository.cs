@@ -56,66 +56,49 @@ namespace Forum.Services.Repositories {
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
-		public ServiceModels.ServiceResponse GetLatest(int messageId) {
+		public async Task<ServiceModels.ServiceResponse> GetFirstUnreadMessage(int topicId) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
-			var record = DbContext.Messages.Find(messageId);
+			var topic = DbContext.Topics.Find(topicId);
 
-			if (record is null || record.Deleted) {
+			if (topic is null || topic.Deleted) {
 				throw new HttpNotFoundError();
 			}
 
-			if (record.ParentId > 0) {
-				record = DbContext.Messages.Find(record.ParentId);
-			}
+			var latestMessageId = topic.LastMessageId;
 
-			if (record is null || record.Deleted) {
-				throw new HttpNotFoundError();
-			}
+			if (UserContext.IsAuthenticated) {
+				var historyTimeLimit = DateTime.Now.AddDays(-14);
+				var latestViewTime = historyTimeLimit;
 
-			if (!UserContext.IsAuthenticated) {
-				serviceResponse.RedirectPath = UrlHelper.Action(nameof(Controllers.Topics.Display), nameof(Controllers.Topics), new { id = record.LastReplyId });
-				return serviceResponse;
-			}
+				foreach (var viewLog in UserContext.ViewLogs) {
+					switch (viewLog.TargetType) {
+						case EViewLogTargetType.All:
+							if (viewLog.LogTime >= latestViewTime) {
+								latestViewTime = viewLog.LogTime;
+							}
 
-			var historyTimeLimit = DateTime.Now.AddDays(-14);
-			var latestViewTime = historyTimeLimit;
+							break;
 
-			foreach (var viewLog in UserContext.ViewLogs) {
-				switch (viewLog.TargetType) {
-					case EViewLogTargetType.All:
-						if (viewLog.LogTime >= latestViewTime) {
-							latestViewTime = viewLog.LogTime;
-						}
+						case EViewLogTargetType.Message:
+							if (viewLog.TargetId == topic.Id && viewLog.LogTime >= latestViewTime) {
+								latestViewTime = viewLog.LogTime;
+							}
 
-						break;
-
-					case EViewLogTargetType.Message:
-						if (viewLog.TargetId == record.Id && viewLog.LogTime >= latestViewTime) {
-							latestViewTime = viewLog.LogTime;
-						}
-
-						break;
+							break;
+					}
 				}
+
+				var messageIdQuery = from message in DbContext.Messages
+									 where message.TopicId == topic.Id
+									 where message.TimePosted > latestViewTime
+									 where !message.Deleted
+									 select message.Id;
+
+				latestMessageId = await messageIdQuery.FirstOrDefaultAsync();
 			}
 
-			var messageIdQuery = from message in DbContext.Messages
-								 where message.Id == record.Id || message.ParentId == record.Id
-								 where message.TimePosted > latestViewTime
-								 where !message.Deleted
-								 select message.Id;
-
-			var latestMessageId = messageIdQuery.FirstOrDefault();
-
-			if (latestMessageId == 0) {
-				latestMessageId = record.LastReplyId;
-			}
-
-			if (latestMessageId == 0) {
-				latestMessageId = record.Id;
-			}
-
-			serviceResponse.RedirectPath = UrlHelper.Action(nameof(Topics.Display), nameof(Topics), new { id = latestMessageId });
+			serviceResponse.RedirectPath = UrlHelper.Action(nameof(Topics.Display), nameof(Topics), new { id = topicId, target = latestMessageId });
 
 			return serviceResponse;
 		}
@@ -300,15 +283,11 @@ namespace Forum.Services.Repositories {
 			return unread;
 		}
 
-		public async Task<ServiceModels.ServiceResponse> Pin(int messageId) {
-			var record = DbContext.Messages.Find(messageId);
+		public async Task<ServiceModels.ServiceResponse> Pin(int topicId) {
+			var record = DbContext.Topics.Find(topicId);
 
 			if (record is null || record.Deleted) {
 				throw new HttpNotFoundError();
-			}
-
-			if (record.ParentId > 0) {
-				messageId = record.ParentId;
 			}
 
 			record.Pinned = !record.Pinned;
@@ -318,22 +297,19 @@ namespace Forum.Services.Repositories {
 			return new ServiceModels.ServiceResponse();
 		}
 
-		public async Task Bookmark(int messageId) {
-			var record = await DbContext.Messages.FindAsync(messageId);
+		public async Task Bookmark(int topicId) {
+			var record = await DbContext.Topics.FindAsync(topicId);
 
 			if (record is null || record.Deleted) {
 				throw new HttpNotFoundError();
 			}
 
-			if (record.ParentId > 0) {
-				messageId = record.ParentId;
-			}
-
-			var existingBookmarkRecord = await DbContext.Bookmarks.FirstOrDefaultAsync(p => p.MessageId == messageId && p.UserId == UserContext.ApplicationUser.Id);
+			var bookmarks = await BookmarkRepository.Records();
+			var existingBookmarkRecord = bookmarks.FirstOrDefault(p => p.TopicId == topicId);
 
 			if (existingBookmarkRecord is null) {
 				var bookmarkRecord = new DataModels.Bookmark {
-					MessageId = messageId,
+					TopicId = topicId,
 					Time = DateTime.Now,
 					UserId = UserContext.ApplicationUser.Id
 				};
@@ -347,13 +323,10 @@ namespace Forum.Services.Repositories {
 			await DbContext.SaveChangesAsync();
 		}
 
-		public ServiceModels.ServiceResponse MarkAllRead() {
+		public async Task<ServiceModels.ServiceResponse> MarkAllRead() {
 			if (UserContext.ViewLogs.Any()) {
-				foreach (var viewLog in UserContext.ViewLogs) {
-					DbContext.Remove(viewLog);
-				}
-
-				DbContext.SaveChanges();
+				DbContext.RemoveRange(UserContext.ViewLogs);
+				await DbContext.SaveChangesAsync();
 			}
 
 			DbContext.ViewLogs.Add(new DataModels.ViewLog {
@@ -362,32 +335,25 @@ namespace Forum.Services.Repositories {
 				TargetType = EViewLogTargetType.All
 			});
 
-			DbContext.SaveChanges();
+			await DbContext.SaveChangesAsync();
 
 			return new ServiceModels.ServiceResponse {
 				RedirectPath = "/"
 			};
 		}
 
-		public ServiceModels.ServiceResponse MarkUnread(int messageId) {
-			var record = DbContext.Messages.Find(messageId);
+		public async Task<ServiceModels.ServiceResponse> MarkUnread(int topicId) {
+			var record = DbContext.Topics.Find(topicId);
 
 			if (record is null || record.Deleted) {
 				throw new HttpNotFoundError();
 			}
 
-			if (record.ParentId > 0) {
-				messageId = record.ParentId;
-			}
-
-			var viewLogs = UserContext.ViewLogs.Where(item => item.TargetId == messageId && item.TargetType == EViewLogTargetType.Message).ToList();
+			var viewLogs = UserContext.ViewLogs.Where(item => item.TargetId == topicId && item.TargetType == EViewLogTargetType.Topic).ToList();
 
 			if (viewLogs.Any()) {
-				foreach (var viewLog in viewLogs) {
-					DbContext.Remove(viewLog);
-				}
-
-				DbContext.SaveChanges();
+				DbContext.RemoveRange(viewLogs);
+				await DbContext.SaveChangesAsync();
 			}
 
 			return new ServiceModels.ServiceResponse {
@@ -395,31 +361,20 @@ namespace Forum.Services.Repositories {
 			};
 		}
 
-		public async Task Toggle(InputModels.ToggleBoardInput input) {
-			var messageRecord = await DbContext.Messages.FindAsync(input.MessageId);
+		public async Task ToggleBoard(InputModels.ToggleBoardInput input) {
+			var topic = await DbContext.Topics.FindAsync(input.TopicId);
+			var boards = await BoardRepository.Records();
 
-			if (messageRecord is null || messageRecord.Deleted) {
+			if (topic is null || topic.Deleted || !boards.Any(r => r.Id == input.BoardId)) {
 				throw new HttpNotFoundError();
 			}
 
-			if (!(await BoardRepository.Records()).Any(r => r.Id == input.BoardId)) {
-				throw new HttpNotFoundError();
-			}
-
-			var messageId = input.MessageId;
-
-			if (messageRecord.ParentId > 0) {
-				messageId = messageRecord.ParentId;
-			}
-
-			var boardId = input.BoardId;
-
-			var existingRecord = await DbContext.TopicBoards.FirstOrDefaultAsync(p => p.MessageId == messageId && p.BoardId == boardId);
+			var existingRecord = await DbContext.TopicBoards.FirstOrDefaultAsync(p => p.MessageId == input.TopicId && p.BoardId == input.BoardId);
 
 			if (existingRecord is null) {
 				var topicBoardRecord = new DataModels.TopicBoard {
-					MessageId = messageId,
-					BoardId = boardId,
+					TopicId = input.TopicId,
+					BoardId = input.BoardId,
 					UserId = UserContext.ApplicationUser.Id
 				};
 

@@ -1,4 +1,5 @@
 ﻿using Forum.Models;
+using Forum.Models.Errors;
 using Forum.Services.Contexts;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -163,6 +164,23 @@ namespace Forum.Services.Repositories {
 			}
 
 			return indexBoard;
+		}
+
+		public async Task<List<DataModels.Board>> GetTopicBoards(int topicId) {
+			var topicBoardsQuery = from topicBoard in DbContext.TopicBoards
+								   where topicBoard.TopicId == topicId
+								   select topicBoard.BoardId;
+
+			var boardIds = await topicBoardsQuery.ToListAsync();
+
+			var boards = await Records();
+			var assignedBoards = boards.Where(r => boardIds.Contains(r.Id)).ToList();
+
+			if (!await RoleRepository.CanAccessBoards(assignedBoards)) {
+				throw new HttpForbiddenError();
+			}
+
+			return assignedBoards;
 		}
 
 		public async Task<ServiceModels.ServiceResponse> AddBoard(InputModels.CreateBoardInput input) {

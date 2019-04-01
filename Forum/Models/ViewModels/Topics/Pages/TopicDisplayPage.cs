@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace Forum.Models.ViewModels.Topics.Pages {
 	public class TopicDisplayPage {
 		public int Id { get; internal set; }
-		public TopicHeader TopicHeader { get; internal set; }
+		public string Subject { get; internal set; }
 		public List<Messages.DisplayMessage> Messages { get; internal set; }
 		public List<IndexCategory>	Categories { get; set; }
 		public List<IndexBoard> AssignedBoards { get; set; }

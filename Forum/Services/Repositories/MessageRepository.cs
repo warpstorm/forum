@@ -83,13 +83,13 @@ namespace Forum.Services.Repositories {
 
 			if (fromTime is null) {
 				messageIdQuery = from message in DbContext.Messages
-								 where message.Id == topicId || message.ParentId == topicId
+								 where message.TopicId == topicId
 								 where !message.Deleted
 								 select message.Id;
 			}
 			else {
 				messageIdQuery = from message in DbContext.Messages
-								 where message.Id == topicId || message.ParentId == topicId
+								 where message.TopicId == topicId
 								 where message.TimePosted >= fromTime
 								 where !message.Deleted
 								 select message.Id;
@@ -1272,6 +1272,7 @@ namespace Forum.Services.Repositories {
 			var skipped = 0;
 
 			foreach (var message in messageQuery) {
+				// TODO change from message to topic ID
 				if (!await BoardRepository.CanAccess(message.ParentId > 0 ? message.ParentId : message.Id)) {
 					if (attempts++ > 100) {
 						break;

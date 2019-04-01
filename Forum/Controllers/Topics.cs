@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -164,61 +165,25 @@ namespace Forum.Controllers {
 		}
 
 		/// <summary>
-		/// Retrieves a specific message. Useful for API calls.
-		/// </summary>
-		[HttpGet]
-		public async Task<IActionResult> DisplayOne(int id) {
-			var record = DbContext.Messages.Find(id);
-
-			if (record is null || record.Deleted) {
-				throw new HttpNotFoundError();
-			}
-
-			var topicId = id;
-
-			if (record.ParentId > 0) {
-				topicId = record.ParentId;
-			}
-
-			await LoadTopicBoards(topicId);
-
-			var messageIds = new List<int> { id };
-			var messages = await MessageRepository.GetMessages(messageIds);
-
-			var viewModel = new PageModels.TopicDisplayPartialPage {
-				Latest = DateTime.Now.Ticks,
-				Messages = messages
-			};
-
-			return await ForumViewResult.ViewResult(this, "DisplayPartial", viewModel);
-		}
-
-		/// <summary>
 		/// Retrieves all of the latest messages in a topic. Useful for API calls.
 		/// </summary>
 		[HttpGet]
 		public async Task<IActionResult> DisplayPartial(int id, long latest) {
 			var latestTime = new DateTime(latest);
 
-			var record = DbContext.Messages.Find(id);
+			var topic = DbContext.Topics.Find(id);
 
-			if (record is null || record.Deleted) {
+			if (topic is null || topic.Deleted) {
 				throw new HttpNotFoundError();
 			}
 
-			var topicId = id;
+			await BoardRepository.GetTopicBoards(id);
 
-			if (record.ParentId > 0) {
-				topicId = record.ParentId;
-			}
-
-			await LoadTopicBoards(topicId);
-
-			var messageIds = MessageRepository.GetMessageIds(topicId, latestTime);
+			var messageIds = MessageRepository.GetMessageIds(id, latestTime);
 			var messages = await MessageRepository.GetMessages(messageIds);
 
 			var latestMessageTime = messages.Max(r => r.RecordTime);
-			await TopicRepository.MarkRead(topicId, latestMessageTime, messageIds);
+			await TopicRepository.MarkRead(id, latestMessageTime, messageIds);
 
 			var viewModel = new PageModels.TopicDisplayPartialPage {
 				Latest = DateTime.Now.Ticks,
@@ -231,7 +196,7 @@ namespace Forum.Controllers {
 		[HttpGet]
 		public async Task<IActionResult> Latest(int id) {
 			if (ModelState.IsValid) {
-				var serviceResponse = TopicRepository.GetLatest(id);
+				var serviceResponse = await TopicRepository.GetFirstUnreadMessage(id);
 				return await ForumViewResult.RedirectFromService(this, serviceResponse);
 			}
 
@@ -258,7 +223,7 @@ namespace Forum.Controllers {
 		[HttpGet]
 		public async Task<IActionResult> MarkAllRead() {
 			if (ModelState.IsValid) {
-				var serviceResponse = TopicRepository.MarkAllRead();
+				var serviceResponse = await TopicRepository.MarkAllRead();
 				return await ForumViewResult.RedirectFromService(this, serviceResponse);
 			}
 
@@ -268,7 +233,7 @@ namespace Forum.Controllers {
 		[HttpGet]
 		public async Task<IActionResult> MarkUnread(int id) {
 			if (ModelState.IsValid) {
-				var serviceResponse = TopicRepository.MarkUnread(id);
+				var serviceResponse = await TopicRepository.MarkUnread(id);
 				return await ForumViewResult.RedirectFromService(this, serviceResponse);
 			}
 
@@ -278,19 +243,15 @@ namespace Forum.Controllers {
 		[HttpGet]
 		public async Task<IActionResult> ToggleBoard(InputModels.ToggleBoardInput input) {
 			if (ModelState.IsValid) {
-				await TopicRepository.Toggle(input);
+				await TopicRepository.ToggleBoard(input);
 			}
 
 			return new NoContentResult();
 		}
 
-		public string GetRedirectPath(int messageId, int parentMessageId, List<int> messageIds) {
-			if (parentMessageId == 0) {
-				parentMessageId = messageId;
-			}
-
+		public string GetRedirectPath(int messageId, int topicId, List<int> messageIds) {
 			var routeValues = new {
-				id = parentMessageId,
+				id = topicId,
 				pageId = MessageRepository.GetPageNumber(messageId, messageIds),
 				target = messageId
 			};
@@ -298,38 +259,30 @@ namespace Forum.Controllers {
 			return UrlHelper.Action(nameof(Topics.Display), nameof(Topics), routeValues) + "#message" + messageId;
 		}
 
-		public async Task<PageModels.TopicDisplayPage> GetDisplayPageModel(int id, int pageId = 1, int targetId = -1) {
+		public async Task<PageModels.TopicDisplayPage> GetDisplayPageModel(int topicId, int pageId = 1, int targetId = -1) {
 			var viewModel = new PageModels.TopicDisplayPage();
 
-			var record = DbContext.Messages.Find(id);
+			var topic = DbContext.Topics.Find(topicId);
 
-			if (record is null || record.Deleted) {
+			if (topic is null || topic.Deleted) {
 				throw new HttpNotFoundError();
-			}
-
-			var topicId = id;
-
-			if (record.ParentId > 0) {
-				topicId = record.ParentId;
 			}
 
 			var messageIds = MessageRepository.GetMessageIds(topicId);
 
-			if (topicId != id) {
-				viewModel.RedirectPath = GetRedirectPath(id, record.ParentId, messageIds);
-			}
-			else if (targetId >= 0) {
+			if (targetId >= 0) {
 				var targetPage = MessageRepository.GetPageNumber(targetId, messageIds);
 
 				if (targetPage != pageId) {
-					viewModel.RedirectPath = GetRedirectPath(targetId, id, messageIds);
+					viewModel.RedirectPath = GetRedirectPath(targetId, topicId, messageIds);
 				}
 			}
 
-			if (string.IsNullOrEmpty(viewModel.RedirectPath)) {
-				var bookmarked = (await BookmarkRepository.Records()).Any(r => r.MessageId == topicId);
+			if (!string.IsNullOrEmpty(viewModel.RedirectPath)) {
+				var bookmarks = await BookmarkRepository.Records();
+				var bookmarked = bookmarks.Any(r => r.TopicId == topicId);
 
-				var assignedBoards = await LoadTopicBoards(topicId);
+				var assignedBoards = await BoardRepository.GetTopicBoards(topicId);
 
 				if (pageId < 1) {
 					pageId = 1;
@@ -341,39 +294,31 @@ namespace Forum.Controllers {
 
 				var pageMessageIds = messageIds.Skip(skip).Take(take).ToList();
 
-				record.ViewCount++;
-				DbContext.Update(record);
+				topic.ViewCount++;
+				DbContext.Update(topic);
 				DbContext.SaveChanges();
 
 				var messages = await MessageRepository.GetMessages(pageMessageIds);
 
-				if (string.IsNullOrEmpty(record.ShortPreview)) {
-					record.ShortPreview = "No subject";
-				}
-
 				viewModel = new PageModels.TopicDisplayPage {
-					Id = record.Id,
-					TopicHeader = new ItemModels.TopicHeader {
-						StartedById = record.PostedById,
-						Subject = record.ShortPreview,
-						Views = record.ViewCount,
-					},
+					Id = topic.Id,
+					Subject = string.IsNullOrEmpty(topic.FirstMessageShortPreview) ? "No subject" : topic.FirstMessageShortPreview,
 					Messages = messages,
 					Categories = await BoardRepository.CategoryIndex(),
 					AssignedBoards = new List<ViewModels.Boards.Items.IndexBoard>(),
 					IsAuthenticated = UserContext.IsAuthenticated,
-					IsOwner = record.PostedById == UserContext.ApplicationUser?.Id,
+					IsOwner = topic.FirstMessagePostedById == UserContext.ApplicationUser?.Id,
 					IsAdmin = UserContext.IsAdmin,
 					IsBookmarked = bookmarked,
-					IsPinned = record.Pinned,
+					IsPinned = topic.Pinned,
 					ShowFavicons = UserContext.ApplicationUser.ShowFavicons,
 					TotalPages = totalPages,
-					ReplyCount = record.ReplyCount,
-					ViewCount = record.ViewCount,
+					ReplyCount = topic.ReplyCount,
+					ViewCount = topic.ViewCount,
 					CurrentPage = pageId,
 					ReplyForm = new ViewModels.Messages.ReplyForm {
-						Id = record.Id.ToString(),
-						ElementId = $"topic-reply"
+						Id = topic.Id.ToString(),
+						ElementId = "topic-reply"
 					}
 				};
 
@@ -388,21 +333,6 @@ namespace Forum.Controllers {
 			}
 
 			return viewModel;
-		}
-
-		public async Task<List<Models.DataModels.Board>> LoadTopicBoards(int topicId) {
-			var topicBoardsQuery = from topicBoard in DbContext.TopicBoards
-									 where topicBoard.MessageId == topicId
-									 select topicBoard.BoardId;
-
-			var boardIds = topicBoardsQuery.ToList();
-			var assignedBoards = (await BoardRepository.Records()).Where(r => boardIds.Contains(r.Id)).ToList();
-
-			if (!await RoleRepository.CanAccessBoards(assignedBoards)) {
-				throw new HttpForbiddenError();
-			}
-
-			return assignedBoards;
 		}
 	}
 }

@@ -56,7 +56,6 @@
 		window.currentPage = @Model.CurrentPage;
 		window.totalPages = @Model.CurrentPage;
 		window.showFavicons = @Model.ShowFavicons.ToString().ToLower();
-		window.togglePath = '@Url.Action(nameof(Topics.ToggleBoard), nameof(Topics), new { MessageId = Model.Id })';
 		window.messages = [@(string.Join(", ", Model.Messages.Select(b => b.Id)))];
 	</script>
 }

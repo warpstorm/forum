@@ -314,7 +314,7 @@ export class TopicDisplay {
 
 			let requestOptions = new XhrOptions({
 				method: HttpMethod.Get,
-				url: `/Topics/DisplayOne/${data.messageId}`,
+				url: `/Messages/Display/${data.messageId}`,
 				responseType: 'document'
 			});
 

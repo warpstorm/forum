@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -45,6 +47,31 @@ namespace Forum.Controllers {
 			SmileyRepository = smileyRepository;
 			ForumViewResult = forumViewResult;
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
+		}
+
+		/// <summary>
+		/// Retrieves a specific message. Useful for API calls.
+		/// </summary>
+		[HttpGet]
+		public async Task<IActionResult> Display(int id) {
+			var message = DbContext.Messages.Find(id);
+
+			if (message is null || message.Deleted) {
+				throw new HttpNotFoundError();
+			}
+
+			var topicId = message.TopicId;
+			await BoardRepository.GetTopicBoards(topicId);
+
+			var messageIds = new List<int> { id };
+			var messages = await MessageRepository.GetMessages(messageIds);
+
+			var viewModel = new ViewModels.Topics.Pages.TopicDisplayPartialPage {
+				Latest = DateTime.Now.Ticks,
+				Messages = messages
+			};
+
+			return await ForumViewResult.ViewResult(this, "../Topics/DisplayPartial", viewModel);
 		}
 
 		[ActionLog("is starting a new topic.")]

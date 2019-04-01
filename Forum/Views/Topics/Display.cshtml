@@ -115,7 +115,7 @@
 	</div>
 </div>
 
-@{ViewData["Title"] = Html.Raw(Model.TopicHeader.Subject);}
+@{ViewData["Title"] = Html.Raw(Model.Subject);}
 @section Header {@ViewData["Title"]}
 
 @section scripts {
@@ -127,7 +127,7 @@
 		window.currentPage = @Model.CurrentPage;
 		window.totalPages = @Model.TotalPages;
 		window.showFavicons = @Model.ShowFavicons.ToString().ToLower();
-		window.togglePath = '@Url.Action(nameof(Topics.ToggleBoard), nameof(Topics), new { MessageId = Model.Id })';
+		window.togglePath = '@Url.Action(nameof(Topics.ToggleBoard), nameof(Topics), new { TopicId = Model.Id })';
 		window.assignedBoards = ['@(string.Join("', '", Model.AssignedBoards.Select(b => b.Id)))'];
 		window.messages = [@(string.Join(", ", Model.Messages.Select(b => b.Id)))];
 	</script>
