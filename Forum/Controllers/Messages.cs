@@ -14,8 +14,8 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace Forum.Controllers {
-	using DataModels = Models.DataModels;
 	using InputModels = Models.InputModels;
+	using ServiceModels = Models.ServiceModels;
 	using ViewModels = Models.ViewModels;
 
 	public class Messages : Controller {
@@ -25,6 +25,7 @@ namespace Forum.Controllers {
 		BoardRepository BoardRepository { get; }
 		MessageRepository MessageRepository { get; }
 		SmileyRepository SmileyRepository { get; }
+		TopicRepository TopicRepository { get; }
 		IForumViewResult ForumViewResult { get; }
 		IUrlHelper UrlHelper { get; }
 
@@ -35,6 +36,7 @@ namespace Forum.Controllers {
 			BoardRepository boardRepository,
 			MessageRepository messageRepository,
 			SmileyRepository smileyRepository,
+			TopicRepository topicRepository,
 			IActionContextAccessor actionContextAccessor,
 			IForumViewResult forumViewResult,
 			IUrlHelperFactory urlHelperFactory
@@ -72,62 +74,6 @@ namespace Forum.Controllers {
 			};
 
 			return await ForumViewResult.ViewResult(this, "../Topics/DisplayPartial", viewModel);
-		}
-
-		[ActionLog("is starting a new topic.")]
-		[HttpGet]
-		public async Task<IActionResult> Create(int id = 0) {
-			ViewData["Smileys"] = await SmileyRepository.GetSelectorList();
-
-			var board = (await BoardRepository.Records()).First(item => item.Id == id);
-
-			if (Request.Query.TryGetValue("source", out var source)) {
-				return await Create(new InputModels.MessageInput { BoardId = id, Body = source });
-			}
-
-			var viewModel = new ViewModels.Messages.CreateTopicForm {
-				Id = "0",
-				BoardId = id.ToString()
-			};
-
-			return await ForumViewResult.ViewResult(this, viewModel);
-		}
-
-		[HttpPost]
-		[ValidateAntiForgeryToken]
-		[PreventRapidRequests]
-		public async Task<IActionResult> Create(InputModels.MessageInput input) {
-			if (ModelState.IsValid) {
-				if (Request.Method == "GET" && input.BoardId != null) {
-					input.SelectedBoards.Add((int)input.BoardId);
-				}
-				else {
-					foreach (var board in await BoardRepository.Records()) {
-						if (Request.Form.TryGetValue("Selected_" + board.Id, out var boardSelected)) {
-							if (boardSelected == "True") {
-								input.SelectedBoards.Add(board.Id);
-							}
-						}
-					}
-				}
-
-				var serviceResponse = await MessageRepository.CreateTopic(input);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
-			}
-
-			return await FailureCallback();
-
-			async Task<IActionResult> FailureCallback() {
-				ViewData["Smileys"] = await SmileyRepository.GetSelectorList();
-
-				var viewModel = new ViewModels.Messages.CreateTopicForm {
-					Id = "0",
-					BoardId = input.BoardId.ToString(),
-					Body = input.Body
-				};
-
-				return await ForumViewResult.ViewResult(this, viewModel);
-			}
 		}
 
 		[HttpGet]
@@ -202,7 +148,6 @@ namespace Forum.Controllers {
 			}
 		}
 
-
 		[ActionLog("is editing a message.")]
 		[HttpGet]
 		public async Task<IActionResult> Edit(int id) {
@@ -266,10 +211,10 @@ namespace Forum.Controllers {
 			}
 
 			async Task<IActionResult> FailureCallback() {
-				var viewModel = new ViewModels.Messages.CreateTopicForm {
-					Id = "0",
+				var viewModel = new ViewModels.Messages.EditMessageForm {
+					Id = input.Id.ToString(),
 					Body = input.Body,
-					ElementId = "create-topic"
+					ElementId = "edit-message"
 				};
 
 				return await ForumViewResult.ViewResult(this, viewModel);
@@ -279,7 +224,30 @@ namespace Forum.Controllers {
 		[HttpGet]
 		public async Task<IActionResult> Delete(int id) {
 			if (ModelState.IsValid) {
-				var serviceResponse = await MessageRepository.DeleteMessage(id);
+				var message = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == id);
+
+				if (message is null || message.Deleted) {
+					throw new HttpNotFoundError();
+				}
+
+				if (message.PostedById != UserContext.ApplicationUser.Id && !UserContext.IsAdmin) {
+					throw new HttpForbiddenError();
+				}
+
+				var topic = await DbContext.Topics.SingleAsync(m => m.Id == message.TopicId);
+
+				await MessageRepository.DeleteMessageFromTopic(message, topic);
+				await TopicRepository.RebuildTopic(topic);
+
+				var serviceResponse = new Models.ServiceModels.ServiceResponse();
+
+				if (topic.FirstMessageId == message.Id) {
+					serviceResponse.RedirectPath = UrlHelper.Action(nameof(Topics.Index), nameof(Topics));
+				}
+				else {
+					serviceResponse.RedirectPath = UrlHelper.Action(nameof(Topics.Latest), nameof(Topics), new { id = topic.Id });
+				}
+
 				return await ForumViewResult.RedirectFromService(this, serviceResponse);
 			}
 
@@ -334,136 +302,58 @@ namespace Forum.Controllers {
 		[ActionLog]
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
-		public async Task<IActionResult> Admin(InputModels.Continue input = null) => await ForumViewResult.ViewResult(this);
+		public async Task<IActionResult> Admin() => await ForumViewResult.ViewResult(this);
 
 		[ActionLog]
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
-		public async Task<IActionResult> ProcessMessages(InputModels.Continue input) {
-			if (string.IsNullOrEmpty(input.Stage)) {
-				var totalSteps = await MessageRepository.ProcessMessages();
+		public async Task<IActionResult> ReprocessMessages() {
+			var take = 25;
+			var messageCount = await DbContext.Messages.CountAsync();
+			var totalPages = Convert.ToInt32(Math.Floor(1d * messageCount / take));
 
-				input = new InputModels.Continue {
-					Stage = nameof(MessageRepository.ProcessMessages),
-					CurrentStep = -1,
-					TotalSteps = totalSteps
-				};
-			}
-			else {
-				await MessageRepository.ProcessMessagesContinue(input);
-			}
-
-			var viewModel = new ViewModels.Delay {
-				ActionName = "Processing Messages",
-				ActionNote = "Processing message text, loading external sites, replacing smiley codes.",
-				CurrentPage = input.CurrentStep,
-				TotalPages = input.TotalSteps,
-				NextAction = UrlHelper.Action(nameof(Messages.Admin), nameof(Messages))
-			};
-
-			if (input.CurrentStep < input.TotalSteps) {
-				input.CurrentStep++;
-				viewModel.NextAction = UrlHelper.Action(nameof(Messages.ProcessMessages), nameof(Messages), input);
-			}
-
-			return await ForumViewResult.ViewResult(this, "Delay", viewModel);
-		}
-
-		[ActionLog]
-		[Authorize(Roles = Constants.InternalKeys.Admin)]
-		[HttpGet]
-		public async Task<IActionResult> ReprocessMessages(InputModels.Continue input) {
-			if (string.IsNullOrEmpty(input.Stage)) {
-				var totalSteps = await MessageRepository.ProcessMessages();
-
-				input = new InputModels.Continue {
-					Stage = nameof(MessageRepository.ProcessMessages),
-					CurrentStep = -1,
-					TotalSteps = totalSteps
-				};
-			}
-			else {
-				await MessageRepository.ProcessMessagesContinue(input);
-			}
-
-			var viewModel = new ViewModels.Delay {
+			var viewModel = new ViewModels.MultiStep {
 				ActionName = "Reprocessing Messages",
 				ActionNote = "Processing message text, loading external sites, replacing smiley codes.",
-				CurrentPage = input.CurrentStep,
-				TotalPages = input.TotalSteps,
-				NextAction = UrlHelper.Action(nameof(Messages.Admin), nameof(Messages))
+				Action = UrlHelper.Action(nameof(ReprocessMessagesContinue)),
+				TotalPages = totalPages,
+				TotalRecords = messageCount,
+				Take = take,
 			};
 
-			if (input.CurrentStep < input.TotalSteps) {
-				input.CurrentStep++;
-				viewModel.NextAction = UrlHelper.Action(nameof(Messages.ReprocessMessages), nameof(Messages), input);
-			}
-
-			return await ForumViewResult.ViewResult(this, "Delay", viewModel);
+			return await ForumViewResult.ViewResult(this, "MultiStep", viewModel);
 		}
 
 		[ActionLog]
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
-		public async Task<IActionResult> RecountReplies(InputModels.Continue input) {
-			if (string.IsNullOrEmpty(input.Stage)) {
-				var totalSteps = await MessageRepository.RecountReplies();
+		public async Task<IActionResult> ReprocessMessagesContinue(InputModels.MultiStepInput input) {
+			var messageQuery = from message in DbContext.Messages
+							   where !message.Deleted
+							   orderby message.Id descending
+							   select message;
 
-				input = new InputModels.Continue {
-					Stage = nameof(MessageRepository.RecountReplies),
-					CurrentStep = -1,
-					TotalSteps = totalSteps
-				};
-			}
-			else {
-				await MessageRepository.RecountRepliesContinue(input);
-			}
+			var messages = messageQuery.Skip(input.Take * input.Page).Take(input.Take);
 
-			var viewModel = new ViewModels.Delay {
-				ActionName = "Recounting Replies",
-				CurrentPage = input.CurrentStep,
-				TotalPages = input.TotalSteps,
-				NextAction = UrlHelper.Action(nameof(Messages.Admin), nameof(Messages))
-			};
+			foreach (var message in messages) {
+				var serviceResponse = new ServiceModels.ServiceResponse();
 
-			if (input.CurrentStep < input.TotalSteps) {
-				input.CurrentStep++;
-				viewModel.NextAction = UrlHelper.Action(nameof(Messages.RecountReplies), nameof(Messages), input);
+				var processedMessage = await MessageRepository.ProcessMessageInput(serviceResponse, message.OriginalBody);
+
+				if (serviceResponse.Success) {
+					message.OriginalBody = processedMessage.OriginalBody;
+					message.DisplayBody = processedMessage.DisplayBody;
+					message.ShortPreview = processedMessage.ShortPreview;
+					message.LongPreview = processedMessage.LongPreview;
+					message.Cards = processedMessage.Cards;
+
+					DbContext.Update(message);
+				}
 			}
 
-			return await ForumViewResult.ViewResult(this, "Delay", viewModel);
-		}
+			await DbContext.SaveChangesAsync();
 
-		[ActionLog]
-		[Authorize(Roles = Constants.InternalKeys.Admin)]
-		[HttpGet]
-		public async Task<IActionResult> RebuildParticipants(InputModels.Continue input) {
-			if (string.IsNullOrEmpty(input.Stage)) {
-				var totalSteps = await MessageRepository.RebuildParticipants();
-
-				input = new InputModels.Continue {
-					Stage = nameof(MessageRepository.RebuildParticipants),
-					CurrentStep = -1,
-					TotalSteps = totalSteps
-				};
-			}
-			else {
-				await MessageRepository.RebuildParticipantsContinue(input);
-			}
-
-			var viewModel = new ViewModels.Delay {
-				ActionName = "Rebuilding participants",
-				CurrentPage = input.CurrentStep,
-				TotalPages = input.TotalSteps,
-				NextAction = UrlHelper.Action(nameof(Messages.Admin), nameof(Messages))
-			};
-
-			if (input.CurrentStep < input.TotalSteps) {
-				input.CurrentStep++;
-				viewModel.NextAction = UrlHelper.Action(nameof(Messages.RebuildParticipants), nameof(Messages), input);
-			}
-
-			return await ForumViewResult.ViewResult(this, "Delay", viewModel);
+			return Ok();
 		}
 
 		[Authorize(Roles = Constants.InternalKeys.Admin)]

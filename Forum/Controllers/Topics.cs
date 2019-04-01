@@ -128,6 +128,62 @@ namespace Forum.Controllers {
 			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
+		[ActionLog("is starting a new topic.")]
+		[HttpGet]
+		public async Task<IActionResult> Create(int id = 0) {
+			ViewData["Smileys"] = await SmileyRepository.GetSelectorList();
+
+			var board = (await BoardRepository.Records()).First(item => item.Id == id);
+
+			if (Request.Query.TryGetValue("source", out var source)) {
+				return await Create(new InputModels.MessageInput { BoardId = id, Body = source });
+			}
+
+			var viewModel = new PageModels.CreateTopicForm {
+				Id = "0",
+				BoardId = id.ToString()
+			};
+
+			return await ForumViewResult.ViewResult(this, viewModel);
+		}
+
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		[PreventRapidRequests]
+		public async Task<IActionResult> Create(InputModels.MessageInput input) {
+			if (ModelState.IsValid) {
+				if (Request.Method == "GET" && input.BoardId != null) {
+					input.SelectedBoards.Add((int)input.BoardId);
+				}
+				else {
+					foreach (var board in await BoardRepository.Records()) {
+						if (Request.Form.TryGetValue("Selected_" + board.Id, out var boardSelected)) {
+							if (boardSelected == "True") {
+								input.SelectedBoards.Add(board.Id);
+							}
+						}
+					}
+				}
+
+				var serviceResponse = await TopicRepository.CreateTopic(input);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+			}
+
+			return await FailureCallback();
+
+			async Task<IActionResult> FailureCallback() {
+				ViewData["Smileys"] = await SmileyRepository.GetSelectorList();
+
+				var viewModel = new PageModels.CreateTopicForm {
+					Id = "0",
+					BoardId = input.BoardId.ToString(),
+					Body = input.Body
+				};
+
+				return await ForumViewResult.ViewResult(this, viewModel);
+			}
+		}
+
 		[ActionLog("is viewing their bookmarks.")]
 		[HttpGet]
 		public async Task<IActionResult> Bookmarks() {
@@ -248,6 +304,48 @@ namespace Forum.Controllers {
 
 			return new NoContentResult();
 		}
+
+		[ActionLog]
+		[Authorize(Roles = Constants.InternalKeys.Admin)]
+		[HttpGet]
+		public async Task<IActionResult> RebuildTopics(InputModels.MultiStepInput input) {
+			var take = 250;
+			var topicCount = await DbContext.Topics.CountAsync();
+			var totalPages = Convert.ToInt32(Math.Floor(1d * topicCount / take));
+
+			var viewModel = new ViewModels.MultiStep {
+				ActionName = "Rebuilding Topics",
+				ActionNote = "Recounting replies, calculating participants, determining first and last messages.",
+				Action = UrlHelper.Action(nameof(RebuildTopicsContinue)),
+				TotalPages = totalPages,
+				TotalRecords = topicCount,
+				Take = take,
+			};
+
+			return await ForumViewResult.ViewResult(this, "MultiStep", viewModel);
+		}
+
+		[ActionLog]
+		[Authorize(Roles = Constants.InternalKeys.Admin)]
+		[HttpGet]
+		public async Task<IActionResult> RebuildTopicsContinue(InputModels.MultiStepInput input) {
+			var topicsQuery = from topic in DbContext.Topics
+						 where !topic.Deleted
+						 select topic;
+
+			topicsQuery = topicsQuery.Skip(input.Page * input.Take).Take(input.Take);
+
+			foreach (var topic in topicsQuery) {
+				await TopicRepository.RebuildTopic(topic);
+			}
+
+			return Ok();
+		}
+
+		[ActionLog]
+		[Authorize(Roles = Constants.InternalKeys.Admin)]
+		[HttpGet]
+		public async Task<IActionResult> Admin() => await ForumViewResult.ViewResult(this);
 
 		public string GetRedirectPath(int messageId, int topicId, List<int> messageIds) {
 			var routeValues = new {

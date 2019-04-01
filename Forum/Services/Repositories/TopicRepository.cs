@@ -2,6 +2,7 @@
 using Forum.Models.Errors;
 using Forum.Models.Options;
 using Forum.Services.Contexts;
+using Forum.Services.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
@@ -283,6 +284,56 @@ namespace Forum.Services.Repositories {
 			return unread;
 		}
 
+		public async Task<ServiceModels.ServiceResponse> CreateTopic(InputModels.MessageInput input) {
+			var serviceResponse = new ServiceModels.ServiceResponse();
+
+			var processedMessage = await MessageRepository.ProcessMessageInput(serviceResponse, input.Body);
+
+			if (serviceResponse.Success) {
+				var message = await MessageRepository.CreateMessageRecord(processedMessage);
+
+				var topic = new DataModels.Topic {
+					FirstMessageId = message.Id,
+					FirstMessagePostedById = message.PostedById,
+					FirstMessageTimePosted = message.TimePosted,
+					FirstMessageShortPreview = message.ShortPreview,
+					LastMessageId = message.Id,
+					LastMessagePostedById = message.PostedById,
+					LastMessageTimePosted = message.TimePosted,
+					LastMessageShortPreview = message.ShortPreview,
+				};
+
+				DbContext.Topics.Add(topic);
+				await DbContext.SaveChangesAsync();
+
+				message.TopicId = topic.Id;
+				DbContext.Update(message);
+
+				MessageRepository.UpdateTopicParticipation(topic.Id, UserContext.ApplicationUser.Id, message.TimePosted);
+
+				var boards = await BoardRepository.Records();
+
+				foreach (var selectedBoard in input.SelectedBoards) {
+					var board = boards.FirstOrDefault(item => item.Id == selectedBoard);
+
+					if (board != null) {
+						DbContext.TopicBoards.Add(new DataModels.TopicBoard {
+							TopicId = topic.Id,
+							BoardId = board.Id,
+							TimeAdded = DateTime.Now,
+							UserId = UserContext.ApplicationUser.Id
+						});
+					}
+				}
+
+				await DbContext.SaveChangesAsync();
+
+				serviceResponse.RedirectPath = UrlHelper.DisplayMessage(message.Id);
+			}
+
+			return serviceResponse;
+		}
+
 		public async Task<ServiceModels.ServiceResponse> Pin(int topicId) {
 			var record = DbContext.Topics.Find(topicId);
 
@@ -512,10 +563,19 @@ namespace Forum.Services.Repositories {
 		public async Task RebuildTopic(DataModels.Topic topic) {
 			var messagesQuery = from message in DbContext.Messages
 								where message.TopicId == topic.Id
-								where !message.Deleted
+								where message.Deleted
 								select message;
 
 			var messages = await messagesQuery.ToListAsync();
+
+			DbContext.RemoveRange(messages);
+			await DbContext.SaveChangesAsync();
+
+			messagesQuery = from message in DbContext.Messages
+								where message.TopicId == topic.Id
+								select message;
+
+			messages = await messagesQuery.ToListAsync();
 
 			var replyCount = messages.Count();
 
@@ -541,7 +601,7 @@ namespace Forum.Services.Repositories {
 
 			if (topic.Deleted) {
 				foreach (var message in messages) {
-					await MessageRepository.DeleteMessage(message.Id);
+					await MessageRepository.DeleteMessageFromTopic(message, topic);
 				}
 			}
 

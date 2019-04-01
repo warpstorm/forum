@@ -105,42 +105,6 @@ namespace Forum.Services.Repositories {
 			return Convert.ToInt32(Math.Ceiling(index / UserContext.ApplicationUser.MessagesPerPage));
 		}
 
-		public async Task<ServiceModels.ServiceResponse> CreateTopic(InputModels.MessageInput input) {
-			var serviceResponse = new ServiceModels.ServiceResponse();
-
-			var processedMessage = await ProcessMessageInput(serviceResponse, input.Body);
-
-			if (!serviceResponse.Success) {
-				return serviceResponse;
-			}
-
-			var record = CreateMessageRecord(processedMessage, null);
-
-			var existingTopicBoards = DbContext.TopicBoards.Where(item => item.MessageId == record.Id).ToList();
-
-			foreach (var item in existingTopicBoards) {
-				DbContext.Remove(item);
-			}
-
-			foreach (var selectedBoard in input.SelectedBoards) {
-				var board = (await BoardRepository.Records()).FirstOrDefault(item => item.Id == selectedBoard);
-
-				if (board != null) {
-					DbContext.TopicBoards.Add(new DataModels.TopicBoard {
-						MessageId = record.Id,
-						BoardId = board.Id,
-						TimeAdded = DateTime.Now,
-						UserId = UserContext.ApplicationUser.Id
-					});
-				}
-			}
-
-			DbContext.SaveChanges();
-
-			serviceResponse.RedirectPath = UrlHelper.DisplayMessage(record.Id);
-			return serviceResponse;
-		}
-
 		public async Task<ServiceModels.ServiceResponse> CreateReply(InputModels.MessageInput input) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
@@ -148,23 +112,20 @@ namespace Forum.Services.Repositories {
 				throw new HttpBadRequestError();
 			}
 
-			var replyRecord = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == input.Id);
+			var message = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == input.Id);
 
-			if (replyRecord is null || replyRecord.Deleted) {
+			if (message is null || message.Deleted) {
 				serviceResponse.Error($"A record does not exist with ID '{input.Id}'");
 			}
 
+			var topic = DbContext.Topics.First(item => item.Id == message.TopicId);
+
 			var now = DateTime.Now;
-			var recentReply = (now - replyRecord.LastReplyPosted) < (now - now.AddSeconds(-30));
+			var recentReply = (now - topic.LastMessageTimePosted) < (now - now.AddSeconds(-300));
 
-			if (recentReply && replyRecord.ParentId == 0) {
-				var targetId = replyRecord.LastReplyId > 0 ? replyRecord.LastReplyId : replyRecord.Id;
-				var previousMessageRecord = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == targetId && !m.Deleted);
-
-				if (previousMessageRecord?.PostedById == UserContext.ApplicationUser.Id) {
-					await MergeReply(previousMessageRecord, input, serviceResponse);
-					return serviceResponse;
-				}
+			if (recentReply && topic.LastMessagePostedById == UserContext.ApplicationUser.Id) {
+				await MergeReply(topic.LastMessageId, input, serviceResponse);
+				return serviceResponse;
 			}
 
 			if (!serviceResponse.Success) {
@@ -174,11 +135,53 @@ namespace Forum.Services.Repositories {
 			var processedMessage = await ProcessMessageInput(serviceResponse, input.Body);
 
 			if (serviceResponse.Success) {
-				var record = CreateMessageRecord(processedMessage, replyRecord);
+				var record = await CreateMessageRecord(processedMessage);
+				record.ReplyId = message.Id;
+
+				DbContext.Update(record);
+
+				topic.ReplyCount++;
+				topic.LastMessageId = record.Id;
+				topic.LastMessagePostedById = UserContext.ApplicationUser.Id;
+				topic.LastMessageTimePosted = now;
+				topic.LastMessageShortPreview = record.ShortPreview;
+
+				DbContext.Update(topic);
+
+				if (topic.FirstMessagePostedById != UserContext.ApplicationUser.Id) {
+					var notification = new DataModels.Notification {
+						MessageId = record.Id,
+						UserId = topic.FirstMessagePostedById,
+						TargetUserId = UserContext.ApplicationUser.Id,
+						Time = DateTime.Now,
+						Type = ENotificationType.Reply,
+						Unread = true,
+					};
+
+					DbContext.Notifications.Add(notification);
+				}
+
+				if (message.PostedById != UserContext.ApplicationUser.Id) {
+					var notification = new DataModels.Notification {
+						MessageId = record.Id,
+						UserId = message.PostedById,
+						TargetUserId = UserContext.ApplicationUser.Id,
+						Time = DateTime.Now,
+						Type = ENotificationType.Quote,
+						Unread = true,
+					};
+
+					DbContext.Notifications.Add(notification);
+				}
+
+				await DbContext.SaveChangesAsync();
+
+				UpdateTopicParticipation(topic.Id, UserContext.ApplicationUser.Id, DateTime.Now);
+
 				serviceResponse.RedirectPath = UrlHelper.DisplayMessage(record.Id);
 
 				await ForumHub.Clients.All.SendAsync("new-reply", new HubModels.Message {
-					TopicId = record.ParentId > 0 ? record.ParentId : record.Id,
+					TopicId = record.TopicId,
 					MessageId = record.Id
 				});
 			}
@@ -214,43 +217,42 @@ namespace Forum.Services.Repositories {
 			return serviceResponse;
 		}
 
-		async Task MergeReply(DataModels.Message record, InputModels.MessageInput input, ServiceModels.ServiceResponse serviceResponse) {
-			var newBody = $"{record.OriginalBody}\n{input.Body}";
+		async Task MergeReply(int previousMessageId, InputModels.MessageInput input, ServiceModels.ServiceResponse serviceResponse) {
+			var previousMessage = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == previousMessageId && !m.Deleted);
+			var newBody = $"{previousMessage.OriginalBody}\n\n{input.Body}";
 			var processedMessage = await ProcessMessageInput(serviceResponse, newBody);
 
 			if (serviceResponse.Success) {
-				await UpdateMessageRecord(processedMessage, record);
-				serviceResponse.RedirectPath = UrlHelper.DisplayMessage(record.Id);
+				await UpdateMessageRecord(processedMessage, previousMessage);
+				serviceResponse.RedirectPath = UrlHelper.DisplayMessage(previousMessage.Id);
 
 				await ForumHub.Clients.All.SendAsync("updated-message", new HubModels.Message {
-					TopicId = record.ParentId > 0 ? record.ParentId : record.Id,
-					MessageId = record.Id
+					TopicId = previousMessage.ParentId > 0 ? previousMessage.ParentId : previousMessage.Id,
+					MessageId = previousMessage.Id
 				});
 			}
 		}
 
-		public async Task<ServiceModels.ServiceResponse> DeleteMessage(int messageId) {
-			var serviceResponse = new ServiceModels.ServiceResponse();
+		public async Task DeleteMessageFromTopic(DataModels.Message message, DataModels.Topic topic) {
+			if (message.Id == topic.FirstMessageId) {
+				var topicMessages = await DbContext.Messages.Where(m => m.TopicId == topic.Id && !m.Deleted).ToListAsync();
 
-			var record = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == messageId);
+				foreach (var reply in topicMessages) {
+					await RemoveMessageArtifacts(reply);
+				}
 
-			if (record is null || record.Deleted) {
-				throw new HttpNotFoundError();
+				await RemoveMessageArtifacts(message);
+				await DbContext.SaveChangesAsync();
 			}
-
-			var parentId = record.ParentId;
-
-			if (parentId != 0) {
-				serviceResponse.RedirectPath = $"{UrlHelper.Action(nameof(Topics.Latest), nameof(Topics), new { id = parentId })}#message{parentId}";
-
-				var directRepliesQuery = from message in DbContext.Messages
-										 where message.ReplyId == messageId
-										 where !message.Deleted
-										 select message;
+			else {
+				var directRepliesQuery = from m in DbContext.Messages
+										 where m.ReplyId == message.Id
+										 where !m.Deleted
+										 select m;
 
 				foreach (var reply in directRepliesQuery) {
 					reply.OriginalBody =
-						$"[quote]{record.OriginalBody}\n" +
+						$"[quote]{message.OriginalBody}\n" +
 						$"Message deleted by {UserContext.ApplicationUser.DisplayName} on {DateTime.Now.ToString("MMMM dd, yyyy")}[/quote]" +
 						reply.OriginalBody;
 
@@ -261,36 +263,11 @@ namespace Forum.Services.Repositories {
 
 				await DbContext.SaveChangesAsync();
 			}
-			else {
-				serviceResponse.RedirectPath = UrlHelper.Action(nameof(Topics.Index), nameof(Topics));
-			}
 
-			var topicReplies = await DbContext.Messages.Where(m => m.ParentId == messageId && !m.Deleted).ToListAsync();
-
-			foreach (var reply in topicReplies) {
-				await RemoveMessageArtifacts(reply);
-			}
-
-			await RemoveMessageArtifacts(record);
-
-			await DbContext.SaveChangesAsync();
-
-			if (parentId > 0) {
-				var parent = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == parentId && !m.Deleted);
-
-				if (parent != null) {
-					await RecountRepliesForTopic(parent);
-				}
-			}
-
-			if (serviceResponse.Success) {
-				await ForumHub.Clients.All.SendAsync("deleted-message", new HubModels.Message {
-					TopicId = record.ParentId > 0 ? record.ParentId : record.Id,
-					MessageId = record.Id
-				});
-			}
-
-			return serviceResponse;
+			await ForumHub.Clients.All.SendAsync("deleted-message", new HubModels.Message {
+				TopicId = message.ParentId > 0 ? message.ParentId : message.Id,
+				MessageId = message.Id
+			});
 		}
 
 		public async Task<ServiceModels.ServiceResponse> AddThought(int messageId, int smileyId) {
@@ -755,8 +732,8 @@ namespace Forum.Services.Repositories {
 						processedMessageInput.MentionedUsers.Add(user.Id);
 					}
 
-					// Eventually link to user profiles
-					// returnObject.ProcessedBody = Regex.Replace(returnObject.ProcessedBody, @"@" + regexMatch.Groups[1].Value, "<a href='/Profile/Details/" + user.UserId + "' class='user'>" + user.DisplayName + "</span>");
+					// UNTESTED
+					//processedMessageInput.DisplayBody = processedMessageInput.DisplayBody.Replace($"{regexMatch.Groups[1].Value}", $"<a href='/Messages/History/{user.Id}'>{user.DisplayName}</span>");
 				}
 			}
 		}
@@ -809,28 +786,8 @@ namespace Forum.Services.Repositories {
 			return preview;
 		}
 
-		public DataModels.Message CreateMessageRecord(InputModels.ProcessedMessageInput processedMessage, DataModels.Message replyRecord) {
-			var parentId = 0;
-			var replyId = 0;
-
-			DataModels.Message parentMessage = null;
-
-			if (replyRecord != null) {
-				if (replyRecord.ParentId == 0) {
-					parentId = replyRecord.Id;
-					replyId = 0;
-
-					parentMessage = replyRecord;
-				}
-				else {
-					parentId = replyRecord.ParentId;
-					replyId = replyRecord.Id;
-
-					parentMessage = DbContext.Messages.First(item => item.Id == replyRecord.ParentId);
-				}
-			}
-
-			var currentTime = DateTime.Now;
+		public async Task<DataModels.Message> CreateMessageRecord(InputModels.ProcessedMessageInput processedMessage) {
+			var now = DateTime.Now;
 
 			var record = new DataModels.Message {
 				OriginalBody = processedMessage.OriginalBody,
@@ -839,70 +796,19 @@ namespace Forum.Services.Repositories {
 				LongPreview = processedMessage.LongPreview,
 				Cards = processedMessage.Cards,
 
-				TimePosted = currentTime,
-				TimeEdited = currentTime,
-				LastReplyPosted = currentTime,
+				TimePosted = now,
+				TimeEdited = now,
+				LastReplyPosted = now,
 
 				PostedById = UserContext.ApplicationUser.Id,
 				EditedById = UserContext.ApplicationUser.Id,
 				LastReplyById = UserContext.ApplicationUser.Id,
-
-				ParentId = parentId,
-				ReplyId = replyId
 			};
 
 			DbContext.Messages.Add(record);
-			DbContext.SaveChanges();
+			await DbContext.SaveChangesAsync();
 
-			if (replyId > 0) {
-				replyRecord.LastReplyId = record.Id;
-				replyRecord.LastReplyById = UserContext.ApplicationUser.Id;
-				replyRecord.LastReplyPosted = currentTime;
-
-				DbContext.Update(replyRecord);
-
-				if (replyRecord.PostedById != UserContext.ApplicationUser.Id) {
-					var notification = new DataModels.Notification {
-						MessageId = record.Id,
-						UserId = replyRecord.PostedById,
-						TargetUserId = UserContext.ApplicationUser.Id,
-						Time = DateTime.Now,
-						Type = ENotificationType.Quote,
-						Unread = true,
-					};
-
-					DbContext.Notifications.Add(notification);
-				}
-			}
-
-			if (parentMessage != null && parentId != replyId) {
-				parentMessage.ReplyCount++;
-				parentMessage.LastReplyId = record.Id;
-				parentMessage.LastReplyById = UserContext.ApplicationUser.Id;
-				parentMessage.LastReplyPosted = currentTime;
-
-				DbContext.Update(parentMessage);
-
-				if (parentMessage.PostedById != UserContext.ApplicationUser.Id) {
-					var notification = new DataModels.Notification {
-						MessageId = record.Id,
-						UserId = parentMessage.PostedById,
-						TargetUserId = UserContext.ApplicationUser.Id,
-						Time = DateTime.Now,
-						Type = ENotificationType.Reply,
-						Unread = true,
-					};
-
-					DbContext.Notifications.Add(notification);
-				}
-			}
-
-			NotifyMentionedUsers(processedMessage.MentionedUsers, record.Id);
-
-			var topicId = parentId == 0 ? record.Id : parentId;
-			UpdateTopicParticipation(topicId, UserContext.ApplicationUser.Id, DateTime.Now);
-
-			DbContext.SaveChanges();
+			await NotifyMentionedUsers(processedMessage.MentionedUsers, record.Id);
 
 			return record;
 		}
@@ -937,7 +843,7 @@ namespace Forum.Services.Repositories {
 			}
 		}
 
-		public void NotifyMentionedUsers(List<string> mentionedUsers, int messageId) {
+		public async Task NotifyMentionedUsers(List<string> mentionedUsers, int messageId) {
 			foreach (var user in mentionedUsers) {
 				var notification = new DataModels.Notification {
 					MessageId = messageId,
@@ -950,6 +856,8 @@ namespace Forum.Services.Repositories {
 
 				DbContext.Notifications.Add(notification);
 			}
+
+			await DbContext.SaveChangesAsync();
 		}
 
 		async Task RemoveMessageArtifacts(DataModels.Message record) {
@@ -990,185 +898,6 @@ namespace Forum.Services.Repositories {
 			}
 
 			record.Deleted = true;
-		}
-
-		public async Task<int> RecountReplies() {
-			var query = from message in DbContext.Messages
-						where message.ParentId == 0
-						where !message.Deleted
-						select message.Id;
-
-			var recordCount = await query.CountAsync();
-
-			var totalSteps = (int)Math.Ceiling(1D * recordCount / 25);
-
-			return totalSteps;
-		}
-
-		public async Task RecountRepliesContinue(InputModels.Continue input) {
-			input.ThrowIfNull(nameof(input));
-
-			var parentMessageQuery = from message in DbContext.Messages
-									 where message.ParentId == 0
-									 where !message.Deleted
-									 orderby message.Id descending
-									 select message;
-
-			var take = 25;
-			var skip = input.CurrentStep * take;
-
-			var parents = parentMessageQuery.Skip(skip).Take(take).ToList();
-
-			foreach (var parent in parents) {
-				await RecountRepliesForTopic(parent);
-			}
-		}
-
-		public async Task RecountRepliesForTopic(DataModels.Message parentMessage) {
-			var messagesQuery = from message in DbContext.Messages
-								where message.ParentId == parentMessage.Id
-								where !message.Deleted
-								select new {
-									message.Id,
-									message.TimePosted,
-									message.PostedById
-								};
-
-			var replyCount = await messagesQuery.CountAsync();
-
-			var updated = false;
-
-			if (parentMessage.ReplyCount != replyCount) {
-				parentMessage.ReplyCount = replyCount;
-				updated = true;
-			}
-
-			var lastReply = await messagesQuery.LastOrDefaultAsync();
-
-			if (lastReply is null) {
-				parentMessage.LastReplyId = 0;
-				parentMessage.LastReplyPosted = parentMessage.TimePosted;
-				parentMessage.LastReplyById = parentMessage.PostedById;
-				updated = true;
-			}
-			else if (parentMessage.LastReplyId != lastReply.Id) {
-				parentMessage.LastReplyId = lastReply.Id;
-				parentMessage.LastReplyPosted = lastReply.TimePosted;
-				parentMessage.LastReplyById = lastReply.PostedById;
-				updated = true;
-			}
-
-			if (updated) {
-				DbContext.Update(parentMessage);
-				await DbContext.SaveChangesAsync();
-			}
-		}
-
-		public async Task<int> RebuildParticipants() {
-			var query = from message in DbContext.Messages
-						where message.ParentId == 0
-						where !message.Deleted
-						select message.Id;
-
-			var recordCount = await query.CountAsync();
-
-			var totalSteps = (int)Math.Ceiling(1D * recordCount / 25);
-
-			return totalSteps;
-		}
-
-		public async Task RebuildParticipantsContinue(InputModels.Continue input) {
-			input.ThrowIfNull(nameof(input));
-
-			var parentMessageQuery = from message in DbContext.Messages
-									 where message.ParentId == 0
-									 where !message.Deleted
-									 orderby message.Id descending
-									 select message;
-
-			var take = 25;
-			var skip = input.CurrentStep * take;
-
-			var parents = await parentMessageQuery.Skip(skip).Take(take).ToListAsync();
-
-			foreach (var parent in parents) {
-				await RebuildParticipantsForTopic(parent.Id);
-			}
-		}
-
-		public async Task RebuildParticipantsForTopic(int topicId) {
-			var messagesQuery = from message in DbContext.Messages
-								where message.Id == topicId || message.ParentId == topicId
-								where !message.Deleted
-								select message;
-
-			var messages = await messagesQuery.ToListAsync();
-
-			var newParticipants = new List<DataModels.Participant>();
-
-			foreach (var message in messages) {
-				if (!newParticipants.Any(item => item.UserId == message.PostedById)) {
-					newParticipants.Add(new DataModels.Participant {
-						MessageId = topicId,
-						UserId = message.PostedById,
-						Time = message.TimePosted
-					});
-				}
-			}
-
-			var oldParticipants = await DbContext.Participants.Where(r => r.MessageId == topicId).ToListAsync();
-
-			if (oldParticipants.Count() != newParticipants.Count()) {
-				DbContext.RemoveRange(oldParticipants);
-				await DbContext.SaveChangesAsync();
-
-				DbContext.Participants.AddRange(newParticipants);
-				await DbContext.SaveChangesAsync();
-			}
-		}
-
-		public async Task<int> ProcessMessages() {
-			var records = from message in DbContext.Messages
-						  where !message.Deleted
-						  select message.Id;
-
-			var recordCount = await records.CountAsync();
-
-			var totalSteps = (int)Math.Ceiling(1D * recordCount / 5);
-
-			return totalSteps;
-		}
-
-		public async Task ProcessMessagesContinue(InputModels.Continue input) {
-			input.ThrowIfNull(nameof(input));
-
-			var messageQuery = from message in DbContext.Messages
-							   where !message.Deleted
-							   orderby message.Id descending
-							   select message;
-
-			var take = 5;
-			var skip = take * input.CurrentStep;
-
-			var messages = messageQuery.Skip(skip).Take(take);
-
-			foreach (var message in messages) {
-				var serviceResponse = new ServiceModels.ServiceResponse();
-
-				var processedMessage = await ProcessMessageInput(serviceResponse, message.OriginalBody);
-
-				if (serviceResponse.Success) {
-					message.OriginalBody = processedMessage.OriginalBody;
-					message.DisplayBody = processedMessage.DisplayBody;
-					message.ShortPreview = processedMessage.ShortPreview;
-					message.LongPreview = processedMessage.LongPreview;
-					message.Cards = processedMessage.Cards;
-
-					DbContext.Update(message);
-				}
-			}
-
-			DbContext.SaveChanges();
 		}
 
 		/// <summary>
