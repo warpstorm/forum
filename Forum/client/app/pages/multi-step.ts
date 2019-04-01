@@ -33,17 +33,11 @@ export class MultiStep {
 
 	updateStatus(): void {
 		let bar = <HTMLElement>document.querySelector('.completed-bar');
-		let currentPage = <Element>document.querySelector('#current-page');
-		let totalPages = <Element>document.querySelector('#total-pages');
-
 		let percent = 100 * this.settings.page / this.settings.totalPages;
 		bar.style.width = `${percent}%`;
 
 		percent = Math.round(percent);
 		bar.innerHTML = `${percent}%`;
-
-		currentPage.innerHTML = (this.settings.page + 1).toString();
-		totalPages.innerHTML = (this.settings.totalPages + 1).toString();
 	}
 
 	log(xhrResult: XhrResult): void {
@@ -54,14 +48,10 @@ export class MultiStep {
 			let responseException: XhrException | null = null;
 
 			if (xhrResult.responseText) {
-				console.log(xhrResult.responseText);
-
 				try {
 					responseException = new XhrException(JSON.parse(xhrResult.responseText));
 				}
-				catch (error) {
-					console.log(error);
-				}
+				catch { }
 			}
 
 			if (responseException) {
@@ -110,7 +100,14 @@ export class MultiStep {
 		let target = <HTMLButtonElement>event.currentTarget;
 		target.disabled = true;
 
-		let halt = <HTMLInputElement>document.querySelector('#halt');
+		let startButton = <HTMLButtonElement>document.querySelector('button#start');
+		let togglePauseOnError = <HTMLInputElement>document.querySelector('#pause-on-error');
+		let togglePauseAfterNext = <HTMLInputElement>document.querySelector('#pause-after-next');
+		let takeInput = <HTMLInputElement>document.querySelector('#take');
+		let pageInput = <HTMLInputElement>document.querySelector('#current-page');
+		pageInput.disabled = true;
+
+		this.settings.page = parseInt(pageInput.value) - 1;
 
 		while (this.settings.page <= this.settings.totalPages) {
 			let requestOptions = new XhrOptions({
@@ -119,7 +116,7 @@ export class MultiStep {
 				body: queryify({
 					page: this.settings.page,
 					totalpages: this.settings.totalPages,
-					take: this.settings.take
+					take: takeInput.value
 				})
 			});
 
@@ -127,15 +124,21 @@ export class MultiStep {
 
 			this.log(xhrResult);
 
-			if (xhrResult.status != 200 && halt.checked) {
+			this.updateStatus();
+			this.settings.page++;
+			pageInput.value = this.settings.page.toString();
+
+			if (xhrResult.status != 200 && togglePauseOnError.checked) {
 				break;
 			}
 
-			this.updateStatus();
-			this.settings.page++;
+			if (togglePauseAfterNext.checked) {
+				togglePauseAfterNext.checked = false;
+				break;
+			}
 		}
 
-		let steps = <Element>document.querySelector('#steps');
-		steps.innerHTML = 'Complete';
+		startButton.disabled = false;
+		pageInput.disabled = false;
 	}
 }

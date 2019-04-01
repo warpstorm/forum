@@ -1,24 +1,28 @@
 ﻿@model ViewModels.MultiStep
 
 <div class="content-box pad gap-bottom">
-	<p>@Model.ActionNote</p>
+	<p class="pad-bottom">@Model.ActionNote</p>
 	<div class="main-bar">
 		<div class="completed-bar">0%</div>
 	</div>
 	<p class="small-pad-top font-small">
-		<button id="start" class="font-small">Start</button>
-		<span id="steps">Step <span id="current-page">0</span> of <span id="total-pages">0</span></span>
+		<button id="start" class="small-button">Start</button>
 	</p>
 </div>
 
-<div class="content-box pad gap-bottom">
-	<p class="font-small subdued-text">Settings</p>
-	<p><input id="halt" type="checkbox" checked="checked" /> <span class="note">Halt on errors</span></p>
+<div class="content-box pad gap-bottom font-small">
+	<p class="subdued-text">Settings</p>
+	<div class="small-pad-left">
+		<p>Pause after next step <input id="pause-after-next" type="checkbox" /></p>
+		<p>Pause on errors <input id="pause-on-error" type="checkbox" checked="checked" /></p>
+		<p>Take <input id="take" type="text" size="3" value="@Model.Take" /></p>
+		<p>Page <input id="current-page" type="text" size="3" value="@(Model.Page + 1)" /> of @(Model.TotalPages + 1)</p>
+	</div>
 </div>
 
 <div class="content-box pad">
 	<p class="font-small subdued-text">Log</p>
-	<ul id="log"></ul>
+	<ul id="log" class="small-pad-left"></ul>
 </div>
 
 
