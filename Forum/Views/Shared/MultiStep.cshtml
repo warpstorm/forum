@@ -16,7 +16,7 @@
 		<p>Pause after next step <input id="pause-after-next" type="checkbox" /></p>
 		<p>Pause on errors <input id="pause-on-error" type="checkbox" checked="checked" /></p>
 		<p>Take <input id="take" type="text" size="3" value="@Model.Take" /></p>
-		<p>Page <input id="current-page" type="text" size="3" value="@(Model.Page + 1)" /> of @(Model.TotalPages + 1)</p>
+		<p>Page <input id="current-page" type="text" size="3" value="@(Model.Page + 1)" /> of <span id="total-pages">@(Model.TotalPages + 1)</span></p>
 	</div>
 </div>
 
@@ -37,7 +37,8 @@
 	<script>
 		window.pageActions = 'multi-step';
 		window.page = @Model.Page;
-		window.totalPages = 12; //@Model.TotalPages;
+		window.totalPages = @Model.TotalPages;
+		window.totalRecords = @Model.TotalRecords;
 		window.take = @Model.Take;
 		window.nextAction = '@Model.Action';
 	</script>

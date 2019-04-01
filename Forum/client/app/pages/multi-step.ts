@@ -2,7 +2,7 @@
 import { XhrOptions } from "../models/xhr-options";
 import { HttpMethod } from "../definitions/http-method";
 import { Xhr } from "../services/xhr";
-import { hide, show, queryify } from "../helpers";
+import { show, queryify } from "../helpers";
 import { XhrResult } from "../models/xhr-result";
 import { XhrException } from "../models/xhr-exception";
 
@@ -12,6 +12,7 @@ function getSettings(): MultiStepSettings {
 	return new MultiStepSettings({
 		page: genericWindow.page,
 		totalPages: genericWindow.totalPages,
+		totalRecords: genericWindow.totalRecords,
 		take: genericWindow.take,
 		nextAction: genericWindow.nextAction
 	});
@@ -29,6 +30,9 @@ export class MultiStep {
 
 		let startButton = <Element>document.querySelector('button#start');
 		startButton.addEventListener('click', this.eventStartButtonClick);
+
+		let takeInput = <HTMLInputElement>document.querySelector('#take');
+		takeInput.addEventListener('blur', this.eventUpdateTake);
 	}
 
 	updateStatus(): void {
@@ -94,6 +98,21 @@ export class MultiStep {
 		logItemHtml += '</li>';
 
 		logElement.innerHTML = logItemHtml + logElement.innerHTML;
+	}
+
+	eventUpdateTake = (event: Event): void => {
+		let takeInput = <HTMLInputElement>event.currentTarget;
+		let pageInput = <HTMLInputElement>document.querySelector('#current-page');
+		let totalPages = <Element>document.querySelector('#total-pages');
+
+		let skip = this.settings.take * this.settings.page;
+
+		this.settings.take = parseInt(takeInput.value);
+		this.settings.page = skip > 0 ? Math.floor(skip / this.settings.take) : 0;
+		this.settings.totalPages = Math.ceil(this.settings.totalRecords / this.settings.take);
+
+		pageInput.value = (this.settings.page + 1).toString();
+		totalPages.innerHTML = (this.settings.totalPages + 1).toString();
 	}
 
 	eventStartButtonClick = async (event: Event): Promise<void> => {
