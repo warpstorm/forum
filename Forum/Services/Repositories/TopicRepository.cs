@@ -90,7 +90,7 @@ namespace Forum.Services.Repositories {
 
 						break;
 
-					case EViewLogTargetType.Message:
+					case EViewLogTargetType.Topic:
 						if (viewLog.TargetId == record.Id && viewLog.LogTime >= latestViewTime) {
 							latestViewTime = viewLog.LogTime;
 						}
@@ -307,7 +307,7 @@ namespace Forum.Services.Repositories {
 							unread = 0;
 							break;
 
-						case EViewLogTargetType.Message:
+						case EViewLogTargetType.Topic:
 							if (viewLog.TargetId == messageId) {
 								unread = 0;
 							}
@@ -409,7 +409,7 @@ namespace Forum.Services.Repositories {
 				messageId = record.ParentId;
 			}
 
-			var viewLogs = UserContext.ViewLogs.Where(item => item.TargetId == messageId && item.TargetType == EViewLogTargetType.Message).ToList();
+			var viewLogs = UserContext.ViewLogs.Where(item => item.TargetId == messageId && item.TargetType == EViewLogTargetType.Topic).ToList();
 
 			if (viewLogs.Any()) {
 				foreach (var viewLog in viewLogs) {
@@ -468,7 +468,7 @@ namespace Forum.Services.Repositories {
 
 			var viewLogs = DbContext.ViewLogs.Where(v =>
 				v.UserId == UserContext.ApplicationUser.Id
-				&& (v.TargetType == EViewLogTargetType.All || (v.TargetType == EViewLogTargetType.Message && v.TargetId == topicId))
+				&& (v.TargetType == EViewLogTargetType.All || (v.TargetType == EViewLogTargetType.Topic && v.TargetId == topicId))
 			).ToList();
 
 			DateTime latestTime;
@@ -483,7 +483,7 @@ namespace Forum.Services.Repositories {
 
 			latestTime.AddSeconds(1);
 
-			var existingLogs = viewLogs.Where(r => r.TargetType == EViewLogTargetType.Message);
+			var existingLogs = viewLogs.Where(r => r.TargetType == EViewLogTargetType.Topic);
 
 			foreach (var viewLog in existingLogs) {
 				DbContext.ViewLogs.Remove(viewLog);
@@ -492,7 +492,7 @@ namespace Forum.Services.Repositories {
 			DbContext.ViewLogs.Add(new DataModels.ViewLog {
 				LogTime = latestTime,
 				TargetId = topicId,
-				TargetType = EViewLogTargetType.Message,
+				TargetType = EViewLogTargetType.Topic,
 				UserId = UserContext.ApplicationUser.Id
 			});
 
@@ -565,7 +565,7 @@ namespace Forum.Services.Repositories {
 		}
 
 		public void RemoveTopicViewlogs(DataModels.Message sourceMessage, DataModels.Message targetMessage) {
-			var records = DbContext.ViewLogs.Where(item => item.TargetType == EViewLogTargetType.Message && (item.TargetId == sourceMessage.Id || item.TargetId == targetMessage.Id)).ToList();
+			var records = DbContext.ViewLogs.Where(item => item.TargetType == EViewLogTargetType.Topic && (item.TargetId == sourceMessage.Id || item.TargetId == targetMessage.Id)).ToList();
 			DbContext.RemoveRange(records);
 			DbContext.SaveChanges();
 		}

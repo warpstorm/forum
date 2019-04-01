@@ -51,6 +51,7 @@ namespace Forum.Models.DataModels {
 		[Required]
 		public string LastReplyById { get; set; }
 
+		public int TopicId { get; set; }
 		public int ParentId { get; set; }
 		public int ReplyId { get; set; }
 		public int LastReplyId { get; set; }

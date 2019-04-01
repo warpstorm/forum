@@ -9,6 +9,9 @@ namespace Forum.Models.DataModels {
 		public int MessageId { get; set; }
 
 		[Required]
+		public int TopicId { get; set; }
+
+		[Required]
 		public string UserId { get; set; }
 
 		public DateTime Time { get; set; }

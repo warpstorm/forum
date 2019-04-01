@@ -21,6 +21,7 @@ namespace Forum.Services.Contexts {
 		public DbSet<Quote> Quotes { get; set; }
 		public DbSet<Smiley> Smileys { get; set; }
 		public DbSet<StrippedUrl> StrippedUrls { get; set; }
+		public DbSet<Topic> Topics { get; set; }
 		public DbSet<TopicBoard> TopicBoards { get; set; }
 		public DbSet<ViewLog> ViewLogs { get; set; }
 
@@ -122,6 +123,9 @@ namespace Forum.Services.Contexts {
 				.HasIndex(r => r.ParentId);
 
 			modelBuilder.Entity<Message>()
+				.HasIndex(r => r.TopicId);
+
+			modelBuilder.Entity<Message>()
 				.HasIndex(r => r.ReplyId);
 
 			modelBuilder.Entity<Message>()
@@ -132,6 +136,9 @@ namespace Forum.Services.Contexts {
 
 			modelBuilder.Entity<TopicBoard>()
 				.HasIndex(r => r.MessageId);
+
+			modelBuilder.Entity<TopicBoard>()
+				.HasIndex(r => r.TopicId);
 
 			modelBuilder.Entity<MessageThought>()
 				.HasIndex(r => r.MessageId);
@@ -144,6 +151,9 @@ namespace Forum.Services.Contexts {
 
 			modelBuilder.Entity<Participant>()
 				.HasIndex(r => r.MessageId);
+
+			modelBuilder.Entity<Participant>()
+				.HasIndex(r => r.TopicId);
 
 			modelBuilder.Entity<Participant>()
 				.HasIndex(r => r.UserId);
