@@ -114,6 +114,7 @@ namespace Forum.Controllers {
 				Action = UrlHelper.Action(nameof(ContinueMigration)),
 				Page = 0,
 				TotalPages = Convert.ToInt32(Math.Floor(1d * topics / take)),
+				TotalRecords = topics,
 				Take = take,
 			};
 
@@ -125,9 +126,9 @@ namespace Forum.Controllers {
 									  where message.ParentId == 0
 									  select message;
 
-			parentMessagesQuery = parentMessagesQuery.Skip(input.Page * input.Take).Take(input.Take);
+			var parentMessages = await parentMessagesQuery.Skip(input.Page * input.Take).Take(input.Take).ToListAsync();
 
-			foreach (var firstMessage in parentMessagesQuery) {
+			foreach (var firstMessage in parentMessages) {
 				DataModels.Message lastMessage = null;
 
 				if (firstMessage.LastReplyId > 0) {
@@ -164,22 +165,18 @@ namespace Forum.Controllers {
 								where message.Id == parentMessageId || message.ParentId == parentMessageId
 								select message.Id;
 
+			var messageIds = await messagesQuery.ToListAsync();
+			var messageIdsString = $"{string.Join(", ", messageIds)}";
+
 			var pTopicId = new SqlParameter("@TopicId", topicId);
 			var pViewLogTypeMessage = new SqlParameter("@ViewLogTypeMessage", EViewLogTargetType.Message);
 			var pViewLogTypeTopic = new SqlParameter("@ViewLogTypeTopic", EViewLogTargetType.Topic);
 
-			var pMessageIds = new SqlParameter("@MessageIds", await messagesQuery.ToListAsync());
-
-			var updateTasks = new List<Task> {
-				DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [{nameof(ApplicationDbContext.ViewLogs)}] SET {nameof(DataModels.ViewLog.TargetId)} = @TopicId, {nameof(DataModels.ViewLog.TargetType)} = @ViewLogTypeTopic WHERE {nameof(DataModels.ViewLog.TargetType)} = @ViewLogTypeMessage AND {nameof(DataModels.ViewLog.TargetId)} IN @MessageIds", pTopicId, pViewLogTypeTopic, pViewLogTypeMessage, pMessageIds),
-				DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [{nameof(ApplicationDbContext.Messages)}] SET {nameof(DataModels.Message.TopicId)} = @TopicId WHERE {nameof(DataModels.Message.Id)} IN @MessageIds", pTopicId, pMessageIds),
-				DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [{nameof(ApplicationDbContext.TopicBoards)}] SET {nameof(DataModels.TopicBoard.TopicId)} = @TopicId WHERE {nameof(DataModels.TopicBoard.MessageId)} IN @MessageIds", pTopicId, pMessageIds),
-				DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [{nameof(ApplicationDbContext.Participants)}] SET {nameof(DataModels.Participant.TopicId)} = @TopicId WHERE {nameof(DataModels.Participant.MessageId)} IN @MessageIds", pTopicId, pMessageIds),
-				DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [{nameof(ApplicationDbContext.Bookmarks)}] SET {nameof(DataModels.Bookmark.TopicId)} = @TopicId WHERE {nameof(DataModels.Bookmark.MessageId)} IN @MessageIds", pTopicId, pMessageIds),
-			};
-
-			await Task.WhenAll(updateTasks);
-			await DbContext.SaveChangesAsync();
+			await DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [{nameof(ApplicationDbContext.ViewLogs)}] SET {nameof(DataModels.ViewLog.TargetId)} = @TopicId, {nameof(DataModels.ViewLog.TargetType)} = @ViewLogTypeTopic WHERE {nameof(DataModels.ViewLog.TargetType)} = @ViewLogTypeMessage AND {nameof(DataModels.ViewLog.TargetId)} IN ({messageIdsString})", pTopicId, pViewLogTypeTopic, pViewLogTypeMessage);
+			await DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [{nameof(ApplicationDbContext.Messages)}] SET {nameof(DataModels.Message.TopicId)} = @TopicId WHERE {nameof(DataModels.Message.Id)} IN ({messageIdsString})", pTopicId);
+			await DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [{nameof(ApplicationDbContext.TopicBoards)}] SET {nameof(DataModels.TopicBoard.TopicId)} = @TopicId WHERE {nameof(DataModels.TopicBoard.MessageId)} IN ({messageIdsString})", pTopicId);
+			await DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [{nameof(ApplicationDbContext.Participants)}] SET {nameof(DataModels.Participant.TopicId)} = @TopicId WHERE {nameof(DataModels.Participant.MessageId)} IN ({messageIdsString})", pTopicId);
+			await DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [{nameof(ApplicationDbContext.Bookmarks)}] SET {nameof(DataModels.Bookmark.TopicId)} = @TopicId WHERE {nameof(DataModels.Bookmark.MessageId)} IN ({messageIdsString})", pTopicId);
 		}
 
 		void CheckContext() {
