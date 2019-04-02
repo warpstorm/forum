@@ -29,7 +29,7 @@ export module Xhr {
 		});
 	}
 
-	export async function requestPartialView(options: XhrOptions, targetDoc: Document): Promise<XhrResult> {
+	export async function loadView(options: XhrOptions, targetDoc: Document): Promise<XhrResult> {
 		throwIfNull(options, "options");
 		options.responseType = 'document';
 

@@ -69,7 +69,7 @@ export class TopicDisplay {
 			url: `/Topics/Display/${this.settings.topicId}/${page}`
 		});
 
-		await Xhr.requestPartialView(requestOptions, document);
+		await Xhr.loadView(requestOptions, document);
 
 		window.scrollTo(0, 0);
 		mainElement.classList.remove('faded');
@@ -232,8 +232,7 @@ export class TopicDisplay {
 		let requestBodyValues = {
 			id: idElement ? idElement.value : '',
 			topicId: topicIdElement ? topicIdElement.value : '',
-			body: bodyElement ? bodyElement.value : '',
-			sideload: true
+			body: bodyElement ? bodyElement.value : ''
 		};
 
 		self.submitting = true;
@@ -399,10 +398,10 @@ export class TopicDisplay {
 
 		let requestOptions = new XhrOptions({
 			method: HttpMethod.Get,
-			url: `/Messages/EditPartial/${messageId}`
+			url: `/Messages/XhrEdit/${messageId}`
 		});
 
-		await Xhr.requestPartialView(requestOptions, document);
+		await Xhr.loadView(requestOptions, document);
 
 		hide(workingDots);
 
@@ -495,10 +494,10 @@ export class TopicDisplay {
 
 		let requestOptions = new XhrOptions({
 			method: HttpMethod.Get,
-			url: `/Messages/ReplyPartial/${messageId}`
+			url: `/Messages/XhrReply/${messageId}`
 		});
 
-		await Xhr.requestPartialView(requestOptions, document);
+		await Xhr.loadView(requestOptions, document);
 
 		hide(workingDots);
 

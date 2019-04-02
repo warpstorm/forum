@@ -58,7 +58,7 @@ export class TopicIndex {
 			url: `/Topics/Index/${this.settings.boardId}/${page}?unread=${this.settings.unreadFilter}`,
 		});
 
-		await Xhr.requestPartialView(requestOptions, document);
+		await Xhr.loadView(requestOptions, document);
 
 		window.scrollTo(0, 0);
 		mainElement.classList.remove('faded');

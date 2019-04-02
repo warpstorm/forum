@@ -81,7 +81,7 @@ export class WhosOnlineMonitor {
 				responseType: 'document'
 			});
 
-			await Xhr.requestPartialView(requestOptions, this.doc);
+			await Xhr.loadView(requestOptions, this.doc);
 
 			this.settings = getSettings();
 			this.updateChicletTimes();
