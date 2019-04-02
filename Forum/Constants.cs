@@ -13,7 +13,8 @@
 			public const string LastProcessedToken = "LastProcessedToken";
 			public const string Layout = "Layout";
 			public const string Sidebar = "Sidebar";
-			public const string SmileyContainer = "smileys";
+			public const string SmileyImageContainer = "smileys";
+			public const string SmileyViewData = "Smileys";
 			public const string StatusMessage = "StatusMessage";
 			public const string StorageConnection = "StorageConnection";
 			public const string User = "User";

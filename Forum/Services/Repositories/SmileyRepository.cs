@@ -100,7 +100,7 @@ namespace Forum.Services.Repositories {
 
 			using (var inputStream = input.File.OpenReadStream()) {
 				smileyRecord.Path = await ImageStore.Save(new ImageStoreSaveOptions {
-					ContainerName = Constants.InternalKeys.SmileyContainer,
+					ContainerName = Constants.InternalKeys.SmileyImageContainer,
 					FileName = input.File.FileName,
 					ContentType = input.File.ContentType,
 					InputStream = inputStream,
@@ -195,7 +195,7 @@ namespace Forum.Services.Repositories {
 			// Only delete the file if no other smileys are using the file.
 			if (!DbContext.Smileys.Any(s => s.FileName == smileyRecord.FileName)) {
 				await ImageStore.Delete(new ImageStoreDeleteOptions {
-					ContainerName = Constants.InternalKeys.SmileyContainer,
+					ContainerName = Constants.InternalKeys.SmileyImageContainer,
 					Path = smileyRecord.Path
 				});
 			}
