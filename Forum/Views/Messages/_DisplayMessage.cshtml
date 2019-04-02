@@ -43,16 +43,9 @@
 					}
 
 					@if (Model.CanDelete) {
-						@if (Model.ParentId == 0) {
-							<a class="delete-button small-pad-left small-pad-right" asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.Delete)" asp-route-id="@Model.Id" onclick="return confirm('Are you sure you want to remove this ENTIRE topic?');">
-								<img class="align-middle" src="~/images/delete.png" alt="Delete" title="Delete" />
-							</a>
-						}
-						else {
-							<a class="delete-button small-pad-left small-pad-right" asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.Delete)" asp-route-id="@Model.Id" onclick="return confirm('Are you sure you want to remove this reply?');">
-								<img class="align-middle" src="~/images/delete.png" alt="Delete" title="Delete" />
-							</a>
-						}
+						<a class="delete-button small-pad-left small-pad-right" asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.Delete)" asp-route-id="@Model.Id" onclick="return confirm('Are you sure you want to delete this post?');">
+							<img class="align-middle" src="~/images/delete.png" alt="Delete" title="Delete" />
+						</a>
 					}
 				</aside>
 			}
@@ -80,7 +73,7 @@
 			<br class="clear-left mobile-only" />
 
 			@if (Model.ReplyId > 0) {
-				<p class="pad-left font-small subdued-text"><a asp-action="@nameof(Topics.Display)" asp-route-id="@Model.ReplyId">In reply to this post by @Html.Raw(Model.ReplyPostedBy):</a></p>
+				<p class="pad-left font-small subdued-text"><a asp-action="@nameof(Topics.Display)" asp-route-id="@Model.TopicId" asp-route-page="1" asp-route-target="@Model.ReplyId">In reply to this post by @Html.Raw(Model.ReplyPostedBy):</a></p>
 				<blockquote class="reply pointer">
 					<div class="reply-preview font-small subdued-text" reply="@Model.ReplyId">@Html.Raw(Model.ReplyPreview)</div>
 					<div class="reply-body hidden" reply="@Model.ReplyId">@Html.Raw(Model.ReplyBody)</div>

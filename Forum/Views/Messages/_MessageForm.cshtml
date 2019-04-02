@@ -10,6 +10,7 @@
 		  asp-route-returnurl="@ViewData["Referrer"]">
 
 		<input type="hidden" name="Id" value="@Model.Id" />
+		<input type="hidden" name="TopicId" value="@Model.TopicId" />
 
 		@if (ViewData["Categories"] is List<ViewModels.Boards.Items.IndexCategory>) {
 			@foreach (var category in ViewData["Categories"] as List<ViewModels.Boards.Items.IndexCategory>) {
