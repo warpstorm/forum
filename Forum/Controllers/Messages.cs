@@ -82,9 +82,9 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> Reply(int id = 0) {
 			ViewData["Smileys"] = await SmileyRepository.GetSelectorList();
 
-			var record = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == id);
+			var message = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == id);
 
-			if (record is null || record.Deleted) {
+			if (message is null || message.Deleted) {
 				throw new HttpNotFoundError();
 			}
 
@@ -100,6 +100,14 @@ namespace Forum.Controllers {
 		[ValidateAntiForgeryToken]
 		[PreventRapidRequests]
 		public async Task<IActionResult> Reply(ControllerModels.Messages.CreateReplyInput input) {
+			if (input.Id > 0) {
+				var message = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == input.Id);
+
+				if (message is null || message.Deleted) {
+					throw new HttpNotFoundError();
+				}
+			}
+
 			ControllerModels.Messages.CreateReplyResult result = null;
 
 			if (ModelState.IsValid) {
@@ -126,15 +134,15 @@ namespace Forum.Controllers {
 		[SideLoad]
 		[HttpGet]
 		public async Task<IActionResult> XhrReply(int id) {
-			var record = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == id);
+			var message = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == id);
 
-			if (record is null || record.Deleted) {
+			if (message is null || message.Deleted) {
 				throw new HttpNotFoundError();
 			}
 
 			var viewModel = new ViewModels.Messages.ReplyForm {
 				Id = id.ToString(),
-				TopicId = record.TopicId.ToString(),
+				TopicId = message.TopicId.ToString(),
 				ElementId = $"message-reply-{id}",
 				FormAction = nameof(XhrReply)
 			};
@@ -147,6 +155,14 @@ namespace Forum.Controllers {
 		[ValidateAntiForgeryToken]
 		[PreventRapidRequests]
 		public async Task<IActionResult> XhrReply(ControllerModels.Messages.CreateReplyInput input) {
+			if (input.Id > 0) {
+				var message = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == input.Id);
+
+				if (message is null || message.Deleted) {
+					throw new HttpNotFoundError();
+				}
+			}
+
 			if (ModelState.IsValid) {
 				var result = await MessageRepository.CreateReply(input);
 				ModelState.AddModelErrors(result.Errors);
@@ -165,15 +181,19 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> Edit(int id) {
 			ViewData["Smileys"] = await SmileyRepository.GetSelectorList();
 
-			var record = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == id);
+			var message = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == id);
 
-			if (record is null || record.Deleted) {
+			if (message is null || message.Deleted) {
 				throw new HttpNotFoundError();
+			}
+
+			if (message.PostedById != UserContext.ApplicationUser.Id && !UserContext.IsAdmin) {
+				throw new HttpForbiddenError();
 			}
 
 			var viewModel = new ViewModels.Messages.EditMessageForm {
 				Id = id.ToString(),
-				Body = record.OriginalBody,
+				Body = message.OriginalBody,
 				ElementId = $"edit-message-{id}"
 			};
 
@@ -184,6 +204,16 @@ namespace Forum.Controllers {
 		[ValidateAntiForgeryToken]
 		[PreventRapidRequests]
 		public async Task<IActionResult> Edit(ControllerModels.Messages.EditInput input) {
+			var message = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == input.Id);
+
+			if (message is null || message.Deleted) {
+				throw new HttpNotFoundError();
+			}
+
+			if (message.PostedById != UserContext.ApplicationUser.Id && !UserContext.IsAdmin) {
+				throw new HttpForbiddenError();
+			}
+
 			if (ModelState.IsValid) {
 				var result = await MessageRepository.EditMessage(input);
 				ModelState.AddModelErrors(result.Errors);
@@ -206,15 +236,19 @@ namespace Forum.Controllers {
 		[SideLoad]
 		[HttpGet]
 		public async Task<IActionResult> XhrEdit(int id) {
-			var record = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == id);
+			var message = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == id);
 
-			if (record is null || record.Deleted) {
+			if (message is null || message.Deleted) {
 				throw new HttpNotFoundError();
+			}
+
+			if (message.PostedById != UserContext.ApplicationUser.Id && !UserContext.IsAdmin) {
+				throw new HttpForbiddenError();
 			}
 
 			var viewModel = new ViewModels.Messages.EditMessageForm {
 				Id = id.ToString(),
-				Body = record.OriginalBody,
+				Body = message.OriginalBody,
 				ElementId = $"edit-message-{id}",
 				FormAction = nameof(XhrEdit)
 			};
@@ -227,6 +261,16 @@ namespace Forum.Controllers {
 		[ValidateAntiForgeryToken]
 		[PreventRapidRequests]
 		public async Task<IActionResult> XhrEdit(ControllerModels.Messages.EditInput input) {
+			var message = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == input.Id);
+
+			if (message is null || message.Deleted) {
+				throw new HttpNotFoundError();
+			}
+
+			if (message.PostedById != UserContext.ApplicationUser.Id && !UserContext.IsAdmin) {
+				throw new HttpForbiddenError();
+			}
+
 			if (ModelState.IsValid) {
 				var result = await MessageRepository.EditMessage(input);
 				ModelState.AddModelErrors(result.Errors);
@@ -258,16 +302,16 @@ namespace Forum.Controllers {
 				await MessageRepository.DeleteMessageFromTopic(message, topic);
 				await TopicRepository.RebuildTopic(topic);
 
-				var serviceResponse = new Models.ServiceModels.ServiceResponse();
+				var redirectPath = string.Empty;
 
 				if (topic.FirstMessageId == message.Id) {
-					serviceResponse.RedirectPath = UrlHelper.Action(nameof(Topics.Index), nameof(Topics));
+					redirectPath = UrlHelper.Action(nameof(Topics.Index), nameof(Topics));
 				}
 				else {
-					serviceResponse.RedirectPath = UrlHelper.Action(nameof(Topics.Latest), nameof(Topics), new { id = topic.Id });
+					redirectPath = UrlHelper.Action(nameof(Topics.Latest), nameof(Topics), new { id = topic.Id });
 				}
 
-				return await ForumViewResult.RedirectFromService(this, serviceResponse);
+				return Redirect(redirectPath);
 			}
 
 			return ForumViewResult.RedirectToReferrer(this);
@@ -275,6 +319,12 @@ namespace Forum.Controllers {
 
 		[HttpGet]
 		public async Task<IActionResult> AddThought(int id, int smiley) {
+			var message = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == id);
+
+			if (message is null || message.Deleted) {
+				throw new HttpNotFoundError();
+			}
+
 			if (ModelState.IsValid) {
 				var serviceResponse = await MessageRepository.AddThought(id, smiley);
 				return await ForumViewResult.RedirectFromService(this, serviceResponse);
