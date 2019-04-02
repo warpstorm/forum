@@ -227,9 +227,11 @@ export class TopicDisplay {
 		});
 
 		let idElement = form.querySelector('[name=Id]') as HTMLInputElement;
+		let topicIdElement = form.querySelector('[name=TopicId]') as HTMLInputElement;
 
 		let requestBodyValues = {
 			id: idElement ? idElement.value : '',
+			topicId: topicIdElement ? topicIdElement.value : '',
 			body: bodyElement ? bodyElement.value : '',
 			sideload: true
 		};
