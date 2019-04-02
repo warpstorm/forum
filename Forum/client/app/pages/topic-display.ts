@@ -4,7 +4,6 @@ import { App } from "../app";
 import { Xhr } from "../services/xhr";
 import { HttpMethod } from "../definitions/http-method";
 import { HubMessage } from "../models/hub-message";
-import { ModelErrorResponse } from "../models/model-error-response";
 import { TokenRequestResponse } from "../models/token-request-response";
 import { XhrOptions } from "../models/xhr-options";
 import { TopicDisplaySettings } from "../models/page-settings/topic-display-settings";
@@ -247,18 +246,23 @@ export class TopicDisplay {
 
 		let xhrResult = await Xhr.request(submitRequestOptions);
 
-		let modelErrors: ModelErrorResponse[] = JSON.parse(xhrResult.responseText);
-
-		if (modelErrors.length == 0) {
+		if (xhrResult.status == 200) {
 			success();
 		}
 		else {
-			for (let i = 0; i < modelErrors.length; i++) {
-				let modelErrorField = form.querySelector(`[data-valmsg-for="${modelErrors[i].propertyName}"]`);
+			try {
+				let modelErrors = JSON.parse(xhrResult.responseText);
 
-				if (modelErrorField) {
-					modelErrorField.textContent = modelErrors[i].errorMessage;
+				for (let i = 0; i < modelErrors.length; i++) {
+					let modelErrorField = form.querySelector(`[data-valmsg-for="${modelErrors[i].propertyName}"]`);
+
+					if (modelErrorField) {
+						modelErrorField.textContent = modelErrors[i].errorMessage;
+					}
 				}
+			}
+			catch {
+				console.log(xhrResult.responseText);
 			}
 		}
 
