@@ -8,6 +8,6 @@ namespace Forum.Services.Helpers {
 			return url.Action(actionName, controllerName, routeValues, scheme);
 		}
 
-		public static string DisplayMessage(this IUrlHelper url, int messageId) => url.Action(nameof(Topics.Display), nameof(Topics), new { id = messageId }) + $"#message{messageId}";
+		public static string DisplayMessage(this IUrlHelper url, int topicId, int messageId) => url.Action(nameof(Topics.Display), nameof(Topics), new { id = topicId, page = 1, target = messageId }) + $"#message{messageId}";
 	}
 }
