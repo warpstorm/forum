@@ -14,7 +14,7 @@ namespace Forum.Models.ViewModels.Messages {
 		public bool Poseys { get; set; }
 		public bool Birthday { get; set; }
 		public string Id { get; set; }
-		public int ParentId { get; set; }
+		public int TopicId { get; set; }
 		public int ReplyId { get; set; }
 		public string PostedById { get; set; }
 		public string PostedByName { get; set; }
