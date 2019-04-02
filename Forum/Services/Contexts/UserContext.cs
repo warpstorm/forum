@@ -7,7 +7,7 @@ namespace Forum.Services.Contexts {
 		public bool IsAdmin { get; set; }
 		public List<string> Roles { get; set; }
 		public List<ViewLog> ViewLogs { get; set; }
-
 		public ApplicationUser ApplicationUser { get; set; }
+		public string Id => IsAuthenticated ? ApplicationUser.Id : string.Empty;
 	}
 }
