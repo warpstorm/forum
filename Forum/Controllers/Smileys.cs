@@ -1,4 +1,5 @@
 ﻿using Forum.Controllers.Annotations;
+using Forum.Extensions;
 using Forum.Models.InputModels;
 using Forum.Services;
 using Forum.Services.Contexts;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
 namespace Forum.Controllers {
+	using ControllerModels = Models.ControllerModels;
 	using ViewModels = Models.ViewModels.Smileys;
 
 	[Authorize(Roles = Constants.InternalKeys.Admin)]
@@ -58,38 +60,44 @@ namespace Forum.Controllers {
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		[PreventRapidRequests]
-		public async Task<IActionResult> Create(CreateSmileyInput input) {
+		public async Task<IActionResult> Create(ControllerModels.Smileys.CreateSmileyInput input) {
 			if (ModelState.IsValid) {
-				var serviceResponse = await SmileyRepository.Create(input);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				var result = await SmileyRepository.Create(input);
+				ModelState.AddModelErrors(result.Errors);
+
+				if (ModelState.IsValid) {
+					TempData[Constants.InternalKeys.StatusMessage] = $"Smiley '{input.File.FileName}' was added with code '{input.Code}'.";
+
+					var referrer = ForumViewResult.GetReferrer(this);
+					return Redirect(referrer);
+				}
 			}
 
-			return await FailureCallback();
+			var viewModel = new ViewModels.CreatePage {
+				Code = input.Code,
+				Thought = input.Thought
+			};
 
-			async Task<IActionResult> FailureCallback() {
-				var viewModel = new ViewModels.CreatePage {
-					Code = input.Code,
-					Thought = input.Thought
-				};
-
-				return await ForumViewResult.ViewResult(this, viewModel);
-			}
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		[PreventRapidRequests]
-		public async Task<IActionResult> Edit(EditSmileysInput input) {
+		public async Task<IActionResult> Edit(ControllerModels.Smileys.EditSmileysInput input) {
 			if (ModelState.IsValid) {
-				var serviceResponse = SmileyRepository.Update(input);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse, failSync: FailureCallback);
+				var result = await SmileyRepository.Edit(input);
+				ModelState.AddModelErrors(result.Errors);
+
+				if (ModelState.IsValid) {
+					TempData[Constants.InternalKeys.StatusMessage] = $"Smileys were updated.";
+
+					var referrer = ForumViewResult.GetReferrer(this);
+					return Redirect(referrer);
+				}
 			}
 
-			return FailureCallback();
-
-			IActionResult FailureCallback() {
-				return RedirectToAction(nameof(Index));
-			}
+			return RedirectToAction(nameof(Index));
 		}
 
 		[HttpGet]

@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using System.ComponentModel.DataAnnotations;
 
-namespace Forum.Models.InputModels {
+namespace Forum.Models.ControllerModels.Smileys {
 	public class CreateSmileyInput {
 		[Required]
 		[MinLength(2)]

@@ -10,8 +10,8 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Forum.Services.Repositories {
+	using ControllerModels = Models.ControllerModels;
 	using DataModels = Models.DataModels;
-	using InputModels = Models.InputModels;
 	using ServiceModels = Models.ServiceModels;
 	using ViewModels = Models.ViewModels.Smileys;
 
@@ -68,54 +68,51 @@ namespace Forum.Services.Repositories {
 			return results;
 		}
 
-		public async Task<ServiceModels.ServiceResponse> Create(InputModels.CreateSmileyInput input) {
-			var serviceResponse = new ServiceModels.ServiceResponse();
+		public async Task<ControllerModels.Smileys.CreateResult> Create(ControllerModels.Smileys.CreateSmileyInput input) {
+			var result = new ControllerModels.Smileys.CreateResult();
 
 			var allowedExtensions = new[] { "gif", "png" };
 			var extension = Path.GetExtension(input.File.FileName).ToLower().Substring(1);
 
 			if (Regex.IsMatch(input.File.FileName, @"[^a-zA-Z 0-9_\-\.]")) {
-				serviceResponse.Error("File", "Your filename contains invalid characters.");
+				result.Errors.Add("File", "Your filename contains invalid characters.");
 			}
 
 			if (!allowedExtensions.Contains(extension)) {
-				serviceResponse.Error("File", $"Your file must be: {string.Join(", ", allowedExtensions)}.");
+				result.Errors.Add("File", $"Your file must be: {string.Join(", ", allowedExtensions)}.");
 			}
 
 			if (DbContext.Smileys.Any(s => s.Code == input.Code)) {
-				serviceResponse.Error(nameof(input.Code), "Another smiley exists with that code.");
+				result.Errors.Add(nameof(input.Code), "Another smiley exists with that code.");
 			}
 
-			if (!serviceResponse.Success) {
-				return serviceResponse;
+			if (!result.Errors.Any()) {
+				var smileyRecord = new DataModels.Smiley {
+					Code = input.Code,
+					Thought = input.Thought,
+					FileName = input.File.FileName
+				};
+
+				DbContext.Smileys.Add(smileyRecord);
+
+				using (var inputStream = input.File.OpenReadStream()) {
+					smileyRecord.Path = await ImageStore.Save(new ImageStoreSaveOptions {
+						ContainerName = Constants.InternalKeys.SmileyImageContainer,
+						FileName = input.File.FileName,
+						ContentType = input.File.ContentType,
+						InputStream = inputStream,
+						Overwrite = true
+					});
+				}
+
+				await DbContext.SaveChangesAsync();
 			}
 
-			var smileyRecord = new DataModels.Smiley {
-				Code = input.Code,
-				Thought = input.Thought,
-				FileName = input.File.FileName
-			};
-
-			DbContext.Smileys.Add(smileyRecord);
-
-			using (var inputStream = input.File.OpenReadStream()) {
-				smileyRecord.Path = await ImageStore.Save(new ImageStoreSaveOptions {
-					ContainerName = Constants.InternalKeys.SmileyImageContainer,
-					FileName = input.File.FileName,
-					ContentType = input.File.ContentType,
-					InputStream = inputStream,
-					Overwrite = true
-				});
-			}
-
-			DbContext.SaveChanges();
-
-			serviceResponse.Message = $"Smiley '{smileyRecord.FileName}' was added with code '{smileyRecord.Code}'.";
-			return serviceResponse;
+			return result;
 		}
 
-		public ServiceModels.ServiceResponse Update(InputModels.EditSmileysInput input) {
-			var serviceResponse = new ServiceModels.ServiceResponse();
+		public async Task<ControllerModels.Smileys.EditResult> Edit(ControllerModels.Smileys.EditSmileysInput input) {
+			var result = new ControllerModels.Smileys.EditResult();
 
 			var smileySortOrder = new Dictionary<int, int>();
 
@@ -123,52 +120,49 @@ namespace Forum.Services.Repositories {
 				var smileyRecord = DbContext.Smileys.Find(smileyInput.Id);
 
 				if (smileyRecord is null) {
-					serviceResponse.Error($@"No smiley was found with the id '{smileyInput.Id}'");
+					result.Errors.Add(nameof(smileyInput.Id), $@"No smiley was found with the id '{smileyInput.Id}'");
 					break;
 				}
 
 				smileySortOrder.Add(smileyRecord.Id, smileyRecord.SortOrder);
 			}
 
-			foreach (var smileyInput in input.Smileys) {
-				var newSortOrder = (smileyInput.Column * 1000) + smileyInput.Row;
+			if (!result.Errors.Any()) {
+				foreach (var smileyInput in input.Smileys) {
+					var newSortOrder = (smileyInput.Column * 1000) + smileyInput.Row;
 
-				if (smileySortOrder[smileyInput.Id] != newSortOrder) {
-					foreach (var kvp in smileySortOrder.Where(kvp => smileyInput.Column == kvp.Value / 1000 && kvp.Value >= newSortOrder).ToList()) {
-						smileySortOrder[kvp.Key]++;
+					if (smileySortOrder[smileyInput.Id] != newSortOrder) {
+						foreach (var kvp in smileySortOrder.Where(kvp => smileyInput.Column == kvp.Value / 1000 && kvp.Value >= newSortOrder).ToList()) {
+							smileySortOrder[kvp.Key]++;
+						}
+
+						smileySortOrder[smileyInput.Id] = newSortOrder;
+					}
+				}
+
+				foreach (var smileyInput in input.Smileys) {
+					var smileyRecord = DbContext.Smileys.Find(smileyInput.Id);
+
+					if (smileyRecord.Code != smileyInput.Code) {
+						smileyRecord.Code = smileyInput.Code;
+						DbContext.Update(smileyRecord);
 					}
 
-					smileySortOrder[smileyInput.Id] = newSortOrder;
+					if (smileyRecord.Thought != smileyInput.Thought) {
+						smileyRecord.Thought = smileyInput.Thought;
+						DbContext.Update(smileyRecord);
+					}
+
+					if (smileyRecord.SortOrder != smileySortOrder[smileyRecord.Id]) {
+						smileyRecord.SortOrder = smileySortOrder[smileyRecord.Id];
+						DbContext.Update(smileyRecord);
+					}
 				}
+
+				await DbContext.SaveChangesAsync();
 			}
 
-			foreach (var smileyInput in input.Smileys) {
-				var smileyRecord = DbContext.Smileys.Find(smileyInput.Id);
-
-				if (smileyRecord.Code != smileyInput.Code) {
-					smileyRecord.Code = smileyInput.Code;
-					DbContext.Update(smileyRecord);
-				}
-
-				if (smileyRecord.Thought != smileyInput.Thought) {
-					smileyRecord.Thought = smileyInput.Thought;
-					DbContext.Update(smileyRecord);
-				}
-
-				if (smileyRecord.SortOrder != smileySortOrder[smileyRecord.Id]) {
-					smileyRecord.SortOrder = smileySortOrder[smileyRecord.Id];
-					DbContext.Update(smileyRecord);
-				}
-			}
-
-			if (!serviceResponse.Success) {
-				return serviceResponse;
-			}
-
-			DbContext.SaveChanges();
-
-			serviceResponse.Message = $"The smiley was updated.";
-			return serviceResponse;
+			return result;
 		}
 
 		public async Task<ServiceModels.ServiceResponse> Delete(int id) {
