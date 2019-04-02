@@ -30,7 +30,8 @@ export class TopicIndex {
 		window.onpopstate = this.eventPopState;
 
 		if (this.app.hub) {
-			this.app.hub.on('new-reply', this.hubNewReply);
+			this.app.hub.on('new-reply', this.hubRefreshIndex);
+			this.app.hub.on('new-topic', this.hubRefreshIndex);
 		}
 	}
 
@@ -71,7 +72,7 @@ export class TopicIndex {
 		this.init();
 	}
 
-	hubNewReply = () => {
+	hubRefreshIndex = () => {
 		if (this.settings.currentPage == 1) {
 			this.loadPage(1);
 		}
