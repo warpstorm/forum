@@ -4,6 +4,7 @@ namespace Forum.Models {
 	public interface IMessageFormViewModel {
 		string Id { get; }
 
+		string TopicId { get; }
 		string BoardId { get; }
 
 		[Required]
@@ -12,6 +13,6 @@ namespace Forum.Models {
 
 		string FormAction { get; }
 		string FormController { get; }
-		string ElementId { get; set; }
+		string ElementId { get; }
 	}
 }
