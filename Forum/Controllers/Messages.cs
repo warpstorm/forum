@@ -14,6 +14,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace Forum.Controllers {
+	using ControllerModels = Models.ControllerModels;
 	using InputModels = Models.InputModels;
 	using ServiceModels = Models.ServiceModels;
 	using ViewModels = Models.ViewModels;
@@ -104,6 +105,7 @@ namespace Forum.Controllers {
 
 			var viewModel = new ViewModels.Messages.ReplyForm {
 				Id = id.ToString(),
+				TopicId = record.TopicId.ToString(),
 				ElementId = $"message-reply-{id}"
 			};
 
@@ -113,7 +115,7 @@ namespace Forum.Controllers {
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		[PreventRapidRequests]
-		public async Task<IActionResult> Reply(InputModels.MessageInput input) {
+		public async Task<IActionResult> Reply(ControllerModels.Messages.CreateReplyInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await MessageRepository.CreateReply(input);
 
@@ -188,7 +190,7 @@ namespace Forum.Controllers {
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		[PreventRapidRequests]
-		public async Task<IActionResult> Edit(InputModels.MessageInput input) {
+		public async Task<IActionResult> Edit(ControllerModels.Messages.EditInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await MessageRepository.EditMessage(input);
 
@@ -214,7 +216,7 @@ namespace Forum.Controllers {
 				var viewModel = new ViewModels.Messages.EditMessageForm {
 					Id = input.Id.ToString(),
 					Body = input.Body,
-					ElementId = "edit-message"
+					ElementId = $"edit-message-{input.Id}"
 				};
 
 				return await ForumViewResult.ViewResult(this, viewModel);

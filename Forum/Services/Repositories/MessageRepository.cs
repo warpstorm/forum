@@ -1,6 +1,4 @@
-﻿using Forum.Controllers;
-using Forum.Extensions;
-using Forum.Models.Errors;
+﻿using Forum.Models.Errors;
 using Forum.Models.Options;
 using Forum.Services.Contexts;
 using Forum.Services.Helpers;
@@ -23,6 +21,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Forum.Services.Repositories {
+	using ControllerModels = Models.ControllerModels;
 	using DataModels = Models.DataModels;
 	using HubModels = Models.HubModels;
 	using InputModels = Models.InputModels;
@@ -31,7 +30,7 @@ namespace Forum.Services.Repositories {
 
 	public class MessageRepository {
 		ApplicationDbContext DbContext { get; }
-		UserContext UserContext { get; }
+		UserContext CurrentUser { get; }
 		AccountRepository AccountRepository { get; }
 		BoardRepository BoardRepository { get; }
 		RoleRepository RoleRepository { get; }
@@ -63,7 +62,7 @@ namespace Forum.Services.Repositories {
 			ILogger<MessageRepository> log
 		) {
 			DbContext = dbContext;
-			UserContext = userContext;
+			CurrentUser = userContext;
 			AccountRepository = accountRepository;
 			BoardRepository = boardRepository;
 			RoleRepository = roleRepository;
@@ -102,28 +101,29 @@ namespace Forum.Services.Repositories {
 			var index = (double)messageIds.FindIndex(id => id == messageId);
 			index++;
 
-			return Convert.ToInt32(Math.Ceiling(index / UserContext.ApplicationUser.MessagesPerPage));
+			return Convert.ToInt32(Math.Ceiling(index / CurrentUser.ApplicationUser.MessagesPerPage));
 		}
 
-		public async Task<ServiceModels.ServiceResponse> CreateReply(InputModels.MessageInput input) {
+		public async Task<ServiceModels.ServiceResponse> CreateReply(ControllerModels.Messages.CreateReplyInput input) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
-			if (input.Id == 0) {
-				throw new HttpBadRequestError();
+			var topic = await DbContext.Topics.FirstOrDefaultAsync(m => m.Id == input.TopicId);
+
+			if (topic is null || topic.Deleted) {
+				serviceResponse.Error(nameof(input.TopicId), $"A record does not exist with ID '{input.TopicId}'");
+				return serviceResponse;
 			}
 
-			var message = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == input.Id);
+			var replyTargetMessage = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == input.Id);
 
-			if (message is null || message.Deleted) {
-				serviceResponse.Error($"A record does not exist with ID '{input.Id}'");
-			}
-
-			var topic = DbContext.Topics.First(item => item.Id == message.TopicId);
+			var previousMessage = await DbContext.Messages.FirstOrDefaultAsync(m =>
+				m.Id == topic.LastMessageId
+				&& m.PostedById == CurrentUser.Id);
 
 			var now = DateTime.Now;
 			var recentReply = (now - topic.LastMessageTimePosted) < (now - now.AddSeconds(-300));
 
-			if (recentReply && topic.LastMessagePostedById == UserContext.ApplicationUser.Id) {
+			if (recentReply && !(previousMessage is null) && (replyTargetMessage is null || replyTargetMessage.Id == previousMessage.ReplyId)) {
 				await MergeReply(topic.LastMessageId, input, serviceResponse);
 				return serviceResponse;
 			}
@@ -136,23 +136,24 @@ namespace Forum.Services.Repositories {
 
 			if (serviceResponse.Success) {
 				var record = await CreateMessageRecord(processedMessage);
-				record.ReplyId = message.Id;
+				record.TopicId = topic.Id;
+				record.ReplyId = replyTargetMessage?.Id ?? 0;
 
 				DbContext.Update(record);
 
 				topic.ReplyCount++;
 				topic.LastMessageId = record.Id;
-				topic.LastMessagePostedById = UserContext.ApplicationUser.Id;
+				topic.LastMessagePostedById = CurrentUser.Id;
 				topic.LastMessageTimePosted = now;
 				topic.LastMessageShortPreview = record.ShortPreview;
 
 				DbContext.Update(topic);
 
-				if (topic.FirstMessagePostedById != UserContext.ApplicationUser.Id) {
+				if (topic.FirstMessagePostedById != CurrentUser.Id) {
 					var notification = new DataModels.Notification {
 						MessageId = record.Id,
 						UserId = topic.FirstMessagePostedById,
-						TargetUserId = UserContext.ApplicationUser.Id,
+						TargetUserId = CurrentUser.Id,
 						Time = DateTime.Now,
 						Type = ENotificationType.Reply,
 						Unread = true,
@@ -161,11 +162,11 @@ namespace Forum.Services.Repositories {
 					DbContext.Notifications.Add(notification);
 				}
 
-				if (message.PostedById != UserContext.ApplicationUser.Id) {
+				if (!(replyTargetMessage is null) && replyTargetMessage.PostedById != CurrentUser.Id) {
 					var notification = new DataModels.Notification {
 						MessageId = record.Id,
-						UserId = message.PostedById,
-						TargetUserId = UserContext.ApplicationUser.Id,
+						UserId = replyTargetMessage.PostedById,
+						TargetUserId = CurrentUser.Id,
 						Time = DateTime.Now,
 						Type = ENotificationType.Quote,
 						Unread = true,
@@ -176,9 +177,9 @@ namespace Forum.Services.Repositories {
 
 				await DbContext.SaveChangesAsync();
 
-				UpdateTopicParticipation(topic.Id, UserContext.ApplicationUser.Id, DateTime.Now);
+				UpdateTopicParticipation(topic.Id, CurrentUser.Id, DateTime.Now);
 
-				serviceResponse.RedirectPath = UrlHelper.DisplayMessage(record.Id);
+				serviceResponse.RedirectPath = UrlHelper.DisplayMessage(record.TopicId, record.Id);
 
 				await ForumHub.Clients.All.SendAsync("new-reply", new HubModels.Message {
 					TopicId = record.TopicId,
@@ -189,7 +190,7 @@ namespace Forum.Services.Repositories {
 			return serviceResponse;
 		}
 
-		public async Task<ServiceModels.ServiceResponse> EditMessage(InputModels.MessageInput input) {
+		public async Task<ServiceModels.ServiceResponse> EditMessage(ControllerModels.Messages.EditInput input) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			if (input.Id == 0) {
@@ -206,10 +207,10 @@ namespace Forum.Services.Repositories {
 
 			if (serviceResponse.Success) {
 				await UpdateMessageRecord(processedMessage, record);
-				serviceResponse.RedirectPath = UrlHelper.DisplayMessage(record.Id);
+				serviceResponse.RedirectPath = UrlHelper.DisplayMessage(record.TopicId, record.Id);
 
 				await ForumHub.Clients.All.SendAsync("updated-message", new HubModels.Message {
-					TopicId = record.ParentId > 0 ? record.ParentId : record.Id,
+					TopicId = record.TopicId,
 					MessageId = record.Id
 				});
 			}
@@ -217,17 +218,17 @@ namespace Forum.Services.Repositories {
 			return serviceResponse;
 		}
 
-		async Task MergeReply(int previousMessageId, InputModels.MessageInput input, ServiceModels.ServiceResponse serviceResponse) {
+		async Task MergeReply(int previousMessageId, ControllerModels.Messages.CreateReplyInput input, ServiceModels.ServiceResponse serviceResponse) {
 			var previousMessage = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == previousMessageId && !m.Deleted);
 			var newBody = $"{previousMessage.OriginalBody}\n\n{input.Body}";
 			var processedMessage = await ProcessMessageInput(serviceResponse, newBody);
 
 			if (serviceResponse.Success) {
 				await UpdateMessageRecord(processedMessage, previousMessage);
-				serviceResponse.RedirectPath = UrlHelper.DisplayMessage(previousMessage.Id);
+				serviceResponse.RedirectPath = UrlHelper.DisplayMessage(previousMessage.TopicId, previousMessage.Id);
 
 				await ForumHub.Clients.All.SendAsync("updated-message", new HubModels.Message {
-					TopicId = previousMessage.ParentId > 0 ? previousMessage.ParentId : previousMessage.Id,
+					TopicId = previousMessage.TopicId,
 					MessageId = previousMessage.Id
 				});
 			}
@@ -253,7 +254,7 @@ namespace Forum.Services.Repositories {
 				foreach (var reply in directRepliesQuery) {
 					reply.OriginalBody =
 						$"[quote]{message.OriginalBody}\n" +
-						$"Message deleted by {UserContext.ApplicationUser.DisplayName} on {DateTime.Now.ToString("MMMM dd, yyyy")}[/quote]" +
+						$"Message deleted by {CurrentUser.ApplicationUser.DisplayName} on {DateTime.Now.ToString("MMMM dd, yyyy")}[/quote]" +
 						reply.OriginalBody;
 
 					reply.ReplyId = 0;
@@ -265,7 +266,7 @@ namespace Forum.Services.Repositories {
 			}
 
 			await ForumHub.Clients.All.SendAsync("deleted-message", new HubModels.Message {
-				TopicId = message.ParentId > 0 ? message.ParentId : message.Id,
+				TopicId = message.TopicId,
 				MessageId = message.Id
 			});
 		}
@@ -293,22 +294,22 @@ namespace Forum.Services.Repositories {
 				.FirstOrDefaultAsync(mt =>
 					mt.MessageId == messageRecord.Id
 					&& mt.SmileyId == smileyRecord.Id
-					&& mt.UserId == UserContext.ApplicationUser.Id);
+					&& mt.UserId == CurrentUser.Id);
 
 			if (existingRecord is null) {
 				var messageThought = new DataModels.MessageThought {
 					MessageId = messageRecord.Id,
 					SmileyId = smileyRecord.Id,
-					UserId = UserContext.ApplicationUser.Id
+					UserId = CurrentUser.Id
 				};
 
 				DbContext.MessageThoughts.Add(messageThought);
 
-				if (messageRecord.PostedById != UserContext.ApplicationUser.Id) {
+				if (messageRecord.PostedById != CurrentUser.Id) {
 					var notification = new DataModels.Notification {
 						MessageId = messageRecord.Id,
 						UserId = messageRecord.PostedById,
-						TargetUserId = UserContext.ApplicationUser.Id,
+						TargetUserId = CurrentUser.Id,
 						Time = DateTime.Now,
 						Type = ENotificationType.Thought,
 						Unread = true,
@@ -330,11 +331,11 @@ namespace Forum.Services.Repositories {
 			DbContext.SaveChanges();
 
 			await ForumHub.Clients.All.SendAsync("updated-message", new HubModels.Message {
-				TopicId = messageRecord.ParentId > 0 ? messageRecord.ParentId : messageRecord.Id,
+				TopicId = messageRecord.TopicId,
 				MessageId = messageRecord.Id
 			});
 
-			serviceResponse.RedirectPath = UrlHelper.DisplayMessage(messageId);
+			serviceResponse.RedirectPath = UrlHelper.DisplayMessage(messageRecord.TopicId, messageRecord.Id);
 			return serviceResponse;
 		}
 
@@ -343,18 +344,18 @@ namespace Forum.Services.Repositories {
 
 			try {
 				processedMessage = await PreProcessMessageInput(messageBody);
-				ParseBBC(processedMessage);
+				processedMessage.DisplayBody = BBCParser.ToHtml(processedMessage.DisplayBody);
 				await ProcessSmileys(processedMessage);
 				await ProcessMessageBodyUrls(processedMessage);
 				await FindMentionedUsers(processedMessage);
 				PostProcessMessageInput(processedMessage);
 			}
 			catch (ArgumentException ex) {
-				serviceResponse.Error(nameof(InputModels.MessageInput.Body), $"An error occurred while processing the message. {ex.Message}");
+				serviceResponse.Error("Body", $"An error occurred while processing the message. {ex.Message}");
 			}
 
 			if (processedMessage is null) {
-				serviceResponse.Error(nameof(InputModels.MessageInput.Body), $"An error occurred while processing the message.");
+				serviceResponse.Error("Body", $"An error occurred while processing the message.");
 				return processedMessage;
 			}
 
@@ -387,10 +388,6 @@ namespace Forum.Services.Repositories {
 			}
 
 			return processedMessageInput;
-		}
-
-		public void ParseBBC(InputModels.ProcessedMessageInput processedMessageInput) {
-			processedMessageInput.DisplayBody = BBCParser.ToHtml(processedMessageInput.DisplayBody);
 		}
 
 		/// <summary>
@@ -728,7 +725,7 @@ namespace Forum.Services.Repositories {
 				}
 
 				if (user != null) {
-					if (user.Id != UserContext.ApplicationUser.Id) {
+					if (user.Id != CurrentUser.Id) {
 						processedMessageInput.MentionedUsers.Add(user.Id);
 					}
 
@@ -800,9 +797,9 @@ namespace Forum.Services.Repositories {
 				TimeEdited = now,
 				LastReplyPosted = now,
 
-				PostedById = UserContext.ApplicationUser.Id,
-				EditedById = UserContext.ApplicationUser.Id,
-				LastReplyById = UserContext.ApplicationUser.Id,
+				PostedById = CurrentUser.Id,
+				EditedById = CurrentUser.Id,
+				LastReplyById = CurrentUser.Id,
 			};
 
 			DbContext.Messages.Add(record);
@@ -820,7 +817,7 @@ namespace Forum.Services.Repositories {
 			record.LongPreview = message.LongPreview;
 			record.Cards = message.Cards;
 			record.TimeEdited = DateTime.Now;
-			record.EditedById = UserContext.ApplicationUser.Id;
+			record.EditedById = CurrentUser.Id;
 
 			DbContext.Update(record);
 
@@ -847,7 +844,7 @@ namespace Forum.Services.Repositories {
 			foreach (var user in mentionedUsers) {
 				var notification = new DataModels.Notification {
 					MessageId = messageId,
-					TargetUserId = UserContext.ApplicationUser.Id,
+					TargetUserId = CurrentUser.Id,
 					UserId = user,
 					Time = DateTime.Now,
 					Type = ENotificationType.Mention,
@@ -928,7 +925,7 @@ namespace Forum.Services.Repositories {
 							   where messageIds.Contains(message.Id)
 							   select new ViewModels.Messages.DisplayMessage {
 								   Id = message.Id.ToString(),
-								   ParentId = message.ParentId,
+								   TopicId = message.TopicId,
 								   ReplyId = message.ReplyId,
 								   Body = message.DisplayBody,
 								   Cards = message.Cards,
@@ -939,7 +936,7 @@ namespace Forum.Services.Repositories {
 								   RecordTime = message.TimeEdited
 							   };
 
-			var messages = messageQuery.ToList();
+			var messages = await messageQuery.ToListAsync();
 
 			foreach (var message in messages) {
 				message.ShowControls = true;
@@ -947,24 +944,24 @@ namespace Forum.Services.Repositories {
 				if (message.ReplyId > 0) {
 					var reply = DbContext.Messages.FirstOrDefault(item => item.Id == message.ReplyId && !item.Deleted);
 
-					if (reply != null) {
-						var replyPostedBy = users.FirstOrDefault(item => item.Id == reply.PostedById);
-
+					if (!(reply is null)) {
 						if (string.IsNullOrEmpty(reply.ShortPreview)) {
 							reply.ShortPreview = "No preview";
 						}
 
 						message.ReplyBody = reply.DisplayBody;
 						message.ReplyPreview = reply.ShortPreview;
-						message.ReplyPostedBy = replyPostedBy?.DecoratedName;
+
+						var replyPostedBy = users.FirstOrDefault(item => item.Id == reply.PostedById);
+						message.ReplyPostedBy = replyPostedBy?.DecoratedName ?? "A user";
 					}
 				}
 
-				message.CanEdit = UserContext.IsAdmin || (UserContext.IsAuthenticated && UserContext.ApplicationUser.Id == message.PostedById);
-				message.CanDelete = UserContext.IsAdmin || (UserContext.IsAuthenticated && UserContext.ApplicationUser.Id == message.PostedById);
-				message.CanReply = UserContext.IsAuthenticated;
-				message.CanThought = UserContext.IsAuthenticated;
-				message.CanQuote = UserContext.IsAuthenticated;
+				message.CanEdit = CurrentUser.IsAdmin || CurrentUser.Id == message.PostedById;
+				message.CanDelete = CurrentUser.IsAdmin || CurrentUser.Id == message.PostedById;
+				message.CanReply = CurrentUser.IsAuthenticated;
+				message.CanThought = CurrentUser.IsAuthenticated;
+				message.CanQuote = CurrentUser.IsAuthenticated;
 				message.Thoughts = thoughts.Where(item => item.MessageId == message.Id).ToList();
 
 				var postedBy = users.FirstOrDefault(item => item.Id == message.PostedById);
@@ -984,7 +981,7 @@ namespace Forum.Services.Repositories {
 		}
 
 		public async Task<List<ViewModels.Messages.DisplayMessage>> GetUserMessages(string userId, int page) {
-			var take = UserContext.ApplicationUser.MessagesPerPage;
+			var take = CurrentUser.ApplicationUser.MessagesPerPage;
 			var skip = (page - 1) * take;
 
 			var messageQuery = from message in DbContext.Messages

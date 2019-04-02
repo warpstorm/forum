@@ -6,6 +6,7 @@ using Forum.Services.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -13,7 +14,9 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace Forum.Services.Repositories {
+	using ControllerModels = Models.ControllerModels;
 	using DataModels = Models.DataModels;
+	using HubModels = Models.HubModels;
 	using InputModels = Models.InputModels;
 	using ItemModels = Models.ViewModels.Topics.Items;
 	using ServiceModels = Models.ServiceModels;
@@ -29,7 +32,7 @@ namespace Forum.Services.Repositories {
 		NotificationRepository NotificationRepository { get; }
 		RoleRepository RoleRepository { get; }
 		SmileyRepository SmileyRepository { get; }
-
+		IHubContext<ForumHub> ForumHub { get; }
 		IUrlHelper UrlHelper { get; }
 
 		public TopicRepository(
@@ -42,6 +45,7 @@ namespace Forum.Services.Repositories {
 			RoleRepository roleRepository,
 			SmileyRepository smileyRepository,
 			AccountRepository accountRepository,
+			IHubContext<ForumHub> forumHub,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory
 		) {
@@ -54,6 +58,7 @@ namespace Forum.Services.Repositories {
 			NotificationRepository = notificationRepository;
 			RoleRepository = roleRepository;
 			SmileyRepository = smileyRepository;
+			ForumHub = forumHub;
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
@@ -79,7 +84,7 @@ namespace Forum.Services.Repositories {
 
 							break;
 
-						case EViewLogTargetType.Message:
+						case EViewLogTargetType.Topic:
 							if (viewLog.TargetId == topic.Id && viewLog.LogTime >= latestViewTime) {
 								latestViewTime = viewLog.LogTime;
 							}
@@ -94,7 +99,9 @@ namespace Forum.Services.Repositories {
 									 where !message.Deleted
 									 select message.Id;
 
-				latestMessageId = await messageIdQuery.FirstOrDefaultAsync();
+				if (messageIdQuery.Any()) {
+					latestMessageId = await messageIdQuery.FirstAsync();
+				}
 			}
 
 			return latestMessageId;
@@ -280,7 +287,7 @@ namespace Forum.Services.Repositories {
 			return unread;
 		}
 
-		public async Task<ServiceModels.ServiceResponse> CreateTopic(InputModels.MessageInput input) {
+		public async Task<ServiceModels.ServiceResponse> CreateTopic(ControllerModels.Topics.CreateTopicInput input) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
 			var processedMessage = await MessageRepository.ProcessMessageInput(serviceResponse, input.Body);
@@ -324,7 +331,12 @@ namespace Forum.Services.Repositories {
 
 				await DbContext.SaveChangesAsync();
 
-				serviceResponse.RedirectPath = UrlHelper.DisplayMessage(message.Id);
+				await ForumHub.Clients.All.SendAsync("new-topic", new HubModels.Message {
+					TopicId = topic.Id,
+					MessageId = message.Id
+				});
+
+				serviceResponse.RedirectPath = UrlHelper.DisplayMessage(topic.Id, message.Id);
 			}
 
 			return serviceResponse;

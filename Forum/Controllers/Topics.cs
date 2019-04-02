@@ -5,8 +5,6 @@ using Forum.Services.Contexts;
 using Forum.Services.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -14,14 +12,14 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace Forum.Controllers {
+	using ControllerModels = Models.ControllerModels;
 	using InputModels = Models.InputModels;
-	using ItemModels = Models.ViewModels.Topics.Items;
 	using PageModels = Models.ViewModels.Topics.Pages;
 	using ViewModels = Models.ViewModels;
 
 	public class Topics : Controller {
 		ApplicationDbContext DbContext { get; }
-		UserContext UserContext { get; }
+		UserContext CurrentUser { get; }
 		BoardRepository BoardRepository { get; }
 		BookmarkRepository BookmarkRepository { get; }
 		MessageRepository MessageRepository { get; }
@@ -42,7 +40,7 @@ namespace Forum.Controllers {
 			IForumViewResult forumViewResult
 		) {
 			DbContext = applicationDbContext;
-			UserContext = userContext;
+			CurrentUser = userContext;
 
 			BoardRepository = boardRepository;
 			BookmarkRepository = bookmarkRepository;
@@ -60,7 +58,7 @@ namespace Forum.Controllers {
 			var topicIds = await TopicRepository.GetIndexIds(id, page, unread);
 			var morePages = true;
 
-			if (topicIds.Count < UserContext.ApplicationUser.TopicsPerPage) {
+			if (topicIds.Count < CurrentUser.ApplicationUser.TopicsPerPage) {
 				morePages = false;
 			}
 
@@ -93,7 +91,7 @@ namespace Forum.Controllers {
 			var topicIds = await TopicRepository.GetIndexIds(0, page, 0);
 			var morePages = true;
 
-			if (topicIds.Count < UserContext.ApplicationUser.TopicsPerPage) {
+			if (topicIds.Count < CurrentUser.ApplicationUser.TopicsPerPage) {
 				morePages = false;
 			}
 
@@ -127,14 +125,15 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> Create(int id = 0) {
 			ViewData["Smileys"] = await SmileyRepository.GetSelectorList();
 
-			var board = (await BoardRepository.Records()).First(item => item.Id == id);
+			var boards = await BoardRepository.Records();
+			var board = boards.First(item => item.Id == id);
 
+			// Creating a topic via bookmarklet
 			if (Request.Query.TryGetValue("source", out var source)) {
-				return await Create(new InputModels.MessageInput { BoardId = id, Body = source });
+				return await Create(new ControllerModels.Topics.CreateTopicInput { BoardId = id, Body = source });
 			}
 
 			var viewModel = new PageModels.CreateTopicForm {
-				Id = "0",
 				BoardId = id.ToString()
 			};
 
@@ -144,8 +143,9 @@ namespace Forum.Controllers {
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		[PreventRapidRequests]
-		public async Task<IActionResult> Create(InputModels.MessageInput input) {
+		public async Task<IActionResult> Create(ControllerModels.Topics.CreateTopicInput input) {
 			if (ModelState.IsValid) {
+				// Creating a topic via bookmarklet
 				if (Request.Method == "GET" && input.BoardId != null) {
 					input.SelectedBoards.Add((int)input.BoardId);
 				}
@@ -169,7 +169,6 @@ namespace Forum.Controllers {
 				ViewData["Smileys"] = await SmileyRepository.GetSelectorList();
 
 				var viewModel = new PageModels.CreateTopicForm {
-					Id = "0",
 					BoardId = input.BoardId.ToString(),
 					Body = input.Body
 				};
@@ -202,15 +201,89 @@ namespace Forum.Controllers {
 		[ActionLog("is viewing a topic.")]
 		[HttpGet]
 		public async Task<IActionResult> Display(int id, int page = 1, int target = -1) {
-			ViewData["Smileys"] = await SmileyRepository.GetSelectorList();
+			var topic = await DbContext.Topics.FindAsync(id);
 
-			var viewModel = await GetDisplayPageModel(id, page, target);
-
-			if (string.IsNullOrEmpty(viewModel.RedirectPath)) {
-				return await ForumViewResult.ViewResult(this, viewModel);
+			if (topic is null || topic.Deleted) {
+				throw new HttpNotFoundError();
 			}
-			else {
-				return Redirect(viewModel.RedirectPath);
+
+			if (page < 1) {
+				throw new HttpBadRequestError("Page numbers must be >= 1.");
+			}
+
+			var messageIds = MessageRepository.GetMessageIds(topic.Id);
+
+			if (target >= 0) {
+				var targetPage = MessageRepository.GetPageNumber(target, messageIds);
+
+				if (targetPage != page) {
+					return Redirect(GetRedirectPath(id, targetPage, target));
+				}
+			}
+
+			var take = CurrentUser.ApplicationUser.MessagesPerPage;
+			var skip = take * (page - 1);
+			var totalPages = Convert.ToInt32(Math.Ceiling(1.0 * messageIds.Count / take));
+			var pageMessageIds = messageIds.Skip(skip).Take(take).ToList();
+
+			var viewModel = new PageModels.TopicDisplayPage {
+				Id = topic.Id,
+				Subject = string.IsNullOrEmpty(topic.FirstMessageShortPreview) ? "No subject" : topic.FirstMessageShortPreview,
+				AssignedBoards = new List<ViewModels.Boards.Items.IndexBoard>(),
+				IsAuthenticated = CurrentUser.IsAuthenticated,
+				IsOwner = topic.FirstMessagePostedById == CurrentUser.Id,
+				IsAdmin = CurrentUser.IsAdmin,
+				IsPinned = topic.Pinned,
+				ShowFavicons = CurrentUser.ApplicationUser.ShowFavicons,
+				TotalPages = totalPages,
+				ReplyCount = topic.ReplyCount,
+				ViewCount = topic.ViewCount,
+				CurrentPage = page,
+				ReplyForm = new ViewModels.Messages.ReplyForm {
+					Id = "0",
+					TopicId = topic.Id.ToString(),
+					ElementId = "topic-reply"
+				}
+			};
+
+			await isBookmarked();
+			await loadMessages();
+			await loadCategories();
+			await loadTopicBoards();
+			await loadSmileyViewData();
+
+			return await ForumViewResult.ViewResult(this, viewModel);
+
+			async Task isBookmarked() {
+				viewModel.IsBookmarked = await BookmarkRepository.IsBookmarked(topic.Id);
+			}
+
+			async Task loadMessages() {
+				viewModel.Messages = await MessageRepository.GetMessages(pageMessageIds);
+
+				var latestMessageTime = viewModel.Messages.Max(r => r.RecordTime);
+				await TopicRepository.MarkRead(topic.Id, latestMessageTime, pageMessageIds);
+
+				topic.ViewCount++;
+				DbContext.Update(topic);
+				await DbContext.SaveChangesAsync();
+			}
+
+			async Task loadCategories() {
+				viewModel.Categories = await BoardRepository.CategoryIndex();
+			}
+
+			async Task loadTopicBoards() {
+				var topicBoards = await BoardRepository.GetTopicBoards(topic.Id);
+
+				foreach (var topicBoard in topicBoards) {
+					var indexBoard = await BoardRepository.GetIndexBoard(topicBoard);
+					viewModel.AssignedBoards.Add(indexBoard);
+				}
+			}
+
+			async Task loadSmileyViewData() {
+				ViewData[Constants.InternalKeys.SmileyViewData] = await SmileyRepository.GetSelectorList();
 			}
 		}
 
@@ -249,14 +322,7 @@ namespace Forum.Controllers {
 
 			if (ModelState.IsValid) {
 				var target = await TopicRepository.GetTopicTargetMessageId(id);
-
-				var routeValues = new {
-					id = id,
-					page = 1,
-					target = target
-				};
-
-				redirectPath = Url.Action(nameof(Topics.Display), nameof(Topics), routeValues);
+				redirectPath = GetRedirectPath(id, 1, target);
 			}
 
 			return Redirect(redirectPath);
@@ -333,8 +399,8 @@ namespace Forum.Controllers {
 		[HttpGet]
 		public async Task<IActionResult> RebuildTopicsContinue(InputModels.MultiStepInput input) {
 			var topicsQuery = from topic in DbContext.Topics
-						 where !topic.Deleted
-						 select topic;
+							  where !topic.Deleted
+							  select topic;
 
 			topicsQuery = topicsQuery.Skip(input.Page * input.Take).Take(input.Take);
 
@@ -350,90 +416,17 @@ namespace Forum.Controllers {
 		[HttpGet]
 		public async Task<IActionResult> Admin() => await ForumViewResult.ViewResult(this);
 
-		public string GetRedirectPath(int messageId, int topicId, List<int> messageIds) {
+		string GetRedirectPath(int id, int page, int target) {
 			var routeValues = new {
-				id = topicId,
-				page = MessageRepository.GetPageNumber(messageId, messageIds),
-				target = messageId
+				id,
+				page,
+				target
 			};
 
-			return Url.Action(nameof(Topics.Display), nameof(Topics), routeValues) + "#message" + messageId;
-		}
+			// Why doesn't this work?
+			//return Url.Action(nameof(Topics.Display), nameof(Topics), routeValues, Request.Protocol, Request.Host, $"#message{target}");
 
-		public async Task<PageModels.TopicDisplayPage> GetDisplayPageModel(int topicId, int page = 1, int targetId = -1) {
-			var viewModel = new PageModels.TopicDisplayPage();
-
-			var topic = DbContext.Topics.Find(topicId);
-
-			if (topic is null || topic.Deleted) {
-				throw new HttpNotFoundError();
-			}
-
-			var messageIds = MessageRepository.GetMessageIds(topicId);
-
-			if (targetId >= 0) {
-				var targetPage = MessageRepository.GetPageNumber(targetId, messageIds);
-
-				if (targetPage != page) {
-					viewModel.RedirectPath = GetRedirectPath(targetId, topicId, messageIds);
-				}
-			}
-
-			if (!string.IsNullOrEmpty(viewModel.RedirectPath)) {
-				var bookmarks = await BookmarkRepository.Records();
-				var bookmarked = bookmarks.Any(r => r.TopicId == topicId);
-
-				var assignedBoards = await BoardRepository.GetTopicBoards(topicId);
-
-				if (page < 1) {
-					page = 1;
-				}
-
-				var take = UserContext.ApplicationUser.MessagesPerPage;
-				var skip = take * (page - 1);
-				var totalPages = Convert.ToInt32(Math.Ceiling(1.0 * messageIds.Count / take));
-
-				var pageMessageIds = messageIds.Skip(skip).Take(take).ToList();
-
-				topic.ViewCount++;
-				DbContext.Update(topic);
-				DbContext.SaveChanges();
-
-				var messages = await MessageRepository.GetMessages(pageMessageIds);
-
-				viewModel = new PageModels.TopicDisplayPage {
-					Id = topic.Id,
-					Subject = string.IsNullOrEmpty(topic.FirstMessageShortPreview) ? "No subject" : topic.FirstMessageShortPreview,
-					Messages = messages,
-					Categories = await BoardRepository.CategoryIndex(),
-					AssignedBoards = new List<ViewModels.Boards.Items.IndexBoard>(),
-					IsAuthenticated = UserContext.IsAuthenticated,
-					IsOwner = topic.FirstMessagePostedById == UserContext.ApplicationUser?.Id,
-					IsAdmin = UserContext.IsAdmin,
-					IsBookmarked = bookmarked,
-					IsPinned = topic.Pinned,
-					ShowFavicons = UserContext.ApplicationUser.ShowFavicons,
-					TotalPages = totalPages,
-					ReplyCount = topic.ReplyCount,
-					ViewCount = topic.ViewCount,
-					CurrentPage = page,
-					ReplyForm = new ViewModels.Messages.ReplyForm {
-						Id = topic.Id.ToString(),
-						ElementId = "topic-reply"
-					}
-				};
-
-				foreach (var assignedBoard in assignedBoards) {
-					var indexBoard = await BoardRepository.GetIndexBoard(assignedBoard);
-					viewModel.AssignedBoards.Add(indexBoard);
-				}
-
-				var latestMessageTime = messages.Max(r => r.RecordTime);
-
-				await TopicRepository.MarkRead(topicId, latestMessageTime, pageMessageIds);
-			}
-
-			return viewModel;
+			return Url.Action(nameof(Topics.Display), nameof(Topics), routeValues) + "#message" + target;
 		}
 	}
 }
