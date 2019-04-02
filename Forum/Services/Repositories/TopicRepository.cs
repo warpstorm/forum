@@ -287,12 +287,13 @@ namespace Forum.Services.Repositories {
 			return unread;
 		}
 
-		public async Task<ServiceModels.ServiceResponse> CreateTopic(ControllerModels.Topics.CreateTopicInput input) {
-			var serviceResponse = new ServiceModels.ServiceResponse();
+		public async Task<ControllerModels.Topics.CreateTopicResult> CreateTopic(ControllerModels.Topics.CreateTopicInput input) {
+			var result = new ControllerModels.Topics.CreateTopicResult();
 
-			var processedMessage = await MessageRepository.ProcessMessageInput(serviceResponse, input.Body);
+			var processedMessage = await MessageRepository.ProcessMessageInput(input.Body);
+			result.Errors = processedMessage.Errors;
 
-			if (serviceResponse.Success) {
+			if (!result.Errors.Any()) {
 				var message = await MessageRepository.CreateMessageRecord(processedMessage);
 
 				var topic = new DataModels.Topic {
@@ -336,10 +337,11 @@ namespace Forum.Services.Repositories {
 					MessageId = message.Id
 				});
 
-				serviceResponse.RedirectPath = UrlHelper.DisplayMessage(topic.Id, message.Id);
+				result.TopicId = topic.Id;
+				result.MessageId = message.Id;
 			}
 
-			return serviceResponse;
+			return result;
 		}
 
 		public async Task<ServiceModels.ServiceResponse> Pin(int topicId) {

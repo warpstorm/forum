@@ -1,7 +1,9 @@
 ﻿using Forum.Controllers.Annotations;
+using Forum.Extensions;
 using Forum.Models.Errors;
 using Forum.Services;
 using Forum.Services.Contexts;
+using Forum.Services.Helpers;
 using Forum.Services.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -159,22 +161,23 @@ namespace Forum.Controllers {
 					}
 				}
 
-				var serviceResponse = await TopicRepository.CreateTopic(input);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				var result = await TopicRepository.CreateTopic(input);
+				ModelState.AddModelErrors(result.Errors);
+
+				if (ModelState.IsValid) {
+					var redirectPath = Url.DisplayMessage(result.TopicId, result.MessageId);
+					return Redirect(redirectPath);
+				}
 			}
 
-			return await FailureCallback();
+			ViewData["Smileys"] = await SmileyRepository.GetSelectorList();
 
-			async Task<IActionResult> FailureCallback() {
-				ViewData["Smileys"] = await SmileyRepository.GetSelectorList();
+			var viewModel = new PageModels.CreateTopicForm {
+				BoardId = input.BoardId.ToString(),
+				Body = input.Body
+			};
 
-				var viewModel = new PageModels.CreateTopicForm {
-					BoardId = input.BoardId.ToString(),
-					Body = input.Body
-				};
-
-				return await ForumViewResult.ViewResult(this, viewModel);
-			}
+			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[ActionLog("is viewing their bookmarks.")]

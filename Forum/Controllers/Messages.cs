@@ -1,7 +1,9 @@
 ﻿using Forum.Controllers.Annotations;
+using Forum.Extensions;
 using Forum.Models.Errors;
 using Forum.Services;
 using Forum.Services.Contexts;
+using Forum.Services.Helpers;
 using Forum.Services.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,7 +18,6 @@ using System.Threading.Tasks;
 namespace Forum.Controllers {
 	using ControllerModels = Models.ControllerModels;
 	using InputModels = Models.InputModels;
-	using ServiceModels = Models.ServiceModels;
 	using ViewModels = Models.ViewModels;
 
 	public class Messages : Controller {
@@ -95,8 +96,36 @@ namespace Forum.Controllers {
 			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		[PreventRapidRequests]
+		public async Task<IActionResult> Reply(ControllerModels.Messages.CreateReplyInput input) {
+			ControllerModels.Messages.CreateReplyResult result = null;
+
+			if (ModelState.IsValid) {
+				result = await MessageRepository.CreateReply(input);
+				ModelState.AddModelErrors(result.Errors);
+			}
+
+			if (ModelState.IsValid) {
+				var redirectPath = Url.DisplayMessage(result.TopicId, result.MessageId);
+				return Redirect(redirectPath);
+			}
+
+			ViewData["Smileys"] = await SmileyRepository.GetSelectorList();
+
+			var viewModel = new ViewModels.Messages.ReplyForm {
+				Id = input.Id.ToString(),
+				Body = input.Body,
+				ElementId = $"message-reply-{input.Id}"
+			};
+
+			return await ForumViewResult.ViewResult(this, viewModel);
+		}
+
+		[SideLoad]
 		[HttpGet]
-		public async Task<IActionResult> ReplyPartial(int id) {
+		public async Task<IActionResult> XhrReply(int id) {
 			var record = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == id);
 
 			if (record is null || record.Deleted) {
@@ -106,48 +135,29 @@ namespace Forum.Controllers {
 			var viewModel = new ViewModels.Messages.ReplyForm {
 				Id = id.ToString(),
 				TopicId = record.TopicId.ToString(),
-				ElementId = $"message-reply-{id}"
+				ElementId = $"message-reply-{id}",
+				FormAction = nameof(XhrReply)
 			};
 
 			return await ForumViewResult.ViewResult(this, "_MessageForm", viewModel);
 		}
 
+		[SideLoad]
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		[PreventRapidRequests]
-		public async Task<IActionResult> Reply(ControllerModels.Messages.CreateReplyInput input) {
+		public async Task<IActionResult> XhrReply(ControllerModels.Messages.CreateReplyInput input) {
 			if (ModelState.IsValid) {
-				var serviceResponse = await MessageRepository.CreateReply(input);
-
-				if (input.SideLoad) {
-					foreach (var kvp in serviceResponse.Errors) {
-						ModelState.AddModelError(kvp.Key, kvp.Value);
-					}
-				}
-				else {
-					return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
-				}
+				var result = await MessageRepository.CreateReply(input);
+				ModelState.AddModelErrors(result.Errors);
 			}
 
-			if (input.SideLoad) {
-				var errors = ModelState.Keys.Where(k => ModelState[k].Errors.Count > 0).Select(k => new { propertyName = k, errorMessage = ModelState[k].Errors[0].ErrorMessage });
-				return new JsonResult(errors);
-			}
-			else {
-				return await FailureCallback();
+			if (ModelState.IsValid) {
+				return Ok();
 			}
 
-			async Task<IActionResult> FailureCallback() {
-				ViewData["Smileys"] = await SmileyRepository.GetSelectorList();
-
-				var viewModel = new ViewModels.Messages.ReplyForm {
-					Id = input.Id.ToString(),
-					Body = input.Body,
-					ElementId = $"message-reply-{input.Id}"
-				};
-
-				return await ForumViewResult.ViewResult(this, viewModel);
-			}
+			var errors = ModelState.Keys.Where(k => ModelState[k].Errors.Count > 0).Select(k => new { propertyName = k, errorMessage = ModelState[k].Errors[0].ErrorMessage });
+			return new JsonResult(errors);
 		}
 
 		[ActionLog("is editing a message.")]
@@ -170,8 +180,32 @@ namespace Forum.Controllers {
 			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		[PreventRapidRequests]
+		public async Task<IActionResult> Edit(ControllerModels.Messages.EditInput input) {
+			if (ModelState.IsValid) {
+				var result = await MessageRepository.EditMessage(input);
+				ModelState.AddModelErrors(result.Errors);
+
+				if (ModelState.IsValid) {
+					var redirectPath = UrlHelper.DisplayMessage(result.TopicId, result.MessageId);
+					return Redirect(redirectPath);
+				}
+			}
+
+			var viewModel = new ViewModels.Messages.EditMessageForm {
+				Id = input.Id.ToString(),
+				Body = input.Body,
+				ElementId = $"edit-message-{input.Id}"
+			};
+
+			return await ForumViewResult.ViewResult(this, viewModel);
+		}
+
+		[SideLoad]
 		[HttpGet]
-		public async Task<IActionResult> EditPartial(int id) {
+		public async Task<IActionResult> XhrEdit(int id) {
 			var record = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == id);
 
 			if (record is null || record.Deleted) {
@@ -181,46 +215,29 @@ namespace Forum.Controllers {
 			var viewModel = new ViewModels.Messages.EditMessageForm {
 				Id = id.ToString(),
 				Body = record.OriginalBody,
-				ElementId = $"edit-message-{id}"
+				ElementId = $"edit-message-{id}",
+				FormAction = nameof(XhrEdit)
 			};
 
 			return await ForumViewResult.ViewResult(this, "_MessageForm", viewModel);
 		}
 
+		[SideLoad]
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		[PreventRapidRequests]
-		public async Task<IActionResult> Edit(ControllerModels.Messages.EditInput input) {
+		public async Task<IActionResult> XhrEdit(ControllerModels.Messages.EditInput input) {
 			if (ModelState.IsValid) {
-				var serviceResponse = await MessageRepository.EditMessage(input);
-
-				if (input.SideLoad) {
-					foreach (var kvp in serviceResponse.Errors) {
-						ModelState.AddModelError(kvp.Key, kvp.Value);
-					}
-				}
-				else {
-					return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
-				}
+				var result = await MessageRepository.EditMessage(input);
+				ModelState.AddModelErrors(result.Errors);
 			}
 
-			if (input.SideLoad) {
-				var errors = ModelState.Keys.Where(k => ModelState[k].Errors.Count > 0).Select(k => new { propertyName = k, errorMessage = ModelState[k].Errors[0].ErrorMessage });
-				return new JsonResult(errors);
-			}
-			else {
-				return await FailureCallback();
+			if (ModelState.IsValid) {
+				return Ok();
 			}
 
-			async Task<IActionResult> FailureCallback() {
-				var viewModel = new ViewModels.Messages.EditMessageForm {
-					Id = input.Id.ToString(),
-					Body = input.Body,
-					ElementId = $"edit-message-{input.Id}"
-				};
-
-				return await ForumViewResult.ViewResult(this, viewModel);
-			}
+			var errors = ModelState.Keys.Where(k => ModelState[k].Errors.Count > 0).Select(k => new { propertyName = k, errorMessage = ModelState[k].Errors[0].ErrorMessage });
+			return new JsonResult(errors);
 		}
 
 		[HttpGet]
@@ -338,11 +355,10 @@ namespace Forum.Controllers {
 			var messages = messageQuery.Skip(input.Take * input.Page).Take(input.Take);
 
 			foreach (var message in messages) {
-				var serviceResponse = new ServiceModels.ServiceResponse();
+				var processedMessage = await MessageRepository.ProcessMessageInput(message.OriginalBody);
+				ModelState.AddModelErrors(processedMessage.Errors, $"Message {message.Id}: ");
 
-				var processedMessage = await MessageRepository.ProcessMessageInput(serviceResponse, message.OriginalBody);
-
-				if (serviceResponse.Success) {
+				if (ModelState.IsValid) {
 					message.OriginalBody = processedMessage.OriginalBody;
 					message.DisplayBody = processedMessage.DisplayBody;
 					message.ShortPreview = processedMessage.ShortPreview;
@@ -353,7 +369,9 @@ namespace Forum.Controllers {
 				}
 			}
 
-			await DbContext.SaveChangesAsync();
+			if (ModelState.IsValid) {
+				await DbContext.SaveChangesAsync();
+			}
 
 			return Ok();
 		}

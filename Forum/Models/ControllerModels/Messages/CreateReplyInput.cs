@@ -11,9 +11,5 @@ namespace Forum.Models.ControllerModels.Messages {
 		[Required]
 		[Range(0, int.MaxValue)]
 		public int TopicId { get; set; }
-
-		public bool SideLoad { get; set; }
-
-		public List<int> SelectedBoards { get; set; } = new List<int>();
 	}
 }

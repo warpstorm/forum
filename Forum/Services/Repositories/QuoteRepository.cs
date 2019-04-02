@@ -8,8 +8,8 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace Forum.Services.Repositories {
+	using ControllerModels = Models.ControllerModels;
 	using DataModels = Models.DataModels;
-	using InputModels = Models.InputModels;
 	using ServiceModels = Models.ServiceModels;
 	using ViewModels = Models.ViewModels;
 
@@ -113,39 +113,44 @@ namespace Forum.Services.Repositories {
 			return serviceResponse;
 		}
 
-		public async Task<ServiceModels.ServiceResponse> Edit(InputModels.QuotesInput input) {
-			var serviceResponse = new ServiceModels.ServiceResponse();
+		public async Task<ControllerModels.Quotes.EditResult> Edit(ControllerModels.Quotes.QuotesInput input) {
+			var result = new ControllerModels.Quotes.EditResult();
 
 			foreach (var quoteInput in input.Quotes) {
-				var record = (await Records()).FirstOrDefault(r => r.Id == quoteInput.Id);
+				var records = await Records();
+				var record = records.FirstOrDefault(r => r.Id == quoteInput.Id);
 
 				if (record is null) {
-					serviceResponse.Error($@"No record was found with the id '{quoteInput.Id}'.");
+					result.Errors.Add(nameof(quoteInput.Id), $@"No record was found with the id '{quoteInput.Id}'.");
+					break;
 				}
 
-				if (serviceResponse.Success) {
-					if (quoteInput.Approved != record.Approved) {
-						record.Approved = quoteInput.Approved;
+				if (quoteInput.Approved != record.Approved) {
+					record.Approved = quoteInput.Approved;
+					DbContext.Update(record);
+				}
+
+				if (quoteInput.OriginalBody != record.OriginalBody) {
+					record.OriginalBody = quoteInput.OriginalBody;
+
+					var processedMessage = await MessageRepository.ProcessMessageInput(quoteInput.OriginalBody);
+
+					foreach (var error in processedMessage.Errors) {
+						result.Errors.Add(error.Key, error.Value);
+					}
+
+					if (!result.Errors.Any()) {
+						record.DisplayBody = processedMessage.DisplayBody;
 						DbContext.Update(record);
 					}
+				}
 
-					if (quoteInput.OriginalBody != record.OriginalBody) {
-						record.OriginalBody = quoteInput.OriginalBody;
-
-						var processedMessageInput = await MessageRepository.ProcessMessageInput(serviceResponse, quoteInput.OriginalBody);
-						record.DisplayBody = processedMessageInput.DisplayBody;
-
-						DbContext.Update(record);
-					}
-
-					if (serviceResponse.Success) {
-						DbContext.SaveChanges();
-						serviceResponse.Message = $"Changes saved.";
-					}
+				if (!result.Errors.Any()) {
+					await DbContext.SaveChangesAsync();
 				}
 			}
 
-			return serviceResponse;
+			return result;
 		}
 
 		public async Task<ServiceModels.ServiceResponse> Delete(int quoteId) {

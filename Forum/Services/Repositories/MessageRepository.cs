@@ -104,14 +104,14 @@ namespace Forum.Services.Repositories {
 			return Convert.ToInt32(Math.Ceiling(index / CurrentUser.ApplicationUser.MessagesPerPage));
 		}
 
-		public async Task<ServiceModels.ServiceResponse> CreateReply(ControllerModels.Messages.CreateReplyInput input) {
-			var serviceResponse = new ServiceModels.ServiceResponse();
+		public async Task<ControllerModels.Messages.CreateReplyResult> CreateReply(ControllerModels.Messages.CreateReplyInput input) {
+			var result = new ControllerModels.Messages.CreateReplyResult();
 
 			var topic = await DbContext.Topics.FirstOrDefaultAsync(m => m.Id == input.TopicId);
 
 			if (topic is null || topic.Deleted) {
-				serviceResponse.Error(nameof(input.TopicId), $"A record does not exist with ID '{input.TopicId}'");
-				return serviceResponse;
+				result.Errors.Add(nameof(input.TopicId), $"A record does not exist with ID '{input.TopicId}'");
+				return result;
 			}
 
 			var replyTargetMessage = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == input.Id);
@@ -123,18 +123,21 @@ namespace Forum.Services.Repositories {
 			var now = DateTime.Now;
 			var recentReply = (now - topic.LastMessageTimePosted) < (now - now.AddSeconds(-300));
 
-			if (recentReply && !(previousMessage is null) && (replyTargetMessage is null || replyTargetMessage.Id == previousMessage.ReplyId)) {
-				await MergeReply(topic.LastMessageId, input, serviceResponse);
-				return serviceResponse;
+			if (recentReply && !(previousMessage is null) && input.Id == previousMessage.ReplyId) {
+				return await CreateMergedReply(topic.LastMessageId, input);
 			}
 
-			if (!serviceResponse.Success) {
-				return serviceResponse;
+			if (result.Errors.Any()) {
+				return result;
 			}
 
-			var processedMessage = await ProcessMessageInput(serviceResponse, input.Body);
+			var processedMessage = await ProcessMessageInput(input.Body);
 
-			if (serviceResponse.Success) {
+			foreach (var error in processedMessage.Errors) {
+				result.Errors.Add(error.Key, error.Value);
+			}
+
+			if (!result.Errors.Any()) {
 				var record = await CreateMessageRecord(processedMessage);
 				record.TopicId = topic.Id;
 				record.ReplyId = replyTargetMessage?.Id ?? 0;
@@ -179,7 +182,8 @@ namespace Forum.Services.Repositories {
 
 				UpdateTopicParticipation(topic.Id, CurrentUser.Id, DateTime.Now);
 
-				serviceResponse.RedirectPath = UrlHelper.DisplayMessage(record.TopicId, record.Id);
+				result.TopicId = record.TopicId;
+				result.MessageId = record.Id;
 
 				await ForumHub.Clients.All.SendAsync("new-reply", new HubModels.Message {
 					TopicId = record.TopicId,
@@ -187,11 +191,11 @@ namespace Forum.Services.Repositories {
 				});
 			}
 
-			return serviceResponse;
+			return result;
 		}
 
-		public async Task<ServiceModels.ServiceResponse> EditMessage(ControllerModels.Messages.EditInput input) {
-			var serviceResponse = new ServiceModels.ServiceResponse();
+		public async Task<ControllerModels.Messages.EditResult> EditMessage(ControllerModels.Messages.EditInput input) {
+			var result = new ControllerModels.Messages.EditResult();
 
 			if (input.Id == 0) {
 				throw new HttpBadRequestError();
@@ -200,14 +204,20 @@ namespace Forum.Services.Repositories {
 			var record = DbContext.Messages.FirstOrDefault(m => m.Id == input.Id);
 
 			if (record is null || record.Deleted) {
-				serviceResponse.Error(nameof(input.Id), $"No record found with the ID '{input.Id}'.");
+				result.Errors.Add(nameof(input.Id), $"No record found with the ID '{input.Id}'.");
 			}
 
-			var processedMessage = await ProcessMessageInput(serviceResponse, input.Body);
+			result.MessageId = record.Id;
+			result.TopicId = record.TopicId;
 
-			if (serviceResponse.Success) {
+			var processedMessage = await ProcessMessageInput(input.Body);
+
+			foreach (var error in processedMessage.Errors) {
+				result.Errors.Add(error.Key, error.Value);
+			}
+
+			if (!(result.Errors.Any())) {
 				await UpdateMessageRecord(processedMessage, record);
-				serviceResponse.RedirectPath = UrlHelper.DisplayMessage(record.TopicId, record.Id);
 
 				await ForumHub.Clients.All.SendAsync("updated-message", new HubModels.Message {
 					TopicId = record.TopicId,
@@ -215,23 +225,34 @@ namespace Forum.Services.Repositories {
 				});
 			}
 
-			return serviceResponse;
+			return result;
 		}
 
-		async Task MergeReply(int previousMessageId, ControllerModels.Messages.CreateReplyInput input, ServiceModels.ServiceResponse serviceResponse) {
+		async Task<ControllerModels.Messages.CreateReplyResult> CreateMergedReply(int previousMessageId, ControllerModels.Messages.CreateReplyInput input) {
+			var result = new ControllerModels.Messages.CreateReplyResult();
+
 			var previousMessage = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == previousMessageId && !m.Deleted);
 			var newBody = $"{previousMessage.OriginalBody}\n\n{input.Body}";
-			var processedMessage = await ProcessMessageInput(serviceResponse, newBody);
 
-			if (serviceResponse.Success) {
+			var processedMessage = await ProcessMessageInput(newBody);
+
+			foreach (var error in processedMessage.Errors) {
+				result.Errors.Add(error.Key, error.Value);
+			}
+
+			if (!(result.Errors.Any())) {
 				await UpdateMessageRecord(processedMessage, previousMessage);
-				serviceResponse.RedirectPath = UrlHelper.DisplayMessage(previousMessage.TopicId, previousMessage.Id);
+
+				result.MessageId = previousMessage.Id;
+				result.TopicId = previousMessage.TopicId;
 
 				await ForumHub.Clients.All.SendAsync("updated-message", new HubModels.Message {
 					TopicId = previousMessage.TopicId,
 					MessageId = previousMessage.Id
 				});
 			}
+
+			return result;
 		}
 
 		public async Task DeleteMessageFromTopic(DataModels.Message message, DataModels.Topic topic) {
@@ -339,7 +360,7 @@ namespace Forum.Services.Repositories {
 			return serviceResponse;
 		}
 
-		public async Task<InputModels.ProcessedMessageInput> ProcessMessageInput(ServiceModels.ServiceResponse serviceResponse, string messageBody) {
+		public async Task<InputModels.ProcessedMessageInput> ProcessMessageInput(string messageBody) {
 			InputModels.ProcessedMessageInput processedMessage = null;
 
 			try {
@@ -351,11 +372,11 @@ namespace Forum.Services.Repositories {
 				PostProcessMessageInput(processedMessage);
 			}
 			catch (ArgumentException ex) {
-				serviceResponse.Error("Body", $"An error occurred while processing the message. {ex.Message}");
+				processedMessage.Errors.Add("Body", $"An error occurred while processing the message. {ex.Message}");
 			}
 
 			if (processedMessage is null) {
-				serviceResponse.Error("Body", $"An error occurred while processing the message.");
+				processedMessage.Errors.Add("Body", $"An error occurred while processing the message.");
 				return processedMessage;
 			}
 
