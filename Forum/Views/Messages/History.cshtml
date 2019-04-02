@@ -11,7 +11,7 @@
 				<li class="small-button highlight page hidden">@i</li>
 			}
 			else {
-				<li class="page hidden"><a asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.History)" asp-route-id="@Model.Id" asp-route-pageId="@i" class="small-button">@i.ToString()</a></li>
+				<li class="page hidden"><a asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.History)" asp-route-id="@Model.Id" asp-route-page="@i" class="small-button">@i.ToString()</a></li>
 			}
 		}
 		@if (Model.MorePages) {
@@ -37,7 +37,7 @@
 				<li class="small-button highlight page hidden">@i</li>
 			}
 			else {
-				<li class="page hidden"><a asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.History)" asp-route-id="@Model.Id" asp-route-pageId="@i" class="small-button">@i.ToString()</a></li>
+				<li class="page hidden"><a asp-controller="@nameof(Messages)" asp-action="@nameof(Messages.History)" asp-route-id="@Model.Id" asp-route-page="@i" class="small-button">@i.ToString()</a></li>
 			}
 		}
 		@if (Model.MorePages) {

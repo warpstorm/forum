@@ -12,5 +12,6 @@ namespace Forum.Services {
 		Task<IActionResult> ViewResult(Controller controller);
 		Task<IActionResult> ViewResult(Controller controller, object model);
 		Task<IActionResult> ViewResult(Controller controller, string viewName, object model = null);
+		string GetReferrer(Controller controller);
 	}
 }

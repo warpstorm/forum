@@ -32,7 +32,7 @@
 				<li class="small-button highlight page hidden">@i</li>
 			}
 			else {
-				<li class="page hidden"><a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)" asp-route-id="@Model.BoardId" asp-route-pageId="@i" asp-route-unread="@Model.UnreadFilter" class="small-button" data-page-id="@i">@i.ToString()</a></li>
+				<li class="page hidden"><a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)" asp-route-id="@Model.BoardId" asp-route-page="@i" asp-route-unread="@Model.UnreadFilter" class="small-button" data-page="@i">@i.ToString()</a></li>
 			}
 		}
 		@if (Model.MorePages) {

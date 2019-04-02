@@ -266,7 +266,7 @@ namespace Forum.Controllers {
 
 		[ActionLog("is viewing a user's message history.")]
 		[HttpGet]
-		public async Task<IActionResult> History(string id = "", int pageId = 1) {
+		public async Task<IActionResult> History(string id = "", int page = 1) {
 			if (string.IsNullOrEmpty(id)) {
 				id = UserContext.ApplicationUser.Id;
 			}
@@ -277,7 +277,7 @@ namespace Forum.Controllers {
 				throw new HttpNotFoundError();
 			}
 
-			var messages = await MessageRepository.GetUserMessages(id, pageId);
+			var messages = await MessageRepository.GetUserMessages(id, page);
 			var morePages = true;
 
 			if (messages.Count < UserContext.ApplicationUser.MessagesPerPage) {
@@ -290,7 +290,7 @@ namespace Forum.Controllers {
 				Id = userRecord.Id,
 				DisplayName = userRecord.DecoratedName,
 				Email = userRecord.Email,
-				CurrentPage = pageId,
+				CurrentPage = page,
 				MorePages = morePages,
 				ShowFavicons = UserContext.ApplicationUser.ShowFavicons,
 				Messages = messages,

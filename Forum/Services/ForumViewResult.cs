@@ -107,7 +107,7 @@ namespace Forum.Services {
 		public async Task<IActionResult> ViewResult(Controller controller, object model) => await ViewResult(controller, null, model);
 		public async Task<IActionResult> ViewResult(Controller controller) => await ViewResult(controller, null, null);
 
-		string GetReferrer(Controller controller) {
+		public string GetReferrer(Controller controller) {
 			controller.Request.Query.TryGetValue("ReturnUrl", out var referrer);
 
 			if (string.IsNullOrEmpty(referrer)) {

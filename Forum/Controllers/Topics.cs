@@ -22,16 +22,13 @@ namespace Forum.Controllers {
 	public class Topics : Controller {
 		ApplicationDbContext DbContext { get; }
 		UserContext UserContext { get; }
-
 		BoardRepository BoardRepository { get; }
 		BookmarkRepository BookmarkRepository { get; }
 		MessageRepository MessageRepository { get; }
 		RoleRepository RoleRepository { get; }
 		SmileyRepository SmileyRepository { get; }
 		TopicRepository TopicRepository { get; }
-
 		IForumViewResult ForumViewResult { get; }
-		IUrlHelper UrlHelper { get; }
 
 		public Topics(
 			ApplicationDbContext applicationDbContext,
@@ -42,9 +39,7 @@ namespace Forum.Controllers {
 			RoleRepository roleRepository,
 			SmileyRepository smileyRepository,
 			TopicRepository topicRepository,
-			IForumViewResult forumViewResult,
-			IActionContextAccessor actionContextAccessor,
-			IUrlHelperFactory urlHelperFactory
+			IForumViewResult forumViewResult
 		) {
 			DbContext = applicationDbContext;
 			UserContext = userContext;
@@ -57,13 +52,12 @@ namespace Forum.Controllers {
 			TopicRepository = topicRepository;
 
 			ForumViewResult = forumViewResult;
-			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
 		[ActionLog("is viewing the topic index.")]
 		[HttpGet]
-		public async Task<IActionResult> Index(int id = 0, int pageId = 1, int unread = 0) {
-			var topicIds = await TopicRepository.GetIndexIds(id, pageId, unread);
+		public async Task<IActionResult> Index(int id = 0, int page = 1, int unread = 0) {
+			var topicIds = await TopicRepository.GetIndexIds(id, page, unread);
 			var morePages = true;
 
 			if (topicIds.Count < UserContext.ApplicationUser.TopicsPerPage) {
@@ -78,7 +72,7 @@ namespace Forum.Controllers {
 			var viewModel = new PageModels.TopicIndexPage {
 				BoardId = id,
 				BoardName = boardRecord?.Name ?? "All Topics",
-				CurrentPage = pageId,
+				CurrentPage = page,
 				Topics = topicPreviews,
 				UnreadFilter = unread,
 				MorePages = morePages
@@ -89,14 +83,14 @@ namespace Forum.Controllers {
 
 		[HttpGet]
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
-		public async Task<IActionResult> Merge(int id, int pageId = 1) {
+		public async Task<IActionResult> Merge(int id, int page = 1) {
 			var sourceTopic = DbContext.Topics.FirstOrDefault(item => item.Id == id);
 
 			if (sourceTopic is null || sourceTopic.Deleted) {
 				throw new HttpNotFoundError();
 			}
 
-			var topicIds = await TopicRepository.GetIndexIds(0, pageId, 0);
+			var topicIds = await TopicRepository.GetIndexIds(0, page, 0);
 			var morePages = true;
 
 			if (topicIds.Count < UserContext.ApplicationUser.TopicsPerPage) {
@@ -120,7 +114,7 @@ namespace Forum.Controllers {
 				SourceId = id,
 				BoardName = "Pick a Destination Topic",
 				BoardId = 0,
-				CurrentPage = pageId,
+				CurrentPage = page,
 				Topics = topicPreviews,
 				MorePages = morePages
 			};
@@ -207,10 +201,10 @@ namespace Forum.Controllers {
 
 		[ActionLog("is viewing a topic.")]
 		[HttpGet]
-		public async Task<IActionResult> Display(int id, int pageId = 1, int target = -1) {
+		public async Task<IActionResult> Display(int id, int page = 1, int target = -1) {
 			ViewData["Smileys"] = await SmileyRepository.GetSelectorList();
 
-			var viewModel = await GetDisplayPageModel(id, pageId, target);
+			var viewModel = await GetDisplayPageModel(id, page, target);
 
 			if (string.IsNullOrEmpty(viewModel.RedirectPath)) {
 				return await ForumViewResult.ViewResult(this, viewModel);
@@ -251,12 +245,21 @@ namespace Forum.Controllers {
 
 		[HttpGet]
 		public async Task<IActionResult> Latest(int id) {
+			var redirectPath = ForumViewResult.GetReferrer(this);
+
 			if (ModelState.IsValid) {
-				var serviceResponse = await TopicRepository.GetFirstUnreadMessage(id);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse);
+				var target = await TopicRepository.GetTopicTargetMessageId(id);
+
+				var routeValues = new {
+					id = id,
+					page = 1,
+					target = target
+				};
+
+				redirectPath = Url.Action(nameof(Topics.Display), nameof(Topics), routeValues);
 			}
 
-			return ForumViewResult.RedirectToReferrer(this);
+			return Redirect(redirectPath);
 		}
 
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
@@ -316,7 +319,7 @@ namespace Forum.Controllers {
 			var viewModel = new ViewModels.MultiStep {
 				ActionName = "Rebuilding Topics",
 				ActionNote = "Recounting replies, calculating participants, determining first and last messages.",
-				Action = UrlHelper.Action(nameof(RebuildTopicsContinue)),
+				Action = Url.Action(nameof(RebuildTopicsContinue)),
 				TotalPages = totalPages,
 				TotalRecords = topicCount,
 				Take = take,
@@ -350,14 +353,14 @@ namespace Forum.Controllers {
 		public string GetRedirectPath(int messageId, int topicId, List<int> messageIds) {
 			var routeValues = new {
 				id = topicId,
-				pageId = MessageRepository.GetPageNumber(messageId, messageIds),
+				page = MessageRepository.GetPageNumber(messageId, messageIds),
 				target = messageId
 			};
 
-			return UrlHelper.Action(nameof(Topics.Display), nameof(Topics), routeValues) + "#message" + messageId;
+			return Url.Action(nameof(Topics.Display), nameof(Topics), routeValues) + "#message" + messageId;
 		}
 
-		public async Task<PageModels.TopicDisplayPage> GetDisplayPageModel(int topicId, int pageId = 1, int targetId = -1) {
+		public async Task<PageModels.TopicDisplayPage> GetDisplayPageModel(int topicId, int page = 1, int targetId = -1) {
 			var viewModel = new PageModels.TopicDisplayPage();
 
 			var topic = DbContext.Topics.Find(topicId);
@@ -371,7 +374,7 @@ namespace Forum.Controllers {
 			if (targetId >= 0) {
 				var targetPage = MessageRepository.GetPageNumber(targetId, messageIds);
 
-				if (targetPage != pageId) {
+				if (targetPage != page) {
 					viewModel.RedirectPath = GetRedirectPath(targetId, topicId, messageIds);
 				}
 			}
@@ -382,12 +385,12 @@ namespace Forum.Controllers {
 
 				var assignedBoards = await BoardRepository.GetTopicBoards(topicId);
 
-				if (pageId < 1) {
-					pageId = 1;
+				if (page < 1) {
+					page = 1;
 				}
 
 				var take = UserContext.ApplicationUser.MessagesPerPage;
-				var skip = take * (pageId - 1);
+				var skip = take * (page - 1);
 				var totalPages = Convert.ToInt32(Math.Ceiling(1.0 * messageIds.Count / take));
 
 				var pageMessageIds = messageIds.Skip(skip).Take(take).ToList();
@@ -413,7 +416,7 @@ namespace Forum.Controllers {
 					TotalPages = totalPages,
 					ReplyCount = topic.ReplyCount,
 					ViewCount = topic.ViewCount,
-					CurrentPage = pageId,
+					CurrentPage = page,
 					ReplyForm = new ViewModels.Messages.ReplyForm {
 						Id = topic.Id.ToString(),
 						ElementId = "topic-reply"

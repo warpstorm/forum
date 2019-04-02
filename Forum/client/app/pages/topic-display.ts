@@ -60,13 +60,13 @@ export class TopicDisplay {
 		this.app.navigation.addListenerClickableLinkParent();
 	}
 
-	async loadPage(pageId: number, pushState: boolean = true) {
+	async loadPage(page: number, pushState: boolean = true) {
 		let mainElement = <Element>document.querySelector('main');
 		mainElement.classList.add('faded');
 
 		let requestOptions = new XhrOptions({
 			method: HttpMethod.Get,
-			url: `/Topics/Display/${this.settings.topicId}/${pageId}`
+			url: `/Topics/Display/${this.settings.topicId}/${page}`
 		});
 
 		await Xhr.requestPartialView(requestOptions, document);
@@ -753,8 +753,8 @@ export class TopicDisplay {
 
 		event.preventDefault();
 
-		let pageId = Number(eventTarget.getAttribute('data-page-id'));
-		this.loadPage(pageId);
+		let page = Number(eventTarget.getAttribute('data-page'));
+		this.loadPage(page);
 	}
 
 	eventPopState = (event: PopStateEvent) => {

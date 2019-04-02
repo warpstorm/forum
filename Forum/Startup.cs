@@ -100,7 +100,7 @@ namespace Forum {
 
 				routes.MapRoute(
 					name: "default",
-					template: "{controller}/{action}/{id?}/{pageId?}/{target?}");
+					template: "{controller}/{action}/{id?}/{page?}/{target?}");
 			});
 		}
 

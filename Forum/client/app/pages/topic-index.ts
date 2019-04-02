@@ -48,13 +48,13 @@ export class TopicIndex {
 		});
 	}
 
-	async loadPage(pageId: number, pushState: boolean = true) {
+	async loadPage(page: number, pushState: boolean = true) {
 		let mainElement = <Element>document.querySelector('main');
 		mainElement.classList.add('faded');
 
 		let requestOptions = new XhrOptions({
 			method: HttpMethod.Get,
-			url: `/Topics/Index/${this.settings.boardId}/${pageId}?unread=${this.settings.unreadFilter}`,
+			url: `/Topics/Index/${this.settings.boardId}/${page}?unread=${this.settings.unreadFilter}`,
 		});
 
 		await Xhr.requestPartialView(requestOptions, document);
@@ -86,8 +86,8 @@ export class TopicIndex {
 
 		event.preventDefault();
 
-		let pageId = Number(eventTarget.getAttribute('data-page-id'));
-		this.loadPage(pageId);
+		let page = Number(eventTarget.getAttribute('data-page'));
+		this.loadPage(page);
 	}
 
 	eventPopState = (event: PopStateEvent) => {

@@ -23,7 +23,7 @@
 				<li class="small-button highlight page hidden">@i</li>
 			}
 			else {
-				<li class="page hidden"><a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Merge)" asp-route-id="@Model.SourceId" asp-route-pageId="@i" class="small-button">@i.ToString()</a></li>
+				<li class="page hidden"><a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Merge)" asp-route-id="@Model.SourceId" asp-route-page="@i" class="small-button">@i.ToString()</a></li>
 			}
 		}
 		@if (Model.MorePages) {

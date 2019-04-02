@@ -57,9 +57,7 @@ namespace Forum.Services.Repositories {
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
-		public async Task<ServiceModels.ServiceResponse> GetFirstUnreadMessage(int topicId) {
-			var serviceResponse = new ServiceModels.ServiceResponse();
-
+		public async Task<int> GetTopicTargetMessageId(int topicId) {
 			var topic = DbContext.Topics.Find(topicId);
 
 			if (topic is null || topic.Deleted) {
@@ -99,9 +97,7 @@ namespace Forum.Services.Repositories {
 				latestMessageId = await messageIdQuery.FirstOrDefaultAsync();
 			}
 
-			serviceResponse.RedirectPath = UrlHelper.Action(nameof(Topics.Display), nameof(Topics), new { id = topicId, target = latestMessageId });
-
-			return serviceResponse;
+			return latestMessageId;
 		}
 
 		public async Task<List<ItemModels.TopicPreview>> GetPreviews(List<int> topicIds) {
