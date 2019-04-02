@@ -1,4 +1,4 @@
-﻿.main-bar {
+﻿#progress-bar {
 	border: 2px solid #000;
 	background-color: #00003b;
 	width: 100%;
@@ -6,7 +6,7 @@
 	margin: 0 auto;
 }
 
-.completed-bar {
+#completed-bar {
 	background-color: #000080;
 	height: 20px;
 	text-align: center;

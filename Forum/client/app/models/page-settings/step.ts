@@ -1,10 +1,4 @@
-﻿export class MultiStepSettings {
-	public steps: string[] = [];
-
-	public currentAction: string = '';
-	public currentPage: number = 0;
-	public currentStep: number = 0;
-
+﻿export class Step {
 	public actionName: string = '';
 	public actionNote: string = '';
 	public take: number = 0;

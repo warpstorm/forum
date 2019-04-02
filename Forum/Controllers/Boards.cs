@@ -33,7 +33,7 @@ namespace Forum.Controllers {
 			};
 
 			if (!viewModel.Categories.Any()) {
-				return RedirectToAction(nameof(Setup.Initialize), nameof(Setup));
+				return RedirectToAction(nameof(Administration.Setup), nameof(Administration));
 			}
 
 			return await ForumViewResult.ViewResult(this, viewModel);

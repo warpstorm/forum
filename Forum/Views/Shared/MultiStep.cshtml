@@ -1,12 +1,13 @@
-﻿@model ViewModels.MultiStep
+﻿@model List<string>
 
 <div class="content-box pad gap-bottom">
-	<p class="pad-bottom">@Model.ActionNote</p>
-	<div class="main-bar">
-		<div class="completed-bar">0%</div>
+	<p id="action-name" class="pad-bottom"></p>
+	<p id="action-note" class="pad-bottom"></p>
+	<div id="progress-bar" class="hidden">
+		<div id="completed-bar"></div>
 	</div>
 	<p class="small-pad-top font-small">
-		<button id="start" class="small-button">Start</button>
+		<button id="start-button" class="small-button">Start</button>
 	</p>
 </div>
 
@@ -15,8 +16,9 @@
 	<div class="small-pad-left">
 		<p>Pause after next step <input id="pause-after-next" type="checkbox" /></p>
 		<p>Pause on errors <input id="pause-on-error" type="checkbox" checked="checked" /></p>
-		<p>Take <input id="take" type="text" size="3" value="@Model.Take" /></p>
-		<p>Page <input id="current-page" type="text" size="3" value="@(Model.Page + 1)" /> of <span id="total-pages">@(Model.TotalPages + 1)</span></p>
+		<p>Take <input id="take" type="text" size="3" /></p>
+		<p>Page <input id="current-page" type="text" size="3" /> of <span id="total-pages"></span></p>
+		<p>Step <input id="current-step" type="text" size="3" /> of <span id="total-steps"></span></p>
 	</div>
 </div>
 
@@ -26,7 +28,7 @@
 </div>
 
 
-@{ViewData["Title"] = $"{Model.ActionName}";}
+@{ViewData["Title"] = $"Multi-Step Process";}
 @section Header {@ViewData["Title"]}
 
 @section styles {
@@ -36,10 +38,10 @@
 @section scripts {
 	<script>
 		window.pageActions = 'multi-step';
-		window.page = @Model.Page;
-		window.totalPages = @Model.TotalPages;
-		window.totalRecords = @Model.TotalRecords;
-		window.take = @Model.Take;
-		window.nextAction = '@Model.Action';
+		window.steps = [
+			@foreach (var address in Model) {
+				<text>'@address',</text>
+			}
+		];
 	</script>
 }

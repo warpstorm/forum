@@ -5,16 +5,13 @@ import { Xhr } from "../services/xhr";
 import { show, queryify } from "../helpers";
 import { XhrResult } from "../models/xhr-result";
 import { XhrException } from "../models/xhr-exception";
+import { Step } from "../models/page-settings/step";
 
 function getSettings(): MultiStepSettings {
 	let genericWindow = <any>window;
 
 	return new MultiStepSettings({
-		page: genericWindow.page,
-		totalPages: genericWindow.totalPages,
-		totalRecords: genericWindow.totalRecords,
-		take: genericWindow.take,
-		nextAction: genericWindow.nextAction
+		steps: genericWindow.steps
 	});
 }
 
@@ -26,18 +23,25 @@ export class MultiStep {
 	}
 
 	init() {
-		this.updateStatus();
-
-		let startButton = <Element>document.querySelector('button#start');
+		let startButton = <Element>document.querySelector('#start-button');
 		startButton.addEventListener('click', this.eventStartButtonClick);
 
 		let takeInput = <HTMLInputElement>document.querySelector('#take');
 		takeInput.addEventListener('blur', this.eventUpdateTake);
+
+		let totalSteps = <Element>document.querySelector('#total-steps');
+		totalSteps.innerHTML = this.settings.steps.length.toString();
+
+		let currentStepInput = <HTMLInputElement>document.querySelector('#current-step');
+		currentStepInput.value = "1";
 	}
 
-	updateStatus(): void {
-		let bar = <HTMLElement>document.querySelector('.completed-bar');
-		let percent = 100 * this.settings.page / this.settings.totalPages;
+	updateProgress(): void {
+		let progressBar = <HTMLButtonElement>document.querySelector('#progress-bar');
+		show(progressBar);
+
+		let bar = <HTMLElement>document.querySelector('#completed-bar');
+		let percent = 100 * this.settings.currentPage / this.settings.totalPages;
 		bar.style.width = `${percent}%`;
 
 		percent = Math.round(percent);
@@ -100,64 +104,115 @@ export class MultiStep {
 		logElement.innerHTML = logItemHtml + logElement.innerHTML;
 	}
 
+	async loadCurrentAction(): Promise<void> {
+		let requestOptions = new XhrOptions({
+			method: HttpMethod.Post,
+			url: this.settings.currentAction
+		});
+
+		let xhrResult = await Xhr.request(requestOptions);
+
+		if (xhrResult.status != 200) {
+			this.log(xhrResult);
+		}
+
+		let parsedResult = JSON.parse(xhrResult.responseText) as Step;
+
+		if (parsedResult) {
+			this.settings.take = parsedResult.take;
+			this.settings.totalPages = parsedResult.totalPages;
+			this.settings.totalRecords = parsedResult.totalRecords;
+			this.settings.actionName = parsedResult.actionName;
+			this.settings.actionNote = parsedResult.actionNote;
+			this.settings.currentPage = 0;
+
+			let takeInput = <HTMLInputElement>document.querySelector('#take');
+			takeInput.value = this.settings.take.toString();
+
+			let totalPages = <Element>document.querySelector('#total-pages');
+			totalPages.innerHTML = (this.settings.totalPages + 1).toString();
+
+			let currentPageInput = <HTMLInputElement>document.querySelector('#current-page');
+			currentPageInput.value = "1";
+		}
+	}
+
 	eventUpdateTake = (event: Event): void => {
 		let takeInput = <HTMLInputElement>event.currentTarget;
 		let pageInput = <HTMLInputElement>document.querySelector('#current-page');
 		let totalPages = <Element>document.querySelector('#total-pages');
 
-		let skip = this.settings.take * this.settings.page;
+		let skip = this.settings.take * this.settings.currentPage;
 
 		this.settings.take = parseInt(takeInput.value);
-		this.settings.page = skip > 0 ? Math.floor(skip / this.settings.take) : 0;
+		this.settings.currentPage = skip > 0 ? Math.floor(skip / this.settings.take) : 0;
 		this.settings.totalPages = Math.ceil(this.settings.totalRecords / this.settings.take);
 
-		pageInput.value = (this.settings.page + 1).toString();
+		pageInput.value = (this.settings.currentPage + 1).toString();
 		totalPages.innerHTML = (this.settings.totalPages + 1).toString();
 	}
 
 	eventStartButtonClick = async (event: Event): Promise<void> => {
-		let target = <HTMLButtonElement>event.currentTarget;
-		target.disabled = true;
-
-		let startButton = <HTMLButtonElement>document.querySelector('button#start');
+		let startButton = <HTMLButtonElement>event.currentTarget;
+		let currentPageInput = <HTMLInputElement>document.querySelector('#current-page');
+		let currentStepInput = <HTMLInputElement>document.querySelector('#current-step');
+		let takeInput = <HTMLInputElement>document.querySelector('#take');
 		let togglePauseOnError = <HTMLInputElement>document.querySelector('#pause-on-error');
 		let togglePauseAfterNext = <HTMLInputElement>document.querySelector('#pause-after-next');
-		let takeInput = <HTMLInputElement>document.querySelector('#take');
-		let pageInput = <HTMLInputElement>document.querySelector('#current-page');
-		pageInput.disabled = true;
 
-		this.settings.page = parseInt(pageInput.value) - 1;
+		startButton.disabled = true;
+		currentPageInput.disabled = true;
+		currentStepInput.disabled = true;
+		takeInput.disabled = true;
 
-		while (this.settings.page <= this.settings.totalPages) {
-			let requestOptions = new XhrOptions({
-				method: HttpMethod.Post,
-				url: this.settings.nextAction,
-				body: queryify({
-					page: this.settings.page,
-					totalpages: this.settings.totalPages,
-					take: takeInput.value
-				})
-			});
+		this.settings.take = parseInt(takeInput.value);
+		this.settings.currentPage = parseInt(currentPageInput.value) - 1;
+		this.settings.currentStep = parseInt(currentStepInput.value) - 1;
 
-			let xhrResult = await Xhr.request(requestOptions);
+		for (var i = this.settings.currentStep; i < this.settings.steps.length; i++) {
+			currentStepInput.value = (i + 1).toString();
 
-			this.log(xhrResult);
+			this.settings.currentAction = this.settings.steps[i];
 
-			this.updateStatus();
-			this.settings.page++;
-			pageInput.value = this.settings.page.toString();
-
-			if (xhrResult.status != 200 && togglePauseOnError.checked) {
-				break;
+			if (this.settings.totalPages == 0) {
+				await this.loadCurrentAction();
 			}
 
-			if (togglePauseAfterNext.checked) {
-				togglePauseAfterNext.checked = false;
-				break;
+			while (this.settings.currentPage <= this.settings.totalPages) {
+				let requestOptions = new XhrOptions({
+					method: HttpMethod.Post,
+					url: this.settings.currentAction,
+					body: queryify({
+						currentPage: this.settings.currentPage,
+						take: takeInput.value
+					})
+				});
+
+				let xhrResult = await Xhr.request(requestOptions);
+
+				this.log(xhrResult);
+
+				this.updateProgress();
+				this.settings.currentPage++;
+				currentPageInput.value = this.settings.currentPage.toString();
+
+				if (xhrResult.status != 200 && togglePauseOnError.checked) {
+					break;
+				}
+
+				if (togglePauseAfterNext.checked) {
+					togglePauseAfterNext.checked = false;
+					break;
+				}
+			}
+
+			if (this.settings.currentPage > this.settings.totalPages) {
+				this.settings.totalPages = 0;
 			}
 		}
 
 		startButton.disabled = false;
-		pageInput.disabled = false;
+		currentPageInput.disabled = false;
+		currentStepInput.disabled = false;
 	}
 }

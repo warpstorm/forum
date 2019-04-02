@@ -4,8 +4,6 @@ using Forum.Services;
 using Forum.Services.Contexts;
 using Forum.Services.Repositories;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -14,119 +12,69 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace Forum.Controllers {
+	using ControllerModels = Models.ControllerModels;
 	using DataModels = Models.DataModels;
 	using InputModels = Models.InputModels;
-	using ViewModels = Models.ViewModels;
 
-	public class Setup : Controller {
+	public class Administration : Controller {
 		ApplicationDbContext DbContext { get; }
 		UserContext UserContext { get; }
 		AccountRepository AccountRepository { get; }
-		SetupService SetupService { get; }
+		RoleRepository RoleRepository { get; }
 		IForumViewResult ForumViewResult { get; }
-		IUrlHelper UrlHelper { get; }
 
-		public Setup(
+		public Administration(
 			ApplicationDbContext dbContext,
 			UserContext userContext,
 			AccountRepository accountRepository,
-			SetupService setupService,
-			IForumViewResult forumViewResult,
-			IActionContextAccessor actionContextAccessor,
-			IUrlHelperFactory urlHelperFactory
+			RoleRepository roleRepository,
+			IForumViewResult forumViewResult
 		) {
 			DbContext = dbContext;
 			UserContext = userContext;
 			AccountRepository = accountRepository;
-			SetupService = setupService;
+			RoleRepository = roleRepository;
 			ForumViewResult = forumViewResult;
-			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
-		[HttpGet]
-		public async Task<IActionResult> Initialize() {
+		public async Task<IActionResult> Setup() {
 			CheckContext();
 
-			var totalPages = 4;
-
-			var viewModel = new ViewModels.Delay {
-				ActionName = "Initializing",
-				ActionNote = "Beginning the setup process",
-				CurrentPage = 0,
-				TotalPages = totalPages,
-				NextAction = UrlHelper.Action(nameof(Setup.Process), nameof(Setup), new InputModels.Continue { CurrentStep = 1, TotalSteps = totalPages })
-			};
-
-			return await ForumViewResult.ViewResult(this, "Delay", viewModel);
-		}
-
-		public async Task<IActionResult> Process(InputModels.Continue input) {
-			CheckContext();
-
-			var note = string.Empty;
-
-			switch (input.CurrentStep) {
-				case 1:
-					note = "Roles have been setup.";
-					await SetupService.SetupRoles();
-					break;
-
-				case 2:
-					note = "Admins have been added.";
-					await SetupService.SetupAdmins();
-					break;
-
-				case 3:
-					note = "The first category has been added.";
-					SetupService.SetupCategories();
-					break;
-
-				case 4:
-					note = "The first board has been added.";
-					SetupService.SetupBoards();
-					break;
-			}
-
-			input.CurrentStep++;
-
-			var viewModel = new ViewModels.Delay {
-				ActionName = "Processing",
-				ActionNote = note,
-				CurrentPage = input.CurrentStep,
-				TotalPages = input.TotalSteps,
-				NextAction = UrlHelper.Action(nameof(Setup.Process), nameof(Setup), input)
-			};
-
-			if (input.CurrentStep > input.TotalSteps) {
-				viewModel.NextAction = "/";
-			}
-
-			return await ForumViewResult.ViewResult(this, "Delay", viewModel);
+			return await ForumViewResult.ViewResult(this, "MultiStep", new List<string> {
+				Url.Action(nameof(SetupRoles)),
+				Url.Action(nameof(SetupAdmins)),
+				Url.Action(nameof(SetupCategories)),
+				Url.Action(nameof(SetupBoards)),
+			});
 		}
 
 		public async Task<IActionResult> Migrate() {
-			var take = 5;
-			var topics = DbContext.Messages.Count(item => item.ParentId == 0);
-
-			var viewModel = new ViewModels.MultiStep {
-				ActionName = "Migration",
-				ActionNote = "Creating topics from top level messages and migrating message artifacts.",
-				Action = UrlHelper.Action(nameof(ContinueMigration)),
-				Page = 0,
-				TotalPages = Convert.ToInt32(Math.Floor(1d * topics / take)),
-				TotalRecords = topics,
-				Take = take,
-			};
-
-			return await ForumViewResult.ViewResult(this, "MultiStep", viewModel);
+			return await ForumViewResult.ViewResult(this, "MultiStep", new List<string> {
+				Url.Action(nameof(ContinueMigration))
+			});
 		}
 
-		public async Task<IActionResult> ContinueMigration(InputModels.MultiStepInput input) {
+		[HttpPost]
+		public async Task<IActionResult> ContinueMigration(ControllerModels.Administration.Page input) {
+			if (input.CurrentPage < 0) {
+				var take = 100;
+				var topics = DbContext.Messages.Count(item => item.ParentId == 0);
+				var totalPages = Convert.ToInt32(Math.Floor(1d * topics / take));
+
+				return Ok(new ControllerModels.Administration.Step {
+					ActionName = "Migration",
+					ActionNote = "Creating topics from top level messages and migrating message artifacts.",
+					Take = take,
+					TotalPages = totalPages,
+					TotalRecords = topics,
+				});
+			}
+
 			var parentMessagesQuery = from message in DbContext.Messages
 									  where message.ParentId == 0
 									  select message;
 
-			var parentMessages = await parentMessagesQuery.Skip(input.Page * input.Take).Take(input.Take).ToListAsync();
+			var parentMessages = await parentMessagesQuery.Skip(input.CurrentPage * input.Take).Take(input.Take).ToListAsync();
 
 			foreach (var firstMessage in parentMessages) {
 				DataModels.Message lastMessage = null;
@@ -160,6 +108,114 @@ namespace Forum.Controllers {
 			return Ok();
 		}
 
+		[HttpPost]
+		public async Task<IActionResult> SetupRoles(ControllerModels.Administration.Page input) {
+			CheckContext();
+
+			if (input.CurrentPage < 0) {
+				return Ok(new ControllerModels.Administration.Step {
+					ActionName = "Roles",
+					ActionNote = "Setting up roles.",
+					Take = 1,
+					TotalPages = 1,
+					TotalRecords = 1,
+				});
+			}
+
+			if (!(await RoleRepository.SiteRoles()).Any()) {
+				await RoleRepository.Create(new InputModels.CreateRoleInput {
+					Name = Constants.InternalKeys.Admin,
+					Description = "Forum administrators"
+				});
+			}
+
+			return Ok();
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> SetupAdmins(ControllerModels.Administration.Page input) {
+			CheckContext();
+
+			if (input.CurrentPage < 0) {
+				return Ok(new ControllerModels.Administration.Step {
+					ActionName = "Admin",
+					ActionNote = "Registering administrator account.",
+					Take = 1,
+					TotalPages = 1,
+					TotalRecords = 1,
+				});
+			}
+
+			if (UserContext.IsAdmin) {
+				return Ok();
+			}
+
+			var adminRole = (await RoleRepository.SiteRoles()).First(r => r.Name == Constants.InternalKeys.Admin);
+			await RoleRepository.AddUser(adminRole.Id, UserContext.ApplicationUser.Id);
+
+			return Ok();
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> SetupCategories(ControllerModels.Administration.Page input) {
+			CheckContext();
+
+			if (input.CurrentPage < 0) {
+				return Ok(new ControllerModels.Administration.Step {
+					ActionName = "Categories",
+					ActionNote = "Creating categories.",
+					Take = 1,
+					TotalPages = 1,
+					TotalRecords = 1,
+				});
+			}
+
+			if (DbContext.Categories.Any()) {
+				return Ok();
+			}
+
+			DbContext.Categories.Add(new DataModels.Category {
+				DisplayOrder = 1,
+				Name = "On Topic"
+			});
+
+			await DbContext.SaveChangesAsync();
+
+			return Ok();
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> SetupBoards(ControllerModels.Administration.Page input) {
+			CheckContext();
+
+			if (input.CurrentPage < 0) {
+				return Ok(new ControllerModels.Administration.Step {
+					ActionName = "Boards",
+					ActionNote = "Creating boards.",
+					Take = 1,
+					TotalPages = 1,
+					TotalRecords = 1,
+				});
+			}
+
+			if (DbContext.Boards.Any()) {
+				return Ok();
+			}
+
+			var category = DbContext.Categories.First();
+
+			DbContext.Boards.Add(new DataModels.Board {
+				CategoryId = category.Id,
+				DisplayOrder = 1,
+				Name = "General Discussion",
+				Description = "Various talk about things that interest you."
+			});
+
+			await DbContext.SaveChangesAsync();
+
+			return Ok();
+		}
+
 		async Task UpdateMessageArtifacts(int topicId, int parentMessageId) {
 			var messagesQuery = from message in DbContext.Messages
 								where message.Id == parentMessageId || message.ParentId == parentMessageId
@@ -184,8 +240,8 @@ namespace Forum.Controllers {
 				throw new HttpException("You must create an account and log into it first.");
 			}
 
-			if (!UserContext.IsAdmin && DbContext.Users.Count() > 1) {
-				throw new HttpException("Non-admins can only run this process when there's one user registered.");
+			if (DbContext.Users.Count() > 1) {
+				throw new HttpException("This process can only run when there's one user registered.");
 			}
 		}
 	}

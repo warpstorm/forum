@@ -17,7 +17,6 @@ using System.Threading.Tasks;
 
 namespace Forum.Controllers {
 	using ControllerModels = Models.ControllerModels;
-	using InputModels = Models.InputModels;
 	using ViewModels = Models.ViewModels;
 
 	public class Messages : Controller {
@@ -377,32 +376,37 @@ namespace Forum.Controllers {
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
 		public async Task<IActionResult> ReprocessMessages() {
-			var take = 25;
-			var messageCount = await DbContext.Messages.CountAsync();
-			var totalPages = Convert.ToInt32(Math.Floor(1d * messageCount / take));
-
-			var viewModel = new ViewModels.MultiStep {
-				ActionName = "Reprocessing Messages",
-				ActionNote = "Processing message text, loading external sites, replacing smiley codes.",
-				Action = UrlHelper.Action(nameof(ReprocessMessagesContinue)),
-				TotalPages = totalPages,
-				TotalRecords = messageCount,
-				Take = take,
+			var steps = new List<string> {
+				Url.Action(nameof(ReprocessMessagesContinue))
 			};
 
-			return await ForumViewResult.ViewResult(this, "MultiStep", viewModel);
+			return await ForumViewResult.ViewResult(this, "MultiStep", steps);
 		}
 
 		[ActionLog]
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
-		[HttpGet]
-		public async Task<IActionResult> ReprocessMessagesContinue(InputModels.MultiStepInput input) {
+		[HttpPost]
+		public async Task<IActionResult> ReprocessMessagesContinue(ControllerModels.Administration.Page input) {
+			if (input.CurrentPage < 0) {
+				var take = 25;
+				var messageCount = await DbContext.Messages.CountAsync();
+				var totalPages = Convert.ToInt32(Math.Floor(1d * messageCount / take));
+
+				return Ok(new ControllerModels.Administration.Step {
+					ActionName = "Reprocessing Messages",
+					ActionNote = "Processing message text, loading external sites, replacing smiley codes.",
+					Take = take,
+					TotalPages = totalPages,
+					TotalRecords = messageCount,
+				});
+			}
+
 			var messageQuery = from message in DbContext.Messages
 							   where !message.Deleted
 							   orderby message.Id descending
 							   select message;
 
-			var messages = messageQuery.Skip(input.Take * input.Page).Take(input.Take);
+			var messages = messageQuery.Skip(input.Take * input.CurrentPage).Take(input.Take);
 
 			foreach (var message in messages) {
 				var processedMessage = await MessageRepository.ProcessMessageInput(message.OriginalBody);

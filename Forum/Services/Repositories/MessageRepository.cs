@@ -361,11 +361,14 @@ namespace Forum.Services.Repositories {
 		}
 
 		public async Task<InputModels.ProcessedMessageInput> ProcessMessageInput(string messageBody) {
-			InputModels.ProcessedMessageInput processedMessage = null;
+			var processedMessage = new InputModels.ProcessedMessageInput {
+				OriginalBody = messageBody ?? string.Empty,
+				DisplayBody = messageBody ?? string.Empty,
+				MentionedUsers = new List<string>()
+			};
 
 			try {
-				processedMessage = await PreProcessMessageInput(messageBody);
-				processedMessage.DisplayBody = BBCParser.ToHtml(processedMessage.DisplayBody);
+				processedMessage = await PreProcess(processedMessage);
 				await ProcessSmileys(processedMessage);
 				await ProcessMessageBodyUrls(processedMessage);
 				await FindMentionedUsers(processedMessage);
@@ -386,16 +389,10 @@ namespace Forum.Services.Repositories {
 		/// <summary>
 		/// Some minor housekeeping on the message before we get into the heavy lifting.
 		/// </summary>
-		public async Task<InputModels.ProcessedMessageInput> PreProcessMessageInput(string messageBody) {
-			var processedMessageInput = new InputModels.ProcessedMessageInput {
-				OriginalBody = messageBody ?? string.Empty,
-				DisplayBody = messageBody ?? string.Empty,
-				MentionedUsers = new List<string>()
-			};
+		public async Task<InputModels.ProcessedMessageInput> PreProcess(InputModels.ProcessedMessageInput processedMessage) {
+			processedMessage.DisplayBody = processedMessage.DisplayBody.Trim();
 
-			processedMessageInput.DisplayBody = processedMessageInput.DisplayBody.Trim();
-
-			if (string.IsNullOrEmpty(processedMessageInput.DisplayBody)) {
+			if (string.IsNullOrEmpty(processedMessage.DisplayBody)) {
 				throw new ArgumentException("Message body is empty.");
 			}
 
@@ -405,10 +402,12 @@ namespace Forum.Services.Repositories {
 			for (var i = 0; i < smileys.Count(); i++) {
 				var pattern = $@"(^|[\r\n\s]){Regex.Escape(smileys[i].Code)}(?=$|[\r\n\s])";
 				var replacement = $"$1SMILEY_{i}_INDEX";
-				processedMessageInput.DisplayBody = Regex.Replace(processedMessageInput.DisplayBody, pattern, replacement, RegexOptions.Singleline);
+				processedMessage.DisplayBody = Regex.Replace(processedMessage.DisplayBody, pattern, replacement, RegexOptions.Singleline);
 			}
 
-			return processedMessageInput;
+			processedMessage.DisplayBody = BBCParser.ToHtml(processedMessage.DisplayBody);
+
+			return processedMessage;
 		}
 
 		/// <summary>

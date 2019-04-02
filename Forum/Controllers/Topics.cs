@@ -380,32 +380,37 @@ namespace Forum.Controllers {
 		[ActionLog]
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
-		public async Task<IActionResult> RebuildTopics(InputModels.MultiStepInput input) {
-			var take = 250;
-			var topicCount = await DbContext.Topics.CountAsync();
-			var totalPages = Convert.ToInt32(Math.Floor(1d * topicCount / take));
-
-			var viewModel = new ViewModels.MultiStep {
-				ActionName = "Rebuilding Topics",
-				ActionNote = "Recounting replies, calculating participants, determining first and last messages.",
-				Action = Url.Action(nameof(RebuildTopicsContinue)),
-				TotalPages = totalPages,
-				TotalRecords = topicCount,
-				Take = take,
+		public async Task<IActionResult> RebuildTopics() {
+			var steps = new List<string> {
+				Url.Action(nameof(RebuildTopicsContinue))
 			};
 
-			return await ForumViewResult.ViewResult(this, "MultiStep", viewModel);
+			return await ForumViewResult.ViewResult(this, "MultiStep", steps);
 		}
 
 		[ActionLog]
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
-		[HttpGet]
-		public async Task<IActionResult> RebuildTopicsContinue(InputModels.MultiStepInput input) {
+		[HttpPost]
+		public async Task<IActionResult> RebuildTopicsContinue(ControllerModels.Administration.Page input) {
+			if (input.CurrentPage < 0) {
+				var take = 250;
+				var topicCount = await DbContext.Topics.CountAsync();
+				var totalPages = Convert.ToInt32(Math.Floor(1d * topicCount / take));
+
+				return Ok(new ControllerModels.Administration.Step {
+					ActionName = "Rebuilding Topics",
+					ActionNote = "Recounting replies, calculating participants, determining first and last messages.",
+					Take = take,
+					TotalPages = totalPages,
+					TotalRecords = topicCount,
+				});
+			}
+
 			var topicsQuery = from topic in DbContext.Topics
 							  where !topic.Deleted
 							  select topic;
 
-			topicsQuery = topicsQuery.Skip(input.Page * input.Take).Take(input.Take);
+			topicsQuery = topicsQuery.Skip(input.CurrentPage * input.Take).Take(input.Take);
 
 			foreach (var topic in topicsQuery) {
 				await TopicRepository.RebuildTopic(topic);

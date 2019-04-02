@@ -2,14 +2,11 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
-using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Forum.Controllers {
-	using InputModels = Models.InputModels;
-	using ViewModels = Models.ViewModels;
-
 	public class MultiStepTest : Controller {
 		IForumViewResult ForumViewResult { get; }
 		IUrlHelper UrlHelper { get; }
@@ -24,37 +21,63 @@ namespace Forum.Controllers {
 		}
 
 		public async Task<IActionResult> Test() {
-			var viewModel = new ViewModels.MultiStep {
-				ActionName = "Testing Multi-step",
-				ActionNote = "Running a test on Multi-stepping",
-				Action = UrlHelper.Action(nameof(TestWait)),
-				Page = 0,
-				TotalPages = 12,
-				TotalRecords = 30,
-				Take = 5,
+			var viewModel = new List<string> {
+				UrlHelper.Action(nameof(TestStep1)),
+				UrlHelper.Action(nameof(TestStep2)),
+				UrlHelper.Action(nameof(TestStep3)),
 			};
 
 			return await ForumViewResult.ViewResult(this, "MultiStep", viewModel);
 		}
 
 		[HttpPost]
-		public IActionResult TestWait(InputModels.MultiStepInput input) {
-			try {
-				if (ModelState.IsValid) {
-					Thread.Sleep(1500);
-
-					if (input.Page == 2) {
-						throw new Exception("Hello world");
-					}
-
-					return Ok();
-				}
-			}
-			catch (Exception e) {
-				return BadRequest(e);
+		public IActionResult TestStep1(Models.ControllerModels.Administration.Page input) {
+			if (input.CurrentPage < 0) {
+				return Ok(new Models.ControllerModels.Administration.Step {
+					ActionName = "Step 1",
+					ActionNote = "Running step 1 of multi-step test",
+					Take = 5,
+					TotalPages = 5,
+					TotalRecords = 23,
+				});
 			}
 
-			return BadRequest();
+			// Do something with the metrics here, i.e. skip = take * page
+
+			Thread.Sleep(1000);
+			return Ok();
+		}
+
+		[HttpPost]
+		public IActionResult TestStep2(Models.ControllerModels.Administration.Page input) {
+			if (input.CurrentPage < 0) {
+				return Ok(new Models.ControllerModels.Administration.Step {
+					ActionName = "Step 2",
+					ActionNote = "Running step 2 of multi-step test",
+					Take = 3,
+					TotalPages = 4,
+					TotalRecords = 12,
+				});
+			}
+
+			Thread.Sleep(2000);
+			return Ok();
+		}
+
+		[HttpPost]
+		public IActionResult TestStep3(Models.ControllerModels.Administration.Page input) {
+			if (input.CurrentPage < 0) {
+				return Ok(new Models.ControllerModels.Administration.Step {
+					ActionName = "Step 3",
+					ActionNote = "Running step 3 of multi-step test",
+					Take = 3,
+					TotalPages = 6,
+					TotalRecords = 17,
+				});
+			}
+
+			Thread.Sleep(3000);
+			return Ok();
 		}
 	}
 }
