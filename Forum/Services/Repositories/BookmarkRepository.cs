@@ -29,5 +29,10 @@ namespace Forum.Services.Repositories {
 			DbContext = dbContext;
 			UserContext = userContext;
 		}
+
+		public async Task<bool> IsBookmarked(int topicId) {
+			var records = await Records();
+			return records.Any(r => r.TopicId == topicId);
+		}
 	}
 }
