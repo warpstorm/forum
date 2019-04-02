@@ -31,7 +31,6 @@
 			public const string PopularityLimit = "PopularityLimit";
 			public const string PoseyUsers = "PoseyUsers";
 			public const string ShowFavicons = "ShowFavicons";
-			public const string SideLoading = "SideLoading";
 			public const string StrippedUrls = "StrippedUrls";
 			public const string TopicsPerPage = "TopicsPerPage";
 		}
