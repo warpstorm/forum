@@ -57,7 +57,7 @@ namespace Forum.Controllers {
 		[HttpPost]
 		public async Task<IActionResult> ContinueMigration(ControllerModels.Administration.Page input) {
 			if (input.CurrentPage < 0) {
-				var take = 100;
+				var take = 10;
 				var topics = DbContext.Messages.Count(item => item.ParentId == 0);
 				var totalPages = Convert.ToInt32(Math.Floor(1d * topics / take));
 
