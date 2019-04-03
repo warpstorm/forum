@@ -196,7 +196,7 @@ namespace Forum.Services.Repositories {
 
 			if (boardId > 0) {
 				topicQuery = from topic in DbContext.Topics
-							 join topicBoard in DbContext.TopicBoards on topic.Id equals topicBoard.MessageId
+							 join topicBoard in DbContext.TopicBoards on topic.Id equals topicBoard.TopicId
 							 where topicBoard.BoardId == boardId
 							 where !topic.Deleted
 							 select new {
@@ -559,13 +559,13 @@ namespace Forum.Services.Repositories {
 		}
 
 		public async Task RemoveTopicBookmarks(int topicId) {
-			var records = DbContext.Bookmarks.Where(item => item.MessageId == topicId);
+			var records = DbContext.Bookmarks.Where(item => item.TopicId == topicId);
 			DbContext.RemoveRange(records);
 			await DbContext.SaveChangesAsync();
 		}
 
 		public async Task RemoveTopicBoards(int topicId) {
-			var records = DbContext.TopicBoards.Where(item => item.MessageId == topicId);
+			var records = DbContext.TopicBoards.Where(item => item.TopicId == topicId);
 			DbContext.RemoveRange(records);
 			await DbContext.SaveChangesAsync();
 		}

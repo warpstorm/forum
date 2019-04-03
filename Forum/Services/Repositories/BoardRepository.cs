@@ -120,12 +120,12 @@ namespace Forum.Services.Repositories {
 
 			if (includeReplies) {
 				var messages = from topicBoard in DbContext.TopicBoards
-							   join message in DbContext.Messages on topicBoard.MessageId equals message.Id
+							   join message in DbContext.Messages on topicBoard.TopicId equals message.TopicId
 							   where topicBoard.BoardId == boardRecord.Id
 							   where !message.Deleted
 							   orderby message.LastReplyPosted descending
 							   select new {
-								   topicBoard.MessageId,
+								   topicBoard.TopicId,
 								   LastReplyId = message.LastReplyId > 0 ? message.LastReplyId : message.Id,
 								   TopicPreview = message.ShortPreview
 							   };
@@ -135,7 +135,7 @@ namespace Forum.Services.Repositories {
 				// Only checks the most recent 10 topics. If all 10 are forbidden, then LastMessage stays null.
 				foreach (var item in messages.Take(10)) {
 					var topicBoardIdsQuery = from topicBoard in DbContext.TopicBoards
-											 where topicBoard.MessageId == item.MessageId
+											 where topicBoard.TopicId == item.TopicId
 											 select topicBoard.BoardId;
 
 					var topicBoardIds = topicBoardIdsQuery.ToList();
