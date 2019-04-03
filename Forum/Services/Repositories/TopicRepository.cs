@@ -430,9 +430,9 @@ namespace Forum.Services.Repositories {
 				throw new HttpNotFoundError();
 			}
 
-			var existingRecord = await DbContext.TopicBoards.FirstOrDefaultAsync(p => p.MessageId == input.TopicId && p.BoardId == input.BoardId);
+			var existingRecords = await DbContext.TopicBoards.Where(p => p.TopicId == input.TopicId && p.BoardId == input.BoardId).ToListAsync();
 
-			if (existingRecord is null) {
+			if (existingRecords is null) {
 				var topicBoardRecord = new DataModels.TopicBoard {
 					TopicId = input.TopicId,
 					BoardId = input.BoardId,
@@ -442,7 +442,7 @@ namespace Forum.Services.Repositories {
 				DbContext.TopicBoards.Add(topicBoardRecord);
 			}
 			else {
-				DbContext.TopicBoards.Remove(existingRecord);
+				DbContext.TopicBoards.RemoveRange(existingRecords);
 			}
 
 			await DbContext.SaveChangesAsync();
