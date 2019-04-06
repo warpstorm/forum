@@ -29,21 +29,8 @@ export class MultiStep {
 		let takeInput = <HTMLInputElement>document.querySelector('#take');
 		takeInput.addEventListener('blur', this.eventUpdateTake);
 
-		if (takeInput.value) {
-			this.settings.take = parseInt(takeInput.value);
-		}
-
 		let totalSteps = <Element>document.querySelector('#total-steps');
 		totalSteps.innerHTML = this.settings.steps.length.toString();
-
-		let currentStepInput = <HTMLInputElement>document.querySelector('#current-step');
-		currentStepInput.value = "1";
-
-		let currentPageInput = <HTMLInputElement>document.querySelector('#current-page');
-
-		if (currentPageInput.value) {
-			this.settings.currentPage = parseInt(currentPageInput.value);
-		}
 	}
 
 	updateProgress(): void {
@@ -129,23 +116,33 @@ export class MultiStep {
 		let parsedResult = JSON.parse(xhrResult.responseText) as Step;
 
 		if (parsedResult) {
-			if (this.settings.take == 0) {
-				this.settings.take = parsedResult.take;
-			}
-
 			this.settings.totalPages = parsedResult.totalPages;
 			this.settings.totalRecords = parsedResult.totalRecords;
 			this.settings.actionName = parsedResult.actionName;
 			this.settings.actionNote = parsedResult.actionNote;
 
 			let takeInput = <HTMLInputElement>document.querySelector('#take');
-			takeInput.value = this.settings.take.toString();
-
 			let totalPages = <Element>document.querySelector('#total-pages');
+			let currentPageInput = <HTMLInputElement>document.querySelector('#current-page');
+
+			if (takeInput.value) {
+				this.settings.take = parseInt(takeInput.value);
+			}
+
+			if (this.settings.take == 0) {
+				this.settings.take = parsedResult.take;
+				takeInput.value = this.settings.take.toString();
+			}
+
 			totalPages.innerHTML = (this.settings.totalPages + 1).toString();
 
-			let currentPageInput = <HTMLInputElement>document.querySelector('#current-page');
-			currentPageInput.value = "1";
+			if (currentPageInput.value) {
+				this.settings.currentPage = parseInt(currentPageInput.value) - 1;
+			}
+
+			if (this.settings.currentPage == 0) {
+				currentPageInput.value = "1";
+			}
 		}
 	}
 
@@ -167,6 +164,11 @@ export class MultiStep {
 	eventStartButtonClick = async (event: Event): Promise<void> => {
 		let togglePauseOnError = <HTMLInputElement>document.querySelector('#pause-on-error');
 		let togglePauseAfterNext = <HTMLInputElement>document.querySelector('#pause-after-next');
+		let currentStepInput = <HTMLInputElement>document.querySelector('#current-step');
+
+		if (currentStepInput.value) {
+			this.settings.currentStep = parseInt(currentStepInput.value) - 1;
+		}
 
 		for (var i = this.settings.currentStep; i < this.settings.steps.length; i++) {
 			this.start(i);
@@ -220,27 +222,38 @@ export class MultiStep {
 		let currentStepInput = <HTMLInputElement>document.querySelector('#current-step');
 		let takeInput = <HTMLInputElement>document.querySelector('#take');
 
-		this.settings.take = parseInt(takeInput.value);
-		this.settings.currentPage = parseInt(currentPageInput.value) - 1;
-		this.settings.currentStep = parseInt(currentStepInput.value) - 1;
+		if (takeInput.value) {
+			this.settings.take = parseInt(takeInput.value);
+		}
+
+		if (currentPageInput.value) {
+			this.settings.currentPage = parseInt(currentPageInput.value) - 1;
+		}
+
+		currentStepInput.value = (step + 1).toString();
 
 		startButton.disabled = true;
 		currentPageInput.disabled = true;
 		currentStepInput.disabled = true;
 		takeInput.disabled = true;
-
-		currentStepInput.value = (step + 1).toString();
 	}
 
 	stop() {
-		if (this.settings.currentPage > this.settings.totalPages) {
-			this.settings.totalPages = 0;
-		}
-
 		let startButton = <HTMLInputElement>document.querySelector('#start-button');
 		let currentPageInput = <HTMLInputElement>document.querySelector('#current-page');
 		let currentStepInput = <HTMLInputElement>document.querySelector('#current-step');
+		let totalPages = <Element>document.querySelector('#total-pages');
 		let takeInput = <HTMLInputElement>document.querySelector('#take');
+
+		if (this.settings.currentPage > this.settings.totalPages) {
+			this.settings.currentPage = 0;
+			this.settings.totalPages = 0;
+			this.settings.take = 0;
+
+			currentPageInput.value = "";
+			totalPages.innerHTML = "";
+			takeInput.value = "";
+		}
 
 		startButton.disabled = false;
 		currentPageInput.disabled = false;
