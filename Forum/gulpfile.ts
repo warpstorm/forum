@@ -74,5 +74,5 @@ gulp.task('scripts-dev', function () {
 		.pipe(buffer())
 		.pipe(sourcemaps.init({ loadMaps: true }))
 		.pipe(sourcemaps.write('./'))
-		.pipe(gulp.dest('client'));
+		.pipe(gulp.dest('wwwroot/scripts'));
 });
