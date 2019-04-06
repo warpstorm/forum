@@ -29,11 +29,21 @@ export class MultiStep {
 		let takeInput = <HTMLInputElement>document.querySelector('#take');
 		takeInput.addEventListener('blur', this.eventUpdateTake);
 
+		if (takeInput.value) {
+			this.settings.take = parseInt(takeInput.value);
+		}
+
 		let totalSteps = <Element>document.querySelector('#total-steps');
 		totalSteps.innerHTML = this.settings.steps.length.toString();
 
 		let currentStepInput = <HTMLInputElement>document.querySelector('#current-step');
 		currentStepInput.value = "1";
+
+		let currentPageInput = <HTMLInputElement>document.querySelector('#current-page');
+
+		if (currentPageInput.value) {
+			this.settings.currentPage = parseInt(currentPageInput.value);
+		}
 	}
 
 	updateProgress(): void {
@@ -119,12 +129,14 @@ export class MultiStep {
 		let parsedResult = JSON.parse(xhrResult.responseText) as Step;
 
 		if (parsedResult) {
-			this.settings.take = parsedResult.take;
+			if (this.settings.take == 0) {
+				this.settings.take = parsedResult.take;
+			}
+
 			this.settings.totalPages = parsedResult.totalPages;
 			this.settings.totalRecords = parsedResult.totalRecords;
 			this.settings.actionName = parsedResult.actionName;
 			this.settings.actionNote = parsedResult.actionNote;
-			this.settings.currentPage = 0;
 
 			let takeInput = <HTMLInputElement>document.querySelector('#take');
 			takeInput.value = this.settings.take.toString();
@@ -153,24 +165,11 @@ export class MultiStep {
 	}
 
 	eventStartButtonClick = async (event: Event): Promise<void> => {
-		let startButton = <HTMLButtonElement>event.currentTarget;
-		let currentPageInput = <HTMLInputElement>document.querySelector('#current-page');
-		let currentStepInput = <HTMLInputElement>document.querySelector('#current-step');
-		let takeInput = <HTMLInputElement>document.querySelector('#take');
 		let togglePauseOnError = <HTMLInputElement>document.querySelector('#pause-on-error');
 		let togglePauseAfterNext = <HTMLInputElement>document.querySelector('#pause-after-next');
 
-		startButton.disabled = true;
-		currentPageInput.disabled = true;
-		currentStepInput.disabled = true;
-		takeInput.disabled = true;
-
-		this.settings.take = parseInt(takeInput.value);
-		this.settings.currentPage = parseInt(currentPageInput.value) - 1;
-		this.settings.currentStep = parseInt(currentStepInput.value) - 1;
-
 		for (var i = this.settings.currentStep; i < this.settings.steps.length; i++) {
-			currentStepInput.value = (i + 1).toString();
+			this.start(i);
 
 			this.settings.currentAction = this.settings.steps[i];
 
@@ -184,8 +183,9 @@ export class MultiStep {
 					url: this.settings.currentAction,
 					body: queryify({
 						currentPage: this.settings.currentPage,
-						take: takeInput.value
-					})
+						take: this.settings.take
+					}),
+					timeout: 120000
 				});
 
 				let xhrResult = await Xhr.request(requestOptions);
@@ -194,25 +194,57 @@ export class MultiStep {
 
 				this.updateProgress();
 				this.settings.currentPage++;
+
+				let currentPageInput = <HTMLInputElement>document.querySelector('#current-page');
 				currentPageInput.value = this.settings.currentPage.toString();
 
 				if (xhrResult.status != 200 && togglePauseOnError.checked) {
-					break;
+					this.stop();
+					return;
 				}
 
 				if (togglePauseAfterNext.checked) {
 					togglePauseAfterNext.checked = false;
-					break;
+					this.stop();
+					return;
 				}
 			}
 
-			if (this.settings.currentPage > this.settings.totalPages) {
-				this.settings.totalPages = 0;
-			}
+			this.stop();
 		}
+	}
+
+	start(step: number) {
+		let startButton = <HTMLInputElement>document.querySelector('#start-button');
+		let currentPageInput = <HTMLInputElement>document.querySelector('#current-page');
+		let currentStepInput = <HTMLInputElement>document.querySelector('#current-step');
+		let takeInput = <HTMLInputElement>document.querySelector('#take');
+
+		this.settings.take = parseInt(takeInput.value);
+		this.settings.currentPage = parseInt(currentPageInput.value) - 1;
+		this.settings.currentStep = parseInt(currentStepInput.value) - 1;
+
+		startButton.disabled = true;
+		currentPageInput.disabled = true;
+		currentStepInput.disabled = true;
+		takeInput.disabled = true;
+
+		currentStepInput.value = (step + 1).toString();
+	}
+
+	stop() {
+		if (this.settings.currentPage > this.settings.totalPages) {
+			this.settings.totalPages = 0;
+		}
+
+		let startButton = <HTMLInputElement>document.querySelector('#start-button');
+		let currentPageInput = <HTMLInputElement>document.querySelector('#current-page');
+		let currentStepInput = <HTMLInputElement>document.querySelector('#current-step');
+		let takeInput = <HTMLInputElement>document.querySelector('#take');
 
 		startButton.disabled = false;
 		currentPageInput.disabled = false;
 		currentStepInput.disabled = false;
+		takeInput.disabled = false;
 	}
 }
