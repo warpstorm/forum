@@ -37,7 +37,7 @@ namespace Forum.Controllers {
 			ForumViewResult = forumViewResult;
 		}
 
-		public async Task<IActionResult> Setup() {
+		public async Task<IActionResult> Install() {
 			CheckContext();
 
 			return await ForumViewResult.ViewResult(this, "MultiStep", new List<string> {
