@@ -432,7 +432,7 @@ namespace Forum.Services.Repositories {
 
 			var existingRecords = await DbContext.TopicBoards.Where(p => p.TopicId == input.TopicId && p.BoardId == input.BoardId).ToListAsync();
 
-			if (existingRecords is null) {
+			if (existingRecords.Count() == 0) {
 				var topicBoardRecord = new DataModels.TopicBoard {
 					TopicId = input.TopicId,
 					BoardId = input.BoardId,
