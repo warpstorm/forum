@@ -46,6 +46,12 @@ export class MultiStep {
 	}
 
 	log(xhrResult: XhrResult): void {
+		let logSuccessInput = <HTMLInputElement>document.querySelector('#log-success');
+
+		if (!logSuccessInput.checked) {
+			return;
+		}
+
 		let log = <Element>document.querySelector('#log');
 
 		if (xhrResult) {
