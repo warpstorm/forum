@@ -29,6 +29,9 @@ export class MultiStep {
 		let takeInput = <HTMLInputElement>document.querySelector('#take');
 		takeInput.addEventListener('blur', this.eventUpdateTake);
 
+		let stepInput = <HTMLInputElement>document.querySelector('#current-step');
+		stepInput.addEventListener('blur', this.eventUpdateStep);
+
 		let totalSteps = <Element>document.querySelector('#total-steps');
 		totalSteps.innerHTML = this.settings.steps.length.toString();
 	}
@@ -48,7 +51,7 @@ export class MultiStep {
 	log(xhrResult: XhrResult): void {
 		let logSuccessInput = <HTMLInputElement>document.querySelector('#log-success');
 
-		if (!logSuccessInput.checked) {
+		if (xhrResult.status == 200 && !logSuccessInput.checked) {
 			return;
 		}
 
@@ -124,8 +127,12 @@ export class MultiStep {
 		if (parsedResult) {
 			this.settings.totalPages = parsedResult.totalPages;
 			this.settings.totalRecords = parsedResult.totalRecords;
-			this.settings.actionName = parsedResult.actionName;
-			this.settings.actionNote = parsedResult.actionNote;
+
+			let actionName = <Element>document.querySelector('#action-name');
+			let actionNote = <Element>document.querySelector('#action-note');
+
+			actionName.innerHTML = parsedResult.actionName;
+			actionNote.innerHTML = parsedResult.actionNote;
 
 			let takeInput = <HTMLInputElement>document.querySelector('#take');
 			let totalPages = <Element>document.querySelector('#total-pages');
@@ -157,6 +164,10 @@ export class MultiStep {
 		let pageInput = <HTMLInputElement>document.querySelector('#current-page');
 		let totalPages = <Element>document.querySelector('#total-pages');
 
+		if (!takeInput.value) {
+			return;
+		}
+
 		let skip = this.settings.take * this.settings.currentPage;
 
 		this.settings.take = parseInt(takeInput.value);
@@ -165,6 +176,26 @@ export class MultiStep {
 
 		pageInput.value = (this.settings.currentPage + 1).toString();
 		totalPages.innerHTML = (this.settings.totalPages + 1).toString();
+	}
+
+	eventUpdateStep = (event: Event): void => {
+		let stepInput = <HTMLInputElement>event.currentTarget;
+		let pageInput = <HTMLInputElement>document.querySelector('#current-page');
+		let takeInput = <HTMLInputElement>document.querySelector('#take');
+		let totalPages = <Element>document.querySelector('#total-pages');
+
+		if (!stepInput.value) {
+			return;
+		}
+
+		this.settings.currentStep = parseInt(stepInput.value) - 1;
+		this.settings.take = 0;
+		this.settings.currentPage = 0;
+		this.settings.totalPages = 0;
+
+		takeInput.value = "";
+		pageInput.value = "";
+		totalPages.innerHTML = "";
 	}
 
 	eventStartButtonClick = async (event: Event): Promise<void> => {
