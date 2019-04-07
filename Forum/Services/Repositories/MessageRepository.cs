@@ -845,11 +845,11 @@ namespace Forum.Services.Repositories {
 		}
 
 		public void UpdateTopicParticipation(int topicId, string userId, DateTime time) {
-			var participation = DbContext.Participants.FirstOrDefault(r => r.MessageId == topicId && r.UserId == userId);
+			var participation = DbContext.Participants.FirstOrDefault(r => r.TopicId == topicId && r.UserId == userId);
 
 			if (participation is null) {
 				DbContext.Participants.Add(new DataModels.Participant {
-					MessageId = topicId,
+					TopicId = topicId,
 					UserId = userId,
 					Time = time
 				});
