@@ -377,53 +377,6 @@ namespace Forum.Controllers {
 			return new NoContentResult();
 		}
 
-		[ActionLog]
-		[Authorize(Roles = Constants.InternalKeys.Admin)]
-		[HttpGet]
-		public async Task<IActionResult> RebuildTopics() {
-			var steps = new List<string> {
-				Url.Action(nameof(RebuildTopicsContinue))
-			};
-
-			return await ForumViewResult.ViewResult(this, "MultiStep", steps);
-		}
-
-		[ActionLog]
-		[Authorize(Roles = Constants.InternalKeys.Admin)]
-		[HttpPost]
-		public async Task<IActionResult> RebuildTopicsContinue(ControllerModels.Administration.Page input) {
-			if (input.CurrentPage < 0) {
-				var take = 250;
-				var topicCount = await DbContext.Topics.CountAsync();
-				var totalPages = Convert.ToInt32(Math.Floor(1d * topicCount / take));
-
-				return Ok(new ControllerModels.Administration.Step {
-					ActionName = "Rebuilding Topics",
-					ActionNote = "Recounting replies, calculating participants, determining first and last messages.",
-					Take = take,
-					TotalPages = totalPages,
-					TotalRecords = topicCount,
-				});
-			}
-
-			var topicsQuery = from topic in DbContext.Topics
-							  where !topic.Deleted
-							  select topic;
-
-			topicsQuery = topicsQuery.Skip(input.CurrentPage * input.Take).Take(input.Take);
-
-			foreach (var topic in topicsQuery) {
-				await TopicRepository.RebuildTopic(topic);
-			}
-
-			return Ok();
-		}
-
-		[ActionLog]
-		[Authorize(Roles = Constants.InternalKeys.Admin)]
-		[HttpGet]
-		public async Task<IActionResult> Admin() => await ForumViewResult.ViewResult(this);
-
 		string GetRedirectPath(int id, int page, int target) {
 			var routeValues = new {
 				id,

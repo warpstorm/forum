@@ -1046,10 +1046,5 @@ namespace Forum.Services.Repositories {
 
 			return messages;
 		}
-
-		public async Task CleanupDeletedMessages() {
-			var pTrue = new SqlParameter("@True", true);
-			await DbContext.Database.ExecuteSqlCommandAsync($"DELETE FROM [{nameof(ApplicationDbContext.Messages)}] WHERE {nameof(DataModels.Message.Deleted)} = @True", pTrue);
-		}
 	}
 }

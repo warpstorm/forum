@@ -64,21 +64,33 @@
 					<span class='small-button pointer'>Admin</span>
 					<div class='menu-wrapper hidden align-left'>
 						<ul class='drop-down-menu content-box'>
-							<li class='hover-highlight' clickable-link-parent><a asp-controller='@nameof(Boards)' asp-action='@nameof(Boards.Manage)'>Boards</a></li>
-							<li class='hover-highlight' clickable-link-parent><a asp-controller='@nameof(Messages)' asp-action='@nameof(Messages.Admin)'>Messages</a></li>
-							<li class='hover-highlight' clickable-link-parent><a asp-controller='@nameof(Quotes)' asp-action='@nameof(Quotes.Index)'>Quotes</a></li>
-							<li class='hover-highlight' clickable-link-parent><a asp-controller='@nameof(Roles)' asp-action='@nameof(Roles.Index)'>Roles</a></li>
-							<li class='hover-highlight' clickable-link-parent><a asp-controller='@nameof(Smileys)' asp-action='@nameof(Smileys.Index)'>Smileys</a></li>
-							<li class='hover-highlight' clickable-link-parent><a asp-controller='@nameof(StrippedUrls)' asp-action='@nameof(StrippedUrls.Index)'>Stripped Urls</a></li>
-							<li class='hover-highlight' clickable-link-parent><a asp-controller='@nameof(Account)' asp-action='@nameof(Account.Index)'>Users</a></li>
-							<li class='hover-highlight' clickable-link-parent><a asp-controller='@nameof(Administration)' asp-action='@nameof(Administration.Migrate)'>Migrate</a></li>
+							<li class='hover-highlight' clickable-link-parent><a asp-controller='@nameof(Administration)' asp-action='@nameof(Administration.MigrateV5)'>Migrate to v5</a></li>
+							<li class='hover-highlight' clickable-link-parent><a asp-controller='@nameof(Administration)' asp-action='@nameof(Administration.Maintenance)'>Maintenance</a></li>
+							<li>
+								Entities
+								<ul>
+									<li class='hover-highlight' clickable-link-parent><a asp-controller='@nameof(Boards)' asp-action='@nameof(Boards.Manage)'>Boards</a></li>
+									<li>
+										Messages
+										<ul>
+											<li class="hover-highlight" clickable-link-parent><a asp-action="@nameof(Administration.CleanupDeletedMessages)">Cleanup deleted messages</a></li>
+											<li class="hover-highlight" clickable-link-parent><a asp-action="@nameof(Administration.ReprocessMessages)">Reprocess message contents</a></li>
+										</ul>
+									</li>
+									<li class='hover-highlight' clickable-link-parent><a asp-controller='@nameof(Quotes)' asp-action='@nameof(Quotes.Index)'>Quotes</a></li>
+									<li class='hover-highlight' clickable-link-parent><a asp-controller='@nameof(Roles)' asp-action='@nameof(Roles.Index)'>Roles</a></li>
+									<li class='hover-highlight' clickable-link-parent><a asp-controller='@nameof(Smileys)' asp-action='@nameof(Smileys.Index)'>Smileys</a></li>
+									<li class='hover-highlight' clickable-link-parent><a asp-controller='@nameof(StrippedUrls)' asp-action='@nameof(StrippedUrls.Index)'>Stripped Urls</a></li>
+									<li class='hover-highlight' clickable-link-parent><a asp-controller='@nameof(Account)' asp-action='@nameof(Account.Index)'>Users</a></li>
+								</ul>
+							</li>
 						</ul>
 					</div>
 				</li>
 			}
 		}
-		<li><a class='small-button' target='_blank' href='https://github.com/jyarbro/forum/wiki'>Wiki</a></li>
-		<li><a class='small-button' target='_blank' href='https://github.com/jyarbro/forum/issues'>Issues</a></li>
+		<li><a class='small-button' target='_blank' href='http://nrrd.io/forum/wiki'>Wiki</a></li>
+		<li><a class='small-button' target='_blank' href='http://nrrd.io/forum/issues'>Issues</a></li>
 	</ul>
 		
 	<br class='clear' />
