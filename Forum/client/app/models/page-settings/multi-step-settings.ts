@@ -5,8 +5,6 @@
 	public currentPage: number = 0;
 	public currentStep: number = 0;
 
-	public actionName: string = '';
-	public actionNote: string = '';
 	public take: number = 0;
 	public totalPages: number = 0;
 	public totalRecords: number = 0;
