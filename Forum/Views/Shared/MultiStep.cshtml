@@ -1,8 +1,8 @@
 ﻿@model List<string>
 
 <div class="content-box pad gap-bottom">
-	<p id="action-name" class="pad-bottom"></p>
-	<p id="action-note" class="pad-bottom"></p>
+	<p id="action-name"></p>
+	<p id="action-note" class="pad-bottom font-small subdued-text"></p>
 	<div id="progress-bar" class="hidden">
 		<div id="completed-bar"></div>
 	</div>
@@ -11,16 +11,26 @@
 	</p>
 </div>
 
-<div class="content-box pad gap-bottom font-small">
+<div class="content-box pad gap-bottom">
 	<p class="subdued-text">Settings</p>
-	<div class="small-pad-left">
-		<p>Log successes <input id="log-success" type="checkbox" /></p>
-		<p>Pause after next step <input id="pause-after-next" type="checkbox" /></p>
-		<p>Pause on errors <input id="pause-on-error" type="checkbox" checked="checked" /></p>
-		<p>Take <input id="take" type="text" size="3" /></p>
-		<p>Page <input id="current-page" type="text" size="3" /> of <span id="total-pages"></span></p>
-		<p>Step <input id="current-step" type="text" size="3" /> of <span id="total-steps"></span></p>
-	</div>
+	<dl>
+		<dt>Toggle</dt>
+		<dd><input id="log-success" type="checkbox" /> Log successes</dd>
+		<dd><input id="pause-after-next" type="checkbox" /> Pause after next page</dd>
+		<dd><input id="pause-on-error" type="checkbox" checked="checked" /> Pause on errors</dd>
+	</dl>
+	<dl>
+		<dt>Take</dt>
+		<dd><input id="take" type="text" size="3" /></dd>
+	</dl>
+	<dl>
+		<dt>Page</dt>
+		<dd><input id="current-page" type="text" size="3" /> of <span id="total-pages"></span></dd>
+	</dl>
+	<dl>
+		<dt>Step</dt>
+		<dd><input id="current-step" type="text" size="3" /> of <span id="total-steps"></span></dd>
+	</dl>
 </div>
 
 <div class="content-box pad">

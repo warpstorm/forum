@@ -231,16 +231,16 @@ export class MultiStep {
 
 				this.log(xhrResult);
 
+				if (xhrResult.status != 200 && togglePauseOnError.checked) {
+					this.stop();
+					return;
+				}
+
 				this.updateProgress();
 				this.settings.currentPage++;
 
 				let currentPageInput = <HTMLInputElement>document.querySelector('#current-page');
 				currentPageInput.value = this.settings.currentPage.toString();
-
-				if (xhrResult.status != 200 && togglePauseOnError.checked) {
-					this.stop();
-					return;
-				}
 
 				if (togglePauseAfterNext.checked) {
 					togglePauseAfterNext.checked = false;
