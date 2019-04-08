@@ -1,9 +1,11 @@
 ﻿@model ViewModels.Sidebar.Sidebar
 
-<div id="side-bar" class="pad overflow-hidden float-right">
-	<partial name="Sidebar/_Quote" model="@Model.Quote" />
-	<partial name="Sidebar/_NotificationsList" model="@Model.Notifications" />
-	<partial name="Sidebar/_OnlineUsersList" model="@Model.OnlineUsers" />
-</div>
+@if (!(Model is null)) {
+	<div id="side-bar" class="pad overflow-hidden float-right">
+		<partial name="Sidebar/_Quote" model="@Model.Quote" />
+		<partial name="Sidebar/_NotificationsList" model="@Model.Notifications" />
+		<partial name="Sidebar/_OnlineUsersList" model="@Model.OnlineUsers" />
+	</div>
 
-<link rel="stylesheet" href="~/styles/sidebar.css" asp-append-version="true" />
+	<link rel="stylesheet" href="~/styles/sidebar.css" asp-append-version="true" />
+}
