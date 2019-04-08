@@ -28,9 +28,6 @@ namespace Forum.Services.Repositories {
 		BoardRepository BoardRepository { get; }
 		BookmarkRepository BookmarkRepository { get; }
 		MessageRepository MessageRepository { get; }
-		NotificationRepository NotificationRepository { get; }
-		RoleRepository RoleRepository { get; }
-		SmileyRepository SmileyRepository { get; }
 		IHubContext<ForumHub> ForumHub { get; }
 		IUrlHelper UrlHelper { get; }
 
@@ -40,9 +37,6 @@ namespace Forum.Services.Repositories {
 			BoardRepository boardRepository,
 			BookmarkRepository bookmarkRepository,
 			MessageRepository messageRepository,
-			NotificationRepository notificationRepository,
-			RoleRepository roleRepository,
-			SmileyRepository smileyRepository,
 			AccountRepository accountRepository,
 			IHubContext<ForumHub> forumHub,
 			IActionContextAccessor actionContextAccessor,
@@ -54,9 +48,6 @@ namespace Forum.Services.Repositories {
 			BoardRepository = boardRepository;
 			BookmarkRepository = bookmarkRepository;
 			MessageRepository = messageRepository;
-			NotificationRepository = notificationRepository;
-			RoleRepository = roleRepository;
-			SmileyRepository = smileyRepository;
 			ForumHub = forumHub;
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
