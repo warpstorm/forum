@@ -197,6 +197,20 @@ namespace Forum.Services.Repositories {
 
 			if (!(result.Errors.Any())) {
 				await UpdateMessageRecord(processedMessage, record);
+
+				var topic = DbContext.Topics.Find(record.TopicId);
+
+				if (record.Id == topic.FirstMessageId) {
+					topic.FirstMessageShortPreview = record.ShortPreview;
+					DbContext.Update(topic);
+				}
+
+				if (record.Id == topic.LastMessageId) {
+					topic.LastMessageShortPreview = record.ShortPreview;
+					DbContext.Update(topic);
+				}
+
+				await DbContext.SaveChangesAsync();
 			}
 
 			return result;
