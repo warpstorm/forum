@@ -122,6 +122,7 @@
 	<script>
 		window.latest = @DateTime.Now.Ticks;
 		window.topicId = @Model.Id;
+		window.firstMessageId = @Model.FirstMessageId;
 		window.pageActions = 'topic-display';
 		window.bookmarked = '@Model.IsBookmarked' == 'True';
 		window.currentPage = @Model.CurrentPage;

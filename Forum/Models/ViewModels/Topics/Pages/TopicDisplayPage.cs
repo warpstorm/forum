@@ -1,14 +1,11 @@
 ﻿using Forum.Models.ViewModels.Boards.Items;
-using Forum.Models.ViewModels.Topics.Items;
 using System.Collections.Generic;
 
 namespace Forum.Models.ViewModels.Topics.Pages {
 	public class TopicDisplayPage {
-		public int Id { get; internal set; }
-		public string Subject { get; internal set; }
-		public List<Messages.DisplayMessage> Messages { get; internal set; }
-		public List<IndexCategory>	Categories { get; set; }
-		public List<IndexBoard> AssignedBoards { get; set; }
+		public int Id { get; set; }
+		public int FirstMessageId { get; set; }
+		public string Subject { get; set; }
 		public bool IsAuthenticated { get; internal set; }
 		public bool IsOwner { get; internal set; }
 		public bool IsAdmin { get; set; }
@@ -21,5 +18,9 @@ namespace Forum.Models.ViewModels.Topics.Pages {
 		public int CurrentPage { get; internal set; }
 		public IMessageFormViewModel ReplyForm { get; set; }
 		public string RedirectPath { get; set; }
+
+		public List<Messages.DisplayMessage> Messages { get; set; }
+		public List<IndexCategory> Categories { get; set; }
+		public List<IndexBoard> AssignedBoards { get; set; }
 	}
 }

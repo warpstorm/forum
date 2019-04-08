@@ -231,6 +231,7 @@ namespace Forum.Controllers {
 
 			var viewModel = new PageModels.TopicDisplayPage {
 				Id = topic.Id,
+				FirstMessageId = topic.FirstMessageId,
 				Subject = string.IsNullOrEmpty(topic.FirstMessageShortPreview) ? "No subject" : topic.FirstMessageShortPreview,
 				AssignedBoards = new List<ViewModels.Boards.Items.IndexBoard>(),
 				IsAuthenticated = CurrentUser.IsAuthenticated,
