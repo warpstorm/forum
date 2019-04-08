@@ -124,7 +124,7 @@ namespace Forum.Services.Repositories {
 			foreach (var topicId in topicIds) {
 				var topic = topics.First(item => item.Id == topicId);
 				var firstMessagePostedBy = users.First(r => r.Id == topic.FirstMessagePostedById);
-				var lastMessagePostedBy = users.First(r => r.Id == topic.LastMessagePostedById);
+				var lastMessagePostedBy = users.FirstOrDefault(r => r.Id == topic.LastMessagePostedById);
 
 				var topicPreview = new ItemModels.TopicPreview {
 					Id = topic.Id,
