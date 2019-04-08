@@ -46,9 +46,9 @@ namespace Forum.Controllers {
 		[HttpGet]
 		public async Task<IActionResult> Maintenance() {
 			return await ForumViewResult.ViewResult(this, "MultiStep", new List<string> {
-				Url.Action(nameof(RebuildTopics)),
 				Url.Action(nameof(CleanupDeletedMessages)),
 				Url.Action(nameof(ReprocessMessages)),
+				Url.Action(nameof(RebuildTopics)),
 			});
 		}
 
@@ -68,13 +68,20 @@ namespace Forum.Controllers {
 				});
 			}
 
-			var topicsQuery = DbContext.Topics.Skip(input.CurrentPage * input.Take).Take(input.Take);
+			var records = await DbContext.Topics.Where(item => item.Id > input.LastRecordId).Take(input.Take).ToListAsync();
 
-			foreach (var topic in topicsQuery) {
-				await TopicRepository.RebuildTopic(topic);
+			if (input.LastRecordId < 0) {
+				records = await DbContext.Topics.Skip(input.CurrentPage * input.Take).Take(input.Take).ToListAsync();
 			}
 
-			return Ok();
+			var lastRecordId = 0;
+
+			foreach (var record in records) {
+				await TopicRepository.RebuildTopic(record);
+				lastRecordId = record.Id;
+			}
+
+			return Ok(lastRecordId);
 		}
 
 		[HttpPost]
@@ -115,25 +122,33 @@ namespace Forum.Controllers {
 				});
 			}
 
-			var messages = DbContext.Messages.Skip(input.CurrentPage * input.Take).Take(input.Take);
+			var records = await DbContext.Messages.Where(item => item.Id > input.LastRecordId).Take(input.Take).ToListAsync();
 
-			foreach (var message in messages) {
-				var processedMessage = await MessageRepository.ProcessMessageInput(message.OriginalBody);
+			if (input.LastRecordId < 0) {
+				records = await DbContext.Messages.Skip(input.CurrentPage * input.Take).Take(input.Take).ToListAsync();
+			}
+
+			var lastRecordId = 0;
+
+			foreach (var record in records) {
+				var processedMessage = await MessageRepository.ProcessMessageInput(record.OriginalBody);
 
 				if (!processedMessage.Errors.Any()) {
-					message.OriginalBody = processedMessage.OriginalBody;
-					message.DisplayBody = processedMessage.DisplayBody;
-					message.ShortPreview = processedMessage.ShortPreview;
-					message.LongPreview = processedMessage.LongPreview;
-					message.Cards = processedMessage.Cards;
+					record.OriginalBody = processedMessage.OriginalBody;
+					record.DisplayBody = processedMessage.DisplayBody;
+					record.ShortPreview = processedMessage.ShortPreview;
+					record.LongPreview = processedMessage.LongPreview;
+					record.Cards = processedMessage.Cards;
 
-					DbContext.Update(message);
+					DbContext.Update(record);
 				}
+
+				lastRecordId = record.Id;
 			}
 
 			await DbContext.SaveChangesAsync();
 
-			return Ok();
+			return Ok(lastRecordId);
 		}
 
 		[HttpGet]
@@ -261,6 +276,8 @@ namespace Forum.Controllers {
 			return await ForumViewResult.ViewResult(this, "MultiStep", new List<string> {
 				Url.Action(nameof(CleanupDeletedMessages)),
 				Url.Action(nameof(ResetMessageTopicId)),
+				Url.Action(nameof(ResetViewLogs)),
+				Url.Action(nameof(DeleteTopics)),
 				Url.Action(nameof(MigrateTopics)),
 				Url.Action(nameof(MigrateMessages)),
 				Url.Action(nameof(MigrateViewLogs)),
@@ -268,6 +285,7 @@ namespace Forum.Controllers {
 				Url.Action(nameof(MigrateParticipants)),
 				Url.Action(nameof(MigrateTopicBoards)),
 				Url.Action(nameof(ReprocessMessages)),
+				Url.Action(nameof(RebuildTopics)),
 			});
 		}
 
@@ -287,20 +305,95 @@ namespace Forum.Controllers {
 				});
 			}
 
-			var pSkip = new SqlParameter("@Skip", input.CurrentPage * input.Take);
-			var pTake = new SqlParameter("@Take", input.Take);
+			var recordQuery = DbContext.Messages.Where(item => item.Id > input.LastRecordId).Take(input.Take);
 
-			await DbContext.Database.ExecuteSqlCommandAsync($@"
-					UPDATE [{nameof(ApplicationDbContext.Messages)}]
-					SET {nameof(DataModels.Message.TopicId)} = 0
-					WHERE {nameof(DataModels.Message.Id)}
-					IN (
-						SELECT Id
-						FROM [{nameof(ApplicationDbContext.Messages)}]
-						ORDER BY Id
-						OFFSET @Skip ROWS
-						FETCH NEXT @Take ROWS ONLY
-					)", pSkip, pTake);
+			if (input.LastRecordId < 0) {
+				recordQuery = DbContext.Messages.Skip(input.Take * input.CurrentPage).Take(input.Take);
+			}
+
+			var lastRecordId = 0;
+
+			foreach (var record in recordQuery) {
+				record.TopicId = 0;
+				lastRecordId = record.Id;
+			}
+
+			await DbContext.SaveChangesAsync();
+
+			return Ok(lastRecordId);
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> ResetViewLogs(ControllerModels.Administration.Page input) {
+			var recordsQuery = DbContext.ViewLogs.Where(item => item.TargetType == EViewLogTargetType.Topic);
+
+			if (input.CurrentPage < 0) {
+				var take = 500;
+				var totalRecords = await recordsQuery.CountAsync();
+				var totalPages = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
+
+				return Ok(new ControllerModels.Administration.Step {
+					ActionName = "Reset ViewLogs",
+					ActionNote = "Re-associating viewlogs back to message IDs.",
+					Take = take,
+					TotalPages = totalPages,
+					TotalRecords = totalRecords,
+				});
+			}
+
+
+			if (input.LastRecordId >= 0) {
+				recordsQuery = recordsQuery.Where(item => item.Id > input.LastRecordId).Take(input.Take);
+			}
+			else {
+				recordsQuery = recordsQuery.Skip(input.CurrentPage * input.Take).Take(input.Take);
+			}
+
+			var records = await recordsQuery.ToListAsync();
+			var topicIds = records.Select(item => item.TargetId).Distinct();
+
+			var messageIdsQuery = from topic in DbContext.Topics
+								where topicIds.Contains(topic.Id)
+								select new {
+									MessageId = topic.FirstMessageId,
+									TopicId = topic.Id
+								};
+
+			var messageIds = await messageIdsQuery.ToListAsync();
+
+			var lastRecordId = 0;
+
+			foreach (var record in records) {
+				record.TargetType = EViewLogTargetType.Message;
+				record.TargetId = messageIds.First(item => item.TopicId == record.TargetId).MessageId;
+				DbContext.Update(record);
+				lastRecordId = record.Id;
+			}
+
+			await DbContext.SaveChangesAsync();
+
+			return Ok(lastRecordId);
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> DeleteTopics(ControllerModels.Administration.Page input) {
+			if (input.CurrentPage < 0) {
+				var take = 500;
+				var totalRecords = await DbContext.Topics.CountAsync();
+				var totalPages = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
+
+				return Ok(new ControllerModels.Administration.Step {
+					ActionName = "Delete Topics",
+					ActionNote = "Removing all previously created topics.",
+					Take = take,
+					TotalPages = totalPages,
+					TotalRecords = totalRecords,
+				});
+			}
+
+			var records = DbContext.Topics.Take(input.Take);
+			DbContext.RemoveRange(records);
+			await DbContext.SaveChangesAsync();
 
 			return Ok();
 		}
@@ -325,32 +418,21 @@ namespace Forum.Controllers {
 				});
 			}
 
-			var records = await parentMessagesQuery.Skip(input.CurrentPage * input.Take).Take(input.Take).ToListAsync();
+			var records = parentMessagesQuery.Take(input.Take);
 
 			foreach (var record in records) {
-				DataModels.Message lastMessage = null;
-
-				if (record.LastReplyId > 0) {
-					lastMessage = DbContext.Messages.Find(record.LastReplyId);
-				}
-
 				DbContext.Topics.Add(new DataModels.Topic {
 					FirstMessageId = record.Id,
 					FirstMessagePostedById = record.PostedById,
 					FirstMessageTimePosted = record.TimePosted,
 					FirstMessageShortPreview = record.ShortPreview,
-					LastMessageId = lastMessage?.Id ?? record.Id,
-					LastMessagePostedById = lastMessage?.PostedById ?? record.PostedById,
-					LastMessageTimePosted = lastMessage?.TimePosted ?? record.TimePosted,
-					LastMessageShortPreview = lastMessage?.ShortPreview ?? record.ShortPreview,
 					Pinned = record.Pinned,
 					Deleted = record.Deleted,
-					ReplyCount = record.ReplyCount,
 					ViewCount = record.ViewCount
 				});
-
-				await DbContext.SaveChangesAsync();
 			}
+
+			await DbContext.SaveChangesAsync();
 
 			return Ok();
 		}
@@ -371,22 +453,31 @@ namespace Forum.Controllers {
 				});
 			}
 
-			var records = await DbContext.Messages.Skip(input.CurrentPage * input.Take).Take(input.Take).ToListAsync();
+			var records = DbContext.Messages.Where(item => item.Id > input.LastRecordId).Take(input.Take);
+
+			if (input.LastRecordId < 0) {
+				records = DbContext.Messages.Skip(input.CurrentPage * input.Take).Take(input.Take);
+			}
+
+			var lastRecordId = 0;
 
 			foreach (var record in records) {
 				record.TopicId = DbContext.Topics.First(item => record.ParentId == 0 ? item.FirstMessageId == record.Id : item.FirstMessageId == record.ParentId).Id;
+				lastRecordId = record.Id;
 			}
 
 			await DbContext.SaveChangesAsync();
 
-			return Ok();
+			return Ok(lastRecordId);
 		}
 
 		[HttpPost]
 		public async Task<IActionResult> MigrateViewLogs(ControllerModels.Administration.Page input) {
+			var recordsQuery = DbContext.ViewLogs.Where(item => item.TargetType == EViewLogTargetType.Message);
+
 			if (input.CurrentPage < 0) {
-				var take = 20;
-				var totalRecords = DbContext.Topics.Count();
+				var take = 500;
+				var totalRecords = await recordsQuery.CountAsync();
 				var totalPages = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
 
 				return Ok(new ControllerModels.Administration.Step {
@@ -398,29 +489,37 @@ namespace Forum.Controllers {
 				});
 			}
 
-			var topics = DbContext.Topics.Skip(input.CurrentPage * input.Take).Take(input.Take);
-
-			foreach (var topic in topics) {
-				var pTopicId = new SqlParameter("@TopicId", topic.Id);
-				var pViewLogTypeMessage = new SqlParameter("@ViewLogTypeMessage", EViewLogTargetType.Message);
-				var pViewLogTypeTopic = new SqlParameter("@ViewLogTypeTopic", EViewLogTargetType.Topic);
-				var pFirstMessageId = new SqlParameter("@FirstMessageId", topic.FirstMessageId);
-
-				await DbContext.Database.ExecuteSqlCommandAsync($@"
-					UPDATE [{nameof(ApplicationDbContext.ViewLogs)}]
-					SET {nameof(DataModels.ViewLog.TargetId)} = @TopicId,
-						{nameof(DataModels.ViewLog.TargetType)} = @ViewLogTypeTopic
-					WHERE {nameof(DataModels.ViewLog.TargetType)} = @ViewLogTypeMessage
-					AND {nameof(DataModels.ViewLog.TargetId)}
-					IN (
-						SELECT Id
-						FROM [{nameof(ApplicationDbContext.Messages)}]
-						WHERE Id = @FirstMessageId
-						OR ParentId = @FirstMessageId
-					)", pTopicId, pViewLogTypeTopic, pViewLogTypeMessage, pFirstMessageId);
+			if (input.LastRecordId >= 0) {
+				recordsQuery = recordsQuery.Where(item => item.Id > input.LastRecordId).Take(input.Take);
+			}
+			else {
+				recordsQuery = recordsQuery.Skip(input.CurrentPage * input.Take).Take(input.Take);
 			}
 
-			return Ok();
+			var records = await recordsQuery.ToListAsync();
+			var messageIds = records.Select(item => item.TargetId).Distinct();
+
+			var topicIdsQuery = from message in DbContext.Messages
+								where messageIds.Contains(message.Id)
+								select new {
+									MessageId = message.Id,
+									message.TopicId
+								};
+
+			var topicIds = await topicIdsQuery.ToListAsync();
+
+			var lastRecordId = 0;
+
+			foreach (var record in records) {
+				record.TargetType = EViewLogTargetType.Topic;
+				record.TargetId = topicIds.First(item => item.MessageId == record.TargetId).TopicId;
+				DbContext.Update(record);
+				lastRecordId = record.Id;
+			}
+
+			await DbContext.SaveChangesAsync();
+
+			return Ok(lastRecordId);
 		}
 
 		[HttpPost]
@@ -476,7 +575,13 @@ namespace Forum.Controllers {
 				});
 			}
 
-			var records = await DbContext.Participants.Skip(input.CurrentPage * input.Take).Take(input.Take).ToListAsync();
+			var records = DbContext.Participants.Where(item => item.Id > input.LastRecordId).Take(input.Take);
+
+			if (input.LastRecordId < 0) {
+				records = DbContext.Participants.Skip(input.CurrentPage * input.Take).Take(input.Take);
+			}
+
+			var lastRecordId = 0;
 
 			foreach (var record in records) {
 				var message = await DbContext.Messages.FirstOrDefaultAsync(item => item.Id == record.MessageId);
@@ -487,11 +592,13 @@ namespace Forum.Controllers {
 				else {
 					record.TopicId = message.TopicId;
 				}
+
+				lastRecordId = record.Id;
 			}
 
 			await DbContext.SaveChangesAsync();
 
-			return Ok();
+			return Ok(lastRecordId);
 		}
 
 		[HttpPost]
@@ -510,11 +617,17 @@ namespace Forum.Controllers {
 				});
 			}
 
-			var topics = await DbContext.Topics.Skip(input.CurrentPage * input.Take).Take(input.Take).ToListAsync();
+			var records = DbContext.Topics.Where(item => item.Id > input.LastRecordId).Take(input.Take);
 
-			foreach (var topic in topics) {
+			if (input.LastRecordId < 0) {
+				records = DbContext.Topics.Skip(input.CurrentPage * input.Take).Take(input.Take);
+			}
+
+			var lastRecordId = 0;
+
+			foreach (var record in records) {
 				var topicBoardsQuery = from topicBoard in DbContext.TopicBoards
-									   where topicBoard.MessageId == topic.FirstMessageId
+									   where topicBoard.MessageId == record.FirstMessageId
 									   select topicBoard;
 
 				var topicBoards = await topicBoardsQuery.ToListAsync();
@@ -535,11 +648,13 @@ namespace Forum.Controllers {
 
 				DbContext.RemoveRange(topicBoards);
 				DbContext.AddRange(newTopicBoards);
+
+				lastRecordId = record.Id;
 			}
 
 			await DbContext.SaveChangesAsync();
 
-			return Ok();
+			return Ok(lastRecordId);
 		}
 
 		void CheckInstallContext() {
