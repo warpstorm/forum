@@ -140,6 +140,7 @@ namespace Forum.Services.Repositories {
 			if (!result.Errors.Any()) {
 				var record = await CreateMessageRecord(processedMessage);
 				record.TopicId = topic.Id;
+				record.ParentId = topic.FirstMessageId;
 				record.ReplyId = replyTargetMessage?.Id ?? 0;
 
 				DbContext.Update(record);
