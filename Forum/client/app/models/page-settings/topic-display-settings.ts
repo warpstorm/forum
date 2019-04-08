@@ -8,6 +8,7 @@
 	public showFavicons: boolean = false;
 	public togglePath: string = '';
 	public topicId: number = 0;
+	public firstMessageId: number = 0;
 	public totalPages: number = 0;
 
 	public constructor(init?: Partial<object>) {
