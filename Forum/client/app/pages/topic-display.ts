@@ -354,7 +354,7 @@ export class TopicDisplay {
 		if (data.topicId == self.settings.topicId
 			&& self.settings.messages.indexOf(data.messageId) >= 0) {
 
-			if (data.messageId == self.settings.topicId) {
+			if (data.messageId == self.settings.firstMessageId) {
 				let targetElement = <HTMLElement>document.querySelector('main');
 				targetElement.innerHTML = '<div class="content-box pad"><p class="font-small subdued-text">This topic was removed.</p></div>';
 			}
