@@ -41,7 +41,7 @@ export class MultiStep {
 		show(progressBar);
 
 		let bar = <HTMLElement>document.querySelector('#completed-bar');
-		let percent = 100 * this.settings.currentPage / this.settings.totalPages;
+		let percent = 100 * (this.settings.currentPage + 1) / (this.settings.totalPages + 1);
 		bar.style.width = `${percent}%`;
 
 		percent = Math.round(percent);
@@ -222,7 +222,8 @@ export class MultiStep {
 					url: this.settings.currentAction,
 					body: queryify({
 						currentPage: this.settings.currentPage,
-						take: this.settings.take
+						take: this.settings.take,
+						lastRecordId: this.settings.lastRecordId
 					}),
 					timeout: 120000
 				});
@@ -234,6 +235,14 @@ export class MultiStep {
 				if (xhrResult.status != 200 && togglePauseOnError.checked) {
 					this.stop();
 					return;
+				}
+
+				if (xhrResult.responseText) {
+					this.settings.lastRecordId = parseInt(xhrResult.responseText);
+
+					if (!this.settings.lastRecordId) {
+						this.settings.lastRecordId = -1;
+					}
 				}
 
 				this.updateProgress();
@@ -283,6 +292,7 @@ export class MultiStep {
 		let takeInput = <HTMLInputElement>document.querySelector('#take');
 
 		if (this.settings.currentPage > this.settings.totalPages) {
+			this.settings.lastRecordId = 0;
 			this.settings.currentPage = 0;
 			this.settings.totalPages = 0;
 			this.settings.take = 0;

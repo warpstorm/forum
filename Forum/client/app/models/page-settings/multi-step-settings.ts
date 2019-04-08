@@ -9,6 +9,8 @@
 	public totalPages: number = 0;
 	public totalRecords: number = 0;
 
+	public lastRecordId: number = -1;
+
 	public constructor(init?: Partial<object>) {
 		Object.assign(this, init);
 	}
