@@ -25,19 +25,17 @@ export class PassedTimeMonitor {
 		let nowTime = now.getTime();
 		let dateTime = date.getTime();
 
-		var difference = (nowTime - dateTime) / 1000;
-		var differenceSeconds = difference;
-		var differenceMinutes = difference / 60;
-		var differenceHours = difference / 3600;
-		var differenceDays = difference / 86400;
+		var difference = nowTime - dateTime;
+
+		var differenceSeconds = difference / 1000;
+		var differenceMinutes = difference / 60000;
+		var differenceHours = difference / 3600000;
+		var differenceDays = difference / 86400000;
 
 		var returnText = "just now";
 
-		if (differenceDays >= 1 && differenceDays < 2) {
-			returnText = "1 day ago";
-		}
-		else if (differenceDays >= 2) {
-			var years = now.getFullYear() - date.getFullYear() - 1;
+		if (differenceDays >= 1) {
+			var years = now.getFullYear() - date.getFullYear();
 
 			var nowMonth = now.getMonth();
 			var dateMonth = date.getMonth();
@@ -46,7 +44,8 @@ export class PassedTimeMonitor {
 				nowMonth += 11;
 			}
 
-			var months = nowMonth - dateMonth;
+			var months = Math.floor(differenceDays / 30);
+			var years = Math.floor(months / 12);
 
 			if (years == 1) {
 				returnText = "1 year ago";
@@ -60,8 +59,11 @@ export class PassedTimeMonitor {
 			else if (months > 1) {
 				returnText = months + " months ago";
 			}
-			else {
+			else if (differenceDays >= 2) {
 				returnText = Math.round(differenceDays) + " days ago";
+			}
+			else {
+				returnText = "1 day ago";
 			}
 		}
 		else if (differenceHours >= 1 && differenceHours < 2) {
