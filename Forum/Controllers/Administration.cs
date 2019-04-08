@@ -511,10 +511,17 @@ namespace Forum.Controllers {
 			var lastRecordId = 0;
 
 			foreach (var record in records) {
-				record.TargetType = EViewLogTargetType.Topic;
-				record.TargetId = topicIds.First(item => item.MessageId == record.TargetId).TopicId;
-				DbContext.Update(record);
-				lastRecordId = record.Id;
+				var firstItem = topicIds.FirstOrDefault(item => item.MessageId == record.TargetId);
+
+				if (firstItem is null) {
+					DbContext.Remove(record);
+				}
+				else {
+					record.TargetType = EViewLogTargetType.Topic;
+					record.TargetId = topicIds.First(item => item.MessageId == record.TargetId).TopicId;
+					DbContext.Update(record);
+					lastRecordId = record.Id;
+				}
 			}
 
 			await DbContext.SaveChangesAsync();
