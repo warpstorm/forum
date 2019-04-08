@@ -527,7 +527,7 @@ namespace Forum.Services.Repositories {
 		public async Task Merge(DataModels.Topic sourceTopic, DataModels.Topic targetTopic) {
 			await UpdateMessagesTopicId(sourceTopic, targetTopic);
 			await RebuildTopic(targetTopic);
-			await RemoveTopicArtifacts(sourceTopic);
+			await RemoveTopic(sourceTopic);
 		}
 
 		public async Task UpdateMessagesTopicId(DataModels.Topic sourceTopic, DataModels.Topic targetTopic) {
@@ -541,12 +541,15 @@ namespace Forum.Services.Repositories {
 			await DbContext.SaveChangesAsync();
 		}
 
-		public async Task RemoveTopicArtifacts(DataModels.Topic topic) {
+		public async Task RemoveTopic(DataModels.Topic topic) {
 			await RemoveTopicViewLogs(topic.Id);
 			await RemoveTopicBookmarks(topic.Id);
 			await RemoveTopicBoards(topic.Id);
+			await RemoveTopicMessages(topic.Id);
 
-			DbContext.Remove(topic);
+			topic.Deleted = true;
+			DbContext.Update(topic);
+
 			await DbContext.SaveChangesAsync();
 		}
 
@@ -565,6 +568,16 @@ namespace Forum.Services.Repositories {
 		public async Task RemoveTopicBoards(int topicId) {
 			var records = DbContext.TopicBoards.Where(item => item.TopicId == topicId);
 			DbContext.RemoveRange(records);
+			await DbContext.SaveChangesAsync();
+		}
+
+		public async Task RemoveTopicMessages(int topicId) {
+			var records = DbContext.Messages.Where(item => item.TopicId == topicId);
+
+			foreach (var record in records) {
+				await MessageRepository.DeleteMessage(record);
+			}
+
 			await DbContext.SaveChangesAsync();
 		}
 

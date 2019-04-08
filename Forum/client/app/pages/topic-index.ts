@@ -32,6 +32,7 @@ export class TopicIndex {
 		if (this.app.hub) {
 			this.app.hub.on('new-reply', this.hubRefreshIndex);
 			this.app.hub.on('new-topic', this.hubRefreshIndex);
+			this.app.hub.on('deleted-topic', this.hubRefreshIndex);
 		}
 	}
 

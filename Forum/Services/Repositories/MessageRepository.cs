@@ -1,20 +1,14 @@
 ﻿using Forum.Models.Errors;
 using Forum.Models.Options;
 using Forum.Services.Contexts;
-using Forum.Services.Helpers;
 using Forum.Services.Plugins.ImageStore;
 using Forum.Services.Plugins.UrlReplacement;
 using HtmlAgilityPack;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Narochno.BBCode;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
@@ -23,7 +17,6 @@ using System.Threading.Tasks;
 namespace Forum.Services.Repositories {
 	using ControllerModels = Models.ControllerModels;
 	using DataModels = Models.DataModels;
-	using HubModels = Models.HubModels;
 	using InputModels = Models.InputModels;
 	using ServiceModels = Models.ServiceModels;
 	using ViewModels = Models.ViewModels;
@@ -33,11 +26,8 @@ namespace Forum.Services.Repositories {
 		UserContext CurrentUser { get; }
 		AccountRepository AccountRepository { get; }
 		BoardRepository BoardRepository { get; }
-		RoleRepository RoleRepository { get; }
 		SmileyRepository SmileyRepository { get; }
-		IHubContext<ForumHub> ForumHub { get; }
 		IImageStore ImageStore { get; }
-		IUrlHelper UrlHelper { get; }
 		BBCodeParser BBCParser { get; }
 		GzipWebClient WebClient { get; }
 		ImgurClient ImgurClient { get; }
@@ -49,11 +39,7 @@ namespace Forum.Services.Repositories {
 			UserContext userContext,
 			AccountRepository accountRepository,
 			BoardRepository boardRepository,
-			RoleRepository roleRepository,
 			SmileyRepository smileyRepository,
-			IHubContext<ForumHub> forumHub,
-			IActionContextAccessor actionContextAccessor,
-			IUrlHelperFactory urlHelperFactory,
 			IImageStore imageStore,
 			BBCodeParser bbcParser,
 			GzipWebClient webClient,
@@ -65,10 +51,7 @@ namespace Forum.Services.Repositories {
 			CurrentUser = userContext;
 			AccountRepository = accountRepository;
 			BoardRepository = boardRepository;
-			RoleRepository = roleRepository;
 			SmileyRepository = smileyRepository;
-			ForumHub = forumHub;
-			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 			ImageStore = imageStore;
 			BBCParser = bbcParser;
 			WebClient = webClient;
@@ -185,11 +168,6 @@ namespace Forum.Services.Repositories {
 
 				result.TopicId = record.TopicId;
 				result.MessageId = record.Id;
-
-				await ForumHub.Clients.All.SendAsync("new-reply", new HubModels.Message {
-					TopicId = record.TopicId,
-					MessageId = record.Id
-				});
 			}
 
 			return result;
@@ -219,18 +197,15 @@ namespace Forum.Services.Repositories {
 
 			if (!(result.Errors.Any())) {
 				await UpdateMessageRecord(processedMessage, record);
-
-				await ForumHub.Clients.All.SendAsync("updated-message", new HubModels.Message {
-					TopicId = record.TopicId,
-					MessageId = record.Id
-				});
 			}
 
 			return result;
 		}
 
 		async Task<ControllerModels.Messages.CreateReplyResult> CreateMergedReply(int previousMessageId, ControllerModels.Messages.CreateReplyInput input) {
-			var result = new ControllerModels.Messages.CreateReplyResult();
+			var result = new ControllerModels.Messages.CreateReplyResult {
+				Merged = true
+			};
 
 			var previousMessage = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == previousMessageId && !m.Deleted);
 			var newBody = $"{previousMessage.OriginalBody}\n\n{input.Body}";
@@ -246,70 +221,28 @@ namespace Forum.Services.Repositories {
 
 				result.MessageId = previousMessage.Id;
 				result.TopicId = previousMessage.TopicId;
-
-				await ForumHub.Clients.All.SendAsync("updated-message", new HubModels.Message {
-					TopicId = previousMessage.TopicId,
-					MessageId = previousMessage.Id
-				});
 			}
 
 			return result;
 		}
 
-		public async Task DeleteMessageFromTopic(DataModels.Message message, DataModels.Topic topic) {
-			if (message.Id == topic.FirstMessageId) {
-				var topicMessages = await DbContext.Messages.Where(m => m.TopicId == topic.Id && !m.Deleted).ToListAsync();
-
-				foreach (var reply in topicMessages) {
-					await RemoveMessageArtifacts(reply);
-				}
-
-				await RemoveMessageArtifacts(message);
-				await DbContext.SaveChangesAsync();
-			}
-			else {
-				var directRepliesQuery = from m in DbContext.Messages
-										 where m.ReplyId == message.Id
-										 where !m.Deleted
-										 select m;
-
-				foreach (var reply in directRepliesQuery) {
-					reply.OriginalBody =
-						$"[quote]{message.OriginalBody}\n" +
-						$"Message deleted by {CurrentUser.ApplicationUser.DisplayName} on {DateTime.Now.ToString("MMMM dd, yyyy")}[/quote]" +
-						reply.OriginalBody;
-
-					reply.ReplyId = 0;
-
-					DbContext.Update(reply);
-				}
-
-				await DbContext.SaveChangesAsync();
-			}
-
-			await ForumHub.Clients.All.SendAsync("deleted-message", new HubModels.Message {
-				TopicId = message.TopicId,
-				MessageId = message.Id
-			});
-		}
-
-		public async Task<ServiceModels.ServiceResponse> AddThought(int messageId, int smileyId) {
-			var serviceResponse = new ServiceModels.ServiceResponse();
+		public async Task<ControllerModels.Messages.AddThoughtResult> AddThought(int messageId, int smileyId) {
+			var result = new ControllerModels.Messages.AddThoughtResult();
 
 			var messageRecord = DbContext.Messages.Find(messageId);
 
 			if (messageRecord is null || messageRecord.Deleted) {
-				serviceResponse.Error($@"No message was found with the id '{messageId}'");
+				result.Errors.Add(string.Empty, $@"No message was found with the id '{messageId}'");
 			}
 
 			var smileyRecord = await DbContext.Smileys.FindAsync(smileyId);
 
 			if (messageRecord is null) {
-				serviceResponse.Error($@"No smiley was found with the id '{smileyId}'");
+				result.Errors.Add(string.Empty, $@"No smiley was found with the id '{smileyId}'");
 			}
 
-			if (!serviceResponse.Success) {
-				return serviceResponse;
+			if (result.Errors.Any()) {
+				return result;
 			}
 
 			var existingRecord = await DbContext.MessageThoughts
@@ -343,22 +276,19 @@ namespace Forum.Services.Repositories {
 			else {
 				DbContext.Remove(existingRecord);
 
-				var notification = DbContext.Notifications.FirstOrDefault(item => item.MessageId == existingRecord.MessageId && item.TargetUserId == existingRecord.UserId && item.Type == ENotificationType.Thought);
+				var notification = await DbContext.Notifications.FirstOrDefaultAsync(item => item.MessageId == existingRecord.MessageId && item.TargetUserId == existingRecord.UserId && item.Type == ENotificationType.Thought);
 
 				if (notification != null) {
 					DbContext.Remove(notification);
 				}
 			}
 
-			DbContext.SaveChanges();
+			await DbContext.SaveChangesAsync();
 
-			await ForumHub.Clients.All.SendAsync("updated-message", new HubModels.Message {
-				TopicId = messageRecord.TopicId,
-				MessageId = messageRecord.Id
-			});
+			result.TopicId = messageRecord.TopicId;
+			result.MessageId = messageRecord.Id;
 
-			serviceResponse.RedirectPath = UrlHelper.DisplayMessage(messageRecord.TopicId, messageRecord.Id);
-			return serviceResponse;
+			return result;
 		}
 
 		public async Task<InputModels.ProcessedMessageInput> ProcessMessageInput(string messageBody) {
@@ -878,13 +808,29 @@ namespace Forum.Services.Repositories {
 			await DbContext.SaveChangesAsync();
 		}
 
-		async Task RemoveMessageArtifacts(DataModels.Message record) {
-			var topicBoards = await DbContext.TopicBoards.Where(m => m.MessageId == record.Id).ToListAsync();
+		public async Task DeleteMessageFromTopic(DataModels.Message message, DataModels.Topic topic) {
+			var directRepliesQuery = from m in DbContext.Messages
+									 where m.ReplyId == message.Id
+									 where !m.Deleted
+									 select m;
 
-			foreach (var topicBoard in topicBoards) {
-				DbContext.TopicBoards.Remove(topicBoard);
+			foreach (var reply in directRepliesQuery) {
+				reply.OriginalBody =
+					$"[quote]{message.OriginalBody}\n" +
+					$"Message deleted by {CurrentUser.ApplicationUser.DisplayName} on {DateTime.Now.ToString("MMMM dd, yyyy")}[/quote]" +
+					reply.OriginalBody;
+
+				reply.ReplyId = 0;
+
+				DbContext.Update(reply);
 			}
 
+			message.Deleted = true;
+
+			await DbContext.SaveChangesAsync();
+		}
+
+		public async Task DeleteMessage(DataModels.Message record) {
 			var messageThoughts = await DbContext.MessageThoughts.Where(mt => mt.MessageId == record.Id).ToListAsync();
 
 			foreach (var messageThought in messageThoughts) {
@@ -895,18 +841,6 @@ namespace Forum.Services.Repositories {
 
 			foreach (var notification in notifications) {
 				DbContext.Notifications.Remove(notification);
-			}
-
-			var participants = DbContext.Participants.Where(item => item.MessageId == record.Id).ToList();
-
-			foreach (var participant in participants) {
-				DbContext.Participants.Remove(participant);
-			}
-
-			var bookmarks = DbContext.Bookmarks.Where(item => item.MessageId == record.Id).ToList();
-
-			foreach (var bookmark in bookmarks) {
-				DbContext.Bookmarks.Remove(bookmark);
 			}
 
 			var quotes = DbContext.Quotes.Where(item => item.MessageId == record.Id).ToList();
@@ -978,6 +912,9 @@ namespace Forum.Services.Repositories {
 					}
 				}
 
+				var topic = DbContext.Topics.Find(message.TopicId);
+
+				message.IsFirstMessage = topic.FirstMessageId.ToString() == message.Id;
 				message.CanEdit = CurrentUser.IsAdmin || CurrentUser.Id == message.PostedById;
 				message.CanDelete = CurrentUser.IsAdmin || CurrentUser.Id == message.PostedById;
 				message.CanReply = CurrentUser.IsAuthenticated;

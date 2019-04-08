@@ -5,10 +5,10 @@ using Forum.Services;
 using Forum.Services.Contexts;
 using Forum.Services.Helpers;
 using Forum.Services.Repositories;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 
 namespace Forum.Controllers {
 	using ControllerModels = Models.ControllerModels;
+	using HubModels = Models.HubModels;
 	using ViewModels = Models.ViewModels;
 
 	public class Messages : Controller {
@@ -27,6 +28,7 @@ namespace Forum.Controllers {
 		MessageRepository MessageRepository { get; }
 		SmileyRepository SmileyRepository { get; }
 		TopicRepository TopicRepository { get; }
+		IHubContext<ForumHub> ForumHub { get; }
 		IForumViewResult ForumViewResult { get; }
 		IUrlHelper UrlHelper { get; }
 
@@ -38,6 +40,7 @@ namespace Forum.Controllers {
 			MessageRepository messageRepository,
 			SmileyRepository smileyRepository,
 			TopicRepository topicRepository,
+			IHubContext<ForumHub> forumHub,
 			IActionContextAccessor actionContextAccessor,
 			IForumViewResult forumViewResult,
 			IUrlHelperFactory urlHelperFactory
@@ -48,6 +51,8 @@ namespace Forum.Controllers {
 			BoardRepository = boardRepository;
 			MessageRepository = messageRepository;
 			SmileyRepository = smileyRepository;
+			TopicRepository = topicRepository;
+			ForumHub = forumHub;
 			ForumViewResult = forumViewResult;
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
@@ -107,16 +112,25 @@ namespace Forum.Controllers {
 				}
 			}
 
-			ControllerModels.Messages.CreateReplyResult result = null;
-
 			if (ModelState.IsValid) {
-				result = await MessageRepository.CreateReply(input);
+				var result = await MessageRepository.CreateReply(input);
 				ModelState.AddModelErrors(result.Errors);
-			}
 
-			if (ModelState.IsValid) {
-				var redirectPath = Url.DisplayMessage(result.TopicId, result.MessageId);
-				return Redirect(redirectPath);
+				if (ModelState.IsValid) {
+					var hubAction = "new-reply";
+
+					if (result.Merged) {
+						hubAction = "updated-message";
+					}
+
+					await ForumHub.Clients.All.SendAsync(hubAction, new HubModels.Message {
+						TopicId = result.TopicId,
+						MessageId = result.MessageId
+					});
+
+					var redirectPath = Url.DisplayMessage(result.TopicId, result.MessageId);
+					return Redirect(redirectPath);
+				}
 			}
 
 			ViewData["Smileys"] = await SmileyRepository.GetSelectorList();
@@ -165,10 +179,15 @@ namespace Forum.Controllers {
 			if (ModelState.IsValid) {
 				var result = await MessageRepository.CreateReply(input);
 				ModelState.AddModelErrors(result.Errors);
-			}
 
-			if (ModelState.IsValid) {
-				return Ok();
+				if (ModelState.IsValid) {
+					await ForumHub.Clients.All.SendAsync("new-reply", new HubModels.Message {
+						TopicId = result.TopicId,
+						MessageId = result.MessageId
+					});
+
+					return Ok();
+				}
 			}
 
 			var errors = ModelState.Keys.Where(k => ModelState[k].Errors.Count > 0).Select(k => new { propertyName = k, errorMessage = ModelState[k].Errors[0].ErrorMessage });
@@ -218,6 +237,11 @@ namespace Forum.Controllers {
 				ModelState.AddModelErrors(result.Errors);
 
 				if (ModelState.IsValid) {
+					await ForumHub.Clients.All.SendAsync("updated-message", new HubModels.Message {
+						TopicId = result.TopicId,
+						MessageId = result.MessageId
+					});
+
 					var redirectPath = UrlHelper.DisplayMessage(result.TopicId, result.MessageId);
 					return Redirect(redirectPath);
 				}
@@ -273,10 +297,15 @@ namespace Forum.Controllers {
 			if (ModelState.IsValid) {
 				var result = await MessageRepository.EditMessage(input);
 				ModelState.AddModelErrors(result.Errors);
-			}
 
-			if (ModelState.IsValid) {
-				return Ok();
+				if (ModelState.IsValid) {
+					await ForumHub.Clients.All.SendAsync("updated-message", new HubModels.Message {
+						TopicId = result.TopicId,
+						MessageId = result.MessageId
+					});
+
+					return Ok();
+				}
 			}
 
 			var errors = ModelState.Keys.Where(k => ModelState[k].Errors.Count > 0).Select(k => new { propertyName = k, errorMessage = ModelState[k].Errors[0].ErrorMessage });
@@ -285,6 +314,8 @@ namespace Forum.Controllers {
 
 		[HttpGet]
 		public async Task<IActionResult> Delete(int id) {
+			var redirectPath = ForumViewResult.GetReferrer(this);
+
 			if (ModelState.IsValid) {
 				var message = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == id);
 
@@ -298,22 +329,28 @@ namespace Forum.Controllers {
 
 				var topic = await DbContext.Topics.SingleAsync(m => m.Id == message.TopicId);
 
-				await MessageRepository.DeleteMessageFromTopic(message, topic);
-				await TopicRepository.RebuildTopic(topic);
-
-				var redirectPath = string.Empty;
-
 				if (topic.FirstMessageId == message.Id) {
+					await TopicRepository.RemoveTopic(topic);
 					redirectPath = UrlHelper.Action(nameof(Topics.Index), nameof(Topics));
+
+					await ForumHub.Clients.All.SendAsync("deleted-topic", new HubModels.Message {
+						TopicId = topic.Id,
+						MessageId = message.Id
+					});
 				}
 				else {
+					await MessageRepository.DeleteMessageFromTopic(message, topic);
+					await TopicRepository.RebuildTopic(topic);
 					redirectPath = UrlHelper.Action(nameof(Topics.Latest), nameof(Topics), new { id = topic.Id });
-				}
 
-				return Redirect(redirectPath);
+					await ForumHub.Clients.All.SendAsync("deleted-message", new HubModels.Message {
+						TopicId = topic.Id,
+						MessageId = message.Id
+					});
+				}
 			}
 
-			return ForumViewResult.RedirectToReferrer(this);
+			return Redirect(redirectPath);
 		}
 
 		[HttpGet]
@@ -325,8 +362,18 @@ namespace Forum.Controllers {
 			}
 
 			if (ModelState.IsValid) {
-				var serviceResponse = await MessageRepository.AddThought(id, smiley);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse);
+				var result = await MessageRepository.AddThought(id, smiley);
+				ModelState.AddModelErrors(result.Errors);
+
+				if (ModelState.IsValid) {
+					await ForumHub.Clients.All.SendAsync("updated-message", new HubModels.Message {
+						TopicId = result.TopicId,
+						MessageId = result.MessageId
+					});
+
+					var redirectPath = UrlHelper.DisplayMessage(result.TopicId, result.MessageId);
+					return Redirect(redirectPath);
+				}
 			}
 
 			return ForumViewResult.RedirectToReferrer(this);

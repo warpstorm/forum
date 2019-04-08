@@ -46,6 +46,7 @@ export class TopicDisplay {
 			this.app.hub.on('new-reply', this.hubNewReply);
 			this.app.hub.on('updated-message', this.hubUpdatedMessage);
 			this.app.hub.on('deleted-message', this.hubDeletedMessage);
+			this.app.hub.on('deleted-topic', this.hubDeletedTopic);
 		}
 	}
 
@@ -351,32 +352,30 @@ export class TopicDisplay {
 	hubDeletedMessage = async (data: HubMessage): Promise<void> => {
 		let self = this;
 
-		if (data.topicId == self.settings.topicId
-			&& self.settings.messages.indexOf(data.messageId) >= 0) {
+		if (data.topicId == self.settings.topicId && self.settings.messages.indexOf(data.messageId) >= 0) {
+			let targetArticle = <HTMLElement>document.querySelector(`article[message="${data.messageId}"]`);
+			let userAvatar = <HTMLElement>targetArticle.querySelector('.user-avatar');
+			let messageContents = <HTMLElement>targetArticle.querySelector('.message-contents');
 
-			if (data.messageId == self.settings.firstMessageId) {
-				let targetElement = <HTMLElement>document.querySelector('main');
-				targetElement.innerHTML = '<div class="content-box pad"><p class="font-small subdued-text">This topic was removed.</p></div>';
-			}
-			else {
-				let targetArticle = <HTMLElement>document.querySelector(`article[message="${data.messageId}"]`);
+			userAvatar.remove();
+			messageContents.classList.add('faded');
+			messageContents.innerHTML = '<p class="font-small subdued-text">This message was removed.</p>';
 
-				let userAvatar = <HTMLElement>targetArticle.querySelector('.user-avatar');
-				userAvatar.remove();
+			document.querySelectorAll(`[reply="${data.messageId}"]`).forEach(element => {
+				element.innerHTML = '<p class="font-small subdued-text">This message was removed.</p>';
+			});
 
-				let messageContents = <HTMLElement>targetArticle.querySelector('.message-contents');
-				messageContents.classList.add('faded');
-				messageContents.innerHTML = '<p class="font-small subdued-text">This message was removed.</p>';
+			let time = new Date();
+			let passedTime = this.app.passedTimeMonitor.convertToPassedTime(time);
 
-				document.querySelectorAll(`[reply="${data.messageId}"]`).forEach(element => {
-					element.innerHTML = '<p class="font-small subdued-text">This message was removed.</p>';
-				});
+			warning(`<a href='#message${data.messageId}'>A message was removed <time datetime='${time}'>${passedTime}</time>.</a>`);
+		}
+	}
 
-				let time = new Date();
-				let passedTime = this.app.passedTimeMonitor.convertToPassedTime(time);
-
-				warning(`<a href='#message${data.messageId}'>A message was removed <time datetime='${time}'>${passedTime}</time>.</a>`);
-			}
+	hubDeletedTopic = async (data: HubMessage): Promise<void> => {
+		if (data.topicId == this.settings.topicId) {
+			let targetElement = <HTMLElement>document.querySelector('main');
+			targetElement.innerHTML = '<div class="content-box pad"><p class="font-small subdued-text">This topic was removed.</p></div>';
 		}
 	}
 
