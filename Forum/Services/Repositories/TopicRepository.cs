@@ -2,7 +2,6 @@
 using Forum.Models.Errors;
 using Forum.Models.Options;
 using Forum.Services.Contexts;
-using Forum.Services.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
@@ -528,7 +527,6 @@ namespace Forum.Services.Repositories {
 		public async Task Merge(DataModels.Topic sourceTopic, DataModels.Topic targetTopic) {
 			await UpdateMessagesTopicId(sourceTopic, targetTopic);
 			await RebuildTopic(targetTopic);
-			await RemoveTopicViewLogs(targetTopic.Id);
 			await RemoveTopicArtifacts(sourceTopic);
 		}
 
@@ -573,21 +571,12 @@ namespace Forum.Services.Repositories {
 		public async Task RebuildTopic(DataModels.Topic topic) {
 			var messagesQuery = from message in DbContext.Messages
 								where message.TopicId == topic.Id
-								where message.Deleted
+								where !message.Deleted
 								select message;
 
 			var messages = await messagesQuery.ToListAsync();
 
-			DbContext.RemoveRange(messages);
-			await DbContext.SaveChangesAsync();
-
-			messagesQuery = from message in DbContext.Messages
-								where message.TopicId == topic.Id
-								select message;
-
-			messages = await messagesQuery.ToListAsync();
-
-			var replyCount = messages.Count();
+			var replyCount = messages.Count() - 1;
 
 			if (topic.ReplyCount != replyCount) {
 				topic.ReplyCount = replyCount;
