@@ -159,6 +159,9 @@ namespace Forum.Services.Contexts {
 				.HasIndex(r => r.Deleted);
 
 			modelBuilder.Entity<Topic>()
+				.HasIndex(r => r.FirstMessageId);
+
+			modelBuilder.Entity<Topic>()
 				.HasIndex(r => r.LastMessageTimePosted);
 
 			modelBuilder.Entity<TopicBoard>()

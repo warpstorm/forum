@@ -67,7 +67,6 @@ namespace Forum.Controllers {
 				Url.Action(nameof(MigrateMessages)),
 				Url.Action(nameof(MigrateViewLogs)),
 				Url.Action(nameof(MigrateBookmarks)),
-				Url.Action(nameof(MigrateParticipants)),
 				Url.Action(nameof(MigrateTopicBoards)),
 				Url.Action(nameof(RebuildTopicReplies)),
 				Url.Action(nameof(RebuildTopicParticipants)),
@@ -115,7 +114,7 @@ namespace Forum.Controllers {
 		[HttpPost]
 		public async Task<IActionResult> RebuildTopicReplies(ControllerModels.Administration.ProcessStep input) {
 			if (input.CurrentStep < 0) {
-				var take = 50;
+				var take = 20;
 				var totalRecords = await DbContext.Topics.CountAsync();
 				var totalSteps = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
 
@@ -156,7 +155,7 @@ namespace Forum.Controllers {
 		[HttpPost]
 		public async Task<IActionResult> RebuildTopicParticipants(ControllerModels.Administration.ProcessStep input) {
 			if (input.CurrentStep < 0) {
-				var take = 50;
+				var take = 20;
 				var totalRecords = await DbContext.Topics.CountAsync();
 				var totalSteps = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
 
@@ -404,7 +403,7 @@ namespace Forum.Controllers {
 		[HttpPost]
 		public async Task<IActionResult> ResetMessageTopicId(ControllerModels.Administration.ProcessStep input) {
 			if (input.CurrentStep < 0) {
-				var take = 100;
+				var take = 200;
 				var totalRecords = await DbContext.Messages.CountAsync();
 				var totalSteps = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
 
@@ -445,7 +444,7 @@ namespace Forum.Controllers {
 			var recordsQuery = DbContext.ViewLogs.Where(item => item.TargetType == EViewLogTargetType.Topic);
 
 			if (input.CurrentStep < 0) {
-				var take = 500;
+				var take = 200;
 				var totalRecords = await recordsQuery.CountAsync();
 				var totalSteps = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
 
@@ -496,7 +495,7 @@ namespace Forum.Controllers {
 		[HttpPost]
 		public async Task<IActionResult> ResetTopicBoards(ControllerModels.Administration.ProcessStep input) {
 			if (input.CurrentStep < 0) {
-				var take = 500;
+				var take = 200;
 				var totalRecords = await DbContext.TopicBoards.CountAsync();
 				var totalSteps = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
 
@@ -546,7 +545,7 @@ namespace Forum.Controllers {
 		[HttpPost]
 		public async Task<IActionResult> DeleteTopics(ControllerModels.Administration.ProcessStep input) {
 			if (input.CurrentStep < 0) {
-				var take = 500;
+				var take = 50;
 				var totalRecords = await DbContext.Topics.CountAsync();
 				var totalSteps = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
 
@@ -573,7 +572,7 @@ namespace Forum.Controllers {
 									  select message;
 
 			if (input.CurrentStep < 0) {
-				var take = 100;
+				var take = 10;
 				var totalRecords = await parentMessagesQuery.CountAsync();
 				var totalSteps = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
 
@@ -648,7 +647,8 @@ namespace Forum.Controllers {
 			var lastRecordId = 0;
 
 			foreach (var record in records) {
-				record.TopicId = DbContext.Topics.First(item => record.ParentId == 0 ? item.FirstMessageId == record.Id : item.FirstMessageId == record.ParentId).Id;
+				var targetId = record.ParentId == 0 ? record.Id : record.ParentId;
+				record.TopicId = DbContext.Topics.First(item => item.FirstMessageId == targetId).Id;
 				lastRecordId = record.Id;
 			}
 
@@ -662,7 +662,7 @@ namespace Forum.Controllers {
 			var recordsQuery = DbContext.ViewLogs.Where(item => item.TargetType == EViewLogTargetType.Message);
 
 			if (input.CurrentStep < 0) {
-				var take = 500;
+				var take = 200;
 				var totalRecords = await recordsQuery.CountAsync();
 				var totalSteps = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
 
@@ -763,53 +763,6 @@ namespace Forum.Controllers {
 
 				lastRecordId = record.Id;
 			}
-
-			return Ok(lastRecordId);
-		}
-
-		[HttpPost]
-		public async Task<IActionResult> MigrateParticipants(ControllerModels.Administration.ProcessStep input) {
-			if (input.CurrentStep < 0) {
-				var take = 100;
-				var totalRecords = DbContext.Participants.Count();
-				var totalSteps = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
-
-				return Ok(new ControllerModels.Administration.ProcessStage {
-					ActionName = "Migrate Participants",
-					ActionNote = "Updating participants from messages to topics.",
-					Take = take,
-					TotalSteps = totalSteps,
-					TotalRecords = totalRecords,
-				});
-			}
-
-			if (input.LastRecordId < 0) {
-				var step = 0;
-
-				while (step < input.CurrentStep) {
-					input.LastRecordId = await DbContext.Participants.Where(item => item.Id > input.LastRecordId).Take(input.Take).Select(item => item.Id).LastAsync();
-					step++;
-				}
-			}
-
-			var records = DbContext.Participants.Where(item => item.Id > input.LastRecordId).Take(input.Take);
-
-			var lastRecordId = 0;
-
-			foreach (var record in records) {
-				var message = await DbContext.Messages.FirstOrDefaultAsync(item => item.Id == record.MessageId);
-
-				if (message is null) {
-					DbContext.Participants.Remove(record);
-				}
-				else {
-					record.TopicId = message.TopicId;
-				}
-
-				lastRecordId = record.Id;
-			}
-
-			await DbContext.SaveChangesAsync();
 
 			return Ok(lastRecordId);
 		}
