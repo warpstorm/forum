@@ -23,7 +23,6 @@ namespace Forum.Services.Repositories {
 	public class TopicRepository {
 		ApplicationDbContext DbContext { get; }
 		UserContext UserContext { get; }
-
 		AccountRepository AccountRepository { get; }
 		BoardRepository BoardRepository { get; }
 		BookmarkRepository BookmarkRepository { get; }
@@ -564,7 +563,25 @@ namespace Forum.Services.Repositories {
 			var records = DbContext.Messages.Where(item => item.TopicId == topicId);
 
 			foreach (var record in records) {
-				await MessageRepository.DeleteMessage(record);
+				var messageThoughts = await DbContext.MessageThoughts.Where(mt => mt.MessageId == record.Id).ToListAsync();
+
+				foreach (var messageThought in messageThoughts) {
+					DbContext.MessageThoughts.Remove(messageThought);
+				}
+
+				var notifications = DbContext.Notifications.Where(item => item.MessageId == record.Id).ToList();
+
+				foreach (var notification in notifications) {
+					DbContext.Notifications.Remove(notification);
+				}
+
+				var quotes = DbContext.Quotes.Where(item => item.MessageId == record.Id).ToList();
+
+				foreach (var quote in quotes) {
+					DbContext.Quotes.Remove(quote);
+				}
+
+				record.Deleted = true;
 			}
 
 			await DbContext.SaveChangesAsync();

@@ -840,28 +840,7 @@ namespace Forum.Services.Repositories {
 			}
 
 			message.Deleted = true;
-		}
-
-		public async Task DeleteMessage(DataModels.Message record) {
-			var messageThoughts = await DbContext.MessageThoughts.Where(mt => mt.MessageId == record.Id).ToListAsync();
-
-			foreach (var messageThought in messageThoughts) {
-				DbContext.MessageThoughts.Remove(messageThought);
-			}
-
-			var notifications = DbContext.Notifications.Where(item => item.MessageId == record.Id).ToList();
-
-			foreach (var notification in notifications) {
-				DbContext.Notifications.Remove(notification);
-			}
-
-			var quotes = DbContext.Quotes.Where(item => item.MessageId == record.Id).ToList();
-
-			foreach (var quote in quotes) {
-				DbContext.Quotes.Remove(quote);
-			}
-
-			record.Deleted = true;
+			DbContext.Update(message);
 		}
 
 		/// <summary>
@@ -960,7 +939,7 @@ namespace Forum.Services.Repositories {
 							   orderby message.Id descending
 							   select new {
 								   message.Id,
-								   message.ParentId
+								   message.TopicId
 							   };
 
 			var messageIds = new List<int>();
@@ -968,8 +947,7 @@ namespace Forum.Services.Repositories {
 			var skipped = 0;
 
 			foreach (var message in messageQuery) {
-				// TODO change from message to topic ID
-				if (!await BoardRepository.CanAccess(message.ParentId > 0 ? message.ParentId : message.Id)) {
+				if (!await BoardRepository.CanAccess(message.TopicId)) {
 					if (attempts++ > 100) {
 						break;
 					}
