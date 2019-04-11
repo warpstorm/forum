@@ -7,11 +7,11 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Forum.Controllers {
-	public class MultiStepTest : Controller {
+	public class ProcessTest : Controller {
 		IForumViewResult ForumViewResult { get; }
 		IUrlHelper UrlHelper { get; }
 
-		public MultiStepTest(
+		public ProcessTest(
 			IForumViewResult forumViewResult,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory
@@ -22,20 +22,20 @@ namespace Forum.Controllers {
 
 		public async Task<IActionResult> Test() {
 			var viewModel = new List<string> {
-				UrlHelper.Action(nameof(TestStep1)),
-				UrlHelper.Action(nameof(TestStep2)),
-				UrlHelper.Action(nameof(TestStep3)),
+				UrlHelper.Action(nameof(TestStage1)),
+				UrlHelper.Action(nameof(TestStage2)),
+				UrlHelper.Action(nameof(TestStage3)),
 			};
 
-			return await ForumViewResult.ViewResult(this, "MultiStep", viewModel);
+			return await ForumViewResult.ViewResult(this, "Process", viewModel);
 		}
 
 		[HttpPost]
-		public IActionResult TestStep1(Models.ControllerModels.Administration.Page input) {
+		public IActionResult TestStage1(Models.ControllerModels.Administration.Page input) {
 			if (input.CurrentPage < 0) {
-				return Ok(new Models.ControllerModels.Administration.Step {
-					ActionName = "Step 1",
-					ActionNote = "Running step 1 of multi-step test",
+				return Ok(new Models.ControllerModels.Administration.Stage {
+					ActionName = "Stage 1",
+					ActionNote = "Running stage 1 of process test",
 					Take = 5,
 					TotalPages = 5,
 					TotalRecords = 23,
@@ -49,11 +49,11 @@ namespace Forum.Controllers {
 		}
 
 		[HttpPost]
-		public IActionResult TestStep2(Models.ControllerModels.Administration.Page input) {
+		public IActionResult TestStage2(Models.ControllerModels.Administration.Page input) {
 			if (input.CurrentPage < 0) {
-				return Ok(new Models.ControllerModels.Administration.Step {
-					ActionName = "Step 2",
-					ActionNote = "Running step 2 of multi-step test",
+				return Ok(new Models.ControllerModels.Administration.Stage {
+					ActionName = "Stage 2",
+					ActionNote = "Running stage 2 of process test",
 					Take = 3,
 					TotalPages = 4,
 					TotalRecords = 12,
@@ -65,11 +65,11 @@ namespace Forum.Controllers {
 		}
 
 		[HttpPost]
-		public IActionResult TestStep3(Models.ControllerModels.Administration.Page input) {
+		public IActionResult TestStage3(Models.ControllerModels.Administration.Page input) {
 			if (input.CurrentPage < 0) {
-				return Ok(new Models.ControllerModels.Administration.Step {
-					ActionName = "Step 3",
-					ActionNote = "Running step 3 of multi-step test",
+				return Ok(new Models.ControllerModels.Administration.Stage {
+					ActionName = "Stage 3",
+					ActionNote = "Running stage 3 of process test",
 					Take = 3,
 					TotalPages = 6,
 					TotalRecords = 17,

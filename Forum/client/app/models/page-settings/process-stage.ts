@@ -1,4 +1,4 @@
-﻿export class Step {
+﻿export class ProcessStage {
 	public actionName: string = '';
 	public actionNote: string = '';
 	public take: number = 0;

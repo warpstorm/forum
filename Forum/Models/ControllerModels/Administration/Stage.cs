@@ -1,5 +1,5 @@
 ﻿namespace Forum.Models.ControllerModels.Administration {
-	public class Step {
+	public class Stage {
 		public string ActionName { get; set; }
 		public string ActionNote { get; set; }
 		public int Take { get; set; }

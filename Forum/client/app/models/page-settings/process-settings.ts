@@ -1,9 +1,9 @@
-﻿export class MultiStepSettings {
-	public steps: string[] = [];
+﻿export class ProcessSettings {
+	public stages: string[] = [];
 
 	public currentAction: string = '';
 	public currentPage: number = 0;
-	public currentStep: number = 0;
+	public currentStage: number = 0;
 
 	public take: number = 0;
 	public totalPages: number = 0;

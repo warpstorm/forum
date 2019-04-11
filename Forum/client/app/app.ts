@@ -11,7 +11,7 @@ import { TopicDisplay } from './pages/topic-display';
 import { ManageBoards } from './pages/manage-boards';
 import { MessageCreate } from './pages/message-create';
 import { AccountDetails } from './pages/account-details';
-import { MultiStep } from './pages/multi-step';
+import { Process } from './pages/process';
 
 import * as SignalR from "@aspnet/signalr";
 
@@ -55,9 +55,9 @@ export class App {
 		let pageActions = (<any>window).pageActions;
 
 		switch (pageActions) {
-			case 'multi-step':
-				let multiStep = new MultiStep();
-				multiStep.init();
+			case 'process':
+				let process = new Process();
+				process.init();
 				break;
 
 			case 'manage-boards':

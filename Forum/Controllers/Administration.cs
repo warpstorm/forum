@@ -47,7 +47,7 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> Install() {
 			CheckInstallContext();
 
-			return await ForumViewResult.ViewResult(this, "MultiStep", new List<string> {
+			return await ForumViewResult.ViewResult(this, "Process", new List<string> {
 				Url.Action(nameof(InstallRoles)),
 				Url.Action(nameof(InstallAdmins)),
 				Url.Action(nameof(InstallCategories)),
@@ -57,7 +57,7 @@ namespace Forum.Controllers {
 
 		[HttpGet]
 		public async Task<IActionResult> MigrateV5() {
-			return await ForumViewResult.ViewResult(this, "MultiStep", new List<string> {
+			return await ForumViewResult.ViewResult(this, "Process", new List<string> {
 				Url.Action(nameof(CleanupDeletedMessages)),
 				Url.Action(nameof(ResetMessageTopicId)),
 				Url.Action(nameof(ResetViewLogs)),
@@ -76,7 +76,7 @@ namespace Forum.Controllers {
 
 		[HttpGet]
 		public async Task<IActionResult> Maintenance() {
-			return await ForumViewResult.ViewResult(this, "MultiStep", new List<string> {
+			return await ForumViewResult.ViewResult(this, "Process", new List<string> {
 				Url.Action(nameof(CleanupDeletedMessages)),
 				Url.Action(nameof(CleanupDeletedTopics)),
 				Url.Action(nameof(RebuildTopicReplies)),
@@ -85,7 +85,7 @@ namespace Forum.Controllers {
 		}
 
 		[HttpGet]
-		public IActionResult CleanupDeletedTopics() => View("MultiStep", new List<string> { Url.Action(nameof(CleanupDeletedTopics)) });
+		public IActionResult CleanupDeletedTopics() => View("Process", new List<string> { Url.Action(nameof(CleanupDeletedTopics)) });
 
 		[HttpPost]
 		public async Task<IActionResult> CleanupDeletedTopics(ControllerModels.Administration.Page input) {
@@ -94,7 +94,7 @@ namespace Forum.Controllers {
 				var totalRecords = 1;
 				var totalPages = 1;
 
-				return Ok(new ControllerModels.Administration.Step {
+				return Ok(new ControllerModels.Administration.Stage {
 					ActionName = "Cleanup Deleted Topics",
 					ActionNote = "Deleting topics marked for deletion.",
 					Take = take,
@@ -110,7 +110,7 @@ namespace Forum.Controllers {
 		}
 
 		[HttpGet]
-		public IActionResult RebuildTopicReplies() => View("MultiStep", new List<string> { Url.Action(nameof(RebuildTopicReplies)) });
+		public IActionResult RebuildTopicReplies() => View("Process", new List<string> { Url.Action(nameof(RebuildTopicReplies)) });
 
 		[HttpPost]
 		public async Task<IActionResult> RebuildTopicReplies(ControllerModels.Administration.Page input) {
@@ -119,7 +119,7 @@ namespace Forum.Controllers {
 				var totalRecords = await DbContext.Topics.CountAsync();
 				var totalPages = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
 
-				return Ok(new ControllerModels.Administration.Step {
+				return Ok(new ControllerModels.Administration.Stage {
 					ActionName = "Rebuild Topic Replies",
 					ActionNote = "Recounting replies, determining first and last messages.",
 					Take = take,
@@ -151,7 +151,7 @@ namespace Forum.Controllers {
 		}
 
 		[HttpGet]
-		public IActionResult RebuildTopicParticipants() => View("MultiStep", new List<string> { Url.Action(nameof(RebuildTopicParticipants)) });
+		public IActionResult RebuildTopicParticipants() => View("Process", new List<string> { Url.Action(nameof(RebuildTopicParticipants)) });
 
 		[HttpPost]
 		public async Task<IActionResult> RebuildTopicParticipants(ControllerModels.Administration.Page input) {
@@ -160,7 +160,7 @@ namespace Forum.Controllers {
 				var totalRecords = await DbContext.Topics.CountAsync();
 				var totalPages = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
 
-				return Ok(new ControllerModels.Administration.Step {
+				return Ok(new ControllerModels.Administration.Stage {
 					ActionName = "Rebuild Topic Participants",
 					ActionNote = "Identifying topics participants.",
 					Take = take,
@@ -216,7 +216,7 @@ namespace Forum.Controllers {
 		}
 
 		[HttpGet]
-		public IActionResult CleanupDeletedMessages() => View("MultiStep", new List<string> { Url.Action(nameof(CleanupDeletedMessages)) });
+		public IActionResult CleanupDeletedMessages() => View("Process", new List<string> { Url.Action(nameof(CleanupDeletedMessages)) });
 
 		[HttpPost]
 		public async Task<IActionResult> CleanupDeletedMessages(ControllerModels.Administration.Page input) {
@@ -225,7 +225,7 @@ namespace Forum.Controllers {
 				var totalRecords = 1;
 				var totalPages = 1;
 
-				return Ok(new ControllerModels.Administration.Step {
+				return Ok(new ControllerModels.Administration.Stage {
 					ActionName = "Cleanup Deleted Messages",
 					ActionNote = "Deleting messages marked for deletion.",
 					Take = take,
@@ -241,7 +241,7 @@ namespace Forum.Controllers {
 		}
 
 		[HttpGet]
-		public IActionResult ReprocessMessages() => View("MultiStep", new List<string> { Url.Action(nameof(ReprocessMessages)) });
+		public IActionResult ReprocessMessages() => View("Process", new List<string> { Url.Action(nameof(ReprocessMessages)) });
 
 		[HttpPost]
 		public async Task<IActionResult> ReprocessMessages(ControllerModels.Administration.Page input) {
@@ -250,7 +250,7 @@ namespace Forum.Controllers {
 				var totalRecords = DbContext.Messages.Count();
 				var totalPages = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
 
-				return Ok(new ControllerModels.Administration.Step {
+				return Ok(new ControllerModels.Administration.Stage {
 					ActionName = "Reprocessing Messages",
 					ActionNote = "Message contents are rebuilt, links re-checked, BBC reprocessed.",
 					Take = take,
@@ -298,7 +298,7 @@ namespace Forum.Controllers {
 			CheckInstallContext();
 
 			if (input.CurrentPage < 0) {
-				return Ok(new ControllerModels.Administration.Step {
+				return Ok(new ControllerModels.Administration.Stage {
 					ActionName = "Roles",
 					ActionNote = "Setting up roles.",
 					Take = 1,
@@ -322,7 +322,7 @@ namespace Forum.Controllers {
 			CheckInstallContext();
 
 			if (input.CurrentPage < 0) {
-				return Ok(new ControllerModels.Administration.Step {
+				return Ok(new ControllerModels.Administration.Stage {
 					ActionName = "Admin",
 					ActionNote = "Registering administrator account.",
 					Take = 1,
@@ -346,7 +346,7 @@ namespace Forum.Controllers {
 			CheckInstallContext();
 
 			if (input.CurrentPage < 0) {
-				return Ok(new ControllerModels.Administration.Step {
+				return Ok(new ControllerModels.Administration.Stage {
 					ActionName = "Categories",
 					ActionNote = "Creating categories.",
 					Take = 1,
@@ -374,7 +374,7 @@ namespace Forum.Controllers {
 			CheckInstallContext();
 
 			if (input.CurrentPage < 0) {
-				return Ok(new ControllerModels.Administration.Step {
+				return Ok(new ControllerModels.Administration.Stage {
 					ActionName = "Boards",
 					ActionNote = "Creating boards.",
 					Take = 1,
@@ -408,7 +408,7 @@ namespace Forum.Controllers {
 				var totalRecords = await DbContext.Messages.CountAsync();
 				var totalPages = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
 
-				return Ok(new ControllerModels.Administration.Step {
+				return Ok(new ControllerModels.Administration.Stage {
 					ActionName = "Reset TopicId Column",
 					ActionNote = "Resetting TopicId column on all messages.",
 					Take = take,
@@ -449,7 +449,7 @@ namespace Forum.Controllers {
 				var totalRecords = await recordsQuery.CountAsync();
 				var totalPages = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
 
-				return Ok(new ControllerModels.Administration.Step {
+				return Ok(new ControllerModels.Administration.Stage {
 					ActionName = "Reset ViewLogs",
 					ActionNote = "Re-associating viewlogs back to message IDs.",
 					Take = take,
@@ -500,7 +500,7 @@ namespace Forum.Controllers {
 				var totalRecords = await DbContext.TopicBoards.CountAsync();
 				var totalPages = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
 
-				return Ok(new ControllerModels.Administration.Step {
+				return Ok(new ControllerModels.Administration.Stage {
 					ActionName = "Reset TopicBoards",
 					ActionNote = "Re-associating topic boards back to message IDs.",
 					Take = take,
@@ -550,7 +550,7 @@ namespace Forum.Controllers {
 				var totalRecords = await DbContext.Topics.CountAsync();
 				var totalPages = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
 
-				return Ok(new ControllerModels.Administration.Step {
+				return Ok(new ControllerModels.Administration.Stage {
 					ActionName = "Delete Topics",
 					ActionNote = "Removing all previously created topics.",
 					Take = take,
@@ -577,7 +577,7 @@ namespace Forum.Controllers {
 				var totalRecords = await parentMessagesQuery.CountAsync();
 				var totalPages = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
 
-				return Ok(new ControllerModels.Administration.Step {
+				return Ok(new ControllerModels.Administration.Stage {
 					ActionName = "Migrate Topics",
 					ActionNote = "Creating topics from top level messages.",
 					Take = take,
@@ -625,7 +625,7 @@ namespace Forum.Controllers {
 				var totalRecords = await DbContext.Messages.CountAsync();
 				var totalPages = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
 
-				return Ok(new ControllerModels.Administration.Step {
+				return Ok(new ControllerModels.Administration.Stage {
 					ActionName = "Migrate Messages",
 					ActionNote = "Associate messages to topics.",
 					Take = take,
@@ -666,7 +666,7 @@ namespace Forum.Controllers {
 				var totalRecords = await recordsQuery.CountAsync();
 				var totalPages = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
 
-				return Ok(new ControllerModels.Administration.Step {
+				return Ok(new ControllerModels.Administration.Stage {
 					ActionName = "Migrate ViewLogs",
 					ActionNote = "Updating viewlogs from messages to topics.",
 					Take = take,
@@ -724,7 +724,7 @@ namespace Forum.Controllers {
 				var totalRecords = DbContext.Topics.Count();
 				var totalPages = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
 
-				return Ok(new ControllerModels.Administration.Step {
+				return Ok(new ControllerModels.Administration.Stage {
 					ActionName = "Migrate Bookmarks",
 					ActionNote = "Updating bookmarks from messages to topics.",
 					Take = take,
@@ -774,7 +774,7 @@ namespace Forum.Controllers {
 				var totalRecords = DbContext.Participants.Count();
 				var totalPages = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
 
-				return Ok(new ControllerModels.Administration.Step {
+				return Ok(new ControllerModels.Administration.Stage {
 					ActionName = "Migrate Participants",
 					ActionNote = "Updating participants from messages to topics.",
 					Take = take,
@@ -821,7 +821,7 @@ namespace Forum.Controllers {
 				var totalRecords = DbContext.Topics.Count();
 				var totalPages = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
 
-				return Ok(new ControllerModels.Administration.Step {
+				return Ok(new ControllerModels.Administration.Stage {
 					ActionName = "Migrate TopicBoards",
 					ActionNote = "Updating TopicBoards from messages to topics and removing duplicates.",
 					Take = take,

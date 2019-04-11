@@ -1,22 +1,22 @@
-﻿import { MultiStepSettings } from "../models/page-settings/multi-step-settings";
+﻿import { ProcessSettings } from "../models/page-settings/process-settings";
 import { XhrOptions } from "../models/xhr-options";
 import { HttpMethod } from "../definitions/http-method";
 import { Xhr } from "../services/xhr";
 import { show, queryify } from "../helpers";
 import { XhrResult } from "../models/xhr-result";
 import { XhrException } from "../models/xhr-exception";
-import { Step } from "../models/page-settings/step";
+import { ProcessStage } from "../models/page-settings/process-stage";
 
-function getSettings(): MultiStepSettings {
+function getSettings(): ProcessSettings {
 	let genericWindow = <any>window;
 
-	return new MultiStepSettings({
-		steps: genericWindow.steps
+	return new ProcessSettings({
+		stages: genericWindow.stages
 	});
 }
 
-export class MultiStep {
-	private settings: MultiStepSettings;
+export class Process {
+	private settings: ProcessSettings;
 
 	constructor() {
 		this.settings = getSettings();
@@ -29,11 +29,11 @@ export class MultiStep {
 		let takeInput = <HTMLInputElement>document.querySelector('#take');
 		takeInput.addEventListener('blur', this.eventUpdateTake);
 
-		let stepInput = <HTMLInputElement>document.querySelector('#current-step');
-		stepInput.addEventListener('blur', this.eventUpdateStep);
+		let stageInput = <HTMLInputElement>document.querySelector('#current-stage');
+		stageInput.addEventListener('blur', this.eventUpdateStage);
 
-		let totalSteps = <Element>document.querySelector('#total-steps');
-		totalSteps.innerHTML = this.settings.steps.length.toString();
+		let totalStages = <Element>document.querySelector('#total-stages');
+		totalStages.innerHTML = this.settings.stages.length.toString();
 	}
 
 	updateProgress(): void {
@@ -122,7 +122,7 @@ export class MultiStep {
 			this.log(xhrResult);
 		}
 
-		let parsedResult = JSON.parse(xhrResult.responseText) as Step;
+		let parsedResult = JSON.parse(xhrResult.responseText) as ProcessStage;
 
 		if (parsedResult) {
 			this.settings.totalPages = parsedResult.totalPages;
@@ -178,17 +178,17 @@ export class MultiStep {
 		totalPages.innerHTML = (this.settings.totalPages + 1).toString();
 	}
 
-	eventUpdateStep = (event: Event): void => {
-		let stepInput = <HTMLInputElement>event.currentTarget;
+	eventUpdateStage = (event: Event): void => {
+		let stageInput = <HTMLInputElement>event.currentTarget;
 		let pageInput = <HTMLInputElement>document.querySelector('#current-page');
 		let takeInput = <HTMLInputElement>document.querySelector('#take');
 		let totalPages = <Element>document.querySelector('#total-pages');
 
-		if (!stepInput.value) {
+		if (!stageInput.value) {
 			return;
 		}
 
-		this.settings.currentStep = parseInt(stepInput.value) - 1;
+		this.settings.currentStage = parseInt(stageInput.value) - 1;
 		this.settings.take = 0;
 		this.settings.currentPage = 0;
 		this.settings.totalPages = 0;
@@ -201,16 +201,16 @@ export class MultiStep {
 	eventStartButtonClick = async (event: Event): Promise<void> => {
 		let togglePauseOnError = <HTMLInputElement>document.querySelector('#pause-on-error');
 		let togglePauseAfterNext = <HTMLInputElement>document.querySelector('#pause-after-next');
-		let currentStepInput = <HTMLInputElement>document.querySelector('#current-step');
+		let currentStageInput = <HTMLInputElement>document.querySelector('#current-stage');
 
-		if (currentStepInput.value) {
-			this.settings.currentStep = parseInt(currentStepInput.value) - 1;
+		if (currentStageInput.value) {
+			this.settings.currentStage = parseInt(currentStageInput.value) - 1;
 		}
 
-		for (var i = this.settings.currentStep; i < this.settings.steps.length; i++) {
+		for (var i = this.settings.currentStage; i < this.settings.stages.length; i++) {
 			this.start(i);
 
-			this.settings.currentAction = this.settings.steps[i];
+			this.settings.currentAction = this.settings.stages[i];
 
 			if (this.settings.totalPages == 0) {
 				await this.loadCurrentAction();
@@ -262,10 +262,10 @@ export class MultiStep {
 		}
 	}
 
-	start(step: number) {
+	start(stage: number) {
 		let startButton = <HTMLInputElement>document.querySelector('#start-button');
 		let currentPageInput = <HTMLInputElement>document.querySelector('#current-page');
-		let currentStepInput = <HTMLInputElement>document.querySelector('#current-step');
+		let currentStageInput = <HTMLInputElement>document.querySelector('#current-stage');
 		let takeInput = <HTMLInputElement>document.querySelector('#take');
 
 		if (takeInput.value) {
@@ -276,18 +276,18 @@ export class MultiStep {
 			this.settings.currentPage = parseInt(currentPageInput.value) - 1;
 		}
 
-		currentStepInput.value = (step + 1).toString();
+		currentStageInput.value = (stage + 1).toString();
 
 		startButton.disabled = true;
 		currentPageInput.disabled = true;
-		currentStepInput.disabled = true;
+		currentStageInput.disabled = true;
 		takeInput.disabled = true;
 	}
 
 	stop() {
 		let startButton = <HTMLInputElement>document.querySelector('#start-button');
 		let currentPageInput = <HTMLInputElement>document.querySelector('#current-page');
-		let currentStepInput = <HTMLInputElement>document.querySelector('#current-step');
+		let currentStageInput = <HTMLInputElement>document.querySelector('#current-stage');
 		let totalPages = <Element>document.querySelector('#total-pages');
 		let takeInput = <HTMLInputElement>document.querySelector('#take');
 
@@ -304,7 +304,7 @@ export class MultiStep {
 
 		startButton.disabled = false;
 		currentPageInput.disabled = false;
-		currentStepInput.disabled = false;
+		currentStageInput.disabled = false;
 		takeInput.disabled = false;
 	}
 }

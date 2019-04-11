@@ -28,8 +28,8 @@
 		<dd><input id="current-page" type="text" size="3" /> of <span id="total-pages"></span></dd>
 	</dl>
 	<dl>
-		<dt>Step</dt>
-		<dd><input id="current-step" type="text" size="3" /> of <span id="total-steps"></span></dd>
+		<dt>Stage</dt>
+		<dd><input id="current-stage" type="text" size="3" /> of <span id="total-stages"></span></dd>
 	</dl>
 </div>
 
@@ -39,17 +39,17 @@
 </div>
 
 
-@{ViewData["Title"] = $"Multi-Step Process";}
+@{ViewData["Title"] = $"Process";}
 @section Header {@ViewData["Title"]}
 
 @section styles {
-	<link rel="stylesheet" href="~/styles/multi-step.css" asp-append-version="true" />
+	<link rel="stylesheet" href="~/styles/process.css" asp-append-version="true" />
 }
 
 @section scripts {
 	<script>
-		window.pageActions = 'multi-step';
-		window.steps = [
+		window.pageActions = 'process';
+		window.stages = [
 			@foreach (var address in Model) {
 				<text>'@address',</text>
 			}
