@@ -31,13 +31,13 @@ namespace Forum.Controllers {
 		}
 
 		[HttpPost]
-		public IActionResult TestStage1(Models.ControllerModels.Administration.Page input) {
-			if (input.CurrentPage < 0) {
-				return Ok(new Models.ControllerModels.Administration.Stage {
+		public IActionResult TestStage1(Models.ControllerModels.Administration.ProcessStep input) {
+			if (input.CurrentStep < 0) {
+				return Ok(new Models.ControllerModels.Administration.ProcessStage {
 					ActionName = "Stage 1",
 					ActionNote = "Running stage 1 of process test",
 					Take = 5,
-					TotalPages = 5,
+					TotalSteps = 5,
 					TotalRecords = 23,
 				});
 			}
@@ -49,13 +49,13 @@ namespace Forum.Controllers {
 		}
 
 		[HttpPost]
-		public IActionResult TestStage2(Models.ControllerModels.Administration.Page input) {
-			if (input.CurrentPage < 0) {
-				return Ok(new Models.ControllerModels.Administration.Stage {
+		public IActionResult TestStage2(Models.ControllerModels.Administration.ProcessStep input) {
+			if (input.CurrentStep < 0) {
+				return Ok(new Models.ControllerModels.Administration.ProcessStage {
 					ActionName = "Stage 2",
 					ActionNote = "Running stage 2 of process test",
 					Take = 3,
-					TotalPages = 4,
+					TotalSteps = 4,
 					TotalRecords = 12,
 				});
 			}
@@ -65,13 +65,13 @@ namespace Forum.Controllers {
 		}
 
 		[HttpPost]
-		public IActionResult TestStage3(Models.ControllerModels.Administration.Page input) {
-			if (input.CurrentPage < 0) {
-				return Ok(new Models.ControllerModels.Administration.Stage {
+		public IActionResult TestStage3(Models.ControllerModels.Administration.ProcessStep input) {
+			if (input.CurrentStep < 0) {
+				return Ok(new Models.ControllerModels.Administration.ProcessStage {
 					ActionName = "Stage 3",
 					ActionNote = "Running stage 3 of process test",
 					Take = 3,
-					TotalPages = 6,
+					TotalSteps = 6,
 					TotalRecords = 17,
 				});
 			}

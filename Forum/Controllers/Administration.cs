@@ -88,17 +88,17 @@ namespace Forum.Controllers {
 		public IActionResult CleanupDeletedTopics() => View("Process", new List<string> { Url.Action(nameof(CleanupDeletedTopics)) });
 
 		[HttpPost]
-		public async Task<IActionResult> CleanupDeletedTopics(ControllerModels.Administration.Page input) {
-			if (input.CurrentPage < 0) {
+		public async Task<IActionResult> CleanupDeletedTopics(ControllerModels.Administration.ProcessStep input) {
+			if (input.CurrentStep < 0) {
 				var take = 1;
 				var totalRecords = 1;
-				var totalPages = 1;
+				var totalSteps = 1;
 
-				return Ok(new ControllerModels.Administration.Stage {
+				return Ok(new ControllerModels.Administration.ProcessStage {
 					ActionName = "Cleanup Deleted Topics",
 					ActionNote = "Deleting topics marked for deletion.",
 					Take = take,
-					TotalPages = totalPages,
+					TotalSteps = totalSteps,
 					TotalRecords = totalRecords,
 				});
 			}
@@ -113,27 +113,27 @@ namespace Forum.Controllers {
 		public IActionResult RebuildTopicReplies() => View("Process", new List<string> { Url.Action(nameof(RebuildTopicReplies)) });
 
 		[HttpPost]
-		public async Task<IActionResult> RebuildTopicReplies(ControllerModels.Administration.Page input) {
-			if (input.CurrentPage < 0) {
+		public async Task<IActionResult> RebuildTopicReplies(ControllerModels.Administration.ProcessStep input) {
+			if (input.CurrentStep < 0) {
 				var take = 50;
 				var totalRecords = await DbContext.Topics.CountAsync();
-				var totalPages = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
+				var totalSteps = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
 
-				return Ok(new ControllerModels.Administration.Stage {
+				return Ok(new ControllerModels.Administration.ProcessStage {
 					ActionName = "Rebuild Topic Replies",
 					ActionNote = "Recounting replies, determining first and last messages.",
 					Take = take,
-					TotalPages = totalPages,
+					TotalSteps = totalSteps,
 					TotalRecords = totalRecords,
 				});
 			}
 
 			if (input.LastRecordId < 0) {
-				var page = 0;
+				var step = 0;
 
-				while (page < input.CurrentPage) {
+				while (step < input.CurrentStep) {
 					input.LastRecordId = await DbContext.Topics.Where(item => item.Id > input.LastRecordId).Take(input.Take).Select(item => item.Id).LastAsync();
-					page++;
+					step++;
 				}
 			}
 
@@ -154,27 +154,27 @@ namespace Forum.Controllers {
 		public IActionResult RebuildTopicParticipants() => View("Process", new List<string> { Url.Action(nameof(RebuildTopicParticipants)) });
 
 		[HttpPost]
-		public async Task<IActionResult> RebuildTopicParticipants(ControllerModels.Administration.Page input) {
-			if (input.CurrentPage < 0) {
+		public async Task<IActionResult> RebuildTopicParticipants(ControllerModels.Administration.ProcessStep input) {
+			if (input.CurrentStep < 0) {
 				var take = 50;
 				var totalRecords = await DbContext.Topics.CountAsync();
-				var totalPages = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
+				var totalSteps = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
 
-				return Ok(new ControllerModels.Administration.Stage {
+				return Ok(new ControllerModels.Administration.ProcessStage {
 					ActionName = "Rebuild Topic Participants",
 					ActionNote = "Identifying topics participants.",
 					Take = take,
-					TotalPages = totalPages,
+					TotalSteps = totalSteps,
 					TotalRecords = totalRecords,
 				});
 			}
 
 			if (input.LastRecordId < 0) {
-				var page = 0;
+				var step = 0;
 
-				while (page < input.CurrentPage) {
+				while (step < input.CurrentStep) {
 					input.LastRecordId = await DbContext.Topics.Where(item => item.Id > input.LastRecordId).Take(input.Take).Select(item => item.Id).LastAsync();
-					page++;
+					step++;
 				}
 			}
 
@@ -219,17 +219,17 @@ namespace Forum.Controllers {
 		public IActionResult CleanupDeletedMessages() => View("Process", new List<string> { Url.Action(nameof(CleanupDeletedMessages)) });
 
 		[HttpPost]
-		public async Task<IActionResult> CleanupDeletedMessages(ControllerModels.Administration.Page input) {
-			if (input.CurrentPage < 0) {
+		public async Task<IActionResult> CleanupDeletedMessages(ControllerModels.Administration.ProcessStep input) {
+			if (input.CurrentStep < 0) {
 				var take = 1;
 				var totalRecords = 1;
-				var totalPages = 1;
+				var totalSteps = 1;
 
-				return Ok(new ControllerModels.Administration.Stage {
+				return Ok(new ControllerModels.Administration.ProcessStage {
 					ActionName = "Cleanup Deleted Messages",
 					ActionNote = "Deleting messages marked for deletion.",
 					Take = take,
-					TotalPages = totalPages,
+					TotalSteps = totalSteps,
 					TotalRecords = totalRecords,
 				});
 			}
@@ -244,27 +244,27 @@ namespace Forum.Controllers {
 		public IActionResult ReprocessMessages() => View("Process", new List<string> { Url.Action(nameof(ReprocessMessages)) });
 
 		[HttpPost]
-		public async Task<IActionResult> ReprocessMessages(ControllerModels.Administration.Page input) {
-			if (input.CurrentPage < 0) {
+		public async Task<IActionResult> ReprocessMessages(ControllerModels.Administration.ProcessStep input) {
+			if (input.CurrentStep < 0) {
 				var take = 10;
 				var totalRecords = DbContext.Messages.Count();
-				var totalPages = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
+				var totalSteps = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
 
-				return Ok(new ControllerModels.Administration.Stage {
+				return Ok(new ControllerModels.Administration.ProcessStage {
 					ActionName = "Reprocessing Messages",
 					ActionNote = "Message contents are rebuilt, links re-checked, BBC reprocessed.",
 					Take = take,
-					TotalPages = totalPages,
+					TotalSteps = totalSteps,
 					TotalRecords = totalRecords,
 				});
 			}
 
 			if (input.LastRecordId < 0) {
-				var page = 0;
+				var step = 0;
 
-				while (page < input.CurrentPage) {
+				while (step < input.CurrentStep) {
 					input.LastRecordId = await DbContext.Messages.Where(item => item.Id > input.LastRecordId).Take(input.Take).Select(item => item.Id).LastAsync();
-					page++;
+					step++;
 				}
 			}
 
@@ -294,15 +294,15 @@ namespace Forum.Controllers {
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> InstallRoles(ControllerModels.Administration.Page input) {
+		public async Task<IActionResult> InstallRoles(ControllerModels.Administration.ProcessStep input) {
 			CheckInstallContext();
 
-			if (input.CurrentPage < 0) {
-				return Ok(new ControllerModels.Administration.Stage {
+			if (input.CurrentStep < 0) {
+				return Ok(new ControllerModels.Administration.ProcessStage {
 					ActionName = "Roles",
 					ActionNote = "Setting up roles.",
 					Take = 1,
-					TotalPages = 1,
+					TotalSteps = 1,
 					TotalRecords = 1,
 				});
 			}
@@ -318,15 +318,15 @@ namespace Forum.Controllers {
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> InstallAdmins(ControllerModels.Administration.Page input) {
+		public async Task<IActionResult> InstallAdmins(ControllerModels.Administration.ProcessStep input) {
 			CheckInstallContext();
 
-			if (input.CurrentPage < 0) {
-				return Ok(new ControllerModels.Administration.Stage {
+			if (input.CurrentStep < 0) {
+				return Ok(new ControllerModels.Administration.ProcessStage {
 					ActionName = "Admin",
 					ActionNote = "Registering administrator account.",
 					Take = 1,
-					TotalPages = 1,
+					TotalSteps = 1,
 					TotalRecords = 1,
 				});
 			}
@@ -342,15 +342,15 @@ namespace Forum.Controllers {
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> InstallCategories(ControllerModels.Administration.Page input) {
+		public async Task<IActionResult> InstallCategories(ControllerModels.Administration.ProcessStep input) {
 			CheckInstallContext();
 
-			if (input.CurrentPage < 0) {
-				return Ok(new ControllerModels.Administration.Stage {
+			if (input.CurrentStep < 0) {
+				return Ok(new ControllerModels.Administration.ProcessStage {
 					ActionName = "Categories",
 					ActionNote = "Creating categories.",
 					Take = 1,
-					TotalPages = 1,
+					TotalSteps = 1,
 					TotalRecords = 1,
 				});
 			}
@@ -370,15 +370,15 @@ namespace Forum.Controllers {
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> InstallBoards(ControllerModels.Administration.Page input) {
+		public async Task<IActionResult> InstallBoards(ControllerModels.Administration.ProcessStep input) {
 			CheckInstallContext();
 
-			if (input.CurrentPage < 0) {
-				return Ok(new ControllerModels.Administration.Stage {
+			if (input.CurrentStep < 0) {
+				return Ok(new ControllerModels.Administration.ProcessStage {
 					ActionName = "Boards",
 					ActionNote = "Creating boards.",
 					Take = 1,
-					TotalPages = 1,
+					TotalSteps = 1,
 					TotalRecords = 1,
 				});
 			}
@@ -402,27 +402,27 @@ namespace Forum.Controllers {
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> ResetMessageTopicId(ControllerModels.Administration.Page input) {
-			if (input.CurrentPage < 0) {
+		public async Task<IActionResult> ResetMessageTopicId(ControllerModels.Administration.ProcessStep input) {
+			if (input.CurrentStep < 0) {
 				var take = 100;
 				var totalRecords = await DbContext.Messages.CountAsync();
-				var totalPages = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
+				var totalSteps = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
 
-				return Ok(new ControllerModels.Administration.Stage {
+				return Ok(new ControllerModels.Administration.ProcessStage {
 					ActionName = "Reset TopicId Column",
 					ActionNote = "Resetting TopicId column on all messages.",
 					Take = take,
-					TotalPages = totalPages,
+					TotalSteps = totalSteps,
 					TotalRecords = totalRecords,
 				});
 			}
 
 			if (input.LastRecordId < 0) {
-				var page = 0;
+				var step = 0;
 
-				while (page < input.CurrentPage) {
+				while (step < input.CurrentStep) {
 					input.LastRecordId = await DbContext.Messages.Where(item => item.Id > input.LastRecordId).Take(input.Take).Select(item => item.Id).LastAsync();
-					page++;
+					step++;
 				}
 			}
 
@@ -441,29 +441,29 @@ namespace Forum.Controllers {
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> ResetViewLogs(ControllerModels.Administration.Page input) {
+		public async Task<IActionResult> ResetViewLogs(ControllerModels.Administration.ProcessStep input) {
 			var recordsQuery = DbContext.ViewLogs.Where(item => item.TargetType == EViewLogTargetType.Topic);
 
-			if (input.CurrentPage < 0) {
+			if (input.CurrentStep < 0) {
 				var take = 500;
 				var totalRecords = await recordsQuery.CountAsync();
-				var totalPages = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
+				var totalSteps = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
 
-				return Ok(new ControllerModels.Administration.Stage {
+				return Ok(new ControllerModels.Administration.ProcessStage {
 					ActionName = "Reset ViewLogs",
 					ActionNote = "Re-associating viewlogs back to message IDs.",
 					Take = take,
-					TotalPages = totalPages,
+					TotalSteps = totalSteps,
 					TotalRecords = totalRecords,
 				});
 			}
 
 			if (input.LastRecordId < 0) {
-				var page = 0;
+				var step = 0;
 
-				while (page < input.CurrentPage) {
+				while (step < input.CurrentStep) {
 					input.LastRecordId = await recordsQuery.Where(item => item.Id > input.LastRecordId).Take(input.Take).Select(item => item.Id).LastAsync();
-					page++;
+					step++;
 				}
 			}
 
@@ -494,27 +494,27 @@ namespace Forum.Controllers {
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> ResetTopicBoards(ControllerModels.Administration.Page input) {
-			if (input.CurrentPage < 0) {
+		public async Task<IActionResult> ResetTopicBoards(ControllerModels.Administration.ProcessStep input) {
+			if (input.CurrentStep < 0) {
 				var take = 500;
 				var totalRecords = await DbContext.TopicBoards.CountAsync();
-				var totalPages = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
+				var totalSteps = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
 
-				return Ok(new ControllerModels.Administration.Stage {
+				return Ok(new ControllerModels.Administration.ProcessStage {
 					ActionName = "Reset TopicBoards",
 					ActionNote = "Re-associating topic boards back to message IDs.",
 					Take = take,
-					TotalPages = totalPages,
+					TotalSteps = totalSteps,
 					TotalRecords = totalRecords,
 				});
 			}
 
 			if (input.LastRecordId < 0) {
-				var page = 0;
+				var step = 0;
 
-				while (page < input.CurrentPage) {
+				while (step < input.CurrentStep) {
 					input.LastRecordId = await DbContext.TopicBoards.Where(item => item.Id > input.LastRecordId).Take(input.Take).Select(item => item.Id).LastAsync();
-					page++;
+					step++;
 				}
 			}
 
@@ -544,17 +544,17 @@ namespace Forum.Controllers {
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> DeleteTopics(ControllerModels.Administration.Page input) {
-			if (input.CurrentPage < 0) {
+		public async Task<IActionResult> DeleteTopics(ControllerModels.Administration.ProcessStep input) {
+			if (input.CurrentStep < 0) {
 				var take = 500;
 				var totalRecords = await DbContext.Topics.CountAsync();
-				var totalPages = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
+				var totalSteps = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
 
-				return Ok(new ControllerModels.Administration.Stage {
+				return Ok(new ControllerModels.Administration.ProcessStage {
 					ActionName = "Delete Topics",
 					ActionNote = "Removing all previously created topics.",
 					Take = take,
-					TotalPages = totalPages,
+					TotalSteps = totalSteps,
 					TotalRecords = totalRecords,
 				});
 			}
@@ -567,31 +567,31 @@ namespace Forum.Controllers {
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> MigrateTopics(ControllerModels.Administration.Page input) {
+		public async Task<IActionResult> MigrateTopics(ControllerModels.Administration.ProcessStep input) {
 			var parentMessagesQuery = from message in DbContext.Messages
 									  where message.ParentId == 0
 									  select message;
 
-			if (input.CurrentPage < 0) {
+			if (input.CurrentStep < 0) {
 				var take = 100;
 				var totalRecords = await parentMessagesQuery.CountAsync();
-				var totalPages = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
+				var totalSteps = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
 
-				return Ok(new ControllerModels.Administration.Stage {
+				return Ok(new ControllerModels.Administration.ProcessStage {
 					ActionName = "Migrate Topics",
 					ActionNote = "Creating topics from top level messages.",
 					Take = take,
-					TotalPages = totalPages,
+					TotalSteps = totalSteps,
 					TotalRecords = totalRecords,
 				});
 			}
 
 			if (input.LastRecordId < 0) {
-				var page = 0;
+				var step = 0;
 
-				while (page < input.CurrentPage) {
+				while (step < input.CurrentStep) {
 					input.LastRecordId = await parentMessagesQuery.Where(item => item.Id > input.LastRecordId).Take(input.Take).Select(item => item.Id).LastAsync();
-					page++;
+					step++;
 				}
 			}
 
@@ -619,27 +619,27 @@ namespace Forum.Controllers {
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> MigrateMessages(ControllerModels.Administration.Page input) {
-			if (input.CurrentPage < 0) {
+		public async Task<IActionResult> MigrateMessages(ControllerModels.Administration.ProcessStep input) {
+			if (input.CurrentStep < 0) {
 				var take = 100;
 				var totalRecords = await DbContext.Messages.CountAsync();
-				var totalPages = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
+				var totalSteps = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
 
-				return Ok(new ControllerModels.Administration.Stage {
+				return Ok(new ControllerModels.Administration.ProcessStage {
 					ActionName = "Migrate Messages",
 					ActionNote = "Associate messages to topics.",
 					Take = take,
-					TotalPages = totalPages,
+					TotalSteps = totalSteps,
 					TotalRecords = totalRecords,
 				});
 			}
 
 			if (input.LastRecordId < 0) {
-				var page = 0;
+				var step = 0;
 
-				while (page < input.CurrentPage) {
+				while (step < input.CurrentStep) {
 					input.LastRecordId = await DbContext.Messages.Where(item => item.Id > input.LastRecordId).Take(input.Take).Select(item => item.Id).LastAsync();
-					page++;
+					step++;
 				}
 			}
 
@@ -658,29 +658,29 @@ namespace Forum.Controllers {
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> MigrateViewLogs(ControllerModels.Administration.Page input) {
+		public async Task<IActionResult> MigrateViewLogs(ControllerModels.Administration.ProcessStep input) {
 			var recordsQuery = DbContext.ViewLogs.Where(item => item.TargetType == EViewLogTargetType.Message);
 
-			if (input.CurrentPage < 0) {
+			if (input.CurrentStep < 0) {
 				var take = 500;
 				var totalRecords = await recordsQuery.CountAsync();
-				var totalPages = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
+				var totalSteps = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
 
-				return Ok(new ControllerModels.Administration.Stage {
+				return Ok(new ControllerModels.Administration.ProcessStage {
 					ActionName = "Migrate ViewLogs",
 					ActionNote = "Updating viewlogs from messages to topics.",
 					Take = take,
-					TotalPages = totalPages,
+					TotalSteps = totalSteps,
 					TotalRecords = totalRecords,
 				});
 			}
 
 			if (input.LastRecordId < 0) {
-				var page = 0;
+				var step = 0;
 
-				while (page < input.CurrentPage) {
+				while (step < input.CurrentStep) {
 					input.LastRecordId = await recordsQuery.Where(item => item.Id > input.LastRecordId).Take(input.Take).Select(item => item.Id).LastAsync();
-					page++;
+					step++;
 				}
 			}
 
@@ -718,27 +718,27 @@ namespace Forum.Controllers {
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> MigrateBookmarks(ControllerModels.Administration.Page input) {
-			if (input.CurrentPage < 0) {
+		public async Task<IActionResult> MigrateBookmarks(ControllerModels.Administration.ProcessStep input) {
+			if (input.CurrentStep < 0) {
 				var take = 50;
 				var totalRecords = DbContext.Topics.Count();
-				var totalPages = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
+				var totalSteps = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
 
-				return Ok(new ControllerModels.Administration.Stage {
+				return Ok(new ControllerModels.Administration.ProcessStage {
 					ActionName = "Migrate Bookmarks",
 					ActionNote = "Updating bookmarks from messages to topics.",
 					Take = take,
-					TotalPages = totalPages,
+					TotalSteps = totalSteps,
 					TotalRecords = totalRecords,
 				});
 			}
 
 			if (input.LastRecordId < 0) {
-				var page = 0;
+				var step = 0;
 
-				while (page < input.CurrentPage) {
+				while (step < input.CurrentStep) {
 					input.LastRecordId = await DbContext.Topics.Where(item => item.Id > input.LastRecordId).Take(input.Take).Select(item => item.Id).LastAsync();
-					page++;
+					step++;
 				}
 			}
 
@@ -768,27 +768,27 @@ namespace Forum.Controllers {
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> MigrateParticipants(ControllerModels.Administration.Page input) {
-			if (input.CurrentPage < 0) {
+		public async Task<IActionResult> MigrateParticipants(ControllerModels.Administration.ProcessStep input) {
+			if (input.CurrentStep < 0) {
 				var take = 100;
 				var totalRecords = DbContext.Participants.Count();
-				var totalPages = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
+				var totalSteps = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
 
-				return Ok(new ControllerModels.Administration.Stage {
+				return Ok(new ControllerModels.Administration.ProcessStage {
 					ActionName = "Migrate Participants",
 					ActionNote = "Updating participants from messages to topics.",
 					Take = take,
-					TotalPages = totalPages,
+					TotalSteps = totalSteps,
 					TotalRecords = totalRecords,
 				});
 			}
 
 			if (input.LastRecordId < 0) {
-				var page = 0;
+				var step = 0;
 
-				while (page < input.CurrentPage) {
+				while (step < input.CurrentStep) {
 					input.LastRecordId = await DbContext.Participants.Where(item => item.Id > input.LastRecordId).Take(input.Take).Select(item => item.Id).LastAsync();
-					page++;
+					step++;
 				}
 			}
 
@@ -815,27 +815,27 @@ namespace Forum.Controllers {
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> MigrateTopicBoards(ControllerModels.Administration.Page input) {
-			if (input.CurrentPage < 0) {
+		public async Task<IActionResult> MigrateTopicBoards(ControllerModels.Administration.ProcessStep input) {
+			if (input.CurrentStep < 0) {
 				var take = 50;
 				var totalRecords = DbContext.Topics.Count();
-				var totalPages = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
+				var totalSteps = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
 
-				return Ok(new ControllerModels.Administration.Stage {
+				return Ok(new ControllerModels.Administration.ProcessStage {
 					ActionName = "Migrate TopicBoards",
 					ActionNote = "Updating TopicBoards from messages to topics and removing duplicates.",
 					Take = take,
-					TotalPages = totalPages,
+					TotalSteps = totalSteps,
 					TotalRecords = totalRecords,
 				});
 			}
 
 			if (input.LastRecordId < 0) {
-				var page = 0;
+				var step = 0;
 
-				while (page < input.CurrentPage) {
+				while (step < input.CurrentStep) {
 					input.LastRecordId = await DbContext.Topics.Where(item => item.Id > input.LastRecordId).Take(input.Take).Select(item => item.Id).LastAsync();
-					page++;
+					step++;
 				}
 			}
 

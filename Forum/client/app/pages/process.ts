@@ -41,7 +41,7 @@ export class Process {
 		show(progressBar);
 
 		let bar = <HTMLElement>document.querySelector('#completed-bar');
-		let percent = 100 * (this.settings.currentPage + 1) / (this.settings.totalPages + 1);
+		let percent = 100 * (this.settings.currentStep + 1) / (this.settings.totalSteps + 1);
 		bar.style.width = `${percent}%`;
 
 		percent = Math.round(percent);
@@ -125,7 +125,7 @@ export class Process {
 		let parsedResult = JSON.parse(xhrResult.responseText) as ProcessStage;
 
 		if (parsedResult) {
-			this.settings.totalPages = parsedResult.totalPages;
+			this.settings.totalSteps = parsedResult.totalSteps;
 			this.settings.totalRecords = parsedResult.totalRecords;
 
 			let actionName = <Element>document.querySelector('#action-name');
@@ -135,8 +135,8 @@ export class Process {
 			actionNote.innerHTML = parsedResult.actionNote;
 
 			let takeInput = <HTMLInputElement>document.querySelector('#take');
-			let totalPages = <Element>document.querySelector('#total-pages');
-			let currentPageInput = <HTMLInputElement>document.querySelector('#current-page');
+			let totalSteps = <Element>document.querySelector('#total-steps');
+			let currentStepInput = <HTMLInputElement>document.querySelector('#current-step');
 
 			if (takeInput.value) {
 				this.settings.take = parseInt(takeInput.value);
@@ -147,42 +147,42 @@ export class Process {
 				takeInput.value = this.settings.take.toString();
 			}
 
-			totalPages.innerHTML = (this.settings.totalPages + 1).toString();
+			totalSteps.innerHTML = (this.settings.totalSteps + 1).toString();
 
-			if (currentPageInput.value) {
-				this.settings.currentPage = parseInt(currentPageInput.value) - 1;
+			if (currentStepInput.value) {
+				this.settings.currentStep = parseInt(currentStepInput.value) - 1;
 			}
 
-			if (this.settings.currentPage == 0) {
-				currentPageInput.value = "1";
+			if (this.settings.currentStep == 0) {
+				currentStepInput.value = "1";
 			}
 		}
 	}
 
 	eventUpdateTake = (event: Event): void => {
 		let takeInput = <HTMLInputElement>event.currentTarget;
-		let pageInput = <HTMLInputElement>document.querySelector('#current-page');
-		let totalPages = <Element>document.querySelector('#total-pages');
+		let currentStepInput = <HTMLInputElement>document.querySelector('#current-step');
+		let totalSteps = <Element>document.querySelector('#total-steps');
 
 		if (!takeInput.value) {
 			return;
 		}
 
-		let skip = this.settings.take * this.settings.currentPage;
+		let skip = this.settings.take * this.settings.currentStep;
 
 		this.settings.take = parseInt(takeInput.value);
-		this.settings.currentPage = skip > 0 ? Math.floor(skip / this.settings.take) : 0;
-		this.settings.totalPages = Math.ceil(this.settings.totalRecords / this.settings.take);
+		this.settings.currentStep = skip > 0 ? Math.floor(skip / this.settings.take) : 0;
+		this.settings.totalSteps = Math.ceil(this.settings.totalRecords / this.settings.take);
 
-		pageInput.value = (this.settings.currentPage + 1).toString();
-		totalPages.innerHTML = (this.settings.totalPages + 1).toString();
+		currentStepInput.value = (this.settings.currentStep + 1).toString();
+		totalSteps.innerHTML = (this.settings.totalSteps + 1).toString();
 	}
 
 	eventUpdateStage = (event: Event): void => {
 		let stageInput = <HTMLInputElement>event.currentTarget;
-		let pageInput = <HTMLInputElement>document.querySelector('#current-page');
+		let currentStepInput = <HTMLInputElement>document.querySelector('#current-step');
 		let takeInput = <HTMLInputElement>document.querySelector('#take');
-		let totalPages = <Element>document.querySelector('#total-pages');
+		let totalSteps = <Element>document.querySelector('#total-steps');
 
 		if (!stageInput.value) {
 			return;
@@ -190,12 +190,12 @@ export class Process {
 
 		this.settings.currentStage = parseInt(stageInput.value) - 1;
 		this.settings.take = 0;
-		this.settings.currentPage = 0;
-		this.settings.totalPages = 0;
+		this.settings.currentStep = 0;
+		this.settings.totalSteps = 0;
 
 		takeInput.value = "";
-		pageInput.value = "";
-		totalPages.innerHTML = "";
+		currentStepInput.value = "";
+		totalSteps.innerHTML = "";
 	}
 
 	eventStartButtonClick = async (event: Event): Promise<void> => {
@@ -212,16 +212,16 @@ export class Process {
 
 			this.settings.currentAction = this.settings.stages[i];
 
-			if (this.settings.totalPages == 0) {
+			if (this.settings.totalSteps == 0) {
 				await this.loadCurrentAction();
 			}
 
-			while (this.settings.currentPage <= this.settings.totalPages) {
+			while (this.settings.currentStep <= this.settings.totalSteps) {
 				let requestOptions = new XhrOptions({
 					method: HttpMethod.Post,
 					url: this.settings.currentAction,
 					body: queryify({
-						currentPage: this.settings.currentPage,
+						currentStep: this.settings.currentStep,
 						take: this.settings.take,
 						lastRecordId: this.settings.lastRecordId
 					}),
@@ -246,10 +246,10 @@ export class Process {
 				}
 
 				this.updateProgress();
-				this.settings.currentPage++;
+				this.settings.currentStep++;
 
-				let currentPageInput = <HTMLInputElement>document.querySelector('#current-page');
-				currentPageInput.value = this.settings.currentPage.toString();
+				let currentStepInput = <HTMLInputElement>document.querySelector('#current-step');
+				currentStepInput.value = this.settings.currentStep.toString();
 
 				if (togglePauseAfterNext.checked) {
 					togglePauseAfterNext.checked = false;
@@ -264,7 +264,7 @@ export class Process {
 
 	start(stage: number) {
 		let startButton = <HTMLInputElement>document.querySelector('#start-button');
-		let currentPageInput = <HTMLInputElement>document.querySelector('#current-page');
+		let currentStepInput = <HTMLInputElement>document.querySelector('#current-step');
 		let currentStageInput = <HTMLInputElement>document.querySelector('#current-stage');
 		let takeInput = <HTMLInputElement>document.querySelector('#take');
 
@@ -272,38 +272,38 @@ export class Process {
 			this.settings.take = parseInt(takeInput.value);
 		}
 
-		if (currentPageInput.value) {
-			this.settings.currentPage = parseInt(currentPageInput.value) - 1;
+		if (currentStepInput.value) {
+			this.settings.currentStep = parseInt(currentStepInput.value) - 1;
 		}
 
 		currentStageInput.value = (stage + 1).toString();
 
 		startButton.disabled = true;
-		currentPageInput.disabled = true;
+		currentStepInput.disabled = true;
 		currentStageInput.disabled = true;
 		takeInput.disabled = true;
 	}
 
 	stop() {
 		let startButton = <HTMLInputElement>document.querySelector('#start-button');
-		let currentPageInput = <HTMLInputElement>document.querySelector('#current-page');
+		let currentStepInput = <HTMLInputElement>document.querySelector('#current-step');
 		let currentStageInput = <HTMLInputElement>document.querySelector('#current-stage');
-		let totalPages = <Element>document.querySelector('#total-pages');
+		let totalSteps = <Element>document.querySelector('#total-steps');
 		let takeInput = <HTMLInputElement>document.querySelector('#take');
 
-		if (this.settings.currentPage > this.settings.totalPages) {
+		if (this.settings.currentStep > this.settings.totalSteps) {
 			this.settings.lastRecordId = 0;
-			this.settings.currentPage = 0;
-			this.settings.totalPages = 0;
+			this.settings.currentStep = 0;
+			this.settings.totalSteps = 0;
 			this.settings.take = 0;
 
-			currentPageInput.value = "";
-			totalPages.innerHTML = "";
+			currentStepInput.value = "";
+			totalSteps.innerHTML = "";
 			takeInput.value = "";
 		}
 
 		startButton.disabled = false;
-		currentPageInput.disabled = false;
+		currentStepInput.disabled = false;
 		currentStageInput.disabled = false;
 		takeInput.disabled = false;
 	}
