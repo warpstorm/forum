@@ -48,7 +48,9 @@ namespace Forum.Controllers {
 			return await ForumViewResult.ViewResult(this, "MultiStep", new List<string> {
 				Url.Action(nameof(CleanupDeletedMessages)),
 				Url.Action(nameof(ReprocessMessages)),
-				Url.Action(nameof(RebuildTopics)),
+				Url.Action(nameof(CleanupDeletedTopics)),
+				Url.Action(nameof(RebuildTopicReplies)),
+				Url.Action(nameof(RebuildTopicParticipants)),
 			});
 		}
 
@@ -78,18 +80,18 @@ namespace Forum.Controllers {
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> RebuildTopics() => await ForumViewResult.ViewResult(this, "MultiStep", new List<string> { Url.Action(nameof(RebuildTopics)) });
+		public async Task<IActionResult> RebuildTopicReplies() => await ForumViewResult.ViewResult(this, "MultiStep", new List<string> { Url.Action(nameof(RebuildTopicReplies)) });
 
 		[HttpPost]
-		public async Task<IActionResult> RebuildTopics(ControllerModels.Administration.Page input) {
+		public async Task<IActionResult> RebuildTopicReplies(ControllerModels.Administration.Page input) {
 			if (input.CurrentPage < 0) {
 				var take = 50;
 				var totalRecords = await DbContext.Topics.CountAsync();
 				var totalPages = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
 
 				return Ok(new ControllerModels.Administration.Step {
-					ActionName = "Rebuild Topics",
-					ActionNote = "Recounting replies, calculating participants, determining first and last messages, deleting where necessary.",
+					ActionName = "Rebuild Topic Replies",
+					ActionNote = "Recounting replies, determining first and last messages.",
 					Take = take,
 					TotalPages = totalPages,
 					TotalRecords = totalRecords,
@@ -109,8 +111,75 @@ namespace Forum.Controllers {
 			var lastRecordId = 0;
 
 			foreach (var record in records) {
-				await TopicRepository.RebuildTopic(record);
+				await TopicRepository.RebuildTopicReplies(record);
 				lastRecordId = record.Id;
+			}
+
+			await DbContext.SaveChangesAsync();
+
+			return Ok(lastRecordId);
+		}
+
+		[HttpGet]
+		public async Task<IActionResult> RebuildTopicParticipants() => await ForumViewResult.ViewResult(this, "MultiStep", new List<string> { Url.Action(nameof(RebuildTopicParticipants)) });
+
+		[HttpPost]
+		public async Task<IActionResult> RebuildTopicParticipants(ControllerModels.Administration.Page input) {
+			if (input.CurrentPage < 0) {
+				var take = 50;
+				var totalRecords = await DbContext.Topics.CountAsync();
+				var totalPages = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
+
+				return Ok(new ControllerModels.Administration.Step {
+					ActionName = "Rebuild Topic Participants",
+					ActionNote = "Identifying topics participants.",
+					Take = take,
+					TotalPages = totalPages,
+					TotalRecords = totalRecords,
+				});
+			}
+
+			if (input.LastRecordId < 0) {
+				var page = 0;
+
+				while (page < input.CurrentPage) {
+					input.LastRecordId = await DbContext.Topics.Where(item => item.Id > input.LastRecordId).Take(input.Take).Select(item => item.Id).LastAsync();
+					page++;
+				}
+			}
+
+			var recordIds = await DbContext.Topics.Where(item => item.Id > input.LastRecordId).Take(input.Take).Select(item => item.Id).ToListAsync();
+			var lastRecordId = 0;
+
+			foreach (var recordId in recordIds) {
+				var messagesQuery = from message in DbContext.Messages
+									where message.TopicId == recordId
+									select new {
+										message.PostedById,
+										message.TimePosted
+									};
+
+				var messages = await messagesQuery.ToListAsync();
+
+				var newParticipants = new List<DataModels.Participant>();
+
+				foreach (var message in messages) {
+					if (!newParticipants.Any(item => item.UserId == message.PostedById)) {
+						newParticipants.Add(new DataModels.Participant {
+							TopicId = recordId,
+							UserId = message.PostedById,
+							Time = message.TimePosted
+						});
+					}
+				}
+
+				var oldParticipants = await DbContext.Participants.Where(r => r.TopicId == recordId).ToListAsync();
+
+				DbContext.RemoveRange(oldParticipants);
+				DbContext.Participants.AddRange(newParticipants);
+				await DbContext.SaveChangesAsync();
+
+				lastRecordId = recordId;
 			}
 
 			return Ok(lastRecordId);
@@ -329,7 +398,8 @@ namespace Forum.Controllers {
 				Url.Action(nameof(MigrateParticipants)),
 				Url.Action(nameof(MigrateTopicBoards)),
 				Url.Action(nameof(ReprocessMessages)),
-				Url.Action(nameof(RebuildTopics)),
+				Url.Action(nameof(RebuildTopicReplies)),
+				Url.Action(nameof(RebuildTopicParticipants)),
 			});
 		}
 

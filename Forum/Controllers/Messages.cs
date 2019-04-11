@@ -339,8 +339,10 @@ namespace Forum.Controllers {
 					});
 				}
 				else {
-					await MessageRepository.DeleteMessageFromTopic(message, topic);
-					await TopicRepository.RebuildTopic(topic);
+					MessageRepository.DeleteMessageFromTopic(message, topic);
+					await TopicRepository.RebuildTopicReplies(topic);
+					await DbContext.SaveChangesAsync();
+
 					redirectPath = UrlHelper.Action(nameof(Topics.Latest), nameof(Topics), new { id = topic.Id });
 
 					await ForumHub.Clients.All.SendAsync("deleted-message", new HubModels.Message {

@@ -822,7 +822,7 @@ namespace Forum.Services.Repositories {
 			await DbContext.SaveChangesAsync();
 		}
 
-		public async Task DeleteMessageFromTopic(DataModels.Message message, DataModels.Topic topic) {
+		public void DeleteMessageFromTopic(DataModels.Message message, DataModels.Topic topic) {
 			var directRepliesQuery = from m in DbContext.Messages
 									 where m.ReplyId == message.Id
 									 where !m.Deleted
@@ -840,8 +840,6 @@ namespace Forum.Services.Repositories {
 			}
 
 			message.Deleted = true;
-
-			await DbContext.SaveChangesAsync();
 		}
 
 		public async Task DeleteMessage(DataModels.Message record) {

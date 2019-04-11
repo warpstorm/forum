@@ -517,8 +517,10 @@ namespace Forum.Services.Repositories {
 
 		public async Task Merge(DataModels.Topic sourceTopic, DataModels.Topic targetTopic) {
 			await UpdateMessagesTopicId(sourceTopic, targetTopic);
-			await RebuildTopic(targetTopic);
+			await RebuildTopicReplies(targetTopic);
 			await RemoveTopic(sourceTopic);
+
+			await DbContext.SaveChangesAsync();
 		}
 
 		public async Task UpdateMessagesTopicId(DataModels.Topic sourceTopic, DataModels.Topic targetTopic) {
@@ -528,8 +530,6 @@ namespace Forum.Services.Repositories {
 				message.TopicId = targetTopic.Id;
 				DbContext.Update(message);
 			}
-
-			await DbContext.SaveChangesAsync();
 		}
 
 		public async Task RemoveTopic(DataModels.Topic topic) {
@@ -540,8 +540,6 @@ namespace Forum.Services.Repositories {
 
 			topic.Deleted = true;
 			DbContext.Update(topic);
-
-			await DbContext.SaveChangesAsync();
 		}
 
 		public async Task RemoveTopicViewLogs(int topicId) {
@@ -572,11 +570,16 @@ namespace Forum.Services.Repositories {
 			await DbContext.SaveChangesAsync();
 		}
 
-		public async Task RebuildTopic(DataModels.Topic topic) {
+		public async Task RebuildTopicReplies(DataModels.Topic topic) {
 			var messagesQuery = from message in DbContext.Messages
 								where message.TopicId == topic.Id
 								where !message.Deleted
-								select message;
+								select new {
+									message.Id,
+									message.TimePosted,
+									message.PostedById,
+									message.ShortPreview
+								};
 
 			var messages = await messagesQuery.ToListAsync();
 
@@ -601,47 +604,6 @@ namespace Forum.Services.Repositories {
 			topic.LastMessageShortPreview = lastMessage.ShortPreview;
 
 			DbContext.Update(topic);
-
-			if (topic.Deleted) {
-				foreach (var message in messages) {
-					await MessageRepository.DeleteMessageFromTopic(message, topic);
-				}
-			}
-
-			await DbContext.SaveChangesAsync();
-
-			await RebuildParticipantsForTopic(topic.Id);
-		}
-
-		public async Task RebuildParticipantsForTopic(int topicId) {
-			var messagesQuery = from message in DbContext.Messages
-								where message.TopicId == topicId
-								select new {
-									message.PostedById,
-									message.TimePosted
-								};
-
-			var messages = await messagesQuery.ToListAsync();
-
-			var newParticipants = new List<DataModels.Participant>();
-
-			foreach (var message in messages) {
-				if (!newParticipants.Any(item => item.UserId == message.PostedById)) {
-					newParticipants.Add(new DataModels.Participant {
-						TopicId = topicId,
-						UserId = message.PostedById,
-						Time = message.TimePosted
-					});
-				}
-			}
-
-			var oldParticipants = await DbContext.Participants.Where(r => r.TopicId == topicId).ToListAsync();
-
-			DbContext.RemoveRange(oldParticipants);
-			await DbContext.SaveChangesAsync();
-
-			DbContext.Participants.AddRange(newParticipants);
-			await DbContext.SaveChangesAsync();
 		}
 	}
 }
