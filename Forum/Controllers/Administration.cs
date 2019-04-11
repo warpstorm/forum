@@ -47,7 +47,6 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> Maintenance() {
 			return await ForumViewResult.ViewResult(this, "MultiStep", new List<string> {
 				Url.Action(nameof(CleanupDeletedMessages)),
-				Url.Action(nameof(ReprocessMessages)),
 				Url.Action(nameof(CleanupDeletedTopics)),
 				Url.Action(nameof(RebuildTopicReplies)),
 				Url.Action(nameof(RebuildTopicParticipants)),
@@ -397,7 +396,6 @@ namespace Forum.Controllers {
 				Url.Action(nameof(MigrateBookmarks)),
 				Url.Action(nameof(MigrateParticipants)),
 				Url.Action(nameof(MigrateTopicBoards)),
-				Url.Action(nameof(ReprocessMessages)),
 				Url.Action(nameof(RebuildTopicReplies)),
 				Url.Action(nameof(RebuildTopicParticipants)),
 			});
