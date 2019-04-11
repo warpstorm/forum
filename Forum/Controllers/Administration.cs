@@ -44,6 +44,37 @@ namespace Forum.Controllers {
 		}
 
 		[HttpGet]
+		public async Task<IActionResult> Install() {
+			CheckInstallContext();
+
+			return await ForumViewResult.ViewResult(this, "MultiStep", new List<string> {
+				Url.Action(nameof(InstallRoles)),
+				Url.Action(nameof(InstallAdmins)),
+				Url.Action(nameof(InstallCategories)),
+				Url.Action(nameof(InstallBoards)),
+			});
+		}
+
+		[HttpGet]
+		public async Task<IActionResult> MigrateV5() {
+			return await ForumViewResult.ViewResult(this, "MultiStep", new List<string> {
+				Url.Action(nameof(CleanupDeletedMessages)),
+				Url.Action(nameof(ResetMessageTopicId)),
+				Url.Action(nameof(ResetViewLogs)),
+				Url.Action(nameof(ResetTopicBoards)),
+				Url.Action(nameof(DeleteTopics)),
+				Url.Action(nameof(MigrateTopics)),
+				Url.Action(nameof(MigrateMessages)),
+				Url.Action(nameof(MigrateViewLogs)),
+				Url.Action(nameof(MigrateBookmarks)),
+				Url.Action(nameof(MigrateParticipants)),
+				Url.Action(nameof(MigrateTopicBoards)),
+				Url.Action(nameof(RebuildTopicReplies)),
+				Url.Action(nameof(RebuildTopicParticipants)),
+			});
+		}
+
+		[HttpGet]
 		public async Task<IActionResult> Maintenance() {
 			return await ForumViewResult.ViewResult(this, "MultiStep", new List<string> {
 				Url.Action(nameof(CleanupDeletedMessages)),
@@ -54,7 +85,7 @@ namespace Forum.Controllers {
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> CleanupDeletedTopics() => await ForumViewResult.ViewResult(this, "MultiStep", new List<string> { Url.Action(nameof(CleanupDeletedTopics)) });
+		public IActionResult CleanupDeletedTopics() => View("MultiStep", new List<string> { Url.Action(nameof(CleanupDeletedTopics)) });
 
 		[HttpPost]
 		public async Task<IActionResult> CleanupDeletedTopics(ControllerModels.Administration.Page input) {
@@ -79,7 +110,7 @@ namespace Forum.Controllers {
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> RebuildTopicReplies() => await ForumViewResult.ViewResult(this, "MultiStep", new List<string> { Url.Action(nameof(RebuildTopicReplies)) });
+		public IActionResult RebuildTopicReplies() => View("MultiStep", new List<string> { Url.Action(nameof(RebuildTopicReplies)) });
 
 		[HttpPost]
 		public async Task<IActionResult> RebuildTopicReplies(ControllerModels.Administration.Page input) {
@@ -120,7 +151,7 @@ namespace Forum.Controllers {
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> RebuildTopicParticipants() => await ForumViewResult.ViewResult(this, "MultiStep", new List<string> { Url.Action(nameof(RebuildTopicParticipants)) });
+		public IActionResult RebuildTopicParticipants() => View("MultiStep", new List<string> { Url.Action(nameof(RebuildTopicParticipants)) });
 
 		[HttpPost]
 		public async Task<IActionResult> RebuildTopicParticipants(ControllerModels.Administration.Page input) {
@@ -185,7 +216,7 @@ namespace Forum.Controllers {
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> CleanupDeletedMessages() => await ForumViewResult.ViewResult(this, "MultiStep", new List<string> { Url.Action(nameof(CleanupDeletedMessages)) });
+		public IActionResult CleanupDeletedMessages() => View("MultiStep", new List<string> { Url.Action(nameof(CleanupDeletedMessages)) });
 
 		[HttpPost]
 		public async Task<IActionResult> CleanupDeletedMessages(ControllerModels.Administration.Page input) {
@@ -210,7 +241,7 @@ namespace Forum.Controllers {
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> ReprocessMessages() => await ForumViewResult.ViewResult(this, "MultiStep", new List<string> { Url.Action(nameof(ReprocessMessages)) });
+		public IActionResult ReprocessMessages() => View("MultiStep", new List<string> { Url.Action(nameof(ReprocessMessages)) });
 
 		[HttpPost]
 		public async Task<IActionResult> ReprocessMessages(ControllerModels.Administration.Page input) {
@@ -260,18 +291,6 @@ namespace Forum.Controllers {
 			await DbContext.SaveChangesAsync();
 
 			return Ok(lastRecordId);
-		}
-
-		[HttpGet]
-		public async Task<IActionResult> Install() {
-			CheckInstallContext();
-
-			return await ForumViewResult.ViewResult(this, "MultiStep", new List<string> {
-				Url.Action(nameof(InstallRoles)),
-				Url.Action(nameof(InstallAdmins)),
-				Url.Action(nameof(InstallCategories)),
-				Url.Action(nameof(InstallBoards)),
-			});
 		}
 
 		[HttpPost]
@@ -380,25 +399,6 @@ namespace Forum.Controllers {
 			await DbContext.SaveChangesAsync();
 
 			return Ok();
-		}
-
-		[HttpGet]
-		public async Task<IActionResult> MigrateV5() {
-			return await ForumViewResult.ViewResult(this, "MultiStep", new List<string> {
-				Url.Action(nameof(CleanupDeletedMessages)),
-				Url.Action(nameof(ResetMessageTopicId)),
-				Url.Action(nameof(ResetViewLogs)),
-				Url.Action(nameof(ResetTopicBoards)),
-				Url.Action(nameof(DeleteTopics)),
-				Url.Action(nameof(MigrateTopics)),
-				Url.Action(nameof(MigrateMessages)),
-				Url.Action(nameof(MigrateViewLogs)),
-				Url.Action(nameof(MigrateBookmarks)),
-				Url.Action(nameof(MigrateParticipants)),
-				Url.Action(nameof(MigrateTopicBoards)),
-				Url.Action(nameof(RebuildTopicReplies)),
-				Url.Action(nameof(RebuildTopicParticipants)),
-			});
 		}
 
 		[HttpPost]

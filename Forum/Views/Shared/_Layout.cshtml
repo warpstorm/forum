@@ -1,5 +1,9 @@
 ﻿@inject UserContext UserContext
 
+@{ 
+	var withSidebar = UserContext.IsAuthenticated && !(@ViewData[Constants.InternalKeys.Sidebar] is null);
+}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -25,11 +29,11 @@
 	<br class="clear" />
 
 	<div role="main" class="margin-center">
-		@if(UserContext.IsAuthenticated) {
+		@if(withSidebar) {
 			<partial name="SideBar/_Sidebar" for="@ViewData[Constants.InternalKeys.Sidebar]" />
 		}
 
-		<main class="align-center @(UserContext.IsAuthenticated ? "with-sidebar" : "")">
+		<main class="align-center @(withSidebar ? "with-sidebar" : "")">
 			<header>
 				@await RenderSectionAsync("Header", required: false)
 			</header>
