@@ -126,6 +126,9 @@ namespace Forum.Services.Contexts {
 				.HasIndex(r => r.TopicId);
 
 			modelBuilder.Entity<Message>()
+				.HasIndex(r => new { r.TopicId, r.Deleted });
+
+			modelBuilder.Entity<Message>()
 				.HasIndex(r => r.ReplyId);
 
 			modelBuilder.Entity<Message>()

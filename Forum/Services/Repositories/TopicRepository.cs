@@ -589,8 +589,7 @@ namespace Forum.Services.Repositories {
 
 		public async Task RebuildTopicReplies(DataModels.Topic topic) {
 			var messagesQuery = from message in DbContext.Messages
-								where message.TopicId == topic.Id
-								where !message.Deleted
+								where message.TopicId == topic.Id && !message.Deleted
 								select new {
 									message.Id,
 									message.TimePosted,
@@ -606,14 +605,14 @@ namespace Forum.Services.Repositories {
 				topic.ReplyCount = replyCount;
 			}
 
-			var firstMessage = messages.FirstOrDefault();
+			var firstMessage = messages.First();
 
 			topic.FirstMessageId = firstMessage.Id;
 			topic.FirstMessageTimePosted = firstMessage.TimePosted;
 			topic.FirstMessagePostedById = firstMessage.PostedById;
 			topic.FirstMessageShortPreview = firstMessage.ShortPreview;
 
-			var lastMessage = messages.LastOrDefault();
+			var lastMessage = messages.Last();
 
 			topic.LastMessageId = lastMessage.Id;
 			topic.LastMessageTimePosted = lastMessage.TimePosted;

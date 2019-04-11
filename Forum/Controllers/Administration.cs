@@ -44,10 +44,10 @@ namespace Forum.Controllers {
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> Install() {
+		public IActionResult Install() {
 			CheckInstallContext();
 
-			return await ForumViewResult.ViewResult(this, "Process", new List<string> {
+			return View("Process", new List<string> {
 				Url.Action(nameof(InstallRoles)),
 				Url.Action(nameof(InstallAdmins)),
 				Url.Action(nameof(InstallCategories)),
@@ -56,8 +56,8 @@ namespace Forum.Controllers {
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> MigrateV5() {
-			return await ForumViewResult.ViewResult(this, "Process", new List<string> {
+		public IActionResult MigrateV5() {
+			return View("Process", new List<string> {
 				Url.Action(nameof(CleanupDeletedMessages)),
 				Url.Action(nameof(ResetMessageTopicId)),
 				Url.Action(nameof(ResetViewLogs)),
@@ -74,8 +74,8 @@ namespace Forum.Controllers {
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> Maintenance() {
-			return await ForumViewResult.ViewResult(this, "Process", new List<string> {
+		public IActionResult Maintenance() {
+			return View("Process", new List<string> {
 				Url.Action(nameof(CleanupDeletedMessages)),
 				Url.Action(nameof(CleanupDeletedTopics)),
 				Url.Action(nameof(RebuildTopicReplies)),
@@ -114,7 +114,7 @@ namespace Forum.Controllers {
 		[HttpPost]
 		public async Task<IActionResult> RebuildTopicReplies(ControllerModels.Administration.ProcessStep input) {
 			if (input.CurrentStep < 0) {
-				var take = 20;
+				var take = 10;
 				var totalRecords = await DbContext.Topics.CountAsync();
 				var totalSteps = Convert.ToInt32(Math.Floor(1d * totalRecords / take));
 
@@ -797,10 +797,8 @@ namespace Forum.Controllers {
 			var lastRecordId = 0;
 
 			foreach (var record in records) {
-				var messageIds = await DbContext.Messages.Where(item => item.TopicId == record.Id).Select(item => item.Id).ToListAsync();
-
 				var topicBoardsQuery = from topicBoard in DbContext.TopicBoards
-									   where messageIds.Contains(topicBoard.MessageId)
+									   where topicBoard.MessageId == record.FirstMessageId
 									   select topicBoard;
 
 				var topicBoards = await topicBoardsQuery.ToListAsync();
