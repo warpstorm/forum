@@ -73,14 +73,21 @@
 									<li>
 										Messages
 										<ul>
-											<li class="hover-highlight" clickable-link-parent><a asp-action="@nameof(Administration.CleanupDeletedMessages)">Cleanup deleted messages</a></li>
-											<li class="hover-highlight" clickable-link-parent><a asp-action="@nameof(Administration.ReprocessMessages)">Reprocess message contents</a></li>
+											<li class="hover-highlight" clickable-link-parent><a asp-controller='@nameof(Administration)' asp-action="@nameof(Administration.CleanupDeletedMessages)">Cleanup deleted messages</a></li>
+											<li class="hover-highlight" clickable-link-parent><a asp-controller='@nameof(Administration)' asp-action="@nameof(Administration.ReprocessMessages)">Reprocess message contents</a></li>
 										</ul>
 									</li>
 									<li class='hover-highlight' clickable-link-parent><a asp-controller='@nameof(Quotes)' asp-action='@nameof(Quotes.Index)'>Quotes</a></li>
 									<li class='hover-highlight' clickable-link-parent><a asp-controller='@nameof(Roles)' asp-action='@nameof(Roles.Index)'>Roles</a></li>
 									<li class='hover-highlight' clickable-link-parent><a asp-controller='@nameof(Smileys)' asp-action='@nameof(Smileys.Index)'>Smileys</a></li>
-									<li class='hover-highlight' clickable-link-parent><a asp-controller='@nameof(StrippedUrls)' asp-action='@nameof(StrippedUrls.Index)'>Stripped Urls</a></li>
+									<li class='hover-highlight' clickable-link-parent><a asp-controller='@nameof(StrippedUrls)' asp-action='@nameof(StrippedUrls.Index)'>Stripped urls</a></li>
+									<li>
+										Topics
+										<ul>
+											<li class="hover-highlight" clickable-link-parent><a asp-controller='@nameof(Administration)' asp-action="@nameof(Administration.CleanupDeletedTopics)">Cleanup deleted topics</a></li>
+											<li class="hover-highlight" clickable-link-parent><a asp-controller='@nameof(Administration)' asp-action="@nameof(Administration.RebuildTopics)">Rebuild topics</a></li>
+										</ul>
+									</li>
 									<li class='hover-highlight' clickable-link-parent><a asp-controller='@nameof(Account)' asp-action='@nameof(Account.Index)'>Users</a></li>
 								</ul>
 							</li>

@@ -52,6 +52,34 @@ namespace Forum.Controllers {
 			});
 		}
 
+		[HttpGet]
+		public async Task<IActionResult> CleanupDeletedTopics() => await ForumViewResult.ViewResult(this, "MultiStep", new List<string> { Url.Action(nameof(CleanupDeletedTopics)) });
+
+		[HttpPost]
+		public async Task<IActionResult> CleanupDeletedTopics(ControllerModels.Administration.Page input) {
+			if (input.CurrentPage < 0) {
+				var take = 1;
+				var totalRecords = 1;
+				var totalPages = 1;
+
+				return Ok(new ControllerModels.Administration.Step {
+					ActionName = "Cleanup Deleted Topics",
+					ActionNote = "Deleting topics marked for deletion.",
+					Take = take,
+					TotalPages = totalPages,
+					TotalRecords = totalRecords,
+				});
+			}
+
+			var pTrue = new SqlParameter("@True", true);
+			await DbContext.Database.ExecuteSqlCommandAsync($"DELETE FROM [{nameof(ApplicationDbContext.Topics)}] WHERE {nameof(DataModels.Topic.Deleted)} = @True", pTrue);
+
+			return Ok();
+		}
+
+		[HttpGet]
+		public async Task<IActionResult> RebuildTopics() => await ForumViewResult.ViewResult(this, "MultiStep", new List<string> { Url.Action(nameof(RebuildTopics)) });
+
 		[HttpPost]
 		public async Task<IActionResult> RebuildTopics(ControllerModels.Administration.Page input) {
 			if (input.CurrentPage < 0) {
@@ -88,6 +116,9 @@ namespace Forum.Controllers {
 			return Ok(lastRecordId);
 		}
 
+		[HttpGet]
+		public async Task<IActionResult> CleanupDeletedMessages() => await ForumViewResult.ViewResult(this, "MultiStep", new List<string> { Url.Action(nameof(CleanupDeletedMessages)) });
+
 		[HttpPost]
 		public async Task<IActionResult> CleanupDeletedMessages(ControllerModels.Administration.Page input) {
 			if (input.CurrentPage < 0) {
@@ -109,6 +140,9 @@ namespace Forum.Controllers {
 
 			return Ok();
 		}
+
+		[HttpGet]
+		public async Task<IActionResult> ReprocessMessages() => await ForumViewResult.ViewResult(this, "MultiStep", new List<string> { Url.Action(nameof(ReprocessMessages)) });
 
 		[HttpPost]
 		public async Task<IActionResult> ReprocessMessages(ControllerModels.Administration.Page input) {
