@@ -136,19 +136,6 @@ namespace Forum.Services.Repositories {
 
 				DbContext.Update(topic);
 
-				if (topic.FirstMessagePostedById != CurrentUser.Id) {
-					var notification = new DataModels.Notification {
-						MessageId = record.Id,
-						UserId = topic.FirstMessagePostedById,
-						TargetUserId = CurrentUser.Id,
-						Time = DateTime.Now,
-						Type = ENotificationType.Reply,
-						Unread = true,
-					};
-
-					DbContext.Notifications.Add(notification);
-				}
-
 				if (!(replyTargetMessage is null) && replyTargetMessage.PostedById != CurrentUser.Id) {
 					var notification = new DataModels.Notification {
 						MessageId = record.Id,
