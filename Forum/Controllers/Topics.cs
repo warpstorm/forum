@@ -385,9 +385,6 @@ namespace Forum.Controllers {
 				target
 			};
 
-			// Why doesn't this work?
-			//return Url.Action(nameof(Topics.Display), nameof(Topics), routeValues, Request.Protocol, Request.Host, $"#message{target}");
-
 			return Url.Action(nameof(Topics.Display), nameof(Topics), routeValues) + "#message" + target;
 		}
 	}

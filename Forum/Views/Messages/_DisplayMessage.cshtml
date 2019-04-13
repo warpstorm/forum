@@ -100,7 +100,7 @@
 					</a>
 				}
 
-				<a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Display)" asp-route-id="@Model.Id">#@Model.Id</a>
+				<a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Display)" asp-route-id="@Model.TopicId" asp-route-target="@Model.Id" asp-fragment="message@(Model.Id)">#@Model.Id</a>
 			</div>
 
 			<br class="clear-left" />

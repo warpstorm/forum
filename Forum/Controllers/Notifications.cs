@@ -72,7 +72,7 @@ namespace Forum.Controllers {
 				var message = await DbContext.Messages.FindAsync(record.MessageId);
 				var topicId = message.TopicId;
 
-				var redirectPath = Url.Action(nameof(Topics.Display), nameof(Topics), new { id = topicId, page = 1, target = record.MessageId });
+				var redirectPath = Url.Action(nameof(Topics.Display), nameof(Topics), new { id = topicId, page = 1, target = record.MessageId }) + $"#message{record.MessageId}";
 				return Redirect(redirectPath);
 			}
 
