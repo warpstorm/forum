@@ -1,35 +1,26 @@
-﻿using Forum.Services.Contexts;
-using Forum.Controllers;
-using Forum.Models.Options;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Routing;
+﻿using Forum.Models.Options;
+using Forum.Services.Contexts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace Forum.Services.Repositories {
-	using ServiceModels = Models.ServiceModels;
 	using ViewModels = Models.ViewModels.Notifications;
 
 	public class NotificationRepository {
 		ApplicationDbContext DbContext { get; }
 		UserContext UserContext { get; }
 		AccountRepository AccountRepository { get; }
-		IUrlHelper UrlHelper { get; }
 
-		public NotificationRepository (
+		public NotificationRepository(
 			ApplicationDbContext dbContext,
 			UserContext userContext,
-			AccountRepository accountRepository,
-			IActionContextAccessor actionContextAccessor,
-			IUrlHelperFactory urlHelperFactory
+			AccountRepository accountRepository
 		) {
 			DbContext = dbContext;
 			UserContext = userContext;
 			AccountRepository = accountRepository;
-			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
 		public async Task<List<ViewModels.Items.IndexItem>> Index(bool showRead = false) {
@@ -65,31 +56,6 @@ namespace Forum.Services.Repositories {
 			}
 
 			return notifications;
-		}
-
-		public ServiceModels.ServiceResponse Open(int id) {
-			var serviceResponse = new ServiceModels.ServiceResponse();
-
-			var recordQuery = from n in DbContext.Notifications
-							  where n.UserId == UserContext.ApplicationUser.Id
-							  where n.Id == id
-							  select n;
-
-			var record = recordQuery.FirstOrDefault();
-
-			if (record is null) {
-				serviceResponse.RedirectPath = UrlHelper.Action(nameof(Notifications.Index), nameof(Notifications));
-				return serviceResponse;
-			}
-
-			if (record.Unread) {
-				record.Unread = false;
-				DbContext.Update(record);
-				DbContext.SaveChanges();
-			}
-
-			serviceResponse.RedirectPath = UrlHelper.Action(nameof(Topics.Display), nameof(Topics), new { id = record.MessageId });
-			return serviceResponse;
 		}
 
 		public string NotificationText(ViewModels.Items.IndexItem notification) {
