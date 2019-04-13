@@ -339,7 +339,8 @@ namespace Forum.Controllers {
 					});
 				}
 				else {
-					MessageRepository.DeleteMessageFromTopic(message, topic);
+					await MessageRepository.DeleteMessageFromTopic(message, topic);
+
 					await TopicRepository.RebuildTopicReplies(topic);
 					await DbContext.SaveChangesAsync();
 
