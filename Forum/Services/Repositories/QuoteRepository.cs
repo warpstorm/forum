@@ -62,7 +62,8 @@ namespace Forum.Services.Repositories {
 		}
 
 		public async Task<ViewModels.Quotes.DisplayQuote> Get() {
-			var approvedRecords = (await Records()).Where(r => r.Approved).ToList();
+			var records = await Records();
+			var approvedRecords = records.Where(r => r.Approved).ToList();
 
 			if (!approvedRecords.Any()) {
 				return null;
@@ -72,9 +73,11 @@ namespace Forum.Services.Repositories {
 			var randomQuote = approvedRecords[randomQuoteIndex];
 
 			var postedBy = (await AccountRepository.Records()).FirstOrDefault(r => r.Id == randomQuote.PostedById);
+			var message = DbContext.Messages.Find(randomQuote.MessageId);
 
 			return new ViewModels.Quotes.DisplayQuote {
-				Id = randomQuote.MessageId,
+				TopicId = message.TopicId,
+				MessageId = randomQuote.MessageId,
 				DisplayBody = randomQuote.DisplayBody,
 				PostedBy = postedBy.DecoratedName
 			};

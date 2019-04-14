@@ -7,7 +7,7 @@
 			<div class="content-box small-pad font-small subdued-text" clickable-link-parent>
 				<p id="qotm">
 					@Html.Raw(Model.DisplayBody)
-					<a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Display)" asp-route-id="@Model.Id"></a>
+					<a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Display)" asp-route-id="@Model.TopicId" asp-route-page="1" asp-route-target="@Model.MessageId" asp-fragment="message@(Model.MessageId)"></a>
 				</p>
 			</div>
 			<p class="font-small subdued-text align-right">@Html.Raw(Model.PostedBy)</p>

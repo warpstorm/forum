@@ -119,23 +119,23 @@ namespace Forum.Services.Repositories {
 			};
 
 			if (includeReplies) {
-				var messages = from topicBoard in DbContext.TopicBoards
-							   join message in DbContext.Messages on topicBoard.TopicId equals message.TopicId
-							   where topicBoard.BoardId == boardRecord.Id
-							   where !message.Deleted
-							   orderby message.LastReplyPosted descending
-							   select new {
-								   topicBoard.TopicId,
-								   LastReplyId = message.LastReplyId > 0 ? message.LastReplyId : message.Id,
-								   TopicPreview = message.ShortPreview
-							   };
+				var topicsInThisBoard = from topicBoard in DbContext.TopicBoards
+										join topic in DbContext.Topics on topicBoard.TopicId equals topic.Id
+										where topicBoard.BoardId == boardRecord.Id
+										where !topic.Deleted
+										orderby topic.LastMessageTimePosted descending
+										select new {
+											topic.Id,
+											topic.LastMessageId,
+											topic.FirstMessageShortPreview
+										};
 
 				var users = await AccountRepository.Records();
 
 				// Only checks the most recent 10 topics. If all 10 are forbidden, then LastMessage stays null.
-				foreach (var item in messages.Take(10)) {
+				foreach (var topic in topicsInThisBoard.Take(10)) {
 					var topicBoardIdsQuery = from topicBoard in DbContext.TopicBoards
-											 where topicBoard.TopicId == item.TopicId
+											 where topicBoard.TopicId == topic.Id
 											 select topicBoard.BoardId;
 
 					var topicBoardIds = topicBoardIdsQuery.ToList();
@@ -145,19 +145,19 @@ namespace Forum.Services.Repositories {
 										  select role.RoleId;
 
 					if (UserContext.IsAdmin || !relevantRoleIds.Any() || relevantRoleIds.Intersect(UserContext.Roles).Any()) {
-						var lastReplyQuery = from message in DbContext.Messages
-											 where message.Id == item.LastReplyId
-											 where !message.Deleted
-											 select new Models.ViewModels.Topics.Items.TopicPreview {
-												 Id = message.Id,
-												 FirstMessageShortPreview = item.TopicPreview,
-												 LastMessageId = message.LastReplyId,
-												 LastMessagePostedById = message.LastReplyById,
-												 LastMessageTimePosted = message.LastReplyPosted,
-											 };
+						var lastMessage = await DbContext.Messages.FindAsync(topic.LastMessageId);
+						var lastMessageUser = users.FirstOrDefault(r => r.Id == lastMessage.PostedById);
 
-						indexBoard.RecentTopic = lastReplyQuery.FirstOrDefault();
-						indexBoard.RecentTopic.LastMessagePostedByName = users.FirstOrDefault(r => r.Id == indexBoard.RecentTopic.LastMessagePostedById)?.DecoratedName ?? "User";
+						indexBoard.RecentTopic = new Models.ViewModels.Topics.Items.TopicPreview {
+							Id = topic.Id,
+							FirstMessageShortPreview = topic.FirstMessageShortPreview,
+							LastMessageId = lastMessage.Id,
+							LastMessagePostedById = lastMessage.PostedById,
+							LastMessageTimePosted = lastMessage.TimePosted,
+							LastMessagePostedByName = lastMessageUser?.DecoratedName ?? "User",
+							LastMessagePostedByBirthday = lastMessageUser.IsBirthday,
+						};
+
 						break;
 					}
 				}
