@@ -92,12 +92,10 @@ namespace Forum.Services.Repositories {
 						user.DecoratedName += $"{personalizedChiclet} ";
 					}
 
-					if (user.ShowBirthday) {
-						var isBirthday = DateTime.Now.Date == new DateTime(DateTime.Now.Year, user.Birthday.Month, user.Birthday.Day).Date;
+					user.IsBirthday = DateTime.Now.Date == new DateTime(DateTime.Now.Year, user.Birthday.Month, user.Birthday.Day).Date;
 
-						if (isBirthday) {
-							user.DecoratedName += $"{birthdayCakeImg} ";
-						}
+					if (user.ShowBirthday && user.IsBirthday) {
+						user.DecoratedName += $"{birthdayCakeImg} ";
 					}
 
 					user.DecoratedName += user.DisplayName;
