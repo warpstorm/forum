@@ -552,8 +552,9 @@ namespace Forum.Services.Repositories {
 		}
 
 		public async Task MergeAccounts(string sourceId, string targetId, bool eraseContent) {
-			var sourceAccount = (await Records()).First(item => item.Id == sourceId);
-			var targetAccount = (await Records()).First(item => item.Id == targetId);
+			var records = await Records();
+			var sourceAccount = records.First(item => item.Id == sourceId);
+			var targetAccount = records.First(item => item.Id == targetId);
 
 			var updateTasks = new List<Task>();
 
@@ -567,8 +568,6 @@ namespace Forum.Services.Repositories {
 					DbContext.Database.ExecuteSqlCommandAsync($"DELETE FROM [{nameof(ApplicationDbContext.Bookmarks)}] WHERE {nameof(DataModels.Bookmark.UserId)} = @SourceId", pSourceId),
 					DbContext.Database.ExecuteSqlCommandAsync($"DELETE FROM [{nameof(ApplicationDbContext.ViewLogs)}] WHERE {nameof(DataModels.ViewLog.UserId)} = @SourceId", pSourceId),
 					DbContext.Database.ExecuteSqlCommandAsync($"DELETE FROM [{nameof(ApplicationDbContext.Quotes)}] WHERE {nameof(DataModels.Quote.PostedById)} = @SourceId", pSourceId),
-					DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [{nameof(ApplicationDbContext.Messages)}] SET {nameof(DataModels.Message.EditedById)} = @TargetId WHERE {nameof(DataModels.Message.EditedById)} = @SourceId", pSourceId, pTargetId),
-					DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [{nameof(ApplicationDbContext.Messages)}] SET {nameof(DataModels.Message.LastReplyById)} = @TargetId WHERE {nameof(DataModels.Message.LastReplyById)} = @SourceId", pSourceId, pTargetId),
 				});
 
 				updateTasks.Add(DbContext.Database.ExecuteSqlCommandAsync($@"
@@ -589,8 +588,6 @@ namespace Forum.Services.Repositories {
 					DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [{nameof(ApplicationDbContext.ViewLogs)}] SET {nameof(DataModels.ViewLog.UserId)} = @TargetId WHERE {nameof(DataModels.ViewLog.UserId)} = @SourceId", pSourceId, pTargetId),
 					DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [{nameof(ApplicationDbContext.Quotes)}] SET {nameof(DataModels.Quote.PostedById)} = @TargetId WHERE {nameof(DataModels.Quote.PostedById)} = @SourceId", pSourceId, pTargetId),
 					DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [{nameof(ApplicationDbContext.Messages)}] SET {nameof(DataModels.Message.PostedById)} = @TargetId WHERE {nameof(DataModels.Message.PostedById)} = @SourceId", pSourceId, pTargetId),
-					DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [{nameof(ApplicationDbContext.Messages)}] SET {nameof(DataModels.Message.EditedById)} = @TargetId WHERE {nameof(DataModels.Message.EditedById)} = @SourceId", pSourceId, pTargetId),
-					DbContext.Database.ExecuteSqlCommandAsync($"UPDATE [{nameof(ApplicationDbContext.Messages)}] SET {nameof(DataModels.Message.LastReplyById)} = @TargetId WHERE {nameof(DataModels.Message.LastReplyById)} = @SourceId", pSourceId, pTargetId),
 				});
 			}
 

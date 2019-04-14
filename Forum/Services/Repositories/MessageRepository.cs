@@ -123,7 +123,6 @@ namespace Forum.Services.Repositories {
 			if (!result.Errors.Any()) {
 				var record = await CreateMessageRecord(processedMessage);
 				record.TopicId = topic.Id;
-				record.ParentId = topic.FirstMessageId;
 				record.ReplyId = replyTargetMessage?.Id ?? 0;
 
 				DbContext.Update(record);
@@ -744,14 +743,9 @@ namespace Forum.Services.Repositories {
 				ShortPreview = processedMessage.ShortPreview,
 				LongPreview = processedMessage.LongPreview,
 				Cards = processedMessage.Cards,
-
 				TimePosted = now,
 				TimeEdited = now,
-				LastReplyPosted = now,
-
 				PostedById = CurrentUser.Id,
-				EditedById = CurrentUser.Id,
-				LastReplyById = CurrentUser.Id,
 			};
 
 			DbContext.Messages.Add(record);
@@ -769,7 +763,6 @@ namespace Forum.Services.Repositories {
 			record.LongPreview = message.LongPreview;
 			record.Cards = message.Cards;
 			record.TimeEdited = DateTime.Now;
-			record.EditedById = CurrentUser.Id;
 
 			DbContext.Update(record);
 

@@ -40,26 +40,12 @@ namespace Forum.Models.DataModels {
 
 		public DateTime TimePosted { get; set; }
 		public DateTime TimeEdited { get; set; }
-		public DateTime LastReplyPosted { get; set; }
 
 		[Required]
 		public string PostedById { get; set; }
 
-		[Required]
-		public string EditedById { get; set; }
-
-		[Required]
-		public string LastReplyById { get; set; }
-
 		public int TopicId { get; set; }
-		public int ParentId { get; set; }
 		public int ReplyId { get; set; }
-		public int LastReplyId { get; set; }
-
-		public int ViewCount { get; set; }
-		public int ReplyCount { get; set; }
-
-		public bool Pinned { get; set; }
 
 		public bool Deleted { get; set; }
 	}

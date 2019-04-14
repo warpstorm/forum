@@ -114,15 +114,6 @@ namespace Forum.Services.Contexts {
 				.HasIndex(r => r.Deleted);
 
 			modelBuilder.Entity<Message>()
-				.HasIndex(r => r.LastReplyPosted);
-
-			modelBuilder.Entity<Message>()
-				.HasIndex(r => new { r.Pinned, r.LastReplyPosted });
-
-			modelBuilder.Entity<Message>()
-				.HasIndex(r => r.ParentId);
-
-			modelBuilder.Entity<Message>()
 				.HasIndex(r => r.TopicId);
 
 			modelBuilder.Entity<Message>()
