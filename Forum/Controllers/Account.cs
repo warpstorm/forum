@@ -449,7 +449,8 @@ namespace Forum.Controllers {
 				throw new HttpForbiddenError();
 			}
 
-			var deletedAccount = (await AccountRepository.Records()).FirstOrDefault(item => item.DisplayName == "Deleted Account");
+			var records = await AccountRepository.Records();
+			var deletedAccount = records.FirstOrDefault(item => item.DisplayName == "Deleted Account");
 
 			if (deletedAccount is null) {
 				throw new HttpNotFoundError();
