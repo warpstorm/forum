@@ -331,6 +331,8 @@ namespace Forum.Controllers {
 
 				if (topic.FirstMessageId == message.Id) {
 					await TopicRepository.RemoveTopic(topic);
+					await DbContext.SaveChangesAsync();
+
 					redirectPath = UrlHelper.Action(nameof(Topics.Index), nameof(Topics));
 
 					await ForumHub.Clients.All.SendAsync("deleted-topic", new HubModels.Message {
