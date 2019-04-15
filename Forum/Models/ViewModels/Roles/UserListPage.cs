@@ -1,8 +1,7 @@
-﻿using Forum.Models.ViewModels.Roles.Items;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace Forum.Models.ViewModels.Roles.Pages {
+namespace Forum.Models.ViewModels.Roles {
 	public class UserListPage {
 		public string Id { get; set; }
 

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Forum.Models.ViewModels.Roles.Pages {
+namespace Forum.Models.ViewModels.Roles {
 	public class EditPage {
 		public string Id { get; set; }
 

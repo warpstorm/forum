@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace Forum.Services.Repositories {
-	using ViewModels = Models.ViewModels.Notifications;
+	using ViewModels = Models.ViewModels;
 
 	public class NotificationRepository {
 		ApplicationDbContext DbContext { get; }
@@ -23,9 +23,9 @@ namespace Forum.Services.Repositories {
 			AccountRepository = accountRepository;
 		}
 
-		public async Task<List<ViewModels.Items.IndexItem>> Index(bool showRead = false) {
+		public async Task<List<ViewModels.Notifications.IndexItem>> Index(bool showRead = false) {
 			if (UserContext.ApplicationUser is null) {
-				return new List<ViewModels.Items.IndexItem>();
+				return new List<ViewModels.Notifications.IndexItem>();
 			}
 
 			var hiddenTimeLimit = DateTime.Now.AddDays(-7);
@@ -36,7 +36,7 @@ namespace Forum.Services.Repositories {
 									where n.Time > hiddenTimeLimit
 									where showRead || n.Unread
 									orderby n.Time descending
-									select new ViewModels.Items.IndexItem {
+									select new ViewModels.Notifications.IndexItem {
 										Id = n.Id,
 										Type = n.Type,
 										Recent = n.Time > recentTimeLimit,
@@ -58,7 +58,7 @@ namespace Forum.Services.Repositories {
 			return notifications;
 		}
 
-		public string NotificationText(ViewModels.Items.IndexItem notification) {
+		public string NotificationText(ViewModels.Notifications.IndexItem notification) {
 			switch (notification.Type) {
 				case ENotificationType.Quote:
 					return $"{notification.TargetUser} quoted you.";

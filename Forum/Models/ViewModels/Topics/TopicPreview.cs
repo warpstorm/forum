@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Forum.Models.ViewModels.Topics.Items {
+namespace Forum.Models.ViewModels.Topics {
 	public class TopicPreview {
 		public int Id { get; set; }
 
@@ -30,6 +30,6 @@ namespace Forum.Models.ViewModels.Topics.Items {
 		public string LastMessagePostedByName { get; set; }
 		public bool LastMessagePostedByBirthday { get; set; }
 
-		public List<Boards.Items.IndexBoard> Boards { get; set; }
+		public List<Boards.IndexBoard> Boards { get; set; }
 	}
 }

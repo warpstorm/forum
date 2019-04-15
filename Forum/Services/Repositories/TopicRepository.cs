@@ -17,8 +17,8 @@ namespace Forum.Services.Repositories {
 	using DataModels = Models.DataModels;
 	using HubModels = Models.HubModels;
 	using InputModels = Models.InputModels;
-	using ItemModels = Models.ViewModels.Topics.Items;
 	using ServiceModels = Models.ServiceModels;
+	using ViewModels = Models.ViewModels.Topics;
 
 	public class TopicRepository {
 		ApplicationDbContext DbContext { get; }
@@ -96,7 +96,7 @@ namespace Forum.Services.Repositories {
 			return latestMessageId;
 		}
 
-		public async Task<List<ItemModels.TopicPreview>> GetPreviews(List<int> topicIds) {
+		public async Task<List<ViewModels.TopicPreview>> GetPreviews(List<int> topicIds) {
 			var topicsQuery = from topic in DbContext.Topics
 							  where topicIds.Contains(topic.Id)
 							  where !topic.Deleted
@@ -115,7 +115,7 @@ namespace Forum.Services.Repositories {
 
 			var users = await AccountRepository.Records();
 
-			var topicPreviews = new List<ItemModels.TopicPreview>();
+			var topicPreviews = new List<ViewModels.TopicPreview>();
 			var today = DateTime.Now.Date;
 
 			var boards = await BoardRepository.Records();
@@ -125,7 +125,7 @@ namespace Forum.Services.Repositories {
 				var firstMessagePostedBy = users.First(r => r.Id == topic.FirstMessagePostedById);
 				var lastMessagePostedBy = users.FirstOrDefault(r => r.Id == topic.LastMessagePostedById);
 
-				var topicPreview = new ItemModels.TopicPreview {
+				var topicPreview = new ViewModels.TopicPreview {
 					Id = topic.Id,
 					Pinned = topic.Pinned,
 					ViewCount = topic.ViewCount,
@@ -157,7 +157,7 @@ namespace Forum.Services.Repositories {
 											  where topicBoard.TopicId == topic.Id
 											  join board in boards on topicBoard.BoardId equals board.Id
 											  orderby board.DisplayOrder
-											  select new Models.ViewModels.Boards.Items.IndexBoard {
+											  select new Models.ViewModels.Boards.IndexBoard {
 												  Id = board.Id.ToString(),
 												  Name = board.Name,
 												  Description = board.Description,

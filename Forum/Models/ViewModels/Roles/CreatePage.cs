@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Forum.Models.ViewModels.Roles.Pages {
+namespace Forum.Models.ViewModels.Roles {
 	public class CreatePage {
 		[Required]
 		[MaxLength(64)]

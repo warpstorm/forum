@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Forum.Controllers {
 	using InputModels = Models.InputModels;
-	using PageViewModels = Models.ViewModels.Boards.Pages;
+	using ViewModels = Models.ViewModels;
 
 	public class Boards : Controller {
 		BoardRepository BoardRepository { get; }
@@ -28,7 +28,7 @@ namespace Forum.Controllers {
 		[ActionLog("is viewing the board index.")]
 		[HttpGet]
 		public async Task<IActionResult> Index() {
-			var viewModel = new PageViewModels.IndexPage {
+			var viewModel = new ViewModels.Boards.IndexPage {
 				Categories = await BoardRepository.CategoryIndex(true)
 			};
 
@@ -43,7 +43,7 @@ namespace Forum.Controllers {
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
 		public async Task<IActionResult> Manage() {
-			var viewModel = new PageViewModels.IndexPage {
+			var viewModel = new ViewModels.Boards.IndexPage {
 				Categories = await BoardRepository.CategoryIndex()
 			};
 
@@ -54,7 +54,7 @@ namespace Forum.Controllers {
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		[HttpGet]
 		public async Task<IActionResult> Create() {
-			var viewModel = new PageViewModels.CreatePage() {
+			var viewModel = new ViewModels.Boards.CreatePage() {
 				Categories = await BoardRepository.CategoryPickList()
 			};
 
@@ -72,7 +72,7 @@ namespace Forum.Controllers {
 			return await FailureCallback();
 
 			async Task<IActionResult> FailureCallback() {
-				var viewModel = new PageViewModels.CreatePage() {
+				var viewModel = new ViewModels.Boards.CreatePage() {
 					Categories = await BoardRepository.CategoryPickList()
 				};
 
@@ -94,7 +94,7 @@ namespace Forum.Controllers {
 			var boardRecord = (await BoardRepository.Records()).First(b => b.Id == id);
 			var category = (await BoardRepository.Categories()).First(item => item.Id == boardRecord.CategoryId);
 
-			var viewModel = new PageViewModels.EditPage {
+			var viewModel = new ViewModels.Boards.EditPage {
 				Id = boardRecord.Id,
 				Name = boardRecord.Name,
 				Description = boardRecord.Description,
@@ -120,7 +120,7 @@ namespace Forum.Controllers {
 			async Task<IActionResult> FailureCallback() {
 				var boardRecord = (await BoardRepository.Records()).First(b => b.Id == input.Id);
 
-				var viewModel = new PageViewModels.EditPage {
+				var viewModel = new ViewModels.Boards.EditPage {
 					Id = boardRecord.Id,
 					Categories = await BoardRepository.CategoryPickList(),
 					Roles = await RoleRepository.PickList(boardRecord.Id)

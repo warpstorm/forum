@@ -16,7 +16,6 @@ using System.Threading.Tasks;
 namespace Forum.Controllers {
 	using ControllerModels = Models.ControllerModels;
 	using InputModels = Models.InputModels;
-	using PageModels = Models.ViewModels.Topics.Pages;
 	using ViewModels = Models.ViewModels;
 
 	public class Topics : Controller {
@@ -69,7 +68,7 @@ namespace Forum.Controllers {
 			var boardRecords = await BoardRepository.Records();
 			var boardRecord = id == 0 ? null : boardRecords.FirstOrDefault(item => item.Id == id);
 
-			var viewModel = new PageModels.TopicIndexPage {
+			var viewModel = new ViewModels.Topics.TopicIndexPage {
 				BoardId = id,
 				BoardName = boardRecord?.Name ?? "All Topics",
 				CurrentPage = page,
@@ -110,7 +109,7 @@ namespace Forum.Controllers {
 				}
 			}
 
-			var viewModel = new PageModels.TopicIndexPage {
+			var viewModel = new ViewModels.Topics.TopicIndexPage {
 				SourceId = id,
 				BoardName = "Pick a Destination Topic",
 				BoardId = 0,
@@ -135,7 +134,7 @@ namespace Forum.Controllers {
 				return await Create(new ControllerModels.Topics.CreateTopicInput { BoardId = id, Body = source });
 			}
 
-			var viewModel = new PageModels.CreateTopicForm {
+			var viewModel = new ViewModels.Topics.CreateTopicForm {
 				BoardId = id.ToString()
 			};
 
@@ -172,7 +171,7 @@ namespace Forum.Controllers {
 
 			ViewData["Smileys"] = await SmileyRepository.GetSelectorList();
 
-			var viewModel = new PageModels.CreateTopicForm {
+			var viewModel = new ViewModels.Topics.CreateTopicForm {
 				BoardId = input.BoardId.ToString(),
 				Body = input.Body
 			};
@@ -187,7 +186,7 @@ namespace Forum.Controllers {
 			var topicIds = bookmarkRecords.Select(r => r.TopicId).ToList();
 			var topicPreviews = await TopicRepository.GetPreviews(topicIds);
 
-			var viewModel = new PageModels.TopicBookmarksPage {
+			var viewModel = new ViewModels.Topics.TopicBookmarksPage {
 				Topics = topicPreviews
 			};
 
@@ -229,11 +228,11 @@ namespace Forum.Controllers {
 			var totalPages = Convert.ToInt32(Math.Ceiling(1.0 * messageIds.Count / take));
 			var pageMessageIds = messageIds.Skip(skip).Take(take).ToList();
 
-			var viewModel = new PageModels.TopicDisplayPage {
+			var viewModel = new ViewModels.Topics.TopicDisplayPage {
 				Id = topic.Id,
 				FirstMessageId = topic.FirstMessageId,
 				Subject = string.IsNullOrEmpty(topic.FirstMessageShortPreview) ? "No subject" : topic.FirstMessageShortPreview,
-				AssignedBoards = new List<ViewModels.Boards.Items.IndexBoard>(),
+				AssignedBoards = new List<ViewModels.Boards.IndexBoard>(),
 				IsAuthenticated = CurrentUser.IsAuthenticated,
 				IsOwner = topic.FirstMessagePostedById == CurrentUser.Id,
 				IsAdmin = CurrentUser.IsAdmin,
@@ -312,7 +311,7 @@ namespace Forum.Controllers {
 			var latestMessageTime = messages.Max(r => r.RecordTime);
 			await TopicRepository.MarkRead(id, latestMessageTime, messageIds);
 
-			var viewModel = new PageModels.TopicDisplayPartialPage {
+			var viewModel = new ViewModels.Topics.TopicDisplayPartialPage {
 				Latest = DateTime.Now.Ticks,
 				Messages = messages
 			};

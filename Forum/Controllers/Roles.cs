@@ -15,8 +15,7 @@ using System.Threading.Tasks;
 namespace Forum.Controllers {
 	using DataModels = Models.DataModels;
 	using InputModels = Models.InputModels;
-	using ItemViewModels = Models.ViewModels.Roles.Items;
-	using PageViewModels = Models.ViewModels.Roles.Pages;
+	using ViewModels = Models.ViewModels;
 
 	[Authorize(Roles = Constants.InternalKeys.Admin)]
 	public class Roles : Controller {
@@ -41,7 +40,7 @@ namespace Forum.Controllers {
 		[ActionLog]
 		[HttpGet]
 		public async Task<IActionResult> Index() {
-			var viewModel = new PageViewModels.IndexPage();
+			var viewModel = new ViewModels.Roles.IndexPage();
 
 			var roles = await RoleManager.Roles.OrderBy(r => r.Name).ToListAsync();
 
@@ -66,7 +65,7 @@ namespace Forum.Controllers {
 					continue;
 				}
 
-				viewModel.Roles.Add(new ItemViewModels.IndexRole {
+				viewModel.Roles.Add(new ViewModels.Roles.IndexRole {
 					Id = role.Id,
 					Description = role.Description,
 					Name = role.Name,
@@ -84,7 +83,7 @@ namespace Forum.Controllers {
 		[ActionLog]
 		[HttpGet]
 		public async Task<IActionResult> Create() {
-			var viewModel = new PageViewModels.CreatePage();
+			var viewModel = new ViewModels.Roles.CreatePage();
 			return await ForumViewResult.ViewResult(this, viewModel);
 		}
 
@@ -99,7 +98,7 @@ namespace Forum.Controllers {
 			return await FailureCallback();
 
 			async Task<IActionResult> FailureCallback() {
-				var viewModel = new PageViewModels.CreatePage() {
+				var viewModel = new ViewModels.Roles.CreatePage() {
 					Name = input.Name,
 					Description = input.Description
 				};
@@ -181,7 +180,7 @@ namespace Forum.Controllers {
 			}
 		}
 
-		public PageViewModels.EditPage GetEditPageModel(string id) {
+		public ViewModels.Roles.EditPage GetEditPageModel(string id) {
 			var role = RoleManager.FindByIdAsync(id).Result;
 
 			if (role is null) {
@@ -201,7 +200,7 @@ namespace Forum.Controllers {
 
 			var usersInRole = UserManager.GetUsersInRoleAsync(role.Name).Result;
 
-			var viewModel = new PageViewModels.EditPage {
+			var viewModel = new ViewModels.Roles.EditPage {
 				Id = role.Id,
 				Description = role.Description,
 				Name = role.Name,

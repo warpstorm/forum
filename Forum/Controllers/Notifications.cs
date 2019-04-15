@@ -2,16 +2,14 @@
 using Forum.Models.Errors;
 using Forum.Services;
 using Forum.Services.Contexts;
-using Forum.Services.Helpers;
 using Forum.Services.Repositories;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace Forum.Controllers {
-	using ViewModels = Models.ViewModels.Notifications;
+	using ViewModels = Models.ViewModels;
 
 	public class Notifications : Controller {
 		ApplicationDbContext DbContext { get; }
@@ -42,7 +40,7 @@ namespace Forum.Controllers {
 
 			var notifications = await NotificationRepository.Index(showRead);
 
-			var viewModel = new ViewModels.Pages.IndexPage {
+			var viewModel = new ViewModels.Notifications.IndexPage {
 				Notifications = notifications
 			};
 

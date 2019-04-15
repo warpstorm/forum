@@ -1,7 +1,7 @@
 ﻿using Forum.Models.Options;
 using System;
 
-namespace Forum.Models.ViewModels.Notifications.Items {
+namespace Forum.Models.ViewModels.Notifications {
 	public class IndexItem {
 		public int Id { get; set; }
 		public string TargetUserId { get; set; }

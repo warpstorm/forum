@@ -1,7 +1,6 @@
-﻿using Forum.Models.ViewModels.Topics.Items;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-namespace Forum.Models.ViewModels.Topics.Pages {
+namespace Forum.Models.ViewModels.Topics {
 	public class TopicIndexPage {
 		/// <summary>
 		/// Used in topic merging

@@ -74,7 +74,7 @@ namespace Forum.Controllers {
 			var messageIds = new List<int> { id };
 			var messages = await MessageRepository.GetMessages(messageIds);
 
-			var viewModel = new ViewModels.Topics.Pages.TopicDisplayPartialPage {
+			var viewModel = new ViewModels.Topics.TopicDisplayPartialPage {
 				Latest = DateTime.Now.Ticks,
 				Messages = messages
 			};

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace Forum.Models.ViewModels.Boards.Pages {
+namespace Forum.Models.ViewModels.Boards {
 	public class CreatePage {
 		[Required]
 		[StringLength(64)]

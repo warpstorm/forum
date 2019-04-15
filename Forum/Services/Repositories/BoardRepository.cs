@@ -14,8 +14,8 @@ using System.Threading.Tasks;
 namespace Forum.Services.Repositories {
 	using DataModels = Models.DataModels;
 	using InputModels = Models.InputModels;
-	using ItemViewModels = Models.ViewModels.Boards.Items;
 	using ServiceModels = Models.ServiceModels;
+	using ViewModels = Models.ViewModels;
 
 	public class BoardRepository : IRepository<DataModels.Board> {
 		public async Task<List<DataModels.Board>> Records() {
@@ -72,13 +72,13 @@ namespace Forum.Services.Repositories {
 			return pickList;
 		}
 
-		public async Task<List<ItemViewModels.IndexCategory>> CategoryIndex(bool includeReplies = false) {
+		public async Task<List<ViewModels.Boards.IndexCategory>> CategoryIndex(bool includeReplies = false) {
 			var categories = (await Categories()).OrderBy(r => r.DisplayOrder).ToList();
 
-			var indexCategories = new List<ItemViewModels.IndexCategory>();
+			var indexCategories = new List<ViewModels.Boards.IndexCategory>();
 
 			foreach (var categoryRecord in categories) {
-				var indexCategory = new ItemViewModels.IndexCategory {
+				var indexCategory = new ViewModels.Boards.IndexCategory {
 					Id = categoryRecord.Id.ToString(),
 					Name = categoryRecord.Name,
 					DisplayOrder = categoryRecord.DisplayOrder
@@ -109,8 +109,8 @@ namespace Forum.Services.Repositories {
 			return indexCategories;
 		}
 
-		public async Task<ItemViewModels.IndexBoard> GetIndexBoard(DataModels.Board boardRecord, bool includeReplies = false) {
-			var indexBoard = new ItemViewModels.IndexBoard {
+		public async Task<ViewModels.Boards.IndexBoard> GetIndexBoard(DataModels.Board boardRecord, bool includeReplies = false) {
+			var indexBoard = new ViewModels.Boards.IndexBoard {
 				Id = boardRecord.Id.ToString(),
 				Name = boardRecord.Name,
 				Description = boardRecord.Description,
@@ -148,7 +148,7 @@ namespace Forum.Services.Repositories {
 						var lastMessage = await DbContext.Messages.FindAsync(topic.LastMessageId);
 						var lastMessageUser = users.FirstOrDefault(r => r.Id == lastMessage.PostedById);
 
-						indexBoard.RecentTopic = new Models.ViewModels.Topics.Items.TopicPreview {
+						indexBoard.RecentTopic = new ViewModels.Topics.TopicPreview {
 							Id = topic.Id,
 							FirstMessageShortPreview = topic.FirstMessageShortPreview,
 							LastMessageId = lastMessage.Id,

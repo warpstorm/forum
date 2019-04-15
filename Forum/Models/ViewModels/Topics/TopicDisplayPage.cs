@@ -1,7 +1,7 @@
-﻿using Forum.Models.ViewModels.Boards.Items;
+﻿using Forum.Models.ViewModels.Boards;
 using System.Collections.Generic;
 
-namespace Forum.Models.ViewModels.Topics.Pages {
+namespace Forum.Models.ViewModels.Topics {
 	public class TopicDisplayPage {
 		public int Id { get; set; }
 		public int FirstMessageId { get; set; }

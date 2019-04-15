@@ -12,8 +12,8 @@
 		<input type="hidden" name="Id" value="@Model.Id" />
 		<input type="hidden" name="TopicId" value="@Model.TopicId" />
 
-		@if (ViewData["Categories"] is List<ViewModels.Boards.Items.IndexCategory>) {
-			@foreach (var category in ViewData["Categories"] as List<ViewModels.Boards.Items.IndexCategory>) {
+		@if (ViewData["Categories"] is List<ViewModels.Boards.IndexCategory>) {
+			@foreach (var category in ViewData["Categories"] as List<ViewModels.Boards.IndexCategory>) {
 				@foreach (var board in category.Boards) {
 					<input type="hidden" name="Selected_@board.Id" value="@(board.Id == Model.BoardId ? "True" : "False")" />
 				}

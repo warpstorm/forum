@@ -1,6 +1,6 @@
-﻿using Forum.Models.ViewModels.Topics.Items;
+﻿using Forum.Models.ViewModels.Topics;
 
-namespace Forum.Models.ViewModels.Boards.Items {
+namespace Forum.Models.ViewModels.Boards {
 	public class IndexBoard {
 		public string Id { get; set; }
 		public string Name { get; set; }

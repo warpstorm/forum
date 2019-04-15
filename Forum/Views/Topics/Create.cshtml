@@ -1,11 +1,11 @@
-@model ViewModels.Topics.Pages.CreateTopicForm
+@model ViewModels.Topics.CreateTopicForm
 
 <div asp-validation-summary="All" class="error"></div>
 
 <div id="board-selector" class="float-right content-box pad">
 	<ul>
-		@if (ViewData["Categories"] is List<ViewModels.Boards.Items.IndexCategory>) {
-			foreach (var category in ViewData["Categories"] as List<ViewModels.Boards.Items.IndexCategory>) {
+		@if (ViewData["Categories"] is List<ViewModels.Boards.IndexCategory>) {
+			foreach (var category in ViewData["Categories"] as List<ViewModels.Boards.IndexCategory>) {
 				<li class="gap-bottom">
 					<span class="font-small subdued-text">@category.Name</span>
 					<ul>

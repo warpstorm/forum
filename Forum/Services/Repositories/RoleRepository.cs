@@ -15,9 +15,8 @@ using System.Threading.Tasks;
 namespace Forum.Services.Repositories {
 	using DataModels = Models.DataModels;
 	using InputModels = Models.InputModels;
-	using ItemViewModels = Models.ViewModels.Roles.Items;
-	using PageViewModels = Models.ViewModels.Roles.Pages;
 	using ServiceModels = Models.ServiceModels;
+	using ViewModels = Models.ViewModels;
 
 	public class RoleRepository {
 		public async Task<List<DataModels.BoardRole>> BoardRoles() => _BoardRoles ?? (_BoardRoles = await DbContext.BoardRoles.ToListAsync());
@@ -198,7 +197,7 @@ namespace Forum.Services.Repositories {
 			}
 		}
 
-		public async Task<PageViewModels.UserListPage> UserList(string id) {
+		public async Task<ViewModels.Roles.UserListPage> UserList(string id) {
 			var role = await RoleManager.FindByIdAsync(id);
 
 			if (role is null) {
@@ -207,12 +206,12 @@ namespace Forum.Services.Repositories {
 
 			var usersInRole = await UserManager.GetUsersInRoleAsync(role.Name);
 
-			var userRecords = await UserManager.Users.OrderBy(r => r.DisplayName).Select(u => new ItemViewModels.UserListItem {
+			var userRecords = await UserManager.Users.OrderBy(r => r.DisplayName).Select(u => new ViewModels.Roles.UserListItem {
 				Id = u.Id,
 				Name = u.DisplayName
 			}).ToListAsync();
 
-			var existingUsers = new List<ItemViewModels.UserListItem>();
+			var existingUsers = new List<ViewModels.Roles.UserListItem>();
 
 			foreach (var user in usersInRole) {
 				existingUsers.Add(userRecords.Single(u => u.Id == user.Id));
@@ -220,7 +219,7 @@ namespace Forum.Services.Repositories {
 
 			var availableUsers = userRecords.Except(existingUsers).ToList();
 
-			return new PageViewModels.UserListPage {
+			return new ViewModels.Roles.UserListPage {
 				Id = role.Id,
 				Name = role.Name,
 				ExistingUsers = existingUsers,

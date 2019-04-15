@@ -1,4 +1,4 @@
-﻿namespace Forum.Models.ViewModels.Topics.Pages {
+﻿namespace Forum.Models.ViewModels.Topics {
 	public class CreateTopicForm : IMessageFormViewModel {
 		public string Id { get; } = string.Empty;
 		public string TopicId { get; } = string.Empty;
