@@ -31,7 +31,7 @@ namespace Forum.Extensions {
 		public static IServiceCollection AddForum(this IServiceCollection services, IConfiguration configuration) {
 			RegisterRepositories(services);
 
-			services.AddTransient<IForumViewResult, ForumViewResult>();
+			services.AddTransient<ForumViewResult>();
 
 			services.AddScoped<ActionLogService>();
 			services.AddScoped<Sidebar>();

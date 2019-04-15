@@ -28,7 +28,7 @@ namespace Forum.Controllers {
 		AccountRepository AccountRepository { get; }
 
 		UserManager<DataModels.ApplicationUser> UserManager { get; }
-		IForumViewResult ForumViewResult { get; }
+		ForumViewResult ForumViewResult { get; }
 		ILogger Log { get; }
 
 		public Account(
@@ -36,7 +36,7 @@ namespace Forum.Controllers {
 			UserContext userContext,
 			AccountRepository accountRepository,
 			UserManager<DataModels.ApplicationUser> userManager,
-			IForumViewResult forumViewResult,
+			ForumViewResult forumViewResult,
 			ILogger<Account> log
 		) {
 			DbContext = dbContext;

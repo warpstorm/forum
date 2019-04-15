@@ -28,7 +28,7 @@ namespace Forum.Controllers {
 		RoleRepository RoleRepository { get; }
 		SmileyRepository SmileyRepository { get; }
 		TopicRepository TopicRepository { get; }
-		IForumViewResult ForumViewResult { get; }
+		ForumViewResult ForumViewResult { get; }
 
 		public Topics(
 			ApplicationDbContext applicationDbContext,
@@ -39,7 +39,7 @@ namespace Forum.Controllers {
 			RoleRepository roleRepository,
 			SmileyRepository smileyRepository,
 			TopicRepository topicRepository,
-			IForumViewResult forumViewResult
+			ForumViewResult forumViewResult
 		) {
 			DbContext = applicationDbContext;
 			CurrentUser = userContext;

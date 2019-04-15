@@ -17,13 +17,13 @@ namespace Forum.Controllers {
 		ApplicationDbContext DbContext { get; }
 		UserContext UserContext { get; }
 		NotificationRepository NotificationRepository { get; }
-		IForumViewResult ForumViewResult { get; }
+		ForumViewResult ForumViewResult { get; }
 
 		public Notifications(
 			ApplicationDbContext dbContext,
 			UserContext userContext,
 			NotificationRepository notificationRepository,
-			IForumViewResult forumViewResult
+			ForumViewResult forumViewResult
 		) {
 			DbContext = dbContext;
 			UserContext = userContext;

@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 
 namespace Forum.Controllers {
 	public class ProcessTest : Controller {
-		IForumViewResult ForumViewResult { get; }
+		ForumViewResult ForumViewResult { get; }
 		IUrlHelper UrlHelper { get; }
 
 		public ProcessTest(
-			IForumViewResult forumViewResult,
+			ForumViewResult forumViewResult,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory
 		) {

@@ -13,12 +13,12 @@ namespace Forum.Controllers {
 	public class Boards : Controller {
 		BoardRepository BoardRepository { get; }
 		RoleRepository RoleRepository { get; }
-		IForumViewResult ForumViewResult { get; }
+		ForumViewResult ForumViewResult { get; }
 
 		public Boards(
 			BoardRepository boardRepository,
 			RoleRepository roleRepository,
-			IForumViewResult forumViewResult
+			ForumViewResult forumViewResult
 		) {
 			BoardRepository = boardRepository;
 			RoleRepository = roleRepository;

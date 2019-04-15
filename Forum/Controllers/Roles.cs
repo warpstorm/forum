@@ -23,13 +23,13 @@ namespace Forum.Controllers {
 		RoleRepository RoleRepository { get; }
 		UserManager<DataModels.ApplicationUser> UserManager { get; }
 		RoleManager<DataModels.ApplicationRole> RoleManager { get; }
-		IForumViewResult ForumViewResult { get; }
+		ForumViewResult ForumViewResult { get; }
 
 		public Roles(
 			RoleRepository roleRepository,
 			UserManager<DataModels.ApplicationUser> userManager,
 			RoleManager<DataModels.ApplicationRole> roleManager,
-			IForumViewResult forumViewResult
+			ForumViewResult forumViewResult
 		) {
 			RoleRepository = roleRepository;
 			UserManager = userManager;

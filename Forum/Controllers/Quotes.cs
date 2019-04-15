@@ -11,11 +11,11 @@ namespace Forum.Controllers {
 
 	public class Quotes : Controller {
 		QuoteRepository QuoteRepository { get; }
-		IForumViewResult ForumViewResult { get; }
+		ForumViewResult ForumViewResult { get; }
 
 		public Quotes(
 			QuoteRepository quoteRepository,
-			IForumViewResult forumViewResult
+			ForumViewResult forumViewResult
 		) {
 			QuoteRepository = quoteRepository;
 			ForumViewResult = forumViewResult;

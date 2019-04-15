@@ -18,11 +18,11 @@ namespace Forum.Controllers {
 	[Authorize(Roles = Constants.InternalKeys.Admin)]
 	public class StrippedUrls : Controller {
 		ApplicationDbContext DbContext { get; }
-		IForumViewResult ForumViewResult { get; }
+		ForumViewResult ForumViewResult { get; }
 
 		public StrippedUrls(
 			ApplicationDbContext dbContext,
-			IForumViewResult forumViewResult
+			ForumViewResult forumViewResult
 		) {
 			DbContext = dbContext;
 			ForumViewResult = forumViewResult;

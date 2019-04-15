@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace Forum.Services {
 	using ServiceModels = Models.ServiceModels;
 
-	public class ForumViewResult : IForumViewResult {
+	public class ForumViewResult {
 		BoardRepository BoardRepository { get; }
 		Sidebar Sidebar { get; }
 

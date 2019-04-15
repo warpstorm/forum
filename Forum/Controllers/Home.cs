@@ -14,14 +14,14 @@ namespace Forum.Controllers {
 	public class Home : Controller {
 		UserContext UserContext { get; }
 		AccountRepository AccountRepository { get; }
-		IForumViewResult ForumViewResult { get; }
+		ForumViewResult ForumViewResult { get; }
 		IHttpContextAccessor HttpContextAccessor { get; }
 		IAntiforgery Xsrf { get; }
 
 		public Home(
 			UserContext userContext,
 			AccountRepository accountRepository,
-			IForumViewResult forumViewResult,
+			ForumViewResult forumViewResult,
 			IHttpContextAccessor httpContextAccessor,
 			IAntiforgery xsrf
 		) {

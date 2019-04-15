@@ -16,12 +16,12 @@ namespace Forum.Controllers {
 	public class Smileys : Controller {
 		ApplicationDbContext DbContext { get; }
 		SmileyRepository SmileyRepository { get; }
-		IForumViewResult ForumViewResult { get; }
+		ForumViewResult ForumViewResult { get; }
 
 		public Smileys(
 			ApplicationDbContext dbContext,
 			SmileyRepository smileyRepository,
-			IForumViewResult forumViewResult
+			ForumViewResult forumViewResult
 		) {
 			DbContext = dbContext;
 			SmileyRepository = smileyRepository;

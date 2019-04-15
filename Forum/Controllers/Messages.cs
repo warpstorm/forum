@@ -29,7 +29,7 @@ namespace Forum.Controllers {
 		SmileyRepository SmileyRepository { get; }
 		TopicRepository TopicRepository { get; }
 		IHubContext<ForumHub> ForumHub { get; }
-		IForumViewResult ForumViewResult { get; }
+		ForumViewResult ForumViewResult { get; }
 		IUrlHelper UrlHelper { get; }
 
 		public Messages(
@@ -42,7 +42,7 @@ namespace Forum.Controllers {
 			TopicRepository topicRepository,
 			IHubContext<ForumHub> forumHub,
 			IActionContextAccessor actionContextAccessor,
-			IForumViewResult forumViewResult,
+			ForumViewResult forumViewResult,
 			IUrlHelperFactory urlHelperFactory
 		) {
 			DbContext = dbContext;
