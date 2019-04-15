@@ -1,6 +1,5 @@
 ﻿using Forum.Controllers.Annotations;
 using Forum.Extensions;
-using Forum.Models.InputModels;
 using Forum.Services;
 using Forum.Services.Contexts;
 using Forum.Services.Repositories;
