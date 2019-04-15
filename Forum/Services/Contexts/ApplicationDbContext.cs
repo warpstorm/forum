@@ -14,6 +14,7 @@ namespace Forum.Services.Contexts {
 		public DbSet<BoardRole> BoardRoles { get; set; }
 		public DbSet<Bookmark> Bookmarks { get; set; }
 		public DbSet<Category> Categories { get; set; }
+		public DbSet<Event> Events { get; set; }
 		public DbSet<Message> Messages { get; set; }
 		public DbSet<MessageThought> MessageThoughts { get; set; }
 		public DbSet<Notification> Notifications { get; set; }
@@ -105,7 +106,7 @@ namespace Forum.Services.Contexts {
 				.HasIndex(r => r.BoardId);
 
 			modelBuilder.Entity<Bookmark>()
-				.HasIndex(r => r.MessageId);
+				.HasIndex(r => r.TopicId);
 
 			modelBuilder.Entity<Bookmark>()
 				.HasIndex(r => r.UserId);
@@ -135,16 +136,13 @@ namespace Forum.Services.Contexts {
 				.HasIndex(r => new { r.MessageId, r.Type });
 
 			modelBuilder.Entity<Participant>()
-				.HasIndex(r => r.MessageId);
-
-			modelBuilder.Entity<Participant>()
 				.HasIndex(r => r.TopicId);
 
 			modelBuilder.Entity<Participant>()
 				.HasIndex(r => r.UserId);
 
 			modelBuilder.Entity<Participant>()
-				.HasIndex(r => new { r.UserId, r.MessageId });
+				.HasIndex(r => new { r.UserId, r.TopicId });
 
 			modelBuilder.Entity<Quote>()
 				.HasIndex(r => r.Approved);
@@ -160,9 +158,6 @@ namespace Forum.Services.Contexts {
 
 			modelBuilder.Entity<TopicBoard>()
 				.HasIndex(r => r.BoardId);
-
-			modelBuilder.Entity<TopicBoard>()
-				.HasIndex(r => r.MessageId);
 
 			modelBuilder.Entity<TopicBoard>()
 				.HasIndex(r => r.TopicId);

@@ -6,9 +6,6 @@ namespace Forum.Models.DataModels {
 		public int Id { get; set; }
 
 		[Required]
-		public int MessageId { get; set; }
-
-		[Required]
 		public int TopicId { get; set; }
 
 		[Required]
