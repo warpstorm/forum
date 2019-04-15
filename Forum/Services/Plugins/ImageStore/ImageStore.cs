@@ -1,5 +1,4 @@
-﻿using Forum.Services.Contexts;
-using Microsoft.WindowsAzure.Storage.Blob;
+﻿using Microsoft.WindowsAzure.Storage.Blob;
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -9,14 +8,11 @@ using System.Threading.Tasks;
 
 namespace Forum.Services.Plugins.ImageStore {
 	public class ImageStore : IImageStore {
-		UserContext UserContext { get; }
 		CloudBlobClient CloudBlobClient { get; }
 
 		public ImageStore(
-			UserContext userContext,
 			CloudBlobClient cloudBlobClient
 		) {
-			UserContext = userContext;
 			CloudBlobClient = cloudBlobClient;
 		}
 

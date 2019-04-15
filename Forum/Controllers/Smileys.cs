@@ -1,7 +1,6 @@
 ﻿using Forum.Controllers.Annotations;
 using Forum.Extensions;
 using Forum.Services;
-using Forum.Services.Contexts;
 using Forum.Services.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,16 +12,13 @@ namespace Forum.Controllers {
 
 	[Authorize(Roles = Constants.InternalKeys.Admin)]
 	public class Smileys : Controller {
-		ApplicationDbContext DbContext { get; }
 		SmileyRepository SmileyRepository { get; }
 		ForumViewResult ForumViewResult { get; }
 
 		public Smileys(
-			ApplicationDbContext dbContext,
 			SmileyRepository smileyRepository,
 			ForumViewResult forumViewResult
 		) {
-			DbContext = dbContext;
 			SmileyRepository = smileyRepository;
 			ForumViewResult = forumViewResult;
 		}

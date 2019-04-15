@@ -1,5 +1,4 @@
 ﻿using Forum.Services;
-using Forum.Services.Contexts;
 using Forum.Services.Repositories;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
@@ -12,20 +11,17 @@ namespace Forum.Controllers {
 	using ViewModels = Models.ViewModels;
 
 	public class Home : Controller {
-		UserContext UserContext { get; }
 		AccountRepository AccountRepository { get; }
 		ForumViewResult ForumViewResult { get; }
 		IHttpContextAccessor HttpContextAccessor { get; }
 		IAntiforgery Xsrf { get; }
 
 		public Home(
-			UserContext userContext,
 			AccountRepository accountRepository,
 			ForumViewResult forumViewResult,
 			IHttpContextAccessor httpContextAccessor,
 			IAntiforgery xsrf
 		) {
-			UserContext = userContext;
 			AccountRepository = accountRepository;
 			ForumViewResult = forumViewResult;
 			HttpContextAccessor = httpContextAccessor;

@@ -23,7 +23,6 @@ namespace Forum.Controllers {
 		BoardRepository BoardRepository { get; }
 		BookmarkRepository BookmarkRepository { get; }
 		MessageRepository MessageRepository { get; }
-		RoleRepository RoleRepository { get; }
 		SmileyRepository SmileyRepository { get; }
 		TopicRepository TopicRepository { get; }
 		ForumViewResult ForumViewResult { get; }
@@ -34,7 +33,6 @@ namespace Forum.Controllers {
 			BoardRepository boardRepository,
 			BookmarkRepository bookmarkRepository,
 			MessageRepository messageRepository,
-			RoleRepository roleRepository,
 			SmileyRepository smileyRepository,
 			TopicRepository topicRepository,
 			ForumViewResult forumViewResult
@@ -45,7 +43,6 @@ namespace Forum.Controllers {
 			BoardRepository = boardRepository;
 			BookmarkRepository = bookmarkRepository;
 			MessageRepository = messageRepository;
-			RoleRepository = roleRepository;
 			SmileyRepository = smileyRepository;
 			TopicRepository = topicRepository;
 
