@@ -1,0 +1,29 @@
+@model ViewModels.Events.CreateForm
+
+<div asp-validation-summary="All" class="error"></div>
+
+<div id="create-event-form" class="content-box pad">
+	<form method="post"
+		  class="message-form"
+		  asp-action="@Model.FormAction"
+		  asp-controller="@Model.FormController"
+		  asp-route-returnurl="@ViewData["Referrer"]">
+
+		<input type=""
+
+		<input asp-for="@Model.AllDay" />
+	</form>
+</div>
+
+@{ViewData["Title"] = "Create an Event";}
+@section Header {@ViewData["Title"]}
+
+@section scripts {
+	<script>
+		window.pageActions = 'event-create';
+	</script>
+}
+
+@section styles {
+	<link rel="stylesheet" href="~/styles/event-create.css" asp-append-version="true" />
+}

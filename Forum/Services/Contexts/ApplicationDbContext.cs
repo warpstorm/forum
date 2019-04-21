@@ -111,6 +111,9 @@ namespace Forum.Services.Contexts {
 			modelBuilder.Entity<Bookmark>()
 				.HasIndex(r => r.UserId);
 
+			modelBuilder.Entity<Event>()
+				.HasIndex(r => r.TopicId);
+
 			modelBuilder.Entity<Message>()
 				.HasIndex(r => r.Deleted);
 
