@@ -133,6 +133,9 @@ namespace Forum.Services {
 			if (holidayLogos.ContainsKey(DateTime.Now.Date)) {
 				logoFile = holidayLogos[DateTime.Now.Date];
 			}
+			else if (holidayLogos.ContainsKey(DateTime.Now.AddHours(-10).Date)) {
+				logoFile = holidayLogos[DateTime.Now.Date];
+			}
 
 			return $"/images/logos/{logoFile}";
 		}
