@@ -7,6 +7,8 @@ using Forum.Services.Helpers;
 using Forum.Services.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +16,7 @@ using System.Threading.Tasks;
 
 namespace Forum.Controllers {
 	using ControllerModels = Models.ControllerModels;
+	using HubModels = Models.HubModels;
 	using InputModels = Models.InputModels;
 	using ViewModels = Models.ViewModels;
 
@@ -25,6 +28,7 @@ namespace Forum.Controllers {
 		MessageRepository MessageRepository { get; }
 		SmileyRepository SmileyRepository { get; }
 		TopicRepository TopicRepository { get; }
+		IHubContext<ForumHub> ForumHub { get; }
 		ForumViewResult ForumViewResult { get; }
 
 		public Topics(
@@ -35,6 +39,7 @@ namespace Forum.Controllers {
 			MessageRepository messageRepository,
 			SmileyRepository smileyRepository,
 			TopicRepository topicRepository,
+			IHubContext<ForumHub> forumHub,
 			ForumViewResult forumViewResult
 		) {
 			DbContext = applicationDbContext;
@@ -46,6 +51,7 @@ namespace Forum.Controllers {
 			SmileyRepository = smileyRepository;
 			TopicRepository = topicRepository;
 
+			ForumHub = forumHub;
 			ForumViewResult = forumViewResult;
 		}
 
@@ -206,7 +212,8 @@ namespace Forum.Controllers {
 			}
 
 			if (page < 1) {
-				throw new HttpBadRequestError("Page numbers must be >= 1.");
+				var redirectUrl = Url.Action(nameof(Display), new { id, page = 1, target });
+				return Redirect(redirectUrl);
 			}
 
 			var messageIds = MessageRepository.GetMessageIds(topic.Id);
@@ -371,6 +378,28 @@ namespace Forum.Controllers {
 			}
 
 			return new NoContentResult();
+		}
+
+		[HttpGet]
+		[Authorize(Roles = Constants.InternalKeys.Admin)]
+		public async Task<IActionResult> Delete(int id) {
+			var redirectPath = ForumViewResult.GetReferrer(this);
+
+			if (ModelState.IsValid) {
+				var topic = await DbContext.Topics.SingleAsync(m => m.Id == id);
+
+				await TopicRepository.RemoveTopic(topic);
+				await DbContext.SaveChangesAsync();
+
+				await ForumHub.Clients.All.SendAsync("deleted-topic", new HubModels.Message {
+					TopicId = topic.Id,
+					MessageId = 0
+				});
+
+				redirectPath = Url.Action(nameof(Topics.Index), nameof(Topics));
+			}
+
+			return Redirect(redirectPath);
 		}
 
 		string GetRedirectPath(int id, int page, int target) {

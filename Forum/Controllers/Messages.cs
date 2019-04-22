@@ -6,8 +6,6 @@ using Forum.Services.Contexts;
 using Forum.Services.Helpers;
 using Forum.Services.Repositories;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -30,7 +28,6 @@ namespace Forum.Controllers {
 		TopicRepository TopicRepository { get; }
 		IHubContext<ForumHub> ForumHub { get; }
 		ForumViewResult ForumViewResult { get; }
-		IUrlHelper UrlHelper { get; }
 
 		public Messages(
 			ApplicationDbContext dbContext,
@@ -41,9 +38,7 @@ namespace Forum.Controllers {
 			SmileyRepository smileyRepository,
 			TopicRepository topicRepository,
 			IHubContext<ForumHub> forumHub,
-			IActionContextAccessor actionContextAccessor,
-			ForumViewResult forumViewResult,
-			IUrlHelperFactory urlHelperFactory
+			ForumViewResult forumViewResult
 		) {
 			DbContext = dbContext;
 			UserContext = userContext;
@@ -54,7 +49,6 @@ namespace Forum.Controllers {
 			TopicRepository = topicRepository;
 			ForumHub = forumHub;
 			ForumViewResult = forumViewResult;
-			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}
 
 		/// <summary>
@@ -128,7 +122,7 @@ namespace Forum.Controllers {
 						MessageId = result.MessageId
 					});
 
-					var redirectPath = Url.DisplayMessage(result.TopicId, result.MessageId);
+					var redirectPath = base.Url.DisplayMessage(result.TopicId, result.MessageId);
 					return Redirect(redirectPath);
 				}
 			}
@@ -242,7 +236,7 @@ namespace Forum.Controllers {
 						MessageId = result.MessageId
 					});
 
-					var redirectPath = UrlHelper.DisplayMessage(result.TopicId, result.MessageId);
+					var redirectPath = Url.DisplayMessage(result.TopicId, result.MessageId);
 					return Redirect(redirectPath);
 				}
 			}
@@ -330,15 +324,7 @@ namespace Forum.Controllers {
 				var topic = await DbContext.Topics.SingleAsync(m => m.Id == message.TopicId);
 
 				if (topic.FirstMessageId == message.Id) {
-					await TopicRepository.RemoveTopic(topic);
-					await DbContext.SaveChangesAsync();
-
-					redirectPath = UrlHelper.Action(nameof(Topics.Index), nameof(Topics));
-
-					await ForumHub.Clients.All.SendAsync("deleted-topic", new HubModels.Message {
-						TopicId = topic.Id,
-						MessageId = message.Id
-					});
+					redirectPath = base.Url.Action(nameof(Topics.Delete), nameof(Controllers.Topics), new { topic.Id });
 				}
 				else {
 					await MessageRepository.DeleteMessageFromTopic(message, topic);
@@ -346,7 +332,7 @@ namespace Forum.Controllers {
 					await TopicRepository.RebuildTopicReplies(topic);
 					await DbContext.SaveChangesAsync();
 
-					redirectPath = UrlHelper.Action(nameof(Topics.Latest), nameof(Topics), new { id = topic.Id });
+					redirectPath = Url.Action(nameof(Topics.Latest), nameof(Topics), new { id = topic.Id });
 
 					await ForumHub.Clients.All.SendAsync("deleted-message", new HubModels.Message {
 						TopicId = topic.Id,
@@ -376,7 +362,7 @@ namespace Forum.Controllers {
 						MessageId = result.MessageId
 					});
 
-					var redirectPath = UrlHelper.DisplayMessage(result.TopicId, result.MessageId);
+					var redirectPath = Url.DisplayMessage(result.TopicId, result.MessageId);
 					return Redirect(redirectPath);
 				}
 			}

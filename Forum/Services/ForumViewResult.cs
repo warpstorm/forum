@@ -133,6 +133,9 @@ namespace Forum.Services {
 			if (holidayLogos.ContainsKey(DateTime.Now.Date)) {
 				logoFile = holidayLogos[DateTime.Now.Date];
 			}
+			else if (holidayLogos.ContainsKey(DateTime.Now.AddHours(-6).Date)) {
+				logoFile = holidayLogos[DateTime.Now.AddHours(-6).Date];
+			}
 
 			return $"/images/logos/{logoFile}";
 		}
@@ -148,6 +151,36 @@ namespace Forum.Services {
 			//VALENTINES DAY
 			var valentinesDay = new DateTime(year, 2, 14).Date;
 
+			// ST PATRICKS DAY
+			var stPatricksDay = new DateTime(year, 3, 17).Date;
+
+			// ZOMBIE JESUS DAY
+			var easter = DateTime.Now.AddDays(-1);
+
+			switch(year) {
+				case 2019: easter = new DateTime(year, 4, 21).Date; break;
+				case 2020: easter = new DateTime(year, 4, 12).Date; break;
+				case 2021: easter = new DateTime(year, 4, 4).Date; break;
+				case 2022: easter = new DateTime(year, 4, 17).Date; break;
+				case 2023: easter = new DateTime(year, 4, 9).Date; break;
+				case 2024: easter = new DateTime(year, 3, 31).Date; break;
+				case 2025: easter = new DateTime(year, 4, 20).Date; break;
+				case 2026: easter = new DateTime(year, 4, 5).Date; break;
+				case 2027: easter = new DateTime(year, 3, 28).Date; break;
+				case 2028: easter = new DateTime(year, 4, 16).Date; break;
+				case 2029: easter = new DateTime(year, 4, 1).Date; break;
+				case 2030: easter = new DateTime(year, 4, 21).Date; break;
+				case 2031: easter = new DateTime(year, 4, 13).Date; break;
+				case 2032: easter = new DateTime(year, 3, 28).Date; break;
+				case 2033: easter = new DateTime(year, 4, 17).Date; break;
+				case 2034: easter = new DateTime(year, 4, 9).Date; break;
+				case 2035: easter = new DateTime(year, 3, 25).Date; break;
+				case 2036: easter = new DateTime(year, 4, 13).Date; break;
+				case 2037: easter = new DateTime(year, 4, 5).Date; break;
+				case 2038: easter = new DateTime(year, 4, 25).Date; break;
+				case 2039: easter = new DateTime(year, 4, 10).Date; break;
+			}
+
 			//MEMORIAL DAY  -- last monday in May 
 			var memorialDay = new DateTime(year, 5, 31);
 
@@ -157,9 +190,6 @@ namespace Forum.Services {
 				memorialDay = memorialDay.AddDays(-1);
 				dayOfWeek = memorialDay.DayOfWeek;
 			}
-
-			// ST PATRICKS DAY
-			var stPatricksDay = new DateTime(year, 3, 17).Date;
 
 			// STAR WARS
 			var starWarsDay = new DateTime(year, 5, 4).Date;
@@ -183,7 +213,7 @@ namespace Forum.Services {
 			// HALLOWEEN
 			var halloween = new DateTime(year, 10, 31);
 
-			// HALLOWEEN
+			// VETERANS DAY
 			var veteransDay = new DateTime(year, 11, 11);
 
 			//THANKSGIVING DAY - 4th Thursday in November 
@@ -200,8 +230,9 @@ namespace Forum.Services {
 
 			holidays.Add(newYearsDate, "Logo_NewYears.png");
 			holidays.Add(valentinesDay, "Logo_Valentines.png");
-			//holidays.Add(memorialDay.Date, "Logo.png");
 			holidays.Add(stPatricksDay, "Logo_StPatrick.png");
+			//holidays.Add(memorialDay.Date, "Logo.png");
+			holidays.Add(easter, "Logo_Easter.png");
 			holidays.Add(starWarsDay, "Logo_StarWars.png");
 			holidays.Add(independenceDay, "Logo_Independence.png");
 			//holidays.Add(laborDay.Date, "Logo.png");
