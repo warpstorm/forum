@@ -133,8 +133,8 @@ namespace Forum.Services {
 			if (holidayLogos.ContainsKey(DateTime.Now.Date)) {
 				logoFile = holidayLogos[DateTime.Now.Date];
 			}
-			else if (holidayLogos.ContainsKey(DateTime.Now.AddHours(-10).Date)) {
-				logoFile = holidayLogos[DateTime.Now.Date];
+			else if (holidayLogos.ContainsKey(DateTime.Now.AddHours(-6).Date)) {
+				logoFile = holidayLogos[DateTime.Now.AddHours(-6).Date];
 			}
 
 			return $"/images/logos/{logoFile}";
