@@ -1,5 +1,6 @@
 {
-  "version": "1.0",
-  "defaultProvider": "cdnjs",
+	"version": "1.0",
+	"defaultProvider": "cdnjs",
+	"defaultDestination": "wwwroot/lib",
 	"libraries": []
 }
