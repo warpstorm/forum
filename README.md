@@ -2,6 +2,8 @@
 
 A light-weight and mobile-friendly message board solution intended for small communities hosted in Microsoft Azure.<sup>[[1]](#notes)</sup>
 
+Instructions for setup can be found [here](https://github.com/jyarbro/forum/wiki/Setup).
+
 ## Features
 
 * Standard forum functionality such as boards, topics, messages, and user accounts.
@@ -18,13 +20,9 @@ A light-weight and mobile-friendly message board solution intended for small com
 * Modular design allowing much of the code to be easily replaced or customized without significant impact to other areas.
 * Static theme simplifies the development experience. No theme engine complexity here!
 
-## Unlicensing and Usage
+## Unlicensing
 
 Anything in this project is open and free under the terms of the Unlicense, so you're welcome to use it however you want. See the license for specifics.
-
-If anything here helps you, even in unrelated projects, please feel free to [buy me a coffee](https://patreon.com/nrrdio).
-
-Instructions for setup can be found [here](https://github.com/jyarbro/forum/wiki/Setup).
 
 ## Notes
 
