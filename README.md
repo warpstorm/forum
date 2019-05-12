@@ -22,7 +22,7 @@ Instructions for setup can be found [here](https://github.com/jyarbro/forum/wiki
 
 ## Unlicensing
 
-Anything in this project is open and free under the terms of the Unlicense, so you're welcome to use it however you want. See the license for specifics.
+Anything in this project is open and free under the terms of the Unlicense, so you're welcome to use it however you want. See [the license](https://github.com/jyarbro/forum/blob/master/UNLICENSE) for specifics.
 
 ## Notes
 
