@@ -1,4 +1,4 @@
-﻿/// <binding AfterBuild='global-styles, page-styles, scripts' />
+﻿/// <binding AfterBuild='global-styles, page-styles, scripts, lib-styles' />
 
 let gulp = require('gulp');
 let del = require('del');
@@ -20,6 +20,16 @@ gulp.task('clean', function () {
 	]);
 });
 
+gulp.task('lib-styles', function () {
+	return gulp
+		.src([
+			'node_modules/flatpickr/dist/flatpickr.min.css'
+		])
+		.pipe(uglifyCss())
+		.pipe(concat('lib.css'))
+		.pipe(gulp.dest('wwwroot/styles'));
+});
+
 gulp.task('global-styles', function () {
 	return gulp
 		.src([
@@ -28,7 +38,7 @@ gulp.task('global-styles', function () {
 			'client/styles/forms.css',
 			'client/styles/buttons.css',
 			'client/styles/standard-classes.css',
-			'client/styles/bbc.css'
+			'client/styles/bbc.css',
 		])
 		.pipe(uglifyCss())
 		.pipe(concat('global.css'))
@@ -42,9 +52,9 @@ gulp.task('page-styles', function () {
 });
 
 var browserifySettings = {
-	basedir: 'client',
-	debug: true,
-	entries: ['app/app.ts'],
+	basedir: '',
+	debug: false,
+	entries: ['client/app/app.ts'],
 	plugin: [tsify],
 	cache: {},
 	packageCache: {}
@@ -67,6 +77,7 @@ gulp.task('scripts', function () {
 
 gulp.task('scripts-dev', function () {
 	process.env.NODE_ENV = 'development';
+	browserifySettings.debug = true;
 
 	return browserify(browserifySettings)
 		.bundle()
