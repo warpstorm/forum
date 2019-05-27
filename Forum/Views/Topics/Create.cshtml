@@ -1,7 +1,5 @@
 @model ViewModels.Topics.CreateTopicForm
 
-<div asp-validation-summary="All" class="error"></div>
-
 <div id="board-selector" class="float-right content-box pad">
 	<ul>
 		@if (ViewData["Categories"] is List<ViewModels.Boards.IndexCategory>) {
@@ -26,8 +24,37 @@
 	<p class="font-small subdued-text">Select which boards your topic will appear in.</p>
 </div>
 
-<div id="message-form" class="content-box pad">
-	<partial name="../Messages/_MessageForm" for="@Model" />
+<div class="form content-box pad">
+	<div asp-validation-summary="All" class="error"></div>
+
+	<form method="post"
+		  asp-action="@nameof(Forum.Controllers.Topics.Create)"
+		  asp-controller="@nameof(Forum.Controllers.Topics)"
+		  asp-route-returnurl="@ViewData["Referrer"]">
+
+		@if (ViewData["Categories"] is List<ViewModels.Boards.IndexCategory>)
+		{
+			@foreach (var category in ViewData["Categories"] as List<ViewModels.Boards.IndexCategory>)
+			{
+				@foreach (var board in category.Boards)
+				{
+					<input type="hidden" name="Selected_@board.Id" value="@(board.Id == Model.BoardId ? "True" : "False")" />
+				}
+			}
+		}
+
+		<div>
+			<partial name="../Messages/_MessageFormButtons" />
+
+			<p class="pad-top error" data-valmsg-for="@nameof(Model.Body)" />
+			<p class="pad-top"><textarea asp-for="@Model.Body" name="body"></textarea></p>
+		</div>
+
+		<p>
+			<button class="save-button" name="action" value="save">Save Message</button>
+			<button class="save-button" name="action" value="add-event">Go to Event Details</button>
+		</p>
+	</form>
 </div>
 
 @{ViewData["Title"] = "Create a Topic";}
