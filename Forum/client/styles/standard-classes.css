@@ -13,7 +13,7 @@
 }
 
 [class^="icon-"], [class*=" icon-"] {
-	font-size: .9em;
+	font-size: 0.9rem;
 }
 
 .content-box {
@@ -464,4 +464,20 @@ br.clear-right {
 
 .hidden, .hidden *, li.hidden {
 	display: none;
+}
+
+.flex {
+	display: flex;
+	flex-flow: row wrap;
+}
+
+.flex > * {
+	flex-basis: 0;
+	max-width: 100%;
+}
+
+.flex > dt {
+	text-align: right;
+	white-space: nowrap;
+	min-width: 10%;
 }

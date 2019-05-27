@@ -5,8 +5,8 @@
 form li, dt {
 	padding: 12px 0 6px 0;
 	font-weight: 600;
-	font-size: .9em;
-	line-height: .9em;
+	font-size: 0.9rem;
+	line-height: 0.9rem;
 }
 
 dl {
@@ -22,7 +22,7 @@ textarea,
 select {
 	padding: 4px 10px;
 	margin: 2px;
-	font: 96%/1.4em "Segoe UI", "Segoe UI Web Regular", "Segoe UI Symbol", "Helvetica Neue", Arial, "sans-serif";
+	font: 0.96rem/1.4rem -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 	border: 1px solid #253248;
 	border-radius: 2px;
 	max-width: 95%;
@@ -43,14 +43,6 @@ textarea {
 	max-width: 1600px;
 	width: 95%;
 	height: 200px;
-}
-
-:focus::placeholder {
-	color: transparent;
-}
-
-:focus::-ms-input-placeholder {
-	color: transparent;
 }
 
 .small-input {
