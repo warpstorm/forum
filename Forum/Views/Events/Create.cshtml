@@ -4,14 +4,26 @@
 
 <div id="create-event-form" class="content-box pad">
 	<form method="post"
-		  class="message-form"
 		  asp-action="@Model.FormAction"
 		  asp-controller="@Model.FormController"
 		  asp-route-returnurl="@ViewData["Referrer"]">
 
-		<input type=""
-
-		<input asp-for="@Model.AllDay" />
+		<dl class="flex">
+			<dt>Start time:</dt>
+			<dd>
+				<input asp-for="Start" placeholder="1999-12-31 21:00" />
+			</dd>
+		</dl>
+		<dl class="flex">
+			<dt>End time:</dt>
+			<dd>
+				<input asp-for="End" placeholder="2000-01-01 04:00" />
+			</dd>
+		</dl>
+		<dl class="flex">
+			<dt></dt>
+			<dd><button>Continue</button></dd>
+		</dl>
 	</form>
 </div>
 

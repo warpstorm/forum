@@ -10,6 +10,7 @@ import { TopicIndex } from './pages/topic-index';
 import { TopicDisplay } from './pages/topic-display';
 import { ManageBoards } from './pages/manage-boards';
 import { MessageCreate } from './pages/message-create';
+import { EventCreate } from './pages/event-create';
 import { AccountDetails } from './pages/account-details';
 import { Process } from './pages/process';
 
@@ -68,6 +69,11 @@ export class App {
 			case 'message-create':
 				let messageCreate = new MessageCreate();
 				messageCreate.init();
+				break;
+
+			case 'event-create':
+				let eventCreate = new EventCreate();
+				eventCreate.init();
 				break;
 
 			case 'topic-display':
