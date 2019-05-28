@@ -158,7 +158,7 @@ namespace Forum.Services.Repositories {
 											  join board in boards on topicBoard.BoardId equals board.Id
 											  orderby board.DisplayOrder
 											  select new Models.ViewModels.Boards.IndexBoard {
-												  Id = board.Id.ToString(),
+												  Id = board.Id,
 												  Name = board.Name,
 												  Description = board.Description,
 												  DisplayOrder = board.DisplayOrder,
@@ -329,6 +329,27 @@ namespace Forum.Services.Repositories {
 				result.TopicId = topic.Id;
 				result.MessageId = message.Id;
 			}
+
+			return result;
+		}
+
+		public async Task<ControllerModels.Topics.CreateEventResult> AddEvent(ControllerModels.Topics.CreateEventInput input) {
+			var result = new ControllerModels.Topics.CreateEventResult();
+
+			var record = DbContext.Topics.Find(input.TopicId);
+
+			if (record is null) {
+				throw new HttpNotFoundError();
+			}
+
+			result.TopicId = record.Id;
+			result.MessageId = record.FirstMessageId;
+
+			// TODO: Save event to DB
+
+			await DbContext.SaveChangesAsync();
+
+			// TODO: Send topic-updated result to hub if topic ID != null.
 
 			return result;
 		}

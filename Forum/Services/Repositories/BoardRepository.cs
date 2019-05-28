@@ -111,7 +111,7 @@ namespace Forum.Services.Repositories {
 
 		public async Task<ViewModels.Boards.IndexBoard> GetIndexBoard(DataModels.Board boardRecord, bool includeReplies = false) {
 			var indexBoard = new ViewModels.Boards.IndexBoard {
-				Id = boardRecord.Id.ToString(),
+				Id = boardRecord.Id,
 				Name = boardRecord.Name,
 				Description = boardRecord.Description,
 				DisplayOrder = boardRecord.DisplayOrder,
