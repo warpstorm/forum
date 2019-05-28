@@ -96,6 +96,21 @@ namespace Forum.Services.Repositories {
 			return latestMessageId;
 		}
 
+		public async Task<List<ViewModels.EventPreview>> GetUpcomingEvents() {
+			var eventsQuery = from eventDetails in DbContext.Events
+							  join topic in DbContext.Topics on eventDetails.TopicId equals topic.Id
+							  where eventDetails.End > DateTime.Now
+							  select new ViewModels.EventPreview {
+								  TopicId = topic.Id,
+								  Title = topic.FirstMessageShortPreview,
+								  Start = eventDetails.Start,
+								  End = eventDetails.End,
+								  AllDay = eventDetails.AllDay
+							  };
+
+			return await eventsQuery.Take(4).ToListAsync();
+		}
+
 		public async Task<List<ViewModels.TopicPreview>> GetPreviews(List<int> topicIds) {
 			var topicsQuery = from topic in DbContext.Topics
 							  where topicIds.Contains(topic.Id)
