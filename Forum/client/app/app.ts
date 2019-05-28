@@ -4,7 +4,6 @@ import { Navigation } from './services/navigation';
 import { PassedTimeMonitor } from './services/passed-time-monitor';
 import { SmileySelector } from './services/smiley-selector';
 import { WhosOnlineMonitor } from './services/whos-online-monitor';
-import { ErrorMonitor } from './services/error-monitor';
 
 import { TopicIndex } from './pages/topic-index';
 import { TopicDisplay } from './pages/topic-display';
@@ -29,7 +28,6 @@ export class App {
 	passedTimeMonitor: PassedTimeMonitor;
 	smileySelector: SmileySelector;
 	whosOnlineMonitor: WhosOnlineMonitor;
-	errorMonitor: ErrorMonitor;
 
 	constructor() {
 		this.bbCode = new BBCode(document);
@@ -39,7 +37,6 @@ export class App {
 
 		this.passedTimeMonitor = new PassedTimeMonitor(document);
 		this.whosOnlineMonitor = new WhosOnlineMonitor(document, this);
-		this.errorMonitor = new ErrorMonitor(document);
 	}
 
 	boot() {
@@ -51,7 +48,6 @@ export class App {
 		this.smileySelector.init();
 		this.passedTimeMonitor.init();
 		this.whosOnlineMonitor.init();
-		this.errorMonitor.init();
 
 		let pageActions = (<any>window).pageActions;
 

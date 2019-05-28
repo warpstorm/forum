@@ -35,12 +35,12 @@
 	color: #d01d1d;
 }
 
-.error-stylish {
-	border: 1px solid #d01d1d;
-	border-radius: 2px;
-	padding: 2px 4px;
-	background-color: #440000;
-}
+	.error li:not(:empty) {
+		border: 1px solid #d01d1d;
+		border-radius: 2px;
+		padding: 2px 4px;
+		background-color: #440000;
+	}
 
 .warning, .warning a {
 	color: #fffde8;
@@ -472,7 +472,7 @@ br.clear-right {
 }
 
 .flex > * {
-	flex-basis: 0;
+	flex-basis: auto;
 	max-width: 100%;
 }
 
