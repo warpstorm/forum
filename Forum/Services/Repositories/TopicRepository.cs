@@ -103,6 +103,7 @@ namespace Forum.Services.Repositories {
 			var eventsQuery = from eventDetails in DbContext.Events
 							  join topic in DbContext.Topics on eventDetails.TopicId equals topic.Id
 							  where eventDetails.End >= (eventDetails.AllDay ? today : now)
+							  orderby eventDetails.Start
 							  select new ViewModels.EventPreview {
 								  TopicId = topic.Id,
 								  Title = topic.FirstMessageShortPreview,

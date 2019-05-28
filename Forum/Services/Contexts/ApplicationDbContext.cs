@@ -114,6 +114,9 @@ namespace Forum.Services.Contexts {
 			modelBuilder.Entity<Event>()
 				.HasIndex(r => r.TopicId);
 
+			modelBuilder.Entity<Event>()
+				.HasIndex(r => r.Start);
+
 			modelBuilder.Entity<Message>()
 				.HasIndex(r => r.Deleted);
 

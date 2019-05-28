@@ -168,6 +168,8 @@ namespace Forum.Controllers {
 
 			if (input.Action == Options.ECreateTopicSaveAction.AddEvent) {
 				var editEventViewModel = new ViewModels.Topics.EditEventForm {
+					FormAction = nameof(CreateEvent),
+					FormController = nameof(Topics),
 					Body = input.Body,
 					SelectedBoards = JsonConvert.SerializeObject(input.SelectedBoards)
 				};
@@ -237,7 +239,7 @@ namespace Forum.Controllers {
 					if (input.Start is null) {
 						return RedirectToAction(nameof(Topics.Display), new { id = topicRecord.Id });
 					}
-
+					
 					var isOwner = topicRecord.FirstMessagePostedById == CurrentUser.Id;
 					var isAdmin = CurrentUser.IsAdmin;
 
