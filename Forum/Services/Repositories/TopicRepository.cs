@@ -97,9 +97,12 @@ namespace Forum.Services.Repositories {
 		}
 
 		public async Task<List<ViewModels.EventPreview>> GetUpcomingEvents() {
+			var now = DateTime.Now;
+			var today = DateTime.Now.Date;
+
 			var eventsQuery = from eventDetails in DbContext.Events
 							  join topic in DbContext.Topics on eventDetails.TopicId equals topic.Id
-							  where eventDetails.End > DateTime.Now
+							  where eventDetails.End >= (eventDetails.AllDay ? today : now)
 							  select new ViewModels.EventPreview {
 								  TopicId = topic.Id,
 								  Title = topic.FirstMessageShortPreview,

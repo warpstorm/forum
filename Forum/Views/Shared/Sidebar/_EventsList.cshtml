@@ -5,7 +5,20 @@
 	<ul class="gap-bottom font-small subdued-text">
 		@if (Model.Any()) {
 			@foreach (var item in Model) {
-				<li class="small-gap-bottom small-pad" clickable-link-parent>
+				var classes = "small-gap-bottom small-pad";
+
+				if (item.AllDay) {
+					if (item.Start.Date <= DateTime.Now.Date && item.End.Date >= DateTime.Now.Date) {
+						classes += " glow-left";
+					}
+				}
+				else {
+					if (item.Start <= DateTime.Now && item.End >= DateTime.Now) {
+						classes += " glow-left";
+					}
+				}
+
+				<li class="@classes" clickable-link-parent>
 					<p>
 						<a asp-action="@nameof(Topics.Latest)" asp-route-id="@item.TopicId">
 							@Html.Raw(item.Title)
@@ -13,8 +26,10 @@
 					</p>
 					<p>
 						<span>@(item.AllDay ? item.Start.ToString("MMM dd") : item.Start.ToString("MMM dd h:mm tt"))</span>
-						to
-						<span>@(item.AllDay ? item.End.ToString("MMM dd") : item.End.ToString("MMM dd h:mm tt"))</span>
+						@if (item.Start != item.End) {
+							<span>to</span>
+							<span>@(item.AllDay ? item.End.ToString("MMM dd") : item.End.ToString("MMM dd h:mm tt"))</span>
+						}
 					</p>
 				</li>
 			}
