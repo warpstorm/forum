@@ -158,10 +158,12 @@ namespace Forum.Controllers {
 		[ValidateAntiForgeryToken]
 		[PreventRapidRequests]
 		public async Task<IActionResult> Create(ControllerModels.Topics.CreateTopicInput input) {
-			foreach (var board in await BoardRepository.Records()) {
-				if (Request.Form.TryGetValue("Selected_" + board.Id, out var boardSelected)) {
-					if (boardSelected == "True") {
-						input.SelectedBoards.Add(board.Id);
+			if (Request.Method != "GET") {
+				foreach (var board in await BoardRepository.Records()) {
+					if (Request.Form.TryGetValue("Selected_" + board.Id, out var boardSelected)) {
+						if (boardSelected == "True") {
+							input.SelectedBoards.Add(board.Id);
+						}
 					}
 				}
 			}

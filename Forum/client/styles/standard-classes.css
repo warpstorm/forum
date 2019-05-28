@@ -443,7 +443,7 @@ br.clear-right {
 	}
 
 .glow-left {
-	border-left: 8px solid #7090c6;
+	border-left: 8px solid #121822;
 	border-radius: 4px;
 	background-image: linear-gradient(to right, rgba(42,57,81,1), rgba(42,57,81,0) 100%);
 }
