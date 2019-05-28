@@ -174,7 +174,7 @@ namespace Forum.Controllers {
 
 				ModelState.ClearValidationState(input.Body);
 
-				return await ForumViewResult.ViewResult(this, nameof(CreateEvent), editEventViewModel);
+				return await ForumViewResult.ViewResult(this, "EditEvent", editEventViewModel);
 			}
 
 			if (ModelState.IsValid) {
