@@ -94,7 +94,7 @@ namespace Forum.Controllers {
 				MessagesPerPage = userRecord.MessagesPerPage,
 				PopularityLimit = userRecord.PopularityLimit,
 				Poseys = userRecord.Poseys,
-				ShowFavicons = userRecord.ShowFavicons,
+				ShowFavicons = userRecord.ShowFavicons ?? true,
 				TopicsPerPage = userRecord.TopicsPerPage,
 				ShowBirthday = userRecord.ShowBirthday
 			};
@@ -134,7 +134,7 @@ namespace Forum.Controllers {
 					MessagesPerPage = userRecord.MessagesPerPage,
 					PopularityLimit = userRecord.PopularityLimit,
 					Poseys = userRecord.Poseys,
-					ShowFavicons = userRecord.ShowFavicons,
+					ShowFavicons = userRecord.ShowFavicons ?? true,
 					TopicsPerPage = userRecord.TopicsPerPage
 				};
 
@@ -176,7 +176,7 @@ namespace Forum.Controllers {
 					MessagesPerPage = userRecord.MessagesPerPage,
 					PopularityLimit = userRecord.PopularityLimit,
 					Poseys = userRecord.Poseys,
-					ShowFavicons = userRecord.ShowFavicons,
+					ShowFavicons = userRecord.ShowFavicons ?? true,
 					TopicsPerPage = userRecord.TopicsPerPage
 				};
 

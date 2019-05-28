@@ -314,7 +314,7 @@ namespace Forum.Controllers {
 				IsOwner = topic.FirstMessagePostedById == CurrentUser.Id,
 				IsAdmin = CurrentUser.IsAdmin,
 				IsPinned = topic.Pinned,
-				ShowFavicons = CurrentUser.ApplicationUser.ShowFavicons,
+				ShowFavicons = CurrentUser.ApplicationUser.ShowFavicons ?? true,
 				TotalPages = totalPages,
 				ReplyCount = topic.ReplyCount,
 				ViewCount = topic.ViewCount,

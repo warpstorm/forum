@@ -28,7 +28,7 @@ namespace Forum.Models.DataModels {
 		public int MessagesPerPage { get; set; }
 		public int PopularityLimit { get; set; }
 		public bool Poseys { get; set; }
-		public bool ShowFavicons { get; set; }
+		public bool? ShowFavicons { get; set; }
 		public int TopicsPerPage { get; set; }
 		public int LastActionLogItemId { get; set; }
 	}

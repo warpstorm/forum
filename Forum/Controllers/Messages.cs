@@ -398,7 +398,7 @@ namespace Forum.Controllers {
 				Email = userRecord.Email,
 				CurrentPage = page,
 				MorePages = morePages,
-				ShowFavicons = UserContext.ApplicationUser.ShowFavicons,
+				ShowFavicons = UserContext.ApplicationUser.ShowFavicons ?? true,
 				Messages = messages,
 			};
 
