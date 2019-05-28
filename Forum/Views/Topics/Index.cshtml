@@ -2,7 +2,7 @@
 
 @{ var pageModifier = Model.MorePages ? 1 : 0; }
 
-<partial name="_TopicNav" model="@{(Model.BoardId > 0 ? Model.BoardId : 1)}" />
+<partial name="_TopicNav" model="@(Model.BoardId > 0 ? Model.BoardId : 1)" />
 
 <section id="topic-list">
 	@if (Model.Topics.Any()) {
