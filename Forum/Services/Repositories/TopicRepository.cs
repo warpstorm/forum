@@ -589,6 +589,7 @@ namespace Forum.Services.Repositories {
 			await RemoveTopicViewLogs(topic.Id);
 			await RemoveTopicBookmarks(topic.Id);
 			await RemoveTopicBoards(topic.Id);
+			await RemoveTopicEvents(topic.Id);
 			await RemoveTopicMessages(topic.Id);
 
 			topic.Deleted = true;
@@ -638,6 +639,12 @@ namespace Forum.Services.Repositories {
 				record.Deleted = true;
 			}
 
+			await DbContext.SaveChangesAsync();
+		}
+
+		public async Task RemoveTopicEvents(int topicId) {
+			var records = DbContext.Events.Where(item => item.TopicId == topicId);
+			DbContext.RemoveRange(records);
 			await DbContext.SaveChangesAsync();
 		}
 
