@@ -2,6 +2,8 @@
 
 A light-weight and mobile-friendly message board solution intended for small communities hosted in Microsoft Azure.<sup>[[1]](#notes)</sup>
 
+Instructions for setup can be found [here](https://github.com/jyarbro/forum/wiki/Setup).
+
 ## Features
 
 * Standard forum functionality such as boards, topics, messages, and user accounts.
@@ -18,13 +20,9 @@ A light-weight and mobile-friendly message board solution intended for small com
 * Modular design allowing much of the code to be easily replaced or customized without significant impact to other areas.
 * Static theme simplifies the development experience. No theme engine complexity here!
 
-## Unlicensing and Usage
+## Unlicensing
 
-Anything in this project is open and free under the terms of the Unlicense, so you're welcome to use it however you want. See the license for specifics.
-
-If anything here helps you, even in unrelated projects, please feel free to [buy me a coffee](https://patreon.com/nrrdio).
-
-Instructions for setup can be found [here](https://github.com/jyarbro/forum/wiki/Setup).
+Anything in this project is open and free under the terms of the Unlicense, so you're welcome to use it however you want. See [the license](https://github.com/jyarbro/forum/blob/master/UNLICENSE) for specifics.
 
 ## Notes
 
@@ -32,4 +30,4 @@ Instructions for setup can be found [here](https://github.com/jyarbro/forum/wiki
 
 1: If you would like to use this software on another hosting platform besides Azure Web Applications, please submit an issue with specifics, or submit pull requests with modified code.
 
-2: Progressive enhancement means we focus on getting basic functionality to the user up front in the most universally supported format possible. Only then do we enhance the experience and build up the fanciness. This is opposed to the concept of graceful degradation, where you start fully featured and fail down to the lowest capable level. In practical terms, this means we do our best to make the site function even with javascript disabled.
+2: Progressive enhancement means we focus on getting basic functionality to the user up front in the most universally supported format possible. We then enhance the experience and build up the fanciness. This is opposed to the concept of graceful degradation, where you start fully featured and fail down to the lowest capable level. In practical terms, this means we do our best to make the site function even with javascript disabled. This is a goal, not a rule, so some features are not available without JS.
