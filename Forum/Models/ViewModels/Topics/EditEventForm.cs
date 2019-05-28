@@ -2,7 +2,10 @@
 using System;
 
 namespace Forum.Models.ViewModels.Topics {
-	public class AddEventForm {
+	public class EditEventForm {
+		public string FormAction { get; set; }
+		public string FormController { get; set; }
+
 		public DateTime? Start { get; set; }
 		public DateTime? End { get; set; }
 		public bool AllDay { get; set; }

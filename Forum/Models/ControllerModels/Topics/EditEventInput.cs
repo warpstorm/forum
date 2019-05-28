@@ -1,7 +1,7 @@
 ﻿using System;
 
 namespace Forum.Models.ControllerModels.Topics {
-	public class CreateEventInput {
+	public class EditEventInput {
 		public DateTime? Start { get; set; }
 		public DateTime? End { get; set; }
 		public bool AllDay { get; set; }

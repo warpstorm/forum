@@ -1,6 +1,6 @@
 ﻿import flatpickr from "flatpickr";
 
-export class EventCreate {
+export class EventEdit {
 	timeEnabled: boolean;
 
 	constructor() {

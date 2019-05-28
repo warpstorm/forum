@@ -167,14 +167,14 @@ namespace Forum.Controllers {
 			}
 
 			if (input.Action == Options.ECreateTopicSaveAction.AddEvent) {
-				var addEventViewModel = new ViewModels.Topics.AddEventForm {
+				var editEventViewModel = new ViewModels.Topics.EditEventForm {
 					Body = input.Body,
 					SelectedBoards = JsonConvert.SerializeObject(input.SelectedBoards)
 				};
 
 				ModelState.ClearValidationState(input.Body);
 
-				return await ForumViewResult.ViewResult(this, nameof(CreateEvent), addEventViewModel);
+				return await ForumViewResult.ViewResult(this, nameof(CreateEvent), editEventViewModel);
 			}
 
 			if (ModelState.IsValid) {
@@ -209,7 +209,7 @@ namespace Forum.Controllers {
 				throw new HttpNotFoundError();
 			}
 
-			var viewModel = new ViewModels.Topics.AddEventForm {
+			var viewModel = new ViewModels.Topics.EditEventForm {
 				TopicId = id
 			};
 
@@ -218,7 +218,7 @@ namespace Forum.Controllers {
 
 		[ActionLog("is adding an event to a topic.")]
 		[HttpPost]
-		public async Task<IActionResult> CreateEvent(ControllerModels.Topics.CreateEventInput input) {
+		public async Task<IActionResult> CreateEvent(ControllerModels.Topics.EditEventInput input) {
 			if (ModelState.IsValid) {
 				if (input.TopicId >= 0) {
 					var result = await TopicRepository.AddEvent(input);
@@ -232,18 +232,20 @@ namespace Forum.Controllers {
 				else {
 					ViewData["Smileys"] = await SmileyRepository.GetSelectorList();
 
-					var viewModel = new ViewModels.Topics.CreateTopicForm {
+					var createTopicViewModel = new ViewModels.Topics.CreateTopicForm {
 						Start = input.Start,
 						End = input.End,
 						AllDay = input.AllDay,
 						SelectedBoards = JsonConvert.DeserializeObject<List<int>>(input.SelectedBoards)
 					};
 
-					return await ForumViewResult.ViewResult(this, nameof(Create), viewModel);
+					return await ForumViewResult.ViewResult(this, nameof(Create), createTopicViewModel);
 				}
 			}
 
-			var addEventViewModel = new ViewModels.Topics.AddEventForm {
+			var editEventViewModel = new ViewModels.Topics.EditEventForm {
+				FormAction = nameof(Topics.CreateEvent),
+				FormController = nameof(Topics),
 				Start = input.Start,
 				End = input.End,
 				AllDay = input.AllDay,
@@ -252,7 +254,50 @@ namespace Forum.Controllers {
 				SelectedBoards = JsonConvert.SerializeObject(input.SelectedBoards)
 			};
 
-			return await ForumViewResult.ViewResult(this, nameof(CreateEvent), addEventViewModel);
+			return await ForumViewResult.ViewResult(this, "EditEvent", editEventViewModel);
+		}
+
+		[ActionLog("is editing an event.")]
+		[HttpGet]
+		public async Task<IActionResult> EditEvent(int id) {
+			var eventRecord = DbContext.Events.FirstOrDefault(item => item.TopicId == id);
+
+			if (eventRecord is null) {
+				throw new HttpNotFoundError();
+			}
+
+			var editEventViewModel = new ViewModels.Topics.EditEventForm {
+				FormAction = nameof(Topics.EditEvent),
+				FormController = nameof(Topics),
+				Start = eventRecord.Start,
+				End = eventRecord.End,
+				AllDay = eventRecord.AllDay,
+			};
+
+			return await ForumViewResult.ViewResult(this, editEventViewModel);
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> EditEvent(ControllerModels.Topics.EditEventInput input) {
+			var eventRecord = DbContext.Events.FirstOrDefault(item => item.TopicId == input.TopicId);
+
+			if (input.TopicId < 0 || eventRecord is null) {
+				throw new HttpNotFoundError();
+			}
+			
+			if (ModelState.IsValid) {
+
+			}
+
+			var editEventViewModel = new ViewModels.Topics.EditEventForm {
+				FormAction = nameof(Topics.EditEvent),
+				FormController = nameof(Topics),
+				Start = input.Start,
+				End = input.End,
+				AllDay = input.AllDay,
+			};
+
+			return await ForumViewResult.ViewResult(this, editEventViewModel);
 		}
 
 		[ActionLog("is viewing their bookmarks.")]

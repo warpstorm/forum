@@ -1,17 +1,23 @@
-@model ViewModels.Topics.AddEventForm
+@model ViewModels.Topics.EditEventForm
 
 <div asp-validation-summary="All" class="error"></div>
 
 <div id="create-event-form" class="content-box pad">
 	<form method="post"
-		  asp-action="@nameof(Forum.Controllers.Topics.CreateEvent)"
-		  asp-controller="@nameof(Forum.Controllers.Topics)"
+		  asp-action="@Model.FormAction"
+		  asp-controller="@Model.FormController"
 		  asp-route-returnurl="@ViewData["Referrer"]">
 
 		<input asp-for="TopicId" />
 		<input asp-for="Body" />
 		<input asp-for="SelectedBoards" />
 
+		<dl class="flex">
+			<dt>All Day:</dt>
+			<dd>
+				<input asp-for="AllDay" />
+			</dd>
+		</dl>
 		<dl class="flex">
 			<dt>Start time:</dt>
 			<dd>
@@ -30,12 +36,7 @@
 				</div>
 			</dd>
 		</dl>
-		<dl class="flex">
-			<dt>All Day:</dt>
-			<dd>
-				<input asp-for="AllDay" />
-			</dd>
-		</dl>
+
 		<dl class="flex">
 			<dt></dt>
 			<dd><button>Continue</button></dd>
@@ -43,15 +44,11 @@
 	</form>
 </div>
 
-@{ViewData["Title"] = "Create an Event";}
+@{ViewData["Title"] = "Edit Event Details";}
 @section Header {@ViewData["Title"]}
 
 @section scripts {
 	<script>
-		window.pageActions = 'event-create';
+		window.pageActions = 'event-edit';
 	</script>
-}
-
-@section styles {
-	<link rel="stylesheet" href="~/styles/event-create.css" asp-append-version="true" />
 }

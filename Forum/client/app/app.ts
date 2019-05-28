@@ -9,7 +9,7 @@ import { TopicIndex } from './pages/topic-index';
 import { TopicDisplay } from './pages/topic-display';
 import { ManageBoards } from './pages/manage-boards';
 import { MessageCreate } from './pages/message-create';
-import { EventCreate } from './pages/event-create';
+import { EventEdit } from './pages/event-edit';
 import { AccountDetails } from './pages/account-details';
 import { Process } from './pages/process';
 
@@ -67,9 +67,9 @@ export class App {
 				messageCreate.init();
 				break;
 
-			case 'event-create':
-				let eventCreate = new EventCreate();
-				eventCreate.init();
+			case 'event-edit':
+				let eventEdit = new EventEdit();
+				eventEdit.init();
 				break;
 
 			case 'topic-display':

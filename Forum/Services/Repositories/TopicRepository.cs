@@ -307,7 +307,7 @@ namespace Forum.Services.Repositories {
 
 				if (!(input.Start is null) && !(input.End is null)) {
 					try {
-						await AddEvent(new ControllerModels.Topics.CreateEventInput {
+						await AddEvent(new ControllerModels.Topics.EditEventInput {
 							TopicId = topic.Id,
 							Start = input.Start,
 							End = input.End,
@@ -357,8 +357,8 @@ namespace Forum.Services.Repositories {
 			return result;
 		}
 
-		public async Task<ControllerModels.Topics.CreateEventResult> AddEvent(ControllerModels.Topics.CreateEventInput input) {
-			var result = new ControllerModels.Topics.CreateEventResult();
+		public async Task<ControllerModels.Topics.EditEventResult> AddEvent(ControllerModels.Topics.EditEventInput input) {
+			var result = new ControllerModels.Topics.EditEventResult();
 
 			var topicRecord = DbContext.Topics.Find(input.TopicId);
 
