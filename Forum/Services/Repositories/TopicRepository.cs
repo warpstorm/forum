@@ -165,6 +165,12 @@ namespace Forum.Services.Repositories {
 											  };
 
 				topicPreview.Boards = topicPreviewBoardsQuery.ToList();
+
+				var topicEventQuery = from topicEvent in DbContext.Events
+									  where topicEvent.TopicId == topic.Id
+									  select topicEvent;
+
+				topicPreview.Event = await topicEventQuery.AnyAsync();
 			}
 
 			return topicPreviews;

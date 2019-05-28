@@ -17,6 +17,7 @@ namespace Forum.Models.ViewModels.Topics {
 		public int Unread { get; set; }
 		public bool Pinned { get; set; }
 		public bool Popular { get; set; }
+		public bool Event { get; set; }
 
 		public int FirstMessageId { get; set; }
 		public DateTime FirstMessageTimePosted { get; set; }

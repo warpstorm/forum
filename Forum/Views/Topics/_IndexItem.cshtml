@@ -39,6 +39,9 @@
 
 		<p class="small-pad-top small-pad-left">
 			<a asp-action="@nameof(Topics.Latest)" asp-route-id="@Model.Id">
+				@if (Model.Event) {
+					<img src="~/images/calendar.png" title="Event" />
+				}
 				@Html.Raw(Model.FirstMessageShortPreview)
 				@if (Model.Popular) {
 					<img src="~/images/flame.png" title="Popular" />
