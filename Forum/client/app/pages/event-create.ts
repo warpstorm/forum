@@ -9,14 +9,12 @@ export class EventCreate {
 
 	init() {
 		let self = this;
-
 		self.initializePickers();
 
 		let allDayCheckbox = document.querySelector('#AllDay');
 
 		if (allDayCheckbox) {
-			allDayCheckbox.addEventListener('click', function (event: Event): void {
-				self.timeEnabled = !(<HTMLInputElement>event.currentTarget).checked;
+			allDayCheckbox.addEventListener('click', function (): void {
 				self.initializePickers();
 			});
 		}
@@ -24,6 +22,9 @@ export class EventCreate {
 
 	initializePickers(): void {
 		let self = this;
+
+		let allDayCheckbox = document.querySelector('#AllDay') as HTMLInputElement;
+		self.timeEnabled = !allDayCheckbox.checked;
 
 		flatpickr('#startPicker', {
 			allowInput: true,

@@ -40,7 +40,7 @@
 			}
 		}
 
-		@if (string.IsNullOrEmpty(Model.Start)) {
+		@if (Model.Start is null) {
 			<div class="pad-bottom">
 				<button class="save-button" name="action" value="@ECreateTopicSaveAction.AddEvent">Add Optional Event Details</button>
 			</div>
@@ -53,8 +53,8 @@
 
 				<h4>Event Details:</h4>
 				<section class="pad-left pad-bottom">
-					<p>Start: @Model.Start</p>
-					<p>End: @Model.End</p>
+					<p>Start: @(Model.AllDay ? Model.Start?.ToString("M/d/yyyy") : Model.Start?.ToString())</p>
+					<p>End: @(Model.AllDay ? Model.End?.ToString("M/d/yyyy") : Model.End?.ToString())</p>
 					<p>All Day: @Model.AllDay</p>
 				</section>
 				<button class="save-button" name="action" value="@ECreateTopicSaveAction.AddEvent">Edit Event Details</button>

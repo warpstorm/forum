@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System;
 
 namespace Forum.Models.ViewModels.Topics {
 	public class AddEventForm {
-		public string Start { get; set; }
-		public string End { get; set; }
+		public DateTime? Start { get; set; }
+		public DateTime? End { get; set; }
 		public bool AllDay { get; set; }
 
 		[HiddenInput]

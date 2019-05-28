@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 
 namespace Forum.Models.ViewModels.Topics {
@@ -7,10 +8,10 @@ namespace Forum.Models.ViewModels.Topics {
 		public List<int> SelectedBoards { get; set; } = new List<int>();
 
 		[HiddenInput]
-		public string Start { get; set; }
+		public DateTime? Start { get; set; }
 
 		[HiddenInput]
-		public string End { get; set; }
+		public DateTime? End { get; set; }
 
 		[HiddenInput]
 		public bool AllDay { get; set; }
