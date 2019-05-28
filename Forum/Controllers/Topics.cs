@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,6 +20,7 @@ namespace Forum.Controllers {
 	using HubModels = Models.HubModels;
 	using InputModels = Models.InputModels;
 	using ViewModels = Models.ViewModels;
+	using Options = Models.Options;
 
 	public class Topics : Controller {
 		ApplicationDbContext DbContext { get; }
@@ -125,19 +127,28 @@ namespace Forum.Controllers {
 
 		[ActionLog("is starting a new topic.")]
 		[HttpGet]
-		public async Task<IActionResult> Create(int id = 0) {
+		public async Task<IActionResult> Create(int id = -1) {
 			ViewData["Smileys"] = await SmileyRepository.GetSelectorList();
 
 			var boards = await BoardRepository.Records();
-			var board = boards.First(item => item.Id == id);
+			var board = boards.FirstOrDefault(item => item.Id == id);
+
+			if (board is null) {
+				throw new HttpNotFoundError();
+			}
 
 			// Creating a topic via bookmarklet
 			if (Request.Query.TryGetValue("source", out var source)) {
-				return await Create(new ControllerModels.Topics.CreateTopicInput { BoardId = id, Body = source });
+				var input = new ControllerModels.Topics.CreateTopicInput {
+					Body = source,
+					SelectedBoards = new List<int> { id }
+				};
+
+				return await Create(input);
 			}
 
 			var viewModel = new ViewModels.Topics.CreateTopicForm {
-				BoardId = id.ToString()
+				SelectedBoards = new List<int> { id }
 			};
 
 			return await ForumViewResult.ViewResult(this, viewModel);
@@ -147,21 +158,26 @@ namespace Forum.Controllers {
 		[ValidateAntiForgeryToken]
 		[PreventRapidRequests]
 		public async Task<IActionResult> Create(ControllerModels.Topics.CreateTopicInput input) {
-			if (ModelState.IsValid) {
-				// Creating a topic via bookmarklet
-				if (Request.Method == "GET" && input.BoardId != null) {
-					input.SelectedBoards.Add((int)input.BoardId);
-				}
-				else {
-					foreach (var board in await BoardRepository.Records()) {
-						if (Request.Form.TryGetValue("Selected_" + board.Id, out var boardSelected)) {
-							if (boardSelected == "True") {
-								input.SelectedBoards.Add(board.Id);
-							}
-						}
+			foreach (var board in await BoardRepository.Records()) {
+				if (Request.Form.TryGetValue("Selected_" + board.Id, out var boardSelected)) {
+					if (boardSelected == "True") {
+						input.SelectedBoards.Add(board.Id);
 					}
 				}
+			}
 
+			if (input.Action == Options.ECreateTopicSaveAction.AddEvent) {
+				var addEventViewModel = new ViewModels.Topics.AddEventForm {
+					Body = input.Body,
+					SelectedBoards = JsonConvert.SerializeObject(input.SelectedBoards)
+				};
+
+				ModelState.ClearValidationState(input.Body);
+
+				return await ForumViewResult.ViewResult(this, nameof(CreateEvent), addEventViewModel);
+			}
+
+			if (ModelState.IsValid) {
 				var result = await TopicRepository.CreateTopic(input);
 				ModelState.AddModelErrors(result.Errors);
 
@@ -174,11 +190,69 @@ namespace Forum.Controllers {
 			ViewData["Smileys"] = await SmileyRepository.GetSelectorList();
 
 			var viewModel = new ViewModels.Topics.CreateTopicForm {
-				BoardId = input.BoardId.ToString(),
-				Body = input.Body
+				Body = input.Body,
+				SelectedBoards = input.SelectedBoards,
+				AllDay = input.AllDay,
+				Start = input.Start,
+				End = input.End
 			};
 
 			return await ForumViewResult.ViewResult(this, viewModel);
+		}
+
+		[ActionLog("is adding an event to a topic.")]
+		[HttpGet]
+		public async Task<IActionResult> CreateEvent(int id = -1) {
+			var topic = DbContext.Topics.FirstOrDefault(item => item.Id == id);
+
+			if (topic is null) {
+				throw new HttpNotFoundError();
+			}
+
+			var viewModel = new ViewModels.Topics.AddEventForm {
+				TopicId = id
+			};
+
+			return await ForumViewResult.ViewResult(this, viewModel);
+		}
+
+		[ActionLog("is adding an event to a topic.")]
+		[HttpPost]
+		public async Task<IActionResult> CreateEvent(ControllerModels.Topics.CreateEventInput input) {
+			if (ModelState.IsValid) {
+				if (input.TopicId >= 0) {
+					var result = await TopicRepository.AddEvent(input);
+					ModelState.AddModelErrors(result.Errors);
+
+					if (ModelState.IsValid) {
+						var redirectPath = Url.DisplayMessage(result.TopicId, result.MessageId);
+						return Redirect(redirectPath);
+					}
+				}
+				else {
+					ViewData["Smileys"] = await SmileyRepository.GetSelectorList();
+
+					var viewModel = new ViewModels.Topics.CreateTopicForm {
+						Start = input.Start,
+						End = input.End,
+						AllDay = input.AllDay,
+						SelectedBoards = JsonConvert.DeserializeObject<List<int>>(input.SelectedBoards)
+					};
+
+					return await ForumViewResult.ViewResult(this, nameof(Create), viewModel);
+				}
+			}
+
+			var addEventViewModel = new ViewModels.Topics.AddEventForm {
+				Start = input.Start,
+				End = input.End,
+				AllDay = input.AllDay,
+				TopicId = input.TopicId,
+				Body = input.Body,
+				SelectedBoards = JsonConvert.SerializeObject(input.SelectedBoards)
+			};
+
+			return await ForumViewResult.ViewResult(this, nameof(CreateEvent), addEventViewModel);
 		}
 
 		[ActionLog("is viewing their bookmarks.")]

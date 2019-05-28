@@ -1,0 +1,57 @@
+@model ViewModels.Topics.AddEventForm
+
+<div asp-validation-summary="All" class="error"></div>
+
+<div id="create-event-form" class="content-box pad">
+	<form method="post"
+		  asp-action="@nameof(Forum.Controllers.Topics.CreateEvent)"
+		  asp-controller="@nameof(Forum.Controllers.Topics)"
+		  asp-route-returnurl="@ViewData["Referrer"]">
+
+		<input asp-for="TopicId" />
+		<input asp-for="Body" />
+		<input asp-for="SelectedBoards" />
+
+		<dl class="flex">
+			<dt>Start time:</dt>
+			<dd>
+				<div id="startPicker" class="flatpickr">
+					<input asp-for="Start" placeholder="1999-12-31 21:00" data-input />
+					<img src="/images/calendar.png" title="Toggle Picker" alt="Toggle Picker" class="pointer" data-toggle />
+				</div>
+			</dd>
+		</dl>
+		<dl class="flex">
+			<dt>End time:</dt>
+			<dd>
+				<div id="startPicker" class="flatpickr">
+					<input asp-for="End" placeholder="2000-01-01 04:00" data-input />
+					<img src="/images/calendar.png" title="Toggle Picker" alt="Toggle Picker" class="pointer" data-toggle />
+				</div>
+			</dd>
+		</dl>
+		<dl class="flex">
+			<dt>All Day:</dt>
+			<dd>
+				<input asp-for="AllDay" />
+			</dd>
+		</dl>
+		<dl class="flex">
+			<dt></dt>
+			<dd><button>Continue</button></dd>
+		</dl>
+	</form>
+</div>
+
+@{ViewData["Title"] = "Create an Event";}
+@section Header {@ViewData["Title"]}
+
+@section scripts {
+	<script>
+		window.pageActions = 'event-create';
+	</script>
+}
+
+@section styles {
+	<link rel="stylesheet" href="~/styles/event-create.css" asp-append-version="true" />
+}

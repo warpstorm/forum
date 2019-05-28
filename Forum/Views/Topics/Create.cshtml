@@ -8,7 +8,7 @@
 					<span class="font-small subdued-text">@category.Name</span>
 					<ul>
 						@for (var i = 0; i < category.Boards.Count; i++) {
-							var checkbox = Model.BoardId == category.Boards[i].Id ? "checked" : "unchecked";
+							var checkbox = Model.SelectedBoards.Contains(category.Boards[i].Id) ? "checked" : "unchecked";
 
 							<li class="hover-highlight pointer" toggle-board board-id="@category.Boards[i].Id" title="@category.Boards[i].Description">
 								<img src="~/images/checkbox_@(checkbox).png" board-flag="@category.Boards[i].Id" />
@@ -25,34 +25,49 @@
 </div>
 
 <div class="form content-box pad">
-	<div asp-validation-summary="All" class="error"></div>
+	<div asp-validation-summary="All" class="error gap-bottom"></div>
 
 	<form method="post"
 		  asp-action="@nameof(Forum.Controllers.Topics.Create)"
 		  asp-controller="@nameof(Forum.Controllers.Topics)"
 		  asp-route-returnurl="@ViewData["Referrer"]">
 
-		@if (ViewData["Categories"] is List<ViewModels.Boards.IndexCategory>)
-		{
-			@foreach (var category in ViewData["Categories"] as List<ViewModels.Boards.IndexCategory>)
-			{
-				@foreach (var board in category.Boards)
-				{
-					<input type="hidden" name="Selected_@board.Id" value="@(board.Id == Model.BoardId ? "True" : "False")" />
+		@if (ViewData["Categories"] is List<ViewModels.Boards.IndexCategory>) {
+			@foreach (var category in ViewData["Categories"] as List<ViewModels.Boards.IndexCategory>) {
+				@foreach (var board in category.Boards) {
+					<input type="hidden" name="Selected_@board.Id" value="@(Model.SelectedBoards.Contains(board.Id) ? "True" : "False")" />
 				}
 			}
 		}
 
+		@if (string.IsNullOrEmpty(Model.Start)) {
+			<div class="pad-bottom">
+				<button class="save-button" name="action" value="@ECreateTopicSaveAction.AddEvent">Add Optional Event Details</button>
+			</div>
+		}
+		else {
+			<div class="pad-bottom">
+				<input asp-for="Start" />
+				<input asp-for="End" />
+				<input asp-for="AllDay" />
+
+				<h4>Event Details:</h4>
+				<section class="pad-left pad-bottom">
+					<p>Start: @Model.Start</p>
+					<p>End: @Model.End</p>
+					<p>All Day: @Model.AllDay</p>
+				</section>
+				<button class="save-button" name="action" value="@ECreateTopicSaveAction.AddEvent">Edit Event Details</button>
+			</div>
+		}
+
 		<div>
 			<partial name="../Messages/_MessageFormButtons" />
-
-			<p class="pad-top error" data-valmsg-for="@nameof(Model.Body)" />
 			<p class="pad-top"><textarea asp-for="@Model.Body" name="body"></textarea></p>
 		</div>
 
 		<p>
-			<button class="save-button" name="action" value="save">Save Message</button>
-			<button class="save-button" name="action" value="add-event">Go to Event Details</button>
+			<button class="save-button" name="action" value="@ECreateTopicSaveAction.Save">Save Message</button>
 		</p>
 	</form>
 </div>
@@ -62,7 +77,7 @@
 
 @section scripts {
 	<script>
-		window.assignedBoards = ["@Model.BoardId"];
+		window.assignedBoards = ['@string.Join("', '", Model.SelectedBoards)'];
 		window.pageActions = 'message-create';
 	</script>
 }
