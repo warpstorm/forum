@@ -462,7 +462,7 @@ br.clear-right {
 			color: #171f2c;
 		}
 
-.hidden, .hidden *, li.hidden {
+.hidden, .hidden *, li.hidden, .hidden-empty:empty {
 	display: none;
 }
 
