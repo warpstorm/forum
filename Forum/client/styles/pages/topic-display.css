@@ -16,6 +16,10 @@ main > header,
 	margin-left: 115px;
 }
 
+#event-details:empty {
+	display: none;
+}
+
 .user-avatar {
 	padding: 12px 0;
 	width: 115px;

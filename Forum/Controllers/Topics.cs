@@ -331,6 +331,7 @@ namespace Forum.Controllers {
 			await loadCategories();
 			await loadTopicBoards();
 			await loadSmileyViewData();
+			await loadEventDetails();
 
 			return await ForumViewResult.ViewResult(this, viewModel);
 
@@ -364,6 +365,16 @@ namespace Forum.Controllers {
 
 			async Task loadSmileyViewData() {
 				ViewData[Constants.InternalKeys.SmileyViewData] = await SmileyRepository.GetSelectorList();
+			}
+
+			async Task loadEventDetails() {
+				var eventRecord = await DbContext.Events.FirstOrDefaultAsync(item => item.TopicId == topic.Id);
+
+				if (!(eventRecord is null)) {
+					viewModel.Start = eventRecord.Start;
+					viewModel.End = eventRecord.End;
+					viewModel.AllDay = eventRecord.AllDay;
+				}
 			}
 		}
 

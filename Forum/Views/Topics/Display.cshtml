@@ -84,6 +84,14 @@
 	}
 </header>
 
+<header id="event-details" class="topic-header content-box pad gap-bottom clear-left">@if (!(Model.Start is null)) {
+	<h2>Event Details:</h2>
+	<section class="pad">
+		<p>Start: @(Model.AllDay ? Model.Start?.ToString("M/d/yyyy") : Model.Start?.ToString())</p>
+		<p>End: @(Model.AllDay ? Model.End?.ToString("M/d/yyyy") : Model.End?.ToString())</p>
+	</section>
+}</header>
+
 <div id="message-list">
 	@for (var i = 0; i < Model.Messages.Count(); i++) {
 		<partial name="../Messages/_DisplayMessage" for="@Model.Messages[i]" />
