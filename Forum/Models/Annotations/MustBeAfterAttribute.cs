@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 
 namespace Forum.Models.Annotations {
 	[AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
@@ -9,23 +10,23 @@ namespace Forum.Models.Annotations {
 		public MustBeAfterAttribute(string target) => Target = target;
 
 		protected override ValidationResult IsValid(object value, ValidationContext context) {
-			ErrorMessage = ErrorMessageString;
-
-			var thisValue = (DateTime)value;
+			var thisValue = value as DateTime?;
 
 			var property = context.ObjectType.GetProperty(Target);
 
 			if (property is null) {
-				throw new ArgumentException("Property with this name not found");
+				throw new ArgumentException($"A property with the name {Target} was not found.");
 			}
 
-			var thatValue = (DateTime)property.GetValue(context.ObjectInstance);
+			var thatValue = property.GetValue(context.ObjectInstance) as DateTime?;
 
-			if (thisValue < thatValue) {
-				return new ValidationResult(ErrorMessage);
+			if (thisValue >= thatValue || (thisValue is null && thatValue is null)) {
+				return ValidationResult.Success;
 			}
 
-			return ValidationResult.Success;
+			ErrorMessage = string.Format(CultureInfo.CurrentCulture, ErrorMessageString, new [] { Target });
+
+			return new ValidationResult(ErrorMessage);
 		}
 	}
 }
