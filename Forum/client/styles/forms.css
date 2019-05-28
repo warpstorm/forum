@@ -17,6 +17,10 @@ dd {
 	padding: 2px 0 0 6px;
 }
 
+dd > span {
+	line-height: 2.4rem;
+}
+
 input,
 textarea,
 select {
