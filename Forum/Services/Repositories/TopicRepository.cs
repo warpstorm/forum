@@ -299,35 +299,53 @@ namespace Forum.Services.Repositories {
 				DbContext.Topics.Add(topic);
 				await DbContext.SaveChangesAsync();
 
-				message.TopicId = topic.Id;
-				DbContext.Update(message);
-
-				MessageRepository.UpdateTopicParticipation(topic.Id, UserContext.ApplicationUser.Id, message.TimePosted);
-
-				var boards = await BoardRepository.Records();
-
-				foreach (var selectedBoard in input.SelectedBoards) {
-					var board = boards.FirstOrDefault(item => item.Id == selectedBoard);
-
-					if (board != null) {
-						DbContext.TopicBoards.Add(new DataModels.TopicBoard {
+				if (!(input.Start is null) && !(input.End is null)) {
+					try {
+						await AddEvent(new ControllerModels.Topics.CreateEventInput {
 							TopicId = topic.Id,
-							BoardId = board.Id,
-							TimeAdded = DateTime.Now,
-							UserId = UserContext.ApplicationUser.Id
+							Start = input.Start,
+							End = input.End,
+							AllDay = input.AllDay
 						});
+					}
+					catch (ArgumentException e) {
+						result.Errors.Add(e.ParamName, e.Message);
+						DbContext.Topics.Remove(topic);
+						await DbContext.SaveChangesAsync();
 					}
 				}
 
-				await DbContext.SaveChangesAsync();
+				if (!result.Errors.Any()) {
+					message.TopicId = topic.Id;
+					DbContext.Update(message);
 
-				await ForumHub.Clients.All.SendAsync("new-topic", new HubModels.Message {
-					TopicId = topic.Id,
-					MessageId = message.Id
-				});
+					MessageRepository.UpdateTopicParticipation(topic.Id, UserContext.ApplicationUser.Id, message.TimePosted);
 
-				result.TopicId = topic.Id;
-				result.MessageId = message.Id;
+					var boards = await BoardRepository.Records();
+
+					foreach (var selectedBoard in input.SelectedBoards) {
+						var board = boards.FirstOrDefault(item => item.Id == selectedBoard);
+
+						if (board != null) {
+							DbContext.TopicBoards.Add(new DataModels.TopicBoard {
+								TopicId = topic.Id,
+								BoardId = board.Id,
+								TimeAdded = DateTime.Now,
+								UserId = UserContext.ApplicationUser.Id
+							});
+						}
+					}
+
+					await DbContext.SaveChangesAsync();
+
+					await ForumHub.Clients.All.SendAsync("new-topic", new HubModels.Message {
+						TopicId = topic.Id,
+						MessageId = message.Id
+					});
+
+					result.TopicId = topic.Id;
+					result.MessageId = message.Id;
+				}
 			}
 
 			return result;
@@ -336,16 +354,31 @@ namespace Forum.Services.Repositories {
 		public async Task<ControllerModels.Topics.CreateEventResult> AddEvent(ControllerModels.Topics.CreateEventInput input) {
 			var result = new ControllerModels.Topics.CreateEventResult();
 
-			var record = DbContext.Topics.Find(input.TopicId);
+			var topicRecord = DbContext.Topics.Find(input.TopicId);
 
-			if (record is null) {
+			if (topicRecord is null) {
 				throw new HttpNotFoundError();
 			}
 
-			result.TopicId = record.Id;
-			result.MessageId = record.FirstMessageId;
+			if (input.Start is null) {
+				throw new ArgumentException("Parameter cannot be null.", nameof(input.Start));
+			}
 
-			// TODO: Save event to DB
+			if (input.End is null) {
+				throw new ArgumentException("Parameter cannot be null.", nameof(input.End));
+			}
+
+			result.TopicId = topicRecord.Id;
+			result.MessageId = topicRecord.FirstMessageId;
+
+			var eventRecord = new DataModels.Event {
+				TopicId = input.TopicId,
+				Start = (DateTime)input.Start,
+				End = (DateTime)input.End,
+				AllDay = input.AllDay
+			};
+
+			DbContext.Add(eventRecord);
 
 			await DbContext.SaveChangesAsync();
 
