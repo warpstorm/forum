@@ -36,6 +36,13 @@
 						</div>
 					</li>
 				}
+
+				@if (Model.IsOwner || Model.IsAdmin) {
+					<li>
+						<a class="small-button" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.EditEvent)" asp-route-id="@Model.Id">Event Details</a>
+					</li>
+				}
+
 				@if (Model.IsAdmin) {
 					<li><a class="small-button" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Merge)" asp-route-id="@Model.Id">Merge</a></li>
 					<li><a class="small-button" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Pin)" asp-route-id="@Model.Id">@(Model.IsPinned ? "Unpin" : "Pin")</a></li>
@@ -84,7 +91,9 @@
 	}
 </header>
 
-<header id="event-details" class="topic-header content-box pad gap-bottom clear-left">@if (!(Model.Start is null)) {
+<header id="event-details" class="topic-header content-box pad gap-bottom clear-left hidden-empty">@if (!(Model.Start is null)) {
+	// Must not have whitespace around outer conditional to ensure it's hidden when empty.
+
 	<h2>Event Details:</h2>
 	<section class="pad">
 		<p>Start: @(Model.AllDay ? Model.Start?.ToString("M/d/yyyy") : Model.Start?.ToString())</p>

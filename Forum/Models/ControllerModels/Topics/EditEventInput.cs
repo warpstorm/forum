@@ -5,7 +5,7 @@ namespace Forum.Models.ControllerModels.Topics {
 	public class EditEventInput {
 		public DateTime? Start { get; set; }
 
-		[MustBeAfter(nameof(Start))]
+		[MustBeAfter(nameof(Start), ErrorMessage = "This value must be greater than {0}")]
 		public DateTime? End { get; set; }
 
 		public bool AllDay { get; set; }

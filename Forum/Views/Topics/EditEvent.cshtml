@@ -1,7 +1,5 @@
 @model ViewModels.Topics.EditEventForm
 
-<div asp-validation-summary="All" class="error"></div>
-
 <div id="create-event-form" class="content-box pad">
 	<form method="post"
 		  asp-action="@Model.FormAction"
@@ -15,7 +13,7 @@
 		<dl class="flex">
 			<dt>All Day:</dt>
 			<dd>
-				<input asp-for="AllDay" />
+				<span><input asp-for="AllDay" /></span>
 			</dd>
 		</dl>
 		<dl class="flex">
@@ -26,6 +24,7 @@
 					<img src="~/images/calendar.png" title="Toggle Picker" alt="Toggle Picker" class="pointer" data-toggle />
 				</div>
 			</dd>
+			<dd><span asp-validation-for="Start" class="error"></span></dd>
 		</dl>
 		<dl class="flex">
 			<dt>End time:</dt>
@@ -35,6 +34,7 @@
 					<img src="~/images/calendar.png" title="Toggle Picker" alt="Toggle Picker" class="pointer" data-toggle />
 				</div>
 			</dd>
+			<dd><span asp-validation-for="End" class="error"></span></dd>
 		</dl>
 
 		<dl class="flex">

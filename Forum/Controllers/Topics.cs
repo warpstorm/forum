@@ -203,17 +203,24 @@ namespace Forum.Controllers {
 		[ActionLog("is adding an event to a topic.")]
 		[HttpGet]
 		public async Task<IActionResult> CreateEvent(int id = -1) {
-			var topic = DbContext.Topics.FirstOrDefault(item => item.Id == id);
+			var topicRecord = DbContext.Topics.FirstOrDefault(item => item.Id == id);
 
-			if (topic is null) {
+			if (topicRecord is null) {
 				throw new HttpNotFoundError();
+			}
+
+			var isOwner = topicRecord.FirstMessagePostedById == CurrentUser.Id;
+			var isAdmin = CurrentUser.IsAdmin;
+
+			if (!isOwner && !isAdmin) {
+				throw new HttpForbiddenError();
 			}
 
 			var viewModel = new ViewModels.Topics.EditEventForm {
 				TopicId = id
 			};
 
-			return await ForumViewResult.ViewResult(this, viewModel);
+			return await ForumViewResult.ViewResult(this, "EditEvent", viewModel);
 		}
 
 		[ActionLog("is adding an event to a topic.")]
@@ -221,6 +228,23 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> CreateEvent(ControllerModels.Topics.EditEventInput input) {
 			if (ModelState.IsValid) {
 				if (input.TopicId >= 0) {
+					var topicRecord = DbContext.Topics.FirstOrDefault(item => item.Id == input.TopicId);
+
+					if (topicRecord is null) {
+						throw new HttpNotFoundError();
+					}
+
+					if (input.Start is null) {
+						return RedirectToAction(nameof(Topics.Display), new { id = topicRecord.Id });
+					}
+
+					var isOwner = topicRecord.FirstMessagePostedById == CurrentUser.Id;
+					var isAdmin = CurrentUser.IsAdmin;
+
+					if (!isOwner && !isAdmin) {
+						throw new HttpForbiddenError();
+					}
+
 					var result = await TopicRepository.AddEvent(input);
 					ModelState.AddModelErrors(result.Errors);
 
@@ -260,10 +284,22 @@ namespace Forum.Controllers {
 		[ActionLog("is editing an event.")]
 		[HttpGet]
 		public async Task<IActionResult> EditEvent(int id) {
+			var topicRecord = DbContext.Topics.Find(id);
 			var eventRecord = DbContext.Events.FirstOrDefault(item => item.TopicId == id);
 
-			if (eventRecord is null) {
+			if (topicRecord is null) {
 				throw new HttpNotFoundError();
+			}
+
+			if (eventRecord is null) {
+				return RedirectToAction(nameof(CreateEvent), new { id });
+			}
+
+			var isOwner = topicRecord.FirstMessagePostedById == CurrentUser.Id;
+			var isAdmin = CurrentUser.IsAdmin;
+
+			if (!isOwner && !isAdmin) {
+				throw new HttpForbiddenError();
 			}
 
 			var editEventViewModel = new ViewModels.Topics.EditEventForm {
@@ -272,6 +308,7 @@ namespace Forum.Controllers {
 				Start = eventRecord.Start,
 				End = eventRecord.End,
 				AllDay = eventRecord.AllDay,
+				TopicId = id
 			};
 
 			return await ForumViewResult.ViewResult(this, editEventViewModel);
@@ -279,14 +316,35 @@ namespace Forum.Controllers {
 
 		[HttpPost]
 		public async Task<IActionResult> EditEvent(ControllerModels.Topics.EditEventInput input) {
-			var eventRecord = DbContext.Events.FirstOrDefault(item => item.TopicId == input.TopicId);
-
-			if (input.TopicId < 0 || eventRecord is null) {
-				throw new HttpNotFoundError();
-			}
-			
 			if (ModelState.IsValid) {
+				var topicRecord = DbContext.Topics.Find(input.TopicId);
+				var eventRecord = DbContext.Events.FirstOrDefault(item => item.TopicId == input.TopicId);
 
+				if (topicRecord is null || eventRecord is null) {
+					throw new HttpNotFoundError();
+				}
+
+				var isOwner = topicRecord.FirstMessagePostedById == CurrentUser.Id;
+				var isAdmin = CurrentUser.IsAdmin;
+
+				if (!isOwner && !isAdmin) {
+					throw new HttpForbiddenError();
+				}
+
+				if (input.Start is null || input.End is null) {
+					DbContext.Remove(eventRecord);
+				}
+				else {
+					eventRecord.Start = (DateTime)input.Start;
+					eventRecord.End = (DateTime)input.End;
+					eventRecord.AllDay = input.AllDay;
+				}
+
+				await DbContext.SaveChangesAsync();
+
+				if (ModelState.IsValid) {
+					return RedirectToAction(nameof(Display), new { id = input.TopicId });
+				}
 			}
 
 			var editEventViewModel = new ViewModels.Topics.EditEventForm {
