@@ -9,12 +9,12 @@
 
 				if (item.AllDay) {
 					if (item.Start.Date <= DateTime.Now.Date && item.End.Date >= DateTime.Now.Date) {
-						classes += " glow-left";
+						classes += " glow-left glow-left-dark";
 					}
 				}
 				else {
 					if (item.Start <= DateTime.Now && item.End >= DateTime.Now) {
-						classes += " glow-left";
+						classes += " glow-left glow-left-dark";
 					}
 				}
 

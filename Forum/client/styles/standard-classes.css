@@ -443,7 +443,7 @@ br.clear-right {
 	}
 
 .glow-left {
-	border-left: 8px solid #121822;
+	border-left: 8px solid #7090c6;
 	border-radius: 4px;
 	background-image: linear-gradient(to right, rgba(42,57,81,1), rgba(42,57,81,0) 100%);
 }
@@ -461,6 +461,10 @@ br.clear-right {
 		.glow-left:hover time {
 			color: #171f2c;
 		}
+
+.glow-left-dark {
+	border-left: 8px solid #121822;
+}
 
 .hidden, .hidden *, li.hidden, .hidden-empty:empty {
 	display: none;
