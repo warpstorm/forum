@@ -134,25 +134,25 @@ namespace Forum.Services.Plugins.UrlReplacement {
 
 		public ImgurClientModels.Image GetImage(string hash) {
 			var requestUrl = $"{ENDPOINT}/image/{hash}";
-			var response = WebClient.DownloadJSObject<ImgurClientModels.ImageResponse>(requestUrl, Headers);
+			var response = WebClient.DownloadJSObject<ImgurClientModels.Response<ImgurClientModels.Image>>(requestUrl, Headers);
 			return response?.Data;
 		}
 
 		public ImgurClientModels.Album GetAlbum(string hash) {
 			var requestUrl = $"{ENDPOINT}/album/{hash}";
-			var response = WebClient.DownloadJSObject<ImgurClientModels.AlbumResponse>(requestUrl, Headers);
+			var response = WebClient.DownloadJSObject<ImgurClientModels.Response<ImgurClientModels.Album>>(requestUrl, Headers);
 			return response?.Data;
 		}
 
 		public ImgurClientModels.GalleryAlbum GetGalleryAlbum(string hash) {
 			var requestUrl = $"{ENDPOINT}/gallery/album/{hash}";
-			var response = WebClient.DownloadJSObject<ImgurClientModels.GalleryAlbumResponse>(requestUrl, Headers);
+			var response = WebClient.DownloadJSObject<ImgurClientModels.Response<ImgurClientModels.GalleryAlbum>>(requestUrl, Headers);
 			return response?.Data;
 		}
 
 		public List<ImgurClientModels.Image> GetAlbumImages(string hash) {
 			var requestUrl = $"{ENDPOINT}/album/{hash}/images";
-			var response = WebClient.DownloadJSObject<ImgurClientModels.AlbumImagesResponse>(requestUrl, Headers);
+			var response = WebClient.DownloadJSObject<ImgurClientModels.Response<List<ImgurClientModels.Image>>>(requestUrl, Headers);
 			return response.Data;
 		}
 
@@ -177,6 +177,12 @@ namespace Forum.Services.Plugins.UrlReplacement {
 			}
 
 			return card;
+		}
+
+		public bool CheckUserName(string username) {
+			var requestUrl = $"{ENDPOINT}/account/{username}";
+			var response = WebClient.DownloadJSObject<ImgurClientModels.Response<ImgurClientModels.Account>>(requestUrl, Headers);
+			return response.Success;
 		}
 	}
 }

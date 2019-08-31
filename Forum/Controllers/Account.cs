@@ -83,6 +83,7 @@ namespace Forum.Controllers {
 				AvatarPath = userRecord.AvatarPath,
 				Id = userRecord.Id,
 				DisplayName = userRecord.DisplayName,
+				ImgurName = userRecord.ImgurName,
 				NewEmail = userRecord.Email,
 				EmailConfirmed = userRecord.EmailConfirmed,
 				BirthdayDays = DayPickList(userRecord.Birthday.Day),

@@ -7,6 +7,7 @@ using Forum.Services.Contexts;
 using Forum.Services.Helpers;
 using Forum.Services.Plugins.EmailSender;
 using Forum.Services.Plugins.ImageStore;
+using Forum.Services.Plugins.UrlReplacement;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -32,6 +33,7 @@ namespace Forum.Services.Repositories {
 		UserContext UserContext { get; }
 		UserManager<DataModels.ApplicationUser> UserManager { get; }
 		SignInManager<DataModels.ApplicationUser> SignInManager { get; }
+		ImgurClient ImgurClient { get; }
 		IHttpContextAccessor HttpContextAccessor { get; }
 		IUrlHelper UrlHelper { get; }
 		IEmailSender EmailSender { get; }
@@ -43,6 +45,7 @@ namespace Forum.Services.Repositories {
 			UserContext userContext,
 			UserManager<DataModels.ApplicationUser> userManager,
 			SignInManager<DataModels.ApplicationUser> signInManager,
+			ImgurClient imgurClient,
 			IHttpContextAccessor httpContextAccessor,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory,
@@ -55,6 +58,7 @@ namespace Forum.Services.Repositories {
 
 			UserManager = userManager;
 			SignInManager = signInManager;
+			ImgurClient = imgurClient;
 
 			HttpContextAccessor = httpContextAccessor;
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
@@ -178,6 +182,7 @@ namespace Forum.Services.Repositories {
 			CanEdit(userRecord.Id);
 
 			await updateDisplayName();
+			updateImgurName();
 			updateBirthday();
 			updateFrontPage();
 			updateMessagesPerPage();
@@ -207,6 +212,24 @@ namespace Forum.Services.Repositories {
 						DbContext.Update(userRecord);
 
 						Log.LogInformation($"Display name was modified by '{UserContext.ApplicationUser.DisplayName}' for account '{userRecord.DisplayName}'.");
+					}
+				}
+			}
+
+			void updateImgurName() {
+				if (serviceResponse.Success && input.ImgurName != userRecord.ImgurName) {
+					var usernameCheck = ImgurClient.CheckUserName(input.ImgurName);
+
+					if (usernameCheck) {
+						userRecord.ImgurName = input.ImgurName;
+						DbContext.Update(userRecord);
+
+						Log.LogInformation($"Imgur name was modified by '{UserContext.ApplicationUser.DisplayName}' for account '{userRecord.DisplayName}'.");
+					}
+					else {
+						var message = $"The imgur name '{input.ImgurName}' seems invalid.";
+						serviceResponse.Error(message);
+						Log.LogWarning(message);
 					}
 				}
 			}

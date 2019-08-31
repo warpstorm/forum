@@ -12,6 +12,10 @@ namespace Forum.Models.InputModels {
 		[RegularExpression(@"(^[^\s]+.+[^\s]+$)", ErrorMessage = "The display name cannot have spaces before or after.")]
 		public string DisplayName { get; set; }
 
+		[MaxLength(64)]
+		[RegularExpression(@"(^[^\s]+.+[^\s]+$)", ErrorMessage = "The imgur name cannot have spaces before or after.")]
+		public string ImgurName { get; set; }
+
 		[Required]
 		[EmailAddress]
 		public string NewEmail { get; set; }

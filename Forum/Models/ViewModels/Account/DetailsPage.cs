@@ -18,6 +18,9 @@ namespace Forum.Models.ViewModels.Account {
 
 		public bool EmailConfirmed { get; set; }
 
+		[MaxLength(64)]
+		public string ImgurName { get; set; }
+
 		[Required]
 		[MinLength(3)]
 		[MaxLength(100)]
