@@ -184,3 +184,7 @@ blockquote.card {
 .topic-reply-form .cancel-button {
 	display: none;
 }
+
+.forum-reaction {
+	max-width: 256px;
+}

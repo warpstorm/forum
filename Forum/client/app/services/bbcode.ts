@@ -7,6 +7,7 @@ let bbCodes: { [key: string]: string } = {
 	'quote': '[quote]\n\n\n[/quote]',
 	'spoiler': '[spoiler]  [/spoiler]',
 	'img': '[img]  [/img]',
+	'reaction': '[reaction]  [/reaction]',
 	'underline': '[u]  [/u]',
 	'strike': '[s]  [/s]',
 	'color': '[color=#A335EE]  [/color]',

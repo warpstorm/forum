@@ -18,6 +18,7 @@ namespace Forum.Services {
 				Url(),
 				Size(),
 				Color(),
+				Reaction(),
 			});
 		}
 
@@ -115,6 +116,17 @@ namespace Forum.Services {
 				openTagTemplate: @"<span style=""color: ${color};"">",
 				closeTagTemplate: "</span>",
 				attributes: attributes
+			);
+		}
+
+		static BBTag Reaction() {
+			return new BBTag(
+				name: "reaction",
+				openTagTemplate: @"${content}?forum-reaction",
+				closeTagTemplate: "",
+				autoRenderContent: false,
+				requireClosingTag: false,
+				contentTransformer: Trimmer
 			);
 		}
 

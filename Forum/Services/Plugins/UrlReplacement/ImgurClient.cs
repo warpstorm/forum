@@ -25,6 +25,12 @@ namespace Forum.Services.Plugins.UrlReplacement {
 		public bool TryGetReplacement(string remoteUrl, string pageTitle, string favicon, out UrlReplacement replacement) {
 			replacement = null;
 
+			var isReaction = remoteUrl.Contains("?forum-reaction");
+
+			if (isReaction) {
+				remoteUrl = Regex.Replace(remoteUrl, @"\?forum-reaction", string.Empty);
+			}
+
 			var albumMatch = Regex.Match(remoteUrl, @"imgur.com\/a\/([a-zA-Z0-9]+)?$", RegexOptions.Compiled | RegexOptions.Multiline);
 			var galleryMatch = Regex.Match(remoteUrl, @"imgur.com\/gallery\/([a-zA-Z0-9]+)?$", RegexOptions.Compiled | RegexOptions.Multiline);
 			var imageMatch = Regex.Match(remoteUrl, @"imgur.com\/([a-zA-Z0-9]+)?$", RegexOptions.Compiled | RegexOptions.Multiline);
@@ -45,11 +51,11 @@ namespace Forum.Services.Plugins.UrlReplacement {
 			}
 			else if (imageMatch.Success) {
 				var hash = imageMatch.Groups[1].Value;
-				replacement = GetReplacementForImage(hash, favicon);
+				replacement = GetReplacementForImage(hash, favicon, isReaction);
 			}
 			else if (favoriteMatch.Success) {
 				var hash = favoriteMatch.Groups[1].Value;
-				replacement = GetReplacementForImage(hash, favicon);
+				replacement = GetReplacementForImage(hash, favicon, isReaction);
 			}
 
 			if (replacement is null) {
@@ -59,7 +65,7 @@ namespace Forum.Services.Plugins.UrlReplacement {
 			return true;
 		}
 
-		public UrlReplacement GetReplacementForImage(string hash, string favicon) {
+		public UrlReplacement GetReplacementForImage(string hash, string favicon, bool isReaction) {
 			var image = GetImage(hash);
 
 			if (image is null) {
@@ -70,10 +76,26 @@ namespace Forum.Services.Plugins.UrlReplacement {
 				image.Title = "(No Title)";
 			}
 
-			return new UrlReplacement {
-				ReplacementText = $"<a target='_blank' href='{image.Link}'>{favicon}{image.Title}</a>",
-				Card = GetCardForImages(new List<ImgurClientModels.Image> { image })
-			};
+			if (isReaction) {
+				string imageMarkup;
+
+				if (!string.IsNullOrEmpty(image.Mp4)) {
+					imageMarkup = $@"<video autoplay loop controls><source src='{image.Mp4}' type='video/mp4' /></video>";
+				}
+				else {
+					imageMarkup = $@"<img src='{image.Link}' />";
+				}
+
+				return new UrlReplacement {
+					ReplacementText = $"<div class='forum-reaction'>{imageMarkup}</div>"
+				};
+			}
+			else {
+				return new UrlReplacement {
+					ReplacementText = $"<a target='_blank' href='{image.Link}'>{favicon}{image.Title}</a>",
+					Card = GetCardForImages(new List<ImgurClientModels.Image> { image })
+				};
+			}
 		}
 
 		public UrlReplacement GetReplacementForAlbum(string hash, string favicon) {
