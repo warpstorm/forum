@@ -11,24 +11,24 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
-		<TypeScriptToolsVersion>3.1</TypeScriptToolsVersion>
+		<TypeScriptToolsVersion>3.5</TypeScriptToolsVersion>
 		<TypeScriptCompileBlocked>True</TypeScriptCompileBlocked>
 		<LangVersion>7.3</LangVersion>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="CoreCompat.System.Drawing" Version="1.0.0-beta006" />
-		<PackageReference Include="HtmlAgilityPack" Version="1.11.2" />
+		<PackageReference Include="HtmlAgilityPack" Version="1.11.12" />
 		<PackageReference Include="Jdenticon.AspNetCore" Version="2.2.1" />
 		<PackageReference Include="Microsoft.AspNetCore.All" />
 		<PackageReference Include="Microsoft.AspNetCore.Session" Version="2.2.0" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.2.4" PrivateAssets="all">
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.2.6" PrivateAssets="all">
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.2.3" PrivateAssets="All" />
 		<PackageReference Include="Narochno.BBCode" Version="2.1.0" />
-		<PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
-		<PackageReference Include="Sendgrid" Version="9.10.0" />
+		<PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
+		<PackageReference Include="Sendgrid" Version="9.12.0" />
+		<PackageReference Include="System.Drawing.Common" Version="4.5.1" />
 	</ItemGroup>
 
 	<ItemGroup>
