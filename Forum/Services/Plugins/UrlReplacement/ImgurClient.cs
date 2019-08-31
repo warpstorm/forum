@@ -25,9 +25,10 @@ namespace Forum.Services.Plugins.UrlReplacement {
 		public bool TryGetReplacement(string remoteUrl, string pageTitle, string favicon, out UrlReplacement replacement) {
 			replacement = null;
 
-			var albumMatch = Regex.Match(remoteUrl, @"imgur.com\/a\/([a-zA-Z0-9]+)?", RegexOptions.Compiled | RegexOptions.Multiline);
-			var galleryMatch = Regex.Match(remoteUrl, @"imgur.com\/gallery\/([a-zA-Z0-9]+)?", RegexOptions.Compiled | RegexOptions.Multiline);
-			var imageMatch = Regex.Match(remoteUrl, @"imgur.com\/([a-zA-Z0-9]+)?", RegexOptions.Compiled | RegexOptions.Multiline);
+			var albumMatch = Regex.Match(remoteUrl, @"imgur.com\/a\/([a-zA-Z0-9]+)?$", RegexOptions.Compiled | RegexOptions.Multiline);
+			var galleryMatch = Regex.Match(remoteUrl, @"imgur.com\/gallery\/([a-zA-Z0-9]+)?$", RegexOptions.Compiled | RegexOptions.Multiline);
+			var imageMatch = Regex.Match(remoteUrl, @"imgur.com\/([a-zA-Z0-9]+)?$", RegexOptions.Compiled | RegexOptions.Multiline);
+			var favoriteMatch = Regex.Match(remoteUrl, @"imgur.com\/.+favorites.+\/([a-zA-Z0-9]+)?$", RegexOptions.Compiled | RegexOptions.Multiline);
 
 			if (albumMatch.Success) {
 				var hash = albumMatch.Groups[1].Value;
@@ -44,6 +45,10 @@ namespace Forum.Services.Plugins.UrlReplacement {
 			}
 			else if (imageMatch.Success) {
 				var hash = imageMatch.Groups[1].Value;
+				replacement = GetReplacementForImage(hash, favicon);
+			}
+			else if (favoriteMatch.Success) {
+				var hash = favoriteMatch.Groups[1].Value;
 				replacement = GetReplacementForImage(hash, favicon);
 			}
 
@@ -137,7 +142,7 @@ namespace Forum.Services.Plugins.UrlReplacement {
 
 				if (!string.IsNullOrEmpty(image.Mp4)) {
 					card += $@"<div class='embedded-video'>
-								<p><video autoplay loop controls><source src='{image.Link}' type='video/mp4' /></video></p>
+								<p><video autoplay loop controls><source src='{image.Mp4}' type='video/mp4' /></video></p>
 								<p>{image.Description}</p>
 							</div>";
 				}
