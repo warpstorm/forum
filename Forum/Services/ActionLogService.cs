@@ -23,7 +23,7 @@ namespace Forum.Services {
 
 		public async Task Add(ActionLogItem logItem) {
 			logItem.Timestamp = DateTime.Now;
-			logItem.UserId = UserContext.ApplicationUser.Id;
+			logItem.UserId = UserContext.ApplicationUser?.Id ?? string.Empty;
 
 			// Check if user is logged in or not
 
@@ -35,14 +35,16 @@ namespace Forum.Services {
 
 			await DbContext.SaveChangesAsync();
 
-			UserContext.ApplicationUser.LastActionLogItemId = logItem.Id;
+			if (!(UserContext.ApplicationUser is null)) {
+				UserContext.ApplicationUser.LastActionLogItemId = logItem.Id;
 
-			var records = await AccountRepository.Records();
+				var records = await AccountRepository.Records();
 
-			var record = records.First(r => r.Id == UserContext.ApplicationUser.Id);
-			record.LastActionLogItemId = logItem.Id;
+				var record = records.First(r => r.Id == UserContext.ApplicationUser.Id);
+				record.LastActionLogItemId = logItem.Id;
 
-			await DbContext.SaveChangesAsync();
+				await DbContext.SaveChangesAsync();
+			}
 		}
 	}
 }

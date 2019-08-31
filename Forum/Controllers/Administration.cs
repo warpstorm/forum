@@ -18,6 +18,7 @@ namespace Forum.Controllers {
 		ApplicationDbContext DbContext { get; }
 		UserContext UserContext { get; }
 		MessageRepository MessageRepository { get; }
+		AccountRepository AccountRepository { get; }
 		RoleRepository RoleRepository { get; }
 		TopicRepository TopicRepository { get; }
 
@@ -26,24 +27,26 @@ namespace Forum.Controllers {
 			UserContext userContext,
 			MessageRepository messageRepository,
 			RoleRepository roleRepository,
+			AccountRepository accountRepository,
 			TopicRepository topicRepository
 		) {
 			DbContext = dbContext;
 			UserContext = userContext;
 			MessageRepository = messageRepository;
 			RoleRepository = roleRepository;
+			AccountRepository = accountRepository;
 			TopicRepository = topicRepository;
 		}
-
+		
 		[HttpGet]
 		public IActionResult Install() {
 			CheckInstallContext();
 
 			return View("Process", new List<string> {
 				Url.Action(nameof(InstallRoles)),
-				Url.Action(nameof(InstallAdmins)),
 				Url.Action(nameof(InstallCategories)),
 				Url.Action(nameof(InstallBoards)),
+				Url.Action(nameof(InstallAdmins)),
 			});
 		}
 
@@ -280,12 +283,16 @@ namespace Forum.Controllers {
 				});
 			}
 
-			if (!(await RoleRepository.SiteRoles()).Any()) {
-				await RoleRepository.Create(new InputModels.CreateRoleInput {
-					Name = Constants.InternalKeys.Admin,
-					Description = "Forum administrators"
-				});
+			var roles = await RoleRepository.SiteRoles();
+
+			if (roles.Any()) {
+				return Ok("Roles already exist in the database. Not going to create new ones.");
 			}
+
+			await RoleRepository.Create(new InputModels.CreateRoleInput {
+				Name = Constants.InternalKeys.Admin,
+				Description = "Forum administrators"
+			});
 
 			return Ok();
 		}
@@ -305,13 +312,15 @@ namespace Forum.Controllers {
 			}
 
 			if (UserContext.IsAdmin) {
-				return Ok();
+				return Ok("You are already an administrator.");
 			}
 
 			var adminRole = (await RoleRepository.SiteRoles()).First(r => r.Name == Constants.InternalKeys.Admin);
 			await RoleRepository.AddUser(adminRole.Id, UserContext.ApplicationUser.Id);
 
-			return Ok();
+			await AccountRepository.SignOut();
+
+			return Ok("Forum install is complete. Please click the title image to continue.");
 		}
 
 		[HttpPost]
@@ -329,7 +338,7 @@ namespace Forum.Controllers {
 			}
 
 			if (DbContext.Categories.Any()) {
-				return Ok();
+				return Ok("Categories already exist. Not going to create new categories.");
 			}
 
 			DbContext.Categories.Add(new DataModels.Category {
@@ -357,7 +366,7 @@ namespace Forum.Controllers {
 			}
 
 			if (DbContext.Boards.Any()) {
-				return Ok();
+				return Ok("Boards already exist. Not going to create new ones.");
 			}
 
 			var category = DbContext.Categories.First();

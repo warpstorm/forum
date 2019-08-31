@@ -7,30 +7,39 @@
 		<div id="completed-bar"></div>
 	</div>
 	<p class="small-pad-top font-small">
-		<button id="start-button" class="small-button">Start</button>
+		<button id="start-button" class="small-button">Start Process</button>
 	</p>
 </div>
 
+
+
 <div class="content-box pad gap-bottom">
-	<p class="subdued-text">Settings</p>
-	<dl>
-		<dt>Toggle</dt>
-		<dd><input id="log-success" type="checkbox" /> Log successes</dd>
-		<dd><input id="pause-after-next" type="checkbox" /> Pause after next step</dd>
-		<dd><input id="pause-on-error" type="checkbox" checked="checked" /> Pause on errors</dd>
-	</dl>
-	<dl>
-		<dt>Take</dt>
-		<dd><input id="take" type="text" size="3" /></dd>
-	</dl>
-	<dl>
-		<dt>Step</dt>
-		<dd><input id="current-step" type="text" size="3" /> of <span id="total-steps"></span></dd>
-	</dl>
-	<dl>
-		<dt>Stage</dt>
-		<dd><input id="current-stage" type="text" size="3" /> of <span id="total-stages"></span></dd>
-	</dl>
+	<p id="show-settings" class="gap">
+		<span class="small-button">Show Settings</span>
+	</p>
+
+	<div id="settings-pane" class="hidden">
+		<span id="hide-settings" class="small-button">Hide Settings</span>
+		
+		<dl>
+			<dt>Toggle</dt>
+			<dd><input id="log-success" type="checkbox" /> Log successes</dd>
+			<dd><input id="pause-after-next" type="checkbox" /> Pause after next step</dd>
+			<dd><input id="pause-on-error" type="checkbox" checked="checked" /> Pause on errors</dd>
+		</dl>
+		<dl>
+			<dt>Take</dt>
+			<dd><input id="take" type="text" size="3" /></dd>
+		</dl>
+		<dl>
+			<dt>Step</dt>
+			<dd><input id="current-step" type="text" size="3" /> of <span id="total-steps"></span></dd>
+		</dl>
+		<dl>
+			<dt>Stage</dt>
+			<dd><input id="current-stage" type="text" size="3" /> of <span id="total-stages"></span></dd>
+		</dl>
+	</div>
 </div>
 
 <div class="content-box pad">

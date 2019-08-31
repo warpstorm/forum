@@ -1,4 +1,8 @@
-﻿#progress-bar {
+﻿pre {
+	margin-top: 0;
+}
+
+#progress-bar {
 	border: 2px solid #000;
 	background-color: #00003b;
 	width: 100%;

@@ -2,7 +2,7 @@
 import { XhrOptions } from "../models/xhr-options";
 import { HttpMethod } from "../definitions/http-method";
 import { Xhr } from "../services/xhr";
-import { show, queryify } from "../helpers";
+import { show, queryify, hide } from "../helpers";
 import { XhrResult } from "../models/xhr-result";
 import { XhrException } from "../models/xhr-exception";
 import { ProcessStage } from "../models/page-settings/process-stage";
@@ -26,6 +26,12 @@ export class Process {
 		let startButton = <Element>document.querySelector('#start-button');
 		startButton.addEventListener('click', this.eventStartButtonClick);
 
+		let showSettingsButton = <Element>document.querySelector('#show-settings');
+		showSettingsButton.addEventListener('click', this.eventShowSettingsButtonClick);
+
+		let hideSettingsButton = <Element>document.querySelector('#hide-settings');
+		hideSettingsButton.addEventListener('click', this.eventHideSettingsButtonClick);
+
 		let takeInput = <HTMLInputElement>document.querySelector('#take');
 		takeInput.addEventListener('blur', this.eventUpdateTake);
 
@@ -41,7 +47,12 @@ export class Process {
 		show(progressBar);
 
 		let bar = <HTMLElement>document.querySelector('#completed-bar');
-		let percent = 100 * (this.settings.currentStep + 1) / (this.settings.totalSteps + 1);
+		let percent = 100;
+
+		if (this.settings.totalSteps > 0) {
+			percent = 100 * (this.settings.currentStep + 1) / (this.settings.totalSteps);
+		}
+
 		bar.style.width = `${percent}%`;
 
 		percent = Math.round(percent);
@@ -51,7 +62,7 @@ export class Process {
 	log(xhrResult: XhrResult): void {
 		let logSuccessInput = <HTMLInputElement>document.querySelector('#log-success');
 
-		if (xhrResult.status == 200 && !logSuccessInput.checked) {
+		if (!xhrResult.responseText && xhrResult.status == 200 && !logSuccessInput.checked) {
 			return;
 		}
 
@@ -79,15 +90,6 @@ export class Process {
 		else {
 			this.addLogItem(log, 'Result was null');
 		}
-
-		let logItem = log.firstChild;
-
-		if (logItem) {
-			logItem.addEventListener('click', (event: Event): void => {
-				let eventTarget = <Element>event.currentTarget;
-				show(eventTarget.querySelector('pre'));
-			});
-		}
 	}
 
 	addLogItem(logElement: Element, status: string = '', statusDescription: string = ''): void {
@@ -102,7 +104,7 @@ export class Process {
 		logItemHtml += `<p>${time} - ${status}</p>`;
 
 		if (statusDescription) {
-			logItemHtml += `<pre class="hidden">${statusDescription}</pre>`
+			logItemHtml += `<pre>${statusDescription}</pre>`
 		}
 
 		logItemHtml += '</li>';
@@ -147,7 +149,7 @@ export class Process {
 				takeInput.value = this.settings.take.toString();
 			}
 
-			totalSteps.innerHTML = (this.settings.totalSteps + 1).toString();
+			totalSteps.innerHTML = (this.settings.totalSteps).toString();
 
 			if (currentStepInput.value) {
 				this.settings.currentStep = parseInt(currentStepInput.value) - 1;
@@ -216,7 +218,7 @@ export class Process {
 				await this.loadCurrentAction();
 			}
 
-			while (this.settings.currentStep <= this.settings.totalSteps) {
+			while (this.settings.currentStep < this.settings.totalSteps) {
 				let requestOptions = new XhrOptions({
 					method: HttpMethod.Post,
 					url: this.settings.currentAction,
@@ -262,6 +264,22 @@ export class Process {
 		}
 	}
 
+	eventShowSettingsButtonClick = async (event: Event): Promise<void> => {
+		let showSettingsButton = <HTMLInputElement>document.querySelector('#show-settings');
+		let settingsPane = <HTMLInputElement>document.querySelector('#settings-pane');
+
+		hide(showSettingsButton);
+		show(settingsPane);
+	}
+
+	eventHideSettingsButtonClick = async (event: Event): Promise<void> => {
+		let showSettingsButton = <HTMLInputElement>document.querySelector('#show-settings');
+		let settingsPane = <HTMLInputElement>document.querySelector('#settings-pane');
+
+		show(showSettingsButton);
+		hide(settingsPane);
+	}
+
 	start(stage: number) {
 		let startButton = <HTMLInputElement>document.querySelector('#start-button');
 		let currentStepInput = <HTMLInputElement>document.querySelector('#current-step');
@@ -291,7 +309,7 @@ export class Process {
 		let totalSteps = <Element>document.querySelector('#total-steps');
 		let takeInput = <HTMLInputElement>document.querySelector('#take');
 
-		if (this.settings.currentStep > this.settings.totalSteps) {
+		if (this.settings.currentStep >= this.settings.totalSteps) {
 			this.settings.lastRecordId = 0;
 			this.settings.currentStep = 0;
 			this.settings.totalSteps = 0;
