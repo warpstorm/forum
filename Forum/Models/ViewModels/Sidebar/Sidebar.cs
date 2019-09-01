@@ -5,6 +5,5 @@ namespace Forum.Models.ViewModels.Sidebar {
 		public Quotes.DisplayQuote Quote { get; set; }
 		public List<Account.OnlineUser> OnlineUsers { get; set; }
 		public List<Notifications.IndexItem> Notifications { get; set; }
-		public List<Topics.EventPreview> Events { get; set; }
 	}
 }
