@@ -8,10 +8,10 @@ export class Navigation {
 	}
 
 	init(): void {
-        this.showScriptFunctionality();
 		this.addListenerOpenMenu();
 		this.addListenerClickableLinkParent();
         this.setupPageNavigators();
+		this.showScriptFunctionality();
 	}
 
     showScriptFunctionality(): void {

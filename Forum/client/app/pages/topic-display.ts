@@ -349,6 +349,7 @@ export class TopicDisplay {
 			});
 
 			self.bindMessageButtonHandlers();
+			self.app.navigation.showScriptFunctionality();
 
 			let time = new Date();
 			let passedTime = this.app.passedTimeMonitor.convertToPassedTime(time);
