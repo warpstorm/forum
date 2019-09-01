@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
-namespace Forum.Views.Shared.Components.SmileySelector {
+namespace Forum.Views.Shared.Components.PageTimer {
 	public class PageTimerViewComponent : ViewComponent {
 		public IViewComponentResult Invoke() {
 			var timerText = string.Empty;
