@@ -6,16 +6,13 @@ namespace Forum.Services {
 
 	public class Sidebar {
 		AccountRepository AccountRepository { get; }
-		NotificationRepository NotificationRepository { get; }
 		QuoteRepository QuoteRepository { get; }
 
 		public Sidebar(
 			AccountRepository accountRepository,
-			NotificationRepository notificationRepository,
 			QuoteRepository quoteRepository
 		) {
 			AccountRepository = accountRepository;
-			NotificationRepository = notificationRepository;
 			QuoteRepository = quoteRepository;
 		}
 
@@ -23,7 +20,6 @@ namespace Forum.Services {
 			var sidebar = new ViewModels.Sidebar.Sidebar {
 				Quote = await QuoteRepository.Get(),
 				OnlineUsers = await AccountRepository.GetOnlineList(),
-				Notifications = await NotificationRepository.Index()
 			};
 
 			return sidebar;

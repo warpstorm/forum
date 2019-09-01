@@ -53,7 +53,6 @@ namespace Forum.Extensions {
 			services.AddScoped<AccountRepository>();
 			services.AddScoped<BoardRepository>();
 			services.AddScoped<MessageRepository>();
-			services.AddScoped<NotificationRepository>();
 			services.AddScoped<BookmarkRepository>();
 			services.AddScoped<QuoteRepository>();
 			services.AddScoped<RoleRepository>();
