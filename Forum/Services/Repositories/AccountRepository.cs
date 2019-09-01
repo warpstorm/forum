@@ -109,39 +109,6 @@ namespace Forum.Services.Repositories {
 		}
 		List<DataModels.ApplicationUser> _Records;
 
-		public async Task<List<ViewModels.Account.OnlineUser>> GetOnlineList() {
-			// Users are considered "offline" after 5 minutes.
-			var onlineTimeLimit = DateTime.Now.AddMinutes(-5);
-			var onlineTodayTimeLimit = DateTime.Now.AddMinutes(-10080);
-
-			var onlineUsersQuery = from user in await Records()
-								   where user.LastOnline >= onlineTodayTimeLimit
-								   orderby user.LastOnline descending
-								   select new {
-									   user.Id,
-									   user.DecoratedName,
-									   user.LastOnline,
-									   user.LastActionLogItemId
-								   };
-
-			var onlineUsers = new List<ViewModels.Account.OnlineUser>();
-
-			foreach (var user in onlineUsersQuery) {
-				var lastActionItem = await DbContext.ActionLog.FindAsync(user.LastActionLogItemId);
-
-				onlineUsers.Add(new ViewModels.Account.OnlineUser {
-					Id = user.Id,
-					Name = user.DecoratedName,
-					LastOnline = user.LastOnline,
-					IsOnline = user.LastOnline > onlineTimeLimit,
-					LastActionText = ActionLogItemText(lastActionItem),
-					LastActionUrl = ActionLogItemUrl(lastActionItem)
-				});
-			}
-
-			return onlineUsers;
-		}
-
 		public async Task<ServiceModels.ServiceResponse> Login(InputModels.LoginInput input) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 
@@ -648,25 +615,6 @@ namespace Forum.Services.Repositories {
 			});
 		}
 
-		public string ActionLogItemText(DataModels.ActionLogItem logItem) {
-			if (!(logItem is null)) {
-				var controller = Type.GetType($"Forum.Controllers.{logItem.Controller}");
-
-				foreach (var method in controller.GetMethods()) {
-					if (method.Name == logItem.Action) {
-						var attribute = method.GetCustomAttributes(typeof(ActionLogAttribute), false).FirstOrDefault() as ActionLogAttribute;
-
-						if (!(attribute is null)) {
-							return attribute.Description;
-						}
-					}
-				}
-			}
-
-			return string.Empty;
-		}
-
-		public string ActionLogItemUrl(DataModels.ActionLogItem logItem) => logItem is null ? string.Empty : UrlHelper.Action(logItem.Action, logItem.Controller, logItem.Arguments);
 		public string EmailConfirmationLink(string userId, string code) => UrlHelper.AbsoluteAction(nameof(Account.ConfirmEmail), nameof(Account), new { userId, code });
 		public string ResetPasswordCallbackLink(string userId, string code) => UrlHelper.AbsoluteAction(nameof(Account.ResetPassword), nameof(Account), new { userId, code });
 	}

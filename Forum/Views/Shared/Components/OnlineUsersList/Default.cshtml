@@ -1,8 +1,29 @@
 ﻿@model List<ViewModels.Account.OnlineUser>
 
+<style>
+	[data-component="whos-online"] {
+		min-height: 300px;
+		max-height: 600px;
+		position: relative;
+		overflow-y: hidden;
+	}
+
+		[data-component="whos-online"]:after {
+			content: "";
+			position: absolute;
+			z-index: 1;
+			bottom: 0;
+			left: 0;
+			pointer-events: none;
+			background-image: linear-gradient(to bottom, rgba(29,39,55,0), rgba(29,39,55,1) 90%);
+			width: 100%;
+			height: 200px;
+		}
+</style>
+
 <div id="sidebar-whos-online">
 	<h4>Who's online <span class="font-small subdued-text">(@Model.Count)</span></h4>
-	<ul id="whos-online">
+	<ul id="whos-online" data-component="whos-online">
 		<li class="font-small subdued-text"><a asp-controller="@nameof(Account)" asp-action="@nameof(Account.Index)">View All Users</a></li>
 		@foreach (var onlineUser in Model) {
 			<li class="font-small subdued-text small-pad-top" clickable-link-parent>
