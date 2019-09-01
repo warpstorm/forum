@@ -1,8 +1,13 @@
-﻿@{
-	if (ViewData.ContainsKey(Constants.InternalKeys.Layout)) {
-		Layout = ViewData[Constants.InternalKeys.Layout] as string;
+﻿@inject Forum.Services.Repositories.BoardRepository BoardRepository
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+
+@{
+	if (HttpContextAccessor.HttpContext.Request.Headers["X-Requested-With"] == "XMLHttpRequest") {
+		Layout = "_LayoutEmpty";
 	}
 	else {
 		Layout = "_Layout";
 	}
+
+	ViewData["Categories"] = await BoardRepository.CategoryIndex();
 }

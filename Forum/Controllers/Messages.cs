@@ -70,7 +70,7 @@ namespace Forum.Controllers {
 				Messages = messages
 			};
 
-			return await ForumViewResult.ViewResult(this, "../Topics/DisplayPartial", viewModel);
+			return ForumViewResult.ViewResult(this, "../Topics/DisplayPartial", viewModel);
 		}
 
 		[HttpGet]
@@ -86,7 +86,7 @@ namespace Forum.Controllers {
 				ElementId = $"message-reply-{id}"
 			};
 
-			return await ForumViewResult.ViewResult(this, viewModel);
+			return ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpPost]
@@ -128,7 +128,7 @@ namespace Forum.Controllers {
 				ElementId = $"message-reply-{input.Id}"
 			};
 
-			return await ForumViewResult.ViewResult(this, viewModel);
+			return ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[SideLoad]
@@ -147,7 +147,7 @@ namespace Forum.Controllers {
 				FormAction = nameof(XhrReply)
 			};
 
-			return await ForumViewResult.ViewResult(this, "_MessageForm", viewModel);
+			return ForumViewResult.ViewResult(this, "_MessageForm", viewModel);
 		}
 
 		[SideLoad]
@@ -200,7 +200,7 @@ namespace Forum.Controllers {
 				ElementId = $"edit-message-{id}"
 			};
 
-			return await ForumViewResult.ViewResult(this, viewModel);
+			return ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[HttpPost]
@@ -238,7 +238,7 @@ namespace Forum.Controllers {
 				ElementId = $"edit-message-{input.Id}"
 			};
 
-			return await ForumViewResult.ViewResult(this, viewModel);
+			return ForumViewResult.ViewResult(this, viewModel);
 		}
 
 		[SideLoad]
@@ -261,7 +261,7 @@ namespace Forum.Controllers {
 				FormAction = nameof(XhrEdit)
 			};
 
-			return await ForumViewResult.ViewResult(this, "_MessageForm", viewModel);
+			return ForumViewResult.ViewResult(this, "_MessageForm", viewModel);
 		}
 
 		[SideLoad]
@@ -393,7 +393,7 @@ namespace Forum.Controllers {
 				Messages = messages,
 			};
 
-			return await ForumViewResult.ViewResult(this, viewModel);
+			return ForumViewResult.ViewResult(this, viewModel);
 		}
 	}
 }

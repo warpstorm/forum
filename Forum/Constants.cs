@@ -11,7 +11,6 @@
 			public const string DbConnection = "DefaultConnection";
 			public const string LastPostTimestamp = "LastPostTimestamp";
 			public const string LastProcessedToken = "LastProcessedToken";
-			public const string Layout = "Layout";
 			public const string SmileyImageContainer = "smileys";
 			public const string SmileyViewData = "Smileys";
 			public const string StatusMessage = "StatusMessage";

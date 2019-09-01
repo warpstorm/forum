@@ -1,9 +1,6 @@
-﻿using Forum.Services.Repositories;
-using Microsoft.AspNetCore.Http.Extensions;
+﻿using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -11,14 +8,6 @@ namespace Forum.Services {
 	using ServiceModels = Models.ServiceModels;
 
 	public class ForumViewResult {
-		BoardRepository BoardRepository { get; }
-
-		public ForumViewResult(
-			BoardRepository boardRepository
-		) {
-			BoardRepository = boardRepository;
-		}
-
 		public IActionResult RedirectToReferrer(Controller controller) {
 			var referrer = GetReferrer(controller);
 			return controller.Redirect(referrer);
@@ -66,14 +55,10 @@ namespace Forum.Services {
 			}
 		}
 
-		public async Task<IActionResult> ViewResult(Controller controller, string viewName, object model = null) {
+		public IActionResult ViewResult(Controller controller, string viewName, object model = null) {
 			if (model is Task) {
 				// Help to not shoot myself in the foot.
 				throw new Exception($"{nameof(model)} is still a task. Did you forget an await?");
-			}
-
-			if (controller.Request.Headers["X-Requested-With"] == "XMLHttpRequest") {
-				controller.ViewData[Constants.InternalKeys.Layout] = "_LayoutEmpty";
 			}
 
 			var requestUrl = controller.Request.GetEncodedUrl();
@@ -88,12 +73,11 @@ namespace Forum.Services {
 			}
 
 			controller.ViewData["Referrer"] = GetReferrer(controller);
-			controller.ViewData["Categories"] = await BoardRepository.CategoryIndex();
 
 			return controller.View(viewName, model);
 		}
-		public async Task<IActionResult> ViewResult(Controller controller, object model) => await ViewResult(controller, null, model);
-		public async Task<IActionResult> ViewResult(Controller controller) => await ViewResult(controller, null, null);
+		public IActionResult ViewResult(Controller controller, object model) => ViewResult(controller, null, model);
+		public IActionResult ViewResult(Controller controller) => ViewResult(controller, null, null);
 
 		public string GetReferrer(Controller controller) {
 			controller.Request.Query.TryGetValue("ReturnUrl", out var referrer);
