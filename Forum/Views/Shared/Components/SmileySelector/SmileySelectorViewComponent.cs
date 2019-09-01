@@ -15,7 +15,7 @@ namespace Forum.Views.Shared.Components.SmileySelector {
 			SmileyRepository = smileyRepository;
 		}
 
-		public async Task<IViewComponentResult> Invoke() {
+		public async Task<IViewComponentResult> InvokeAsync() {
 			var items = new List<List<ViewModels.IndexItem>>();
 
 			var currentColumn = -1;
