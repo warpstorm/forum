@@ -30,8 +30,6 @@ namespace Forum.Extensions {
 		public static IServiceCollection AddForum(this IServiceCollection services) {
 			RegisterRepositories(services);
 
-			services.AddTransient<ForumViewResult>();
-
 			services.AddScoped<ActionLogService>();
 			services.AddScoped<GzipWebClient>();
 			services.AddScoped<UserContext>();

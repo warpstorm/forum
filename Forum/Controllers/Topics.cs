@@ -30,7 +30,6 @@ namespace Forum.Controllers {
 		MessageRepository MessageRepository { get; }
 		TopicRepository TopicRepository { get; }
 		IHubContext<ForumHub> ForumHub { get; }
-		ForumViewResult ForumViewResult { get; }
 
 		public Topics(
 			ApplicationDbContext applicationDbContext,
@@ -39,8 +38,7 @@ namespace Forum.Controllers {
 			BookmarkRepository bookmarkRepository,
 			MessageRepository messageRepository,
 			TopicRepository topicRepository,
-			IHubContext<ForumHub> forumHub,
-			ForumViewResult forumViewResult
+			IHubContext<ForumHub> forumHub
 		) {
 			DbContext = applicationDbContext;
 			CurrentUser = userContext;
@@ -51,7 +49,6 @@ namespace Forum.Controllers {
 			TopicRepository = topicRepository;
 
 			ForumHub = forumHub;
-			ForumViewResult = forumViewResult;
 		}
 
 		[ActionLog("is viewing the topic index.")]
@@ -371,7 +368,7 @@ namespace Forum.Controllers {
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		public async Task<IActionResult> FinishMerge(int sourceId, int targetId) {
 			var serviceResponse = await TopicRepository.Merge(sourceId, targetId);
-			return await ForumViewResult.RedirectFromService(this, serviceResponse);
+			return await this.RedirectFromService(serviceResponse);
 		}
 
 		[ActionLog("is viewing a topic.")]
@@ -502,7 +499,7 @@ namespace Forum.Controllers {
 
 		[HttpGet]
 		public async Task<IActionResult> Latest(int id) {
-			var redirectPath = ForumViewResult.GetReferrer(this);
+			var redirectPath = this.GetReferrer();
 
 			if (ModelState.IsValid) {
 				var target = await TopicRepository.GetTopicTargetMessageId(id);
@@ -517,36 +514,36 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> Pin(int id) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await TopicRepository.Pin(id);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse);
+				return await this.RedirectFromService(serviceResponse);
 			}
 
-			return ForumViewResult.RedirectToReferrer(this);
+			return this.RedirectToReferrer();
 		}
 
 		[HttpGet]
 		public async Task<IActionResult> Bookmark(int id) {
 			await TopicRepository.Bookmark(id);
-			return ForumViewResult.RedirectToReferrer(this);
+			return this.RedirectToReferrer();
 		}
 
 		[HttpGet]
 		public async Task<IActionResult> MarkAllRead() {
 			if (ModelState.IsValid) {
 				var serviceResponse = await TopicRepository.MarkAllRead();
-				return await ForumViewResult.RedirectFromService(this, serviceResponse);
+				return await this.RedirectFromService(serviceResponse);
 			}
 
-			return ForumViewResult.RedirectToReferrer(this);
+			return this.RedirectToReferrer();
 		}
 
 		[HttpGet]
 		public async Task<IActionResult> MarkUnread(int id) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await TopicRepository.MarkUnread(id);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse);
+				return await this.RedirectFromService(serviceResponse);
 			}
 
-			return ForumViewResult.RedirectToReferrer(this);
+			return this.RedirectToReferrer();
 		}
 
 		[HttpGet]
@@ -561,7 +558,7 @@ namespace Forum.Controllers {
 		[HttpGet]
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		public async Task<IActionResult> Delete(int id) {
-			var redirectPath = ForumViewResult.GetReferrer(this);
+			var redirectPath = this.GetReferrer();
 
 			if (ModelState.IsValid) {
 				var topic = await DbContext.Topics.SingleAsync(m => m.Id == id);

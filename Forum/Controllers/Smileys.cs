@@ -1,5 +1,5 @@
 ﻿using Forum.Controllers.Annotations;
-using Forum.Services;
+using Forum.Extensions;
 using Forum.Services.Contexts;
 using Forum.Services.Plugins.ImageStore;
 using Forum.Services.Repositories;
@@ -20,18 +20,15 @@ namespace Forum.Controllers {
 	public class Smileys : Controller {
 		ApplicationDbContext DbContext { get; }
 		SmileyRepository SmileyRepository { get; }
-		ForumViewResult ForumViewResult { get; }
 		IImageStore ImageStore { get; }
 
 		public Smileys(
 			ApplicationDbContext dbContext,
 			SmileyRepository smileyRepository,
-			ForumViewResult forumViewResult,
 			IImageStore imageStore
 		) {
 			DbContext = dbContext;
 			SmileyRepository = smileyRepository;
-			ForumViewResult = forumViewResult;
 			ImageStore = imageStore;
 		}
 
@@ -109,7 +106,7 @@ namespace Forum.Controllers {
 				if (ModelState.IsValid) {
 					TempData[Constants.InternalKeys.StatusMessage] = $"Smiley '{input.File.FileName}' was added with code '{input.Code}'.";
 
-					var referrer = ForumViewResult.GetReferrer(this);
+					var referrer = this.GetReferrer();
 					return Redirect(referrer);
 				}
 			}
@@ -178,7 +175,7 @@ namespace Forum.Controllers {
 				if (ModelState.IsValid) {
 					TempData[Constants.InternalKeys.StatusMessage] = $"Smileys were updated.";
 
-					var referrer = ForumViewResult.GetReferrer(this);
+					var referrer = this.GetReferrer();
 					return Redirect(referrer);
 				}
 			}
@@ -193,7 +190,7 @@ namespace Forum.Controllers {
 
 				if (smileyRecord is null) {
 					TempData[Constants.InternalKeys.StatusMessage] = $"No smiley was found with the id '{id}'";
-					return ForumViewResult.RedirectToReferrer(this);
+					return this.RedirectToReferrer();
 				}
 
 				DbContext.Smileys.Remove(smileyRecord);
@@ -217,7 +214,7 @@ namespace Forum.Controllers {
 				TempData[Constants.InternalKeys.StatusMessage] = "The smiley was deleted.";
 			}
 
-			return ForumViewResult.RedirectToReferrer(this);
+			return this.RedirectToReferrer();
 		}
 	}
 }

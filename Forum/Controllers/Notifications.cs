@@ -1,4 +1,5 @@
 ﻿using Forum.Controllers.Annotations;
+using Forum.Extensions;
 using Forum.Models.Errors;
 using Forum.Models.Options;
 using Forum.Services;
@@ -17,18 +18,15 @@ namespace Forum.Controllers {
 		ApplicationDbContext DbContext { get; }
 		UserContext UserContext { get; }
 		AccountRepository AccountRepository { get; }
-		ForumViewResult ForumViewResult { get; }
 
 		public Notifications(
 			ApplicationDbContext dbContext,
 			UserContext userContext,
-			AccountRepository accountRepository,
-			ForumViewResult forumViewResult
+			AccountRepository accountRepository
 		) {
 			DbContext = dbContext;
 			UserContext = userContext;
 			AccountRepository = accountRepository;
-			ForumViewResult = forumViewResult;
 		}
 
 		[ActionLog("is viewing their notifications.")]
@@ -111,7 +109,7 @@ namespace Forum.Controllers {
 				return Redirect(redirectPath);
 			}
 
-			return ForumViewResult.RedirectToReferrer(this);
+			return this.RedirectToReferrer();
 		}
 
 		[HttpGet]

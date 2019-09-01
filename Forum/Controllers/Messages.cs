@@ -26,7 +26,6 @@ namespace Forum.Controllers {
 		MessageRepository MessageRepository { get; }
 		TopicRepository TopicRepository { get; }
 		IHubContext<ForumHub> ForumHub { get; }
-		ForumViewResult ForumViewResult { get; }
 
 		public Messages(
 			ApplicationDbContext dbContext,
@@ -35,8 +34,7 @@ namespace Forum.Controllers {
 			BoardRepository boardRepository,
 			MessageRepository messageRepository,
 			TopicRepository topicRepository,
-			IHubContext<ForumHub> forumHub,
-			ForumViewResult forumViewResult
+			IHubContext<ForumHub> forumHub
 		) {
 			DbContext = dbContext;
 			UserContext = userContext;
@@ -45,7 +43,6 @@ namespace Forum.Controllers {
 			MessageRepository = messageRepository;
 			TopicRepository = topicRepository;
 			ForumHub = forumHub;
-			ForumViewResult = forumViewResult;
 		}
 
 		/// <summary>
@@ -299,7 +296,7 @@ namespace Forum.Controllers {
 
 		[HttpGet]
 		public async Task<IActionResult> Delete(int id) {
-			var redirectPath = ForumViewResult.GetReferrer(this);
+			var redirectPath = this.GetReferrer();
 
 			if (ModelState.IsValid) {
 				var message = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == id);
@@ -357,7 +354,7 @@ namespace Forum.Controllers {
 				}
 			}
 
-			return ForumViewResult.RedirectToReferrer(this);
+			return this.RedirectToReferrer();
 		}
 
 		[ActionLog("is viewing a user's message history.")]

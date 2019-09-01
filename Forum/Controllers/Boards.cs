@@ -1,5 +1,5 @@
 ﻿using Forum.Controllers.Annotations;
-using Forum.Services;
+using Forum.Extensions;
 using Forum.Services.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,16 +13,13 @@ namespace Forum.Controllers {
 	public class Boards : Controller {
 		BoardRepository BoardRepository { get; }
 		RoleRepository RoleRepository { get; }
-		ForumViewResult ForumViewResult { get; }
 
 		public Boards(
 			BoardRepository boardRepository,
-			RoleRepository roleRepository,
-			ForumViewResult forumViewResult
+			RoleRepository roleRepository
 		) {
 			BoardRepository = boardRepository;
 			RoleRepository = roleRepository;
-			ForumViewResult = forumViewResult;
 		}
 
 		[ActionLog("is viewing the board index.")]
@@ -66,7 +63,7 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> Create(InputModels.CreateBoardInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await BoardRepository.AddBoard(input);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				return await this.RedirectFromService(serviceResponse, FailureCallback);
 			}
 
 			return await FailureCallback();
@@ -112,7 +109,7 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> Edit(InputModels.EditBoardInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await BoardRepository.UpdateBoard(input);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				return await this.RedirectFromService(serviceResponse, FailureCallback);
 			}
 
 			return await FailureCallback();
@@ -142,10 +139,10 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> MoveCategoryUp(int id) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await BoardRepository.MoveCategoryUp(id);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse);
+				return await this.RedirectFromService(serviceResponse);
 			}
 
-			return ForumViewResult.RedirectToReferrer(this);
+			return this.RedirectToReferrer();
 		}
 
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
@@ -153,10 +150,10 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> MoveBoardUp(int id) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await BoardRepository.MoveBoardUp(id);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse);
+				return await this.RedirectFromService(serviceResponse);
 			}
 
-			return ForumViewResult.RedirectToReferrer(this);
+			return this.RedirectToReferrer();
 		}
 
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
@@ -164,10 +161,10 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> MergeCategory(InputModels.MergeInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await BoardRepository.MergeCategory(input);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse);
+				return await this.RedirectFromService(serviceResponse);
 			}
 
-			return ForumViewResult.RedirectToReferrer(this);
+			return this.RedirectToReferrer();
 		}
 
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
@@ -175,10 +172,10 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> MergeBoard(InputModels.MergeInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await BoardRepository.MergeBoard(input);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse);
+				return await this.RedirectFromService(serviceResponse);
 			}
 
-			return ForumViewResult.RedirectToReferrer(this);
+			return this.RedirectToReferrer();
 		}
 	}
 }

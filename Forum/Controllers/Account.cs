@@ -23,24 +23,19 @@ namespace Forum.Controllers {
 	public class Account : Controller {
 		ApplicationDbContext DbContext { get; }
 		UserContext UserContext { get; }
-
 		AccountRepository AccountRepository { get; }
-
 		UserManager<DataModels.ApplicationUser> UserManager { get; }
-		ForumViewResult ForumViewResult { get; }
 
 		public Account(
 			ApplicationDbContext dbContext,
 			UserContext userContext,
 			AccountRepository accountRepository,
-			UserManager<DataModels.ApplicationUser> userManager,
-			ForumViewResult forumViewResult
+			UserManager<DataModels.ApplicationUser> userManager
 		) {
 			DbContext = dbContext;
 			UserContext = userContext;
 			AccountRepository = accountRepository;
 			UserManager = userManager;
-			ForumViewResult = forumViewResult;
 		}
 
 		[ActionLog("is viewing the user list.")]
@@ -106,7 +101,7 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> Details(InputModels.UpdateAccountInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await AccountRepository.UpdateAccount(input);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				return await this.RedirectFromService(serviceResponse, FailureCallback);
 			}
 
 			return await FailureCallback();
@@ -144,7 +139,7 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> UpdateAvatar(InputModels.UpdateAvatarInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await AccountRepository.UpdateAvatar(input);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				return await this.RedirectFromService(serviceResponse, FailureCallback);
 			}
 
 			return await FailureCallback();
@@ -187,7 +182,7 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> SendVerificationEmail() {
 			if (ModelState.IsValid) {
 				var serviceResponse = await AccountRepository.SendVerificationEmail();
-				return await ForumViewResult.RedirectFromService(this, serviceResponse, failSync: FailureCallback);
+				return await this.RedirectFromService(serviceResponse, failSync: FailureCallback);
 			}
 
 			return FailureCallback();
@@ -200,7 +195,7 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> ConfirmEmail(InputModels.ConfirmEmailInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await AccountRepository.ConfirmEmail(input);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse, failSync: View);
+				return await this.RedirectFromService(serviceResponse, failSync: View);
 			}
 
 			return View();
@@ -226,7 +221,7 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> Login(InputModels.LoginInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await AccountRepository.Login(input);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse, failSync: FailureCallback);
+				return await this.RedirectFromService(serviceResponse, failSync: FailureCallback);
 			}
 
 			return FailureCallback();
@@ -256,7 +251,7 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> LoginClassic(InputModels.LoginInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await AccountRepository.Login(input);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				return await this.RedirectFromService(serviceResponse, FailureCallback);
 			}
 
 			return await FailureCallback();
@@ -308,7 +303,7 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> Register(InputModels.RegisterInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await AccountRepository.Register(input);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				return await this.RedirectFromService(serviceResponse, FailureCallback);
 			}
 
 			return await FailureCallback();
@@ -343,7 +338,7 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> ForgotPassword(InputModels.ForgotPasswordInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await AccountRepository.ForgotPassword(input);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				return await this.RedirectFromService(serviceResponse, FailureCallback);
 			}
 
 			return await FailureCallback();
@@ -386,7 +381,7 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> ResetPassword(InputModels.ResetPasswordInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await AccountRepository.ResetPassword(input);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				return await this.RedirectFromService(serviceResponse, FailureCallback);
 			}
 
 			return await FailureCallback();

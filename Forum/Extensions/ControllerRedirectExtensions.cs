@@ -2,16 +2,16 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Forum.Services {
+namespace Forum.Extensions {
 	using ServiceModels = Models.ServiceModels;
 
-	public class ForumViewResult {
-		public IActionResult RedirectToReferrer(Controller controller) {
-			var referrer = GetReferrer(controller);
+	public static class ControllerRedirectExtensions {
+		public static IActionResult RedirectToReferrer(this Controller controller) {
+			var referrer = controller.GetReferrer();
 			return controller.Redirect(referrer);
 		}
 
-		public async Task<IActionResult> RedirectFromService(Controller controller, ServiceModels.ServiceResponse serviceResponse = null, Func<Task<IActionResult>> failAsync = null, Func<IActionResult> failSync = null) {
+		public static async Task<IActionResult> RedirectFromService(this Controller controller, ServiceModels.ServiceResponse serviceResponse = null, Func<Task<IActionResult>> failAsync = null, Func<IActionResult> failSync = null) {
 			if (!(serviceResponse is null)) {
 				if (!string.IsNullOrEmpty(serviceResponse.Message)) {
 					controller.TempData[Constants.InternalKeys.StatusMessage] = serviceResponse.Message;
@@ -25,7 +25,7 @@ namespace Forum.Services {
 					var redirectPath = serviceResponse.RedirectPath;
 
 					if (string.IsNullOrEmpty(redirectPath)) {
-						redirectPath = GetReferrer(controller);
+						redirectPath = controller.GetReferrer();
 					}
 
 					return controller.Redirect(redirectPath);
@@ -39,12 +39,12 @@ namespace Forum.Services {
 				return failSync();
 			}
 			else {
-				var redirectPath = GetReferrer(controller);
+				var redirectPath = controller.GetReferrer();
 				return controller.Redirect(redirectPath);
 			}
 		}
 
-		public string GetReferrer(Controller controller) {
+		public static string GetReferrer(this Controller controller) {
 			controller.Request.Query.TryGetValue("ReturnUrl", out var referrer);
 
 			if (string.IsNullOrEmpty(referrer)) {

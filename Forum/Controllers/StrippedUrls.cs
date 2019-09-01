@@ -1,4 +1,5 @@
 ﻿using Forum.Controllers.Annotations;
+using Forum.Extensions;
 using Forum.Models.DataModels;
 using Forum.Models.ServiceModels;
 using Forum.Services;
@@ -18,15 +19,8 @@ namespace Forum.Controllers {
 	[Authorize(Roles = Constants.InternalKeys.Admin)]
 	public class StrippedUrls : Controller {
 		ApplicationDbContext DbContext { get; }
-		ForumViewResult ForumViewResult { get; }
 
-		public StrippedUrls(
-			ApplicationDbContext dbContext,
-			ForumViewResult forumViewResult
-		) {
-			DbContext = dbContext;
-			ForumViewResult = forumViewResult;
-		}
+		public StrippedUrls(ApplicationDbContext dbContext) => DbContext = dbContext;
 
 		[ActionLog]
 		[HttpGet]
@@ -95,7 +89,7 @@ namespace Forum.Controllers {
 				if (serviceResponse.Success) {
 					DbContext.SaveChanges();
 
-					return await ForumViewResult.RedirectFromService(this, serviceResponse);
+					return await this.RedirectFromService(serviceResponse);
 				}
 
 				foreach (var kvp in serviceResponse.Errors) {
@@ -132,7 +126,7 @@ namespace Forum.Controllers {
 				DbContext.SaveChanges();
 			}
 
-			return ForumViewResult.RedirectToReferrer(this);
+			return this.RedirectToReferrer();
 		}
 
 		void ValidateRegex(string key, string pattern, ServiceResponse serviceResponse) {

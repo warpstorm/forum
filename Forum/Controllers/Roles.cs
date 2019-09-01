@@ -1,7 +1,6 @@
 ﻿using Forum.Controllers.Annotations;
 using Forum.Extensions;
 using Forum.Models.Errors;
-using Forum.Services;
 using Forum.Services.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -22,20 +21,16 @@ namespace Forum.Controllers {
 		RoleRepository RoleRepository { get; }
 		UserManager<DataModels.ApplicationUser> UserManager { get; }
 		RoleManager<DataModels.ApplicationRole> RoleManager { get; }
-		ForumViewResult ForumViewResult { get; }
 
 		public Roles(
 			RoleRepository roleRepository,
 			UserManager<DataModels.ApplicationUser> userManager,
-			RoleManager<DataModels.ApplicationRole> roleManager,
-			ForumViewResult forumViewResult
+			RoleManager<DataModels.ApplicationRole> roleManager
 		) {
 			RoleRepository = roleRepository;
 			UserManager = userManager;
 			RoleManager = roleManager;
-			ForumViewResult = forumViewResult;
 		}
-
 
 		[ActionLog]
 		[HttpGet]
@@ -92,7 +87,7 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> Create(InputModels.CreateRoleInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await RoleRepository.Create(input);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse, failSync: FailureCallback);
+				return await this.RedirectFromService(serviceResponse, failSync: FailureCallback);
 			}
 
 			return FailureCallback();
@@ -119,7 +114,7 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> Edit(InputModels.EditRoleInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await RoleRepository.Edit(input);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse, failSync: FailureCallback);
+				return await this.RedirectFromService(serviceResponse, failSync: FailureCallback);
 			}
 
 			return FailureCallback();
@@ -140,7 +135,7 @@ namespace Forum.Controllers {
 				await RoleRepository.Delete(id);
 			}
 
-			return ForumViewResult.RedirectToReferrer(this);
+			return this.RedirectToReferrer();
 		}
 
 		[ActionLog]
@@ -154,7 +149,7 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> AddUser(string id, string user) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await RoleRepository.AddUser(id, user);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse, failSync: FailureCallback);
+				return await this.RedirectFromService(serviceResponse, failSync: FailureCallback);
 			}
 
 			return FailureCallback();
@@ -169,7 +164,7 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> RemoveUser(string id, string user) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await RoleRepository.RemoveUser(id, user);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse, failSync: FailureCallback);
+				return await this.RedirectFromService(serviceResponse, failSync: FailureCallback);
 			}
 
 			return FailureCallback();

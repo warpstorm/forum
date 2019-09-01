@@ -1,6 +1,5 @@
 ﻿using Forum.Controllers.Annotations;
 using Forum.Extensions;
-using Forum.Services;
 using Forum.Services.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,15 +10,8 @@ namespace Forum.Controllers {
 
 	public class Quotes : Controller {
 		QuoteRepository QuoteRepository { get; }
-		ForumViewResult ForumViewResult { get; }
 
-		public Quotes(
-			QuoteRepository quoteRepository,
-			ForumViewResult forumViewResult
-		) {
-			QuoteRepository = quoteRepository;
-			ForumViewResult = forumViewResult;
-		}
+		public Quotes(QuoteRepository quoteRepository) => QuoteRepository = quoteRepository;
 
 		[ActionLog]
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
@@ -33,10 +25,10 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> Create(int id) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await QuoteRepository.Create(id);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse);
+				return await this.RedirectFromService(serviceResponse);
 			}
 
-			return ForumViewResult.RedirectToReferrer(this);
+			return this.RedirectToReferrer();
 		}
 
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
@@ -54,7 +46,7 @@ namespace Forum.Controllers {
 				TempData[Constants.InternalKeys.StatusMessage] = "Errors were encountered while updating quotes.";
 			}
 
-			return ForumViewResult.RedirectToReferrer(this);
+			return this.RedirectToReferrer();
 		}
 
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
@@ -62,10 +54,10 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> Delete(int id) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await QuoteRepository.Delete(id);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse);
+				return await this.RedirectFromService(serviceResponse);
 			}
 
-			return ForumViewResult.RedirectToReferrer(this);
+			return this.RedirectToReferrer();
 		}
 	}
 }
