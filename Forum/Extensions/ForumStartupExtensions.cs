@@ -34,7 +34,6 @@ namespace Forum.Extensions {
 			services.AddTransient<ForumViewResult>();
 
 			services.AddScoped<ActionLogService>();
-			services.AddScoped<Sidebar>();
 			services.AddScoped<GzipWebClient>();
 			services.AddScoped<UserContext>();
 			services.AddScoped<UserContextLoader>();

@@ -2,7 +2,7 @@
 	public class Constants {
 		public class Versions {
 			public const string Theme = "12";
-			public const string Code = "5.4.0";
+			public const string Code = "6.0.0";
 		}
 
 		public class InternalKeys {
@@ -12,7 +12,6 @@
 			public const string LastPostTimestamp = "LastPostTimestamp";
 			public const string LastProcessedToken = "LastProcessedToken";
 			public const string Layout = "Layout";
-			public const string Sidebar = "Sidebar";
 			public const string SmileyImageContainer = "smileys";
 			public const string SmileyViewData = "Smileys";
 			public const string StatusMessage = "StatusMessage";

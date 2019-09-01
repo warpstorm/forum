@@ -1,5 +1,4 @@
 ﻿using Forum.Controllers;
-using Forum.Controllers.Annotations;
 using Forum.Extensions;
 using Forum.Models;
 using Forum.Models.Errors;
@@ -26,7 +25,6 @@ namespace Forum.Services.Repositories {
 	using DataModels = Models.DataModels;
 	using InputModels = Models.InputModels;
 	using ServiceModels = Models.ServiceModels;
-	using ViewModels = Models.ViewModels;
 
 	public class AccountRepository : IRepository<DataModels.ApplicationUser> {
 		ApplicationDbContext DbContext { get; }

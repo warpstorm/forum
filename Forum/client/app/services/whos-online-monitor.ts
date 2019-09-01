@@ -77,7 +77,7 @@ export class WhosOnlineMonitor {
 
 			let requestOptions = new XhrOptions({
 				method: HttpMethod.Get,
-				url: '/Home/WhosOnline',
+				url: '/Home/Dynamic/OnlineUsersList',
 				responseType: 'document'
 			});
 

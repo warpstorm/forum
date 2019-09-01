@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -13,14 +12,11 @@ namespace Forum.Services {
 
 	public class ForumViewResult {
 		BoardRepository BoardRepository { get; }
-		Sidebar Sidebar { get; }
 
 		public ForumViewResult(
-			BoardRepository boardRepository,
-			Sidebar sidebar
+			BoardRepository boardRepository
 		) {
 			BoardRepository = boardRepository;
-			Sidebar = sidebar;
 		}
 
 		public IActionResult RedirectToReferrer(Controller controller) {
@@ -94,7 +90,6 @@ namespace Forum.Services {
 			controller.ViewData["LogoPath"] = GetLogoPath();
 			controller.ViewData["Referrer"] = GetReferrer(controller);
 			controller.ViewData["Categories"] = await BoardRepository.CategoryIndex();
-			controller.ViewData[Constants.InternalKeys.Sidebar] = await Sidebar.Generate();
 
 			return controller.View(viewName, model);
 		}
@@ -139,43 +134,41 @@ namespace Forum.Services {
 
 			var holidays = new Dictionary<DateTime, string>();
 
-			//NEW YEARS 
+			// NEW YEARS 
 			var newYearsDate = new DateTime(year, 1, 1).Date;
 
-			//VALENTINES DAY
+			// VALENTINES DAY
 			var valentinesDay = new DateTime(year, 2, 14).Date;
 
 			// ST PATRICKS DAY
 			var stPatricksDay = new DateTime(year, 3, 17).Date;
 
 			// ZOMBIE JESUS DAY
-			var easter = DateTime.Now.AddDays(-1);
+			var easter = year switch {
+				2020 => new DateTime(year, 4, 12).Date,
+				2021 => new DateTime(year, 4, 4).Date,
+				2022 => new DateTime(year, 4, 17).Date,
+				2023 => new DateTime(year, 4, 9).Date,
+				2024 => new DateTime(year, 3, 31).Date,
+				2025 => new DateTime(year, 4, 20).Date,
+				2026 => new DateTime(year, 4, 5).Date,
+				2027 => new DateTime(year, 3, 28).Date,
+				2028 => new DateTime(year, 4, 16).Date,
+				2029 => new DateTime(year, 4, 1).Date,
+				2030 => new DateTime(year, 4, 21).Date,
+				2031 => new DateTime(year, 4, 13).Date,
+				2032 => new DateTime(year, 3, 28).Date,
+				2033 => new DateTime(year, 4, 17).Date,
+				2034 => new DateTime(year, 4, 9).Date,
+				2035 => new DateTime(year, 3, 25).Date,
+				2036 => new DateTime(year, 4, 13).Date,
+				2037 => new DateTime(year, 4, 5).Date,
+				2038 => new DateTime(year, 4, 25).Date,
+				2039 => new DateTime(year, 4, 10).Date,
+				_ => DateTime.Now.AddDays(-1)
+			};
 
-			switch(year) {
-				case 2019: easter = new DateTime(year, 4, 21).Date; break;
-				case 2020: easter = new DateTime(year, 4, 12).Date; break;
-				case 2021: easter = new DateTime(year, 4, 4).Date; break;
-				case 2022: easter = new DateTime(year, 4, 17).Date; break;
-				case 2023: easter = new DateTime(year, 4, 9).Date; break;
-				case 2024: easter = new DateTime(year, 3, 31).Date; break;
-				case 2025: easter = new DateTime(year, 4, 20).Date; break;
-				case 2026: easter = new DateTime(year, 4, 5).Date; break;
-				case 2027: easter = new DateTime(year, 3, 28).Date; break;
-				case 2028: easter = new DateTime(year, 4, 16).Date; break;
-				case 2029: easter = new DateTime(year, 4, 1).Date; break;
-				case 2030: easter = new DateTime(year, 4, 21).Date; break;
-				case 2031: easter = new DateTime(year, 4, 13).Date; break;
-				case 2032: easter = new DateTime(year, 3, 28).Date; break;
-				case 2033: easter = new DateTime(year, 4, 17).Date; break;
-				case 2034: easter = new DateTime(year, 4, 9).Date; break;
-				case 2035: easter = new DateTime(year, 3, 25).Date; break;
-				case 2036: easter = new DateTime(year, 4, 13).Date; break;
-				case 2037: easter = new DateTime(year, 4, 5).Date; break;
-				case 2038: easter = new DateTime(year, 4, 25).Date; break;
-				case 2039: easter = new DateTime(year, 4, 10).Date; break;
-			}
-
-			//MEMORIAL DAY  -- last monday in May 
+			// MEMORIAL DAY  -- last monday in May 
 			var memorialDay = new DateTime(year, 5, 31);
 
 			var dayOfWeek = memorialDay.DayOfWeek;
@@ -188,10 +181,10 @@ namespace Forum.Services {
 			// STAR WARS
 			var starWarsDay = new DateTime(year, 5, 4).Date;
 
-			//INDEPENCENCE DAY 
+			// INDEPENCENCE DAY 
 			var independenceDay = new DateTime(year, 7, 4).Date;
 
-			//LABOR DAY -- 1st Monday in September
+			// LABOR DAY -- 1st Monday in September
 			var laborDay = new DateTime(year, 9, 1);
 
 			dayOfWeek = laborDay.DayOfWeek;
@@ -210,7 +203,7 @@ namespace Forum.Services {
 			// VETERANS DAY
 			var veteransDay = new DateTime(year, 11, 11);
 
-			//THANKSGIVING DAY - 4th Thursday in November 
+			// THANKSGIVING DAY - 4th Thursday in November 
 			var thanksgiving = (from day in Enumerable.Range(1, 30)
 								where new DateTime(year, 11, day).DayOfWeek == DayOfWeek.Thursday
 								select day).ElementAt(3);
@@ -219,7 +212,7 @@ namespace Forum.Services {
 			var christmasEve = new DateTime(year, 12, 24).Date;
 			var christmasDay = new DateTime(year, 12, 25).Date;
 
-			//NEW YEARS EVE
+			// NEW YEARS EVE
 			var newYearsEveDate = new DateTime(year, 12, 31).Date;
 
 			holidays.Add(newYearsDate, "Logo_NewYears.png");

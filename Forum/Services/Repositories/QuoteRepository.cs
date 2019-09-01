@@ -61,28 +61,6 @@ namespace Forum.Services.Repositories {
 			return returnObject;
 		}
 
-		public async Task<ViewModels.Quotes.DisplayQuote> Get() {
-			var records = await Records();
-			var approvedRecords = records.Where(r => r.Approved).ToList();
-
-			if (!approvedRecords.Any()) {
-				return null;
-			}
-
-			var randomQuoteIndex = new Random().Next(0, approvedRecords.Count);
-			var randomQuote = approvedRecords[randomQuoteIndex];
-
-			var postedBy = (await AccountRepository.Records()).FirstOrDefault(r => r.Id == randomQuote.PostedById);
-			var message = DbContext.Messages.Find(randomQuote.MessageId);
-
-			return new ViewModels.Quotes.DisplayQuote {
-				TopicId = message.TopicId,
-				MessageId = randomQuote.MessageId,
-				DisplayBody = randomQuote.DisplayBody,
-				PostedBy = postedBy.DecoratedName
-			};
-		}
-
 		public async Task<ServiceModels.ServiceResponse> Create(int messageId) {
 			var serviceResponse = new ServiceModels.ServiceResponse();
 

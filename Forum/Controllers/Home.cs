@@ -38,10 +38,7 @@ namespace Forum.Controllers {
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> WhosOnline() {
-			var viewModel = await AccountRepository.GetOnlineList();
-			return await ForumViewResult.ViewResult(this, "Sidebar/_OnlineUsersList", viewModel);
-		}
+		public async Task<IActionResult> WhosOnline() => await ForumViewResult.ViewResult(this, "Components/OnlineUsersList/_Partial");
 
 		[HttpGet]
 		public IActionResult Token() => Json(new {

@@ -1,0 +1,29 @@
+﻿<style>
+	[data-component="side-bar"] {
+		width: 20%;
+		clear: right;
+	}
+
+	@@media only screen and (max-width: 900px) {
+		nav.actions {
+			margin-right: 0;
+		}
+
+		[data-component="side-bar"] {
+			display: none;
+		}
+	}
+
+	[data-component="side-bar"] li {
+		display: block;
+		overflow: hidden;
+	}
+</style>
+
+<div data-component="side-bar" class="pad overflow-hidden float-right">
+	<vc:quote />
+	<vc:notifications-list />
+	<vc:events-list />
+	<vc:online-users-list />
+</div>
+

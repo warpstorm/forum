@@ -1,7 +1,14 @@
-﻿@model ViewModels.Quotes.DisplayQuote
+﻿@model Forum.Views.Shared.Components.Quote.QuoteViewComponent.DisplayItem
 
-@if (Model is ViewModels.Quotes.DisplayQuote) {
-	<div id="sidebar-quote">
+<style>
+	[data-component="sidebar-quote"] {
+		max-height: 178px;
+		overflow: hidden;
+	}
+</style>
+
+@if (Model is Forum.Views.Shared.Components.Quote.QuoteViewComponent.DisplayItem) {
+	<div data-component="sidebar-quote">
 		<h4>Quote of the Moment:</h4>
 		<div class="gap-bottom">
 			<div class="content-box small-pad font-small subdued-text" clickable-link-parent>
