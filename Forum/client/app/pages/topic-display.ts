@@ -31,6 +31,7 @@ export class TopicDisplay {
 	private submitting: boolean = false;
 	private thoughtSelectorMessageId: string = "";
 	private thoughtTarget?: HTMLElement = undefined;
+	private body: HTMLBodyElement;
 
 	constructor(private app: App) {
 		throwIfNull(app, 'app');
@@ -48,6 +49,8 @@ export class TopicDisplay {
 			this.app.hub.on('deleted-message', this.hubDeletedMessage);
 			this.app.hub.on('deleted-topic', this.hubDeletedTopic);
 		}
+
+		this.body = document.getElementsByTagName('body')[0];
 	}
 
 	init(): void {
@@ -108,6 +111,11 @@ export class TopicDisplay {
 		document.querySelectorAll('.thought-button').forEach(element => {
 			element.removeEventListener('click', this.eventShowThoughtSelector);
 			element.addEventListener('click', this.eventShowThoughtSelector);
+
+			element.querySelectorAll('[data-component="smiley-image"]').forEach(imgElement => {
+				imgElement.removeEventListener('click', this.eventSaveThought);
+				imgElement.addEventListener('click', this.eventSaveThought);
+			});
 		});
 
 		document.querySelectorAll('.edit-button').forEach(element => {
@@ -211,7 +219,7 @@ export class TopicDisplay {
 		if (self.submitting) {
 			return;
 		}
-		
+
 		let bodyElement = form.querySelector('[name=body]') as HTMLTextAreaElement;
 
 		if (!bodyElement || bodyElement.value == '') {
@@ -611,10 +619,29 @@ export class TopicDisplay {
 
 	eventShowThoughtSelector = (event: Event) => {
 		event.preventDefault();
+		event.stopPropagation();
+
 		let target = <HTMLElement>event.currentTarget;
-		this.thoughtTarget = <HTMLElement>target.closest('article');
-		this.thoughtSelectorMessageId = target.getAttribute('message-id') || '';
-		//this.app.smileySelector.showSmileySelectorNearElement(target, this.eventSaveThought);
+
+		let self = this;
+		self.thoughtTarget = <HTMLElement>target.closest('article');
+		self.thoughtSelectorMessageId = target.getAttribute('message-id') || '';
+
+		let smileySelector = target.querySelector('[data-component="smiley-selector"]');
+		show(smileySelector);
+
+		setTimeout(function () {
+			self.body.addEventListener('click', self.eventHideThoughtSelector);
+		}, 50);
+	}
+
+	eventHideThoughtSelector = (event: Event) => {
+		document.querySelectorAll('[data-component="smiley-selector"]').forEach(element => {
+			hide(element);
+		});
+
+		let self = this;
+		self.body.removeEventListener('click', self.eventHideThoughtSelector);
 	}
 
 	eventSaveThought = (event: Event): void => {
@@ -633,8 +660,6 @@ export class TopicDisplay {
 			});
 
 			Xhr.request(requestOptions);
-
-			//this.app.smileySelector.eventCloseSmileySelector();
 		}
 		else {
 			window.location.href = `/Messages/AddThought/${this.thoughtSelectorMessageId}?smiley=${smileyId}`;

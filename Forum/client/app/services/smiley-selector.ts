@@ -1,67 +1,64 @@
 ﻿import { insertAtCaret, show, hide } from '../helpers';
 
 export class SmileySelector {
-    private body: HTMLBodyElement;
+	private body: HTMLBodyElement;
 
-    constructor(private doc: Document) {
-        this.body = doc.getElementsByTagName('body')[0];
-    }
+	constructor(private doc: Document) {
+		this.body = doc.getElementsByTagName('body')[0];
+	}
 
-    // Used in message forms to insert smileys into textareas.
-    init(): void {
-        this.doc.querySelectorAll('.add-smiley').forEach(element => {
-            element.removeEventListener('click', this.eventShowSmileySelector);
-            element.addEventListener('click', this.eventShowSmileySelector);
-        });
+	// Used in message forms to insert smileys into textareas.
+	init(): void {
+		this.doc.querySelectorAll('.add-smiley').forEach(element => {
+			element.removeEventListener('click', this.eventShowSmileySelector);
+			element.addEventListener('click', this.eventShowSmileySelector);
 
-        this.doc.querySelectorAll('[data-component="smiley-image"]').forEach(element => {
-            element.removeEventListener('click', this.eventInsertSmileyCode);
-            element.addEventListener('click', this.eventInsertSmileyCode);
-        })
-    }
+			element.querySelectorAll('[data-component="smiley-image"]').forEach(imgElement => {
+				imgElement.removeEventListener('click', this.eventInsertSmileyCode);
+				imgElement.addEventListener('click', this.eventInsertSmileyCode);
+			});
+		});
+	}
 
-    eventShowSmileySelector = (event: Event): void => {
-        let self = this;
-        let target = <HTMLElement>event.currentTarget;
-        let smileySelector = target.querySelector('[data-component="smiley-selector"]');
-        show(smileySelector);
+	eventShowSmileySelector = (event: Event): void => {
+		event.stopPropagation();
 
-        target.removeEventListener('click', self.eventShowSmileySelector);
-        target.addEventListener('click', self.eventCloseSmileySelector);
+		let self = this;
+		let target = <HTMLElement>event.currentTarget;
+		let smileySelector = target.querySelector('[data-component="smiley-selector"]');
+		show(smileySelector);
 
-        setTimeout(function () {
-            self.body.addEventListener('click', self.eventCloseSmileySelector);
-        }, 50);
-    }
+		setTimeout(function () {
+			self.body.addEventListener('click', self.eventCloseSmileySelector);
+		}, 50);
+	}
 
-    eventCloseSmileySelector = (event: Event): void => {
-        let self = this;
+	eventCloseSmileySelector = (): void => {
+		document.querySelectorAll('[data-component="smiley-selector"]').forEach(element => {
+			hide(element);
+		});
 
-        let target = <HTMLElement>event.currentTarget;
-        let smileySelector = target.querySelector('[data-component="smiley-selector"]');
-        hide(smileySelector);
+		let self = this;
+		self.body.removeEventListener('click', self.eventCloseSmileySelector);
+	}
 
-        target.removeEventListener('click', self.eventCloseSmileySelector);
-        target.addEventListener('click', self.eventShowSmileySelector);
+	eventInsertSmileyCode = (event: Event): void => {
+		event.stopPropagation();
 
-        self.body.removeEventListener('click', self.eventCloseSmileySelector);
-    }
+		let self = this;
 
-    eventInsertSmileyCode = (event: Event): void => {
-        let self = this;
+		let eventTarget = <Element>event.currentTarget
+		let smileyCode = eventTarget.getAttribute('code') || '';
 
-        let eventTarget = <Element>event.currentTarget
-        let smileyCode = eventTarget.getAttribute('code') || '';
+		let form = <HTMLFormElement>eventTarget.closest('form');
+		let targetTextArea = <HTMLTextAreaElement>form.querySelector('textarea');
 
-        let form = <HTMLFormElement>eventTarget.closest('form');
-        let targetTextArea = <HTMLTextAreaElement>form.querySelector('textarea');
+		if (targetTextArea.value !== '') {
+			smileyCode = ` ${smileyCode} `;
+		}
 
-        if (targetTextArea.value !== '') {
-            smileyCode = ` ${smileyCode} `;
-        }
+		insertAtCaret(targetTextArea, smileyCode);
 
-        insertAtCaret(targetTextArea, smileyCode);
-
-        self.eventCloseSmileySelector(event);
-    }
+		self.eventCloseSmileySelector();
+	}
 }
