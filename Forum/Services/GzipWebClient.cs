@@ -10,14 +10,6 @@ namespace Forum.Services {
 		public HtmlDocument DownloadDocument(string remoteUrl) {
 			var data = GetRemoteData(remoteUrl);
 
-			try {
-				data = DownloadString(remoteUrl);
-			}
-			catch (UriFormatException) { }
-			catch (AggregateException) { }
-			catch (ArgumentException) { }
-			catch (WebException) { }
-
 			HtmlDocument returnObject = null;
 
 			if (!string.IsNullOrEmpty(data)) {
@@ -35,18 +27,11 @@ namespace Forum.Services {
 				Headers.Set(header.Key, header.Value);
 			}
 
+            var data = GetRemoteData(remoteUrl);
+
 			var returnObject = default(T);
-			var data = string.Empty;
 
-			try {
-				data = DownloadString(remoteUrl);
-			}
-			catch (UriFormatException) { }
-			catch (AggregateException) { }
-			catch (ArgumentException) { }
-			catch (WebException) { }
-
-			if (!string.IsNullOrEmpty(data)) {
+            if (!string.IsNullOrEmpty(data)) {
 				try {
 					returnObject = JsonConvert.DeserializeObject<T>(data);
 				}
