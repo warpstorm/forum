@@ -614,7 +614,7 @@ export class TopicDisplay {
 		let target = <HTMLElement>event.currentTarget;
 		this.thoughtTarget = <HTMLElement>target.closest('article');
 		this.thoughtSelectorMessageId = target.getAttribute('message-id') || '';
-		this.app.smileySelector.showSmileySelectorNearElement(target, this.eventSaveThought);
+		//this.app.smileySelector.showSmileySelectorNearElement(target, this.eventSaveThought);
 	}
 
 	eventSaveThought = (event: Event): void => {
@@ -634,7 +634,7 @@ export class TopicDisplay {
 
 			Xhr.request(requestOptions);
 
-			this.app.smileySelector.eventCloseSmileySelector();
+			//this.app.smileySelector.eventCloseSmileySelector();
 		}
 		else {
 			window.location.href = `/Messages/AddThought/${this.thoughtSelectorMessageId}?smiley=${smileyId}`;

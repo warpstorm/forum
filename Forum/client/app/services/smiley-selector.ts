@@ -1,107 +1,67 @@
 ﻿import { insertAtCaret, show, hide } from '../helpers';
 
 export class SmileySelector {
-	private win: Window;
-	private body: HTMLBodyElement;
-	private smileySelector: HTMLElement;
-	private smileySelectorImageHandler: ((event: Event) => void) = () => {};
-	private smileySelectorTargetTextArea: HTMLTextAreaElement | null = null;
+    private body: HTMLBodyElement;
 
-	constructor(private doc: Document) {
-		this.win = <Window>doc.defaultView;
-		this.body = doc.getElementsByTagName('body')[0];
-		this.smileySelector = <HTMLElement>doc.querySelector('#smiley-selector');
-	}
+    constructor(private doc: Document) {
+        this.body = doc.getElementsByTagName('body')[0];
+    }
 
-	// Used in message forms to insert smileys into textareas.
-	init(): void {
-		this.doc.querySelectorAll('.add-smiley').forEach(element => {
-			element.removeEventListener('click', this.eventShowSmileySelector);
-			element.addEventListener('click', this.eventShowSmileySelector);
-		});
-	}
+    // Used in message forms to insert smileys into textareas.
+    init(): void {
+        this.doc.querySelectorAll('.add-smiley').forEach(element => {
+            element.removeEventListener('click', this.eventShowSmileySelector);
+            element.addEventListener('click', this.eventShowSmileySelector);
+        });
 
-	showSmileySelectorNearElement(target: HTMLElement, imageHandler: (event: Event) => void): void {
-		let self = this;
-		self.eventCloseSmileySelector();
-		self.smileySelectorImageHandler = imageHandler;
-
-		if (self.smileySelectorImageHandler) {
-			self.smileySelector.querySelectorAll('img').forEach(element => {
-				element.addEventListener('click', self.smileySelectorImageHandler);
-			});
-		}
-
-		var rect = target.getBoundingClientRect();
-		var targetTop = rect.top + self.win.pageYOffset - (<HTMLElement>self.doc.documentElement).clientTop;
-		var targetLeft = rect.left + self.win.pageXOffset - (<HTMLElement>self.doc.documentElement).clientLeft;
-
-		show(self.smileySelector);
-		self.smileySelector.addEventListener('click', self.eventStopPropagation);
-
-		let selectorTopOffset = targetTop + rect.height;
-		self.smileySelector.style.top = selectorTopOffset + (selectorTopOffset == 0 ? '' : 'px');
-
-		let selectorLeftOffset = targetLeft;
-		var screenFalloff = targetLeft + self.smileySelector.clientWidth + 20 - self.win.innerWidth;
-
-		if (screenFalloff > 0) {
-			selectorLeftOffset -= screenFalloff;
-		}
-
-		self.smileySelector.style.left = selectorLeftOffset + (selectorLeftOffset == 0 ? '' : 'px');
-
-		setTimeout(function () {
-			self.body.addEventListener('click', self.eventCloseSmileySelector);
-		}, 50);
-	}
+        this.doc.querySelectorAll('[data-component="smiley-image"]').forEach(element => {
+            element.removeEventListener('click', this.eventInsertSmileyCode);
+            element.addEventListener('click', this.eventInsertSmileyCode);
+        })
+    }
 
     eventShowSmileySelector = (event: Event): void => {
-		let target = <HTMLElement>event.currentTarget;
+        let self = this;
+        let target = <HTMLElement>event.currentTarget;
+        let smileySelector = target.querySelector('[data-component="smiley-selector"]');
+        show(smileySelector);
 
-		this.smileySelectorTargetTextArea = (<HTMLFormElement>target.closest('form')).querySelector('textarea');
-		this.showSmileySelectorNearElement(target, this.eventInsertSmileyCode);
-	}
+        target.removeEventListener('click', self.eventShowSmileySelector);
+        target.addEventListener('click', self.eventCloseSmileySelector);
 
-	eventCloseSmileySelector = (): void => {
-		let self = this;
+        setTimeout(function () {
+            self.body.addEventListener('click', self.eventCloseSmileySelector);
+        }, 50);
+    }
 
-		self.smileySelector.style.top = '0';
-		self.smileySelector.style.left = '0';
-		hide(self.smileySelector);
+    eventCloseSmileySelector = (event: Event): void => {
+        let self = this;
 
-		self.body.removeEventListener('click', self.eventCloseSmileySelector);
-		self.smileySelector.removeEventListener('click', self.eventStopPropagation);
+        let target = <HTMLElement>event.currentTarget;
+        let smileySelector = target.querySelector('[data-component="smiley-selector"]');
+        hide(smileySelector);
 
-		if (self.smileySelectorImageHandler) {
-			self.smileySelector.querySelectorAll('img').forEach(element => {
-				element.removeEventListener('click', self.smileySelectorImageHandler);
-			});
+        target.removeEventListener('click', self.eventCloseSmileySelector);
+        target.addEventListener('click', self.eventShowSmileySelector);
 
-			delete self.smileySelectorImageHandler;
-		}
-	}
+        self.body.removeEventListener('click', self.eventCloseSmileySelector);
+    }
 
-	eventInsertSmileyCode = (event: Event): void => {
-		let self = this;
+    eventInsertSmileyCode = (event: Event): void => {
+        let self = this;
 
-		if (!self.smileySelectorTargetTextArea) {
-			return;
-		}
+        let eventTarget = <Element>event.currentTarget
+        let smileyCode = eventTarget.getAttribute('code') || '';
 
-		let eventTarget = <Element>event.currentTarget
-		let smileyCode = eventTarget.getAttribute('code') || '';
-			   
-		if (self.smileySelectorTargetTextArea.textContent !== '') {
-			smileyCode = ` ${smileyCode} `;
-		}
+        let form = <HTMLFormElement>eventTarget.closest('form');
+        let targetTextArea = <HTMLTextAreaElement>form.querySelector('textarea');
 
-		insertAtCaret(self.smileySelectorTargetTextArea, smileyCode);
+        if (targetTextArea.value !== '') {
+            smileyCode = ` ${smileyCode} `;
+        }
 
-		self.eventCloseSmileySelector();
-	}
+        insertAtCaret(targetTextArea, smileyCode);
 
-	private eventStopPropagation = (event: Event) => {
-		event.stopPropagation();
-	}
+        self.eventCloseSmileySelector(event);
+    }
 }

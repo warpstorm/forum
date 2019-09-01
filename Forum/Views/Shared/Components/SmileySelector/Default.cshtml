@@ -7,7 +7,7 @@
             <ul>
                 @foreach (var smiley in smileyColumn)
                 {
-                    <li class="align-center"><img src="@smiley.Path" smiley-id="@smiley.Id" code="@smiley.Code" alt="@smiley.Thought" title="@smiley.Thought" /></li>
+                    <li class="align-center"><img src="@smiley.Path" data-component="smiley-image" smiley-id="@smiley.Id" code="@smiley.Code" alt="@smiley.Thought" title="@smiley.Thought" /></li>
                 }
             </ul>
         }
