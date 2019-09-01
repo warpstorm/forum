@@ -24,7 +24,6 @@ namespace Forum.Controllers {
 		AccountRepository AccountRepository { get; }
 		BoardRepository BoardRepository { get; }
 		MessageRepository MessageRepository { get; }
-		SmileyRepository SmileyRepository { get; }
 		TopicRepository TopicRepository { get; }
 		IHubContext<ForumHub> ForumHub { get; }
 		ForumViewResult ForumViewResult { get; }
@@ -35,7 +34,6 @@ namespace Forum.Controllers {
 			AccountRepository accountRepository,
 			BoardRepository boardRepository,
 			MessageRepository messageRepository,
-			SmileyRepository smileyRepository,
 			TopicRepository topicRepository,
 			IHubContext<ForumHub> forumHub,
 			ForumViewResult forumViewResult
@@ -45,7 +43,6 @@ namespace Forum.Controllers {
 			AccountRepository = accountRepository;
 			BoardRepository = boardRepository;
 			MessageRepository = messageRepository;
-			SmileyRepository = smileyRepository;
 			TopicRepository = topicRepository;
 			ForumHub = forumHub;
 			ForumViewResult = forumViewResult;
@@ -78,8 +75,6 @@ namespace Forum.Controllers {
 
 		[HttpGet]
 		public async Task<IActionResult> Reply(int id = 0) {
-			ViewData["Smileys"] = await SmileyRepository.GetSelectorList();
-
 			var message = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == id);
 
 			if (message is null || message.Deleted) {
@@ -126,8 +121,6 @@ namespace Forum.Controllers {
 					return Redirect(redirectPath);
 				}
 			}
-
-			ViewData["Smileys"] = await SmileyRepository.GetSelectorList();
 
 			var viewModel = new ViewModels.Messages.ReplyForm {
 				Id = input.Id.ToString(),
@@ -191,8 +184,6 @@ namespace Forum.Controllers {
 		[ActionLog("is editing a message.")]
 		[HttpGet]
 		public async Task<IActionResult> Edit(int id) {
-			ViewData["Smileys"] = await SmileyRepository.GetSelectorList();
-
 			var message = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == id);
 
 			if (message is null || message.Deleted) {

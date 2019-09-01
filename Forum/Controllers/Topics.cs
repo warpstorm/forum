@@ -28,7 +28,6 @@ namespace Forum.Controllers {
 		BoardRepository BoardRepository { get; }
 		BookmarkRepository BookmarkRepository { get; }
 		MessageRepository MessageRepository { get; }
-		SmileyRepository SmileyRepository { get; }
 		TopicRepository TopicRepository { get; }
 		IHubContext<ForumHub> ForumHub { get; }
 		ForumViewResult ForumViewResult { get; }
@@ -39,7 +38,6 @@ namespace Forum.Controllers {
 			BoardRepository boardRepository,
 			BookmarkRepository bookmarkRepository,
 			MessageRepository messageRepository,
-			SmileyRepository smileyRepository,
 			TopicRepository topicRepository,
 			IHubContext<ForumHub> forumHub,
 			ForumViewResult forumViewResult
@@ -50,7 +48,6 @@ namespace Forum.Controllers {
 			BoardRepository = boardRepository;
 			BookmarkRepository = bookmarkRepository;
 			MessageRepository = messageRepository;
-			SmileyRepository = smileyRepository;
 			TopicRepository = topicRepository;
 
 			ForumHub = forumHub;
@@ -128,8 +125,6 @@ namespace Forum.Controllers {
 		[ActionLog("is starting a new topic.")]
 		[HttpGet]
 		public async Task<IActionResult> Create(int id = -1) {
-			ViewData["Smileys"] = await SmileyRepository.GetSelectorList();
-
 			var boards = await BoardRepository.Records();
 			var board = boards.FirstOrDefault(item => item.Id == id);
 
@@ -190,8 +185,6 @@ namespace Forum.Controllers {
 					return Redirect(redirectPath);
 				}
 			}
-
-			ViewData["Smileys"] = await SmileyRepository.GetSelectorList();
 
 			var viewModel = new ViewModels.Topics.CreateTopicForm {
 				Body = input.Body,
@@ -258,8 +251,6 @@ namespace Forum.Controllers {
 					}
 				}
 				else {
-					ViewData["Smileys"] = await SmileyRepository.GetSelectorList();
-
 					var createTopicViewModel = new ViewModels.Topics.CreateTopicForm {
 						Start = input.Start,
 						End = input.End,
@@ -437,7 +428,6 @@ namespace Forum.Controllers {
 			await loadMessages();
 			await loadCategories();
 			await loadTopicBoards();
-			await loadSmileyViewData();
 			await loadEventDetails();
 
 			return await ForumViewResult.ViewResult(this, viewModel);
@@ -468,10 +458,6 @@ namespace Forum.Controllers {
 					var indexBoard = await BoardRepository.GetIndexBoard(topicBoard);
 					viewModel.AssignedBoards.Add(indexBoard);
 				}
-			}
-
-			async Task loadSmileyViewData() {
-				ViewData[Constants.InternalKeys.SmileyViewData] = await SmileyRepository.GetSelectorList();
 			}
 
 			async Task loadEventDetails() {

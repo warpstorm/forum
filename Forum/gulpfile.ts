@@ -39,6 +39,7 @@ gulp.task('global-styles', function () {
 			'client/styles/buttons.css',
 			'client/styles/standard-classes.css',
 			'client/styles/bbc.css',
+			'client/styles/smiley-selector.css',
 		])
 		.pipe(uglifyCss())
 		.pipe(concat('global.css'))

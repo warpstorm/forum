@@ -1,26 +1,38 @@
 ﻿using Forum.Controllers.Annotations;
-using Forum.Extensions;
 using Forum.Services;
+using Forum.Services.Contexts;
+using Forum.Services.Plugins.ImageStore;
 using Forum.Services.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Forum.Controllers {
 	using ControllerModels = Models.ControllerModels;
+	using DataModels = Models.DataModels;
 	using ViewModels = Models.ViewModels.Smileys;
 
 	[Authorize(Roles = Constants.InternalKeys.Admin)]
 	public class Smileys : Controller {
+		ApplicationDbContext DbContext { get; }
 		SmileyRepository SmileyRepository { get; }
 		ForumViewResult ForumViewResult { get; }
+		IImageStore ImageStore { get; }
 
 		public Smileys(
+			ApplicationDbContext dbContext,
 			SmileyRepository smileyRepository,
-			ForumViewResult forumViewResult
+			ForumViewResult forumViewResult,
+			IImageStore imageStore
 		) {
+			DbContext = dbContext;
 			SmileyRepository = smileyRepository;
 			ForumViewResult = forumViewResult;
+			ImageStore = imageStore;
 		}
 
 		[ActionLog]
@@ -57,8 +69,42 @@ namespace Forum.Controllers {
 		[PreventRapidRequests]
 		public async Task<IActionResult> Create(ControllerModels.Smileys.CreateSmileyInput input) {
 			if (ModelState.IsValid) {
-				var result = await SmileyRepository.Create(input);
-				ModelState.AddModelErrors(result.Errors);
+				var allowedExtensions = new[] { "gif", "png" };
+				var extension = Path.GetExtension(input.File.FileName).ToLower().Substring(1);
+
+				if (Regex.IsMatch(input.File.FileName, @"[^a-zA-Z 0-9_\-\.]")) {
+					ModelState.AddModelError("File", "Your filename contains invalid characters.");
+				}
+
+				if (!allowedExtensions.Contains(extension)) {
+					ModelState.AddModelError("File", $"Your file must be: {string.Join(", ", allowedExtensions)}.");
+				}
+
+				if (!(await SmileyRepository.FindByCode(input.Code) is null)) {
+					ModelState.AddModelError(nameof(input.Code), "Another smiley exists with that code.");
+				}
+
+				if (!ModelState.IsValid) {
+					var smileyRecord = new DataModels.Smiley {
+						Code = input.Code,
+						Thought = input.Thought,
+						FileName = input.File.FileName
+					};
+
+					DbContext.Smileys.Add(smileyRecord);
+
+					using (var inputStream = input.File.OpenReadStream()) {
+						smileyRecord.Path = await ImageStore.Save(new ImageStoreSaveOptions {
+							ContainerName = Constants.InternalKeys.SmileyImageContainer,
+							FileName = input.File.FileName,
+							ContentType = input.File.ContentType,
+							InputStream = inputStream,
+							Overwrite = true
+						});
+					}
+
+					await DbContext.SaveChangesAsync();
+				}
 
 				if (ModelState.IsValid) {
 					TempData[Constants.InternalKeys.StatusMessage] = $"Smiley '{input.File.FileName}' was added with code '{input.Code}'.";
@@ -81,8 +127,53 @@ namespace Forum.Controllers {
 		[PreventRapidRequests]
 		public async Task<IActionResult> Edit(ControllerModels.Smileys.EditSmileysInput input) {
 			if (ModelState.IsValid) {
-				var result = await SmileyRepository.Edit(input);
-				ModelState.AddModelErrors(result.Errors);
+				var smileySortOrder = new Dictionary<int, int>();
+
+				foreach (var smileyInput in input.Smileys) {
+					var smileyRecord = await SmileyRepository.FindById(smileyInput.Id);
+
+					if (smileyRecord is null) {
+						ModelState.AddModelError(nameof(smileyInput.Id), $@"No smiley was found with the id '{smileyInput.Id}'");
+						break;
+					}
+
+					smileySortOrder.Add(smileyRecord.Id, smileyRecord.SortOrder);
+				}
+
+				if (!ModelState.IsValid) {
+					foreach (var smileyInput in input.Smileys) {
+						var newSortOrder = (smileyInput.Column * 1000) + smileyInput.Row;
+
+						if (smileySortOrder[smileyInput.Id] != newSortOrder) {
+							foreach (var kvp in smileySortOrder.Where(kvp => smileyInput.Column == kvp.Value / 1000 && kvp.Value >= newSortOrder).ToList()) {
+								smileySortOrder[kvp.Key]++;
+							}
+
+							smileySortOrder[smileyInput.Id] = newSortOrder;
+						}
+					}
+
+					foreach (var smileyInput in input.Smileys) {
+						var smileyRecord = await SmileyRepository.FindById(smileyInput.Id);
+
+						if (smileyRecord.Code != smileyInput.Code) {
+							smileyRecord.Code = smileyInput.Code;
+							DbContext.Update(smileyRecord);
+						}
+
+						if (smileyRecord.Thought != smileyInput.Thought) {
+							smileyRecord.Thought = smileyInput.Thought;
+							DbContext.Update(smileyRecord);
+						}
+
+						if (smileyRecord.SortOrder != smileySortOrder[smileyRecord.Id]) {
+							smileyRecord.SortOrder = smileySortOrder[smileyRecord.Id];
+							DbContext.Update(smileyRecord);
+						}
+					}
+
+					await DbContext.SaveChangesAsync();
+				}
 
 				if (ModelState.IsValid) {
 					TempData[Constants.InternalKeys.StatusMessage] = $"Smileys were updated.";
@@ -98,8 +189,32 @@ namespace Forum.Controllers {
 		[HttpGet]
 		public async Task<IActionResult> Delete(int id) {
 			if (ModelState.IsValid) {
-				var serviceResponse = await SmileyRepository.Delete(id);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse);
+				var smileyRecord = await SmileyRepository.FindById(id);
+
+				if (smileyRecord is null) {
+					TempData[Constants.InternalKeys.StatusMessage] = $"No smiley was found with the id '{id}'";
+					return ForumViewResult.RedirectToReferrer(this);
+				}
+
+				DbContext.Smileys.Remove(smileyRecord);
+
+				var thoughts = DbContext.MessageThoughts.Where(t => t.SmileyId == id).ToList();
+
+				if (thoughts.Any()) {
+					DbContext.MessageThoughts.RemoveRange(thoughts);
+				}
+
+				// Only delete the file if no other smileys are using the file.
+				if (!DbContext.Smileys.Any(s => s.FileName == smileyRecord.FileName)) {
+					await ImageStore.Delete(new ImageStoreDeleteOptions {
+						ContainerName = Constants.InternalKeys.SmileyImageContainer,
+						Path = smileyRecord.Path
+					});
+				}
+
+				await DbContext.SaveChangesAsync();
+
+				TempData[Constants.InternalKeys.StatusMessage] = "The smiley was deleted.";
 			}
 
 			return ForumViewResult.RedirectToReferrer(this);

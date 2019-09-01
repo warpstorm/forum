@@ -63,9 +63,5 @@
 	<script src="~/scripts/app.js" asp-append-version="true"></script>
 
 	@await RenderSectionAsync("Scripts", required: false)
-
-	@if (ViewData["Smileys"] != null) {
-		<partial name="_SmileySelector" for="@ViewData["Smileys"]" />
-	}
 </body>
 </html>

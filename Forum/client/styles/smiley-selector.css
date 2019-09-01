@@ -1,27 +1,27 @@
-﻿#smiley-selector {
+﻿[data-component="smiley-selector"] {
 	min-width: 200px;
 	position: absolute;
 	box-shadow: #0c0f14 0 5px 12px;
 	z-index: 1000;
 }
 
-	#smiley-selector > div {
+	[data-component="smiley-selector"] > div {
 		max-height: 300px;
 	}
 
-	#smiley-selector ul {
+	[data-component="smiley-selector"] ul {
 		min-width: 35px;
 		padding: 3px 0 3px 10px;
 		display: inline-block;
 		vertical-align: top;
 	}
 
-	#smiley-selector img {
+	[data-component="smiley-selector"] img {
 		padding: 5px;
 		border: 1px solid transparent;
 	}
 
-		#smiley-selector img:hover {
+		[data-component="smiley-selector"] img:hover {
 			background-color: #253248;
 			border-color: #7090c6;
 			cursor: pointer;
