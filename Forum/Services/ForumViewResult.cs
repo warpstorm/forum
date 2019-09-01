@@ -72,6 +72,7 @@ namespace Forum.Services {
 
 		public async Task<IActionResult> ViewResult(Controller controller, string viewName, object model = null) {
 			if (model is Task) {
+				// Help to not shoot myself in the foot.
 				throw new Exception($"{nameof(model)} is still a task. Did you forget an await?");
 			}
 
@@ -94,13 +95,6 @@ namespace Forum.Services {
 			controller.ViewData["Referrer"] = GetReferrer(controller);
 			controller.ViewData["Categories"] = await BoardRepository.CategoryIndex();
 			controller.ViewData[Constants.InternalKeys.Sidebar] = await Sidebar.Generate();
-
-			if (controller.HttpContext.Items["PageTimer"] is Stopwatch pageTimer) {
-				pageTimer.Stop();
-				var pageTimerSeconds = 1D * pageTimer.ElapsedMilliseconds / 1000;
-
-				controller.ViewData["FooterPageTimer"] = $" | {pageTimerSeconds} seconds";
-			}
 
 			return controller.View(viewName, model);
 		}
