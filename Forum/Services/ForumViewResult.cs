@@ -1,7 +1,5 @@
-﻿using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Forum.Services {
@@ -45,39 +43,6 @@ namespace Forum.Services {
 				return controller.Redirect(redirectPath);
 			}
 		}
-
-		public IActionResult RedirectToLocal(Controller controller, string returnUrl) {
-			if (controller.Url.IsLocalUrl(returnUrl)) {
-				return controller.Redirect(returnUrl);
-			}
-			else {
-				return controller.Redirect("/");
-			}
-		}
-
-		public IActionResult ViewResult(Controller controller, string viewName, object model = null) {
-			if (model is Task) {
-				// Help to not shoot myself in the foot.
-				throw new Exception($"{nameof(model)} is still a task. Did you forget an await?");
-			}
-
-			var requestUrl = controller.Request.GetEncodedUrl();
-			controller.ViewData["Url"] = requestUrl;
-
-			var baseUrlMatch = Regex.Match(requestUrl, @"(https?:\/\/.*?\/)");
-
-			if (baseUrlMatch.Success) {
-				var baseUrl = baseUrlMatch.Groups[1].Value;
-				controller.ViewData["Image"] = $"{baseUrl}images/logos/planet.png";
-				controller.ViewData["BaseUrl"] = baseUrl;
-			}
-
-			controller.ViewData["Referrer"] = GetReferrer(controller);
-
-			return controller.View(viewName, model);
-		}
-		public IActionResult ViewResult(Controller controller, object model) => ViewResult(controller, null, model);
-		public IActionResult ViewResult(Controller controller) => ViewResult(controller, null, null);
 
 		public string GetReferrer(Controller controller) {
 			controller.Request.Query.TryGetValue("ReturnUrl", out var referrer);

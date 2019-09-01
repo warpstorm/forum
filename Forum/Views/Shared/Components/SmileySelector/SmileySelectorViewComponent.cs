@@ -9,11 +9,7 @@ namespace Forum.Views.Shared.Components.SmileySelector {
 	public class SmileySelectorViewComponent : ViewComponent {
 		SmileyRepository SmileyRepository { get; }
 
-		public SmileySelectorViewComponent(
-			SmileyRepository smileyRepository
-		) {
-			SmileyRepository = smileyRepository;
-		}
+		public SmileySelectorViewComponent(SmileyRepository smileyRepository) => SmileyRepository = smileyRepository;
 
 		public async Task<IViewComponentResult> InvokeAsync() {
 			var items = new List<List<ViewModels.IndexItem>>();

@@ -1,5 +1,4 @@
-﻿using Forum.Services;
-using Microsoft.AspNetCore.Antiforgery;
+﻿using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -9,16 +8,13 @@ namespace Forum.Controllers {
 	using ViewModels = Models.ViewModels;
 
 	public class Home : Controller {
-		ForumViewResult ForumViewResult { get; }
 		IHttpContextAccessor HttpContextAccessor { get; }
 		IAntiforgery Xsrf { get; }
 
 		public Home(
-			ForumViewResult forumViewResult,
 			IHttpContextAccessor httpContextAccessor,
 			IAntiforgery xsrf
 		) {
-			ForumViewResult = forumViewResult;
 			HttpContextAccessor = httpContextAccessor;
 			Xsrf = xsrf;
 		}
@@ -29,11 +25,11 @@ namespace Forum.Controllers {
 				RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
 			};
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return View(viewModel);
 		}
 
 		[HttpGet]
-		public IActionResult WhosOnline() => ForumViewResult.ViewResult(this, "Components/OnlineUsersList/_Partial");
+		public IActionResult WhosOnline() => View("Components/OnlineUsersList/_Partial");
 
 		[HttpGet]
 		public IActionResult Token() => Json(new {

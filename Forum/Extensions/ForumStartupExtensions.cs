@@ -7,7 +7,6 @@ using Jdenticon.Rendering;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 // REMINDER -
@@ -28,7 +27,7 @@ namespace Forum.Extensions {
 			return builder;
 		}
 
-		public static IServiceCollection AddForum(this IServiceCollection services, IConfiguration configuration) {
+		public static IServiceCollection AddForum(this IServiceCollection services) {
 			RegisterRepositories(services);
 
 			services.AddTransient<ForumViewResult>();

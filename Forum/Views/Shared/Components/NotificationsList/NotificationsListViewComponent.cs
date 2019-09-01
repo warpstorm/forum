@@ -51,25 +51,16 @@ namespace Forum.Views.Shared.Components.NotificationsList {
 					notification.TargetUser = users.FirstOrDefault(r => r.Id == notification.TargetUserId)?.DecoratedName ?? "User";
 				}
 
-				notification.Text = notificationText(notification);
+				notification.Text = notification.Type switch {
+					ENotificationType.Quote => $"{notification.TargetUser} quoted you.",
+					ENotificationType.Reply => $"{notification.TargetUser} replied to your topic.",
+					ENotificationType.Thought => $"{notification.TargetUser} thought about your post.",
+					ENotificationType.Mention => $"{notification.TargetUser} mentioned you.",
+					_ => $"Unknown type.",
+				};
 			}
 
 			return View("Default", notifications);
-
-			string notificationText(DisplayItem notification) {
-				switch (notification.Type) {
-					case ENotificationType.Quote:
-						return $"{notification.TargetUser} quoted you.";
-					case ENotificationType.Reply:
-						return $"{notification.TargetUser} replied to your topic.";
-					case ENotificationType.Thought:
-						return $"{notification.TargetUser} thought about your post.";
-					case ENotificationType.Mention:
-						return $"{notification.TargetUser} mentioned you.";
-					default:
-						return $"Unknown type.";
-				}
-			}
 		}
 
 		public class DisplayItem {

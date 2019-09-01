@@ -61,7 +61,7 @@ namespace Forum.Controllers {
 				viewModel.IndexItems.Add(indexItem);
 			}
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return View(viewModel);
 		}
 
 		[ActionLog("is viewing a profile.")]
@@ -98,7 +98,7 @@ namespace Forum.Controllers {
 
 			ModelState.Clear();
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return View(viewModel);
 		}
 
 		[HttpPost]
@@ -135,7 +135,7 @@ namespace Forum.Controllers {
 					TopicsPerPage = userRecord.TopicsPerPage
 				};
 
-				return ForumViewResult.ViewResult(this, viewModel);
+				return View(viewModel);
 			}
 		}
 
@@ -177,7 +177,7 @@ namespace Forum.Controllers {
 					TopicsPerPage = userRecord.TopicsPerPage
 				};
 
-				return ForumViewResult.ViewResult(this, nameof(Details), viewModel);
+				return View(nameof(Details), viewModel);
 			}
 		}
 
@@ -200,12 +200,10 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> ConfirmEmail(InputModels.ConfirmEmailInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await AccountRepository.ConfirmEmail(input);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse, failSync: FailureCallback);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, failSync: View);
 			}
 
-			return FailureCallback();
-
-			IActionResult FailureCallback() => ForumViewResult.ViewResult(this);
+			return View();
 		}
 
 		[HttpGet]
@@ -218,7 +216,7 @@ namespace Forum.Controllers {
 			await AccountRepository.SignOut();
 
 			var viewModel = new ViewModels.Account.LoginPage();
-			return ForumViewResult.ViewResult(this, viewModel);
+			return View(viewModel);
 		}
 
 		[HttpPost]
@@ -228,16 +226,13 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> Login(InputModels.LoginInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await AccountRepository.Login(input);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, failSync: FailureCallback);
 			}
 
-			return await FailureCallback();
+			return FailureCallback();
 
-			async Task<IActionResult> FailureCallback() {
-				return await Task.Run(() => {
-					var classicLogin = Url.Action(nameof(LoginClassic));
-					return ForumViewResult.RedirectToLocal(this, classicLogin);
-				});
+			IActionResult FailureCallback() {
+				return RedirectToAction(nameof(LoginClassic));
 			}
 		}
 
@@ -251,7 +246,7 @@ namespace Forum.Controllers {
 			await AccountRepository.SignOut();
 
 			var viewModel = new ViewModels.Account.LoginPage();
-			return ForumViewResult.ViewResult(this, viewModel);
+			return View(viewModel);
 		}
 
 		[HttpPost]
@@ -278,7 +273,7 @@ namespace Forum.Controllers {
 					RememberMe = input.RememberMe
 				};
 
-				return ForumViewResult.ViewResult(this, viewModel);
+				return View(viewModel);
 			}
 		}
 
@@ -290,7 +285,7 @@ namespace Forum.Controllers {
 		[AllowAnonymous]
 		public async Task<IActionResult> Lockout() {
 			await AccountRepository.SignOut();
-			return ForumViewResult.ViewResult(this);
+			return View();
 		}
 
 		[HttpGet]
@@ -303,7 +298,7 @@ namespace Forum.Controllers {
 		[AllowAnonymous]
 		public async Task<IActionResult> Register() {
 			await AccountRepository.SignOut();
-			return ForumViewResult.ViewResult(this, new ViewModels.Account.RegisterPage());
+			return View(new ViewModels.Account.RegisterPage());
 		}
 
 		[HttpPost]
@@ -327,7 +322,7 @@ namespace Forum.Controllers {
 					Password = input.Password,
 				};
 
-				return ForumViewResult.ViewResult(this, viewModel);
+				return View(viewModel);
 			}
 		}
 
@@ -338,7 +333,7 @@ namespace Forum.Controllers {
 
 			var viewModel = new ViewModels.Account.ForgotPasswordPage();
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return View(viewModel);
 		}
 
 		[HttpPost]
@@ -360,7 +355,7 @@ namespace Forum.Controllers {
 					Email = input.Email
 				};
 
-				return ForumViewResult.ViewResult(this, viewModel);
+				return View(viewModel);
 			}
 		}
 
@@ -381,7 +376,7 @@ namespace Forum.Controllers {
 				Code = code
 			};
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return View(viewModel);
 		}
 
 		[HttpPost]
@@ -403,13 +398,13 @@ namespace Forum.Controllers {
 					Code = input.Code
 				};
 
-				return ForumViewResult.ViewResult(this, viewModel);
+				return View(viewModel);
 			}
 		}
 
 		[HttpGet]
 		[AllowAnonymous]
-		public IActionResult ResetPasswordConfirmation() => ForumViewResult.ViewResult(this);
+		public IActionResult ResetPasswordConfirmation() => View();
 
 		[HttpGet]
 		public async Task<IActionResult> Delete(string userId = "") {
@@ -433,7 +428,7 @@ namespace Forum.Controllers {
 				DbContext.SaveChanges();
 			}
 
-			return ForumViewResult.ViewResult(this, "Delete", userId);
+			return View("Delete", userId);
 		}
 
 		[HttpGet]
@@ -482,7 +477,7 @@ namespace Forum.Controllers {
 				viewModel.IndexItems.Add(indexItem);
 			}
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return View(viewModel);
 		}
 
 		[Authorize(Roles = Constants.InternalKeys.Admin)]

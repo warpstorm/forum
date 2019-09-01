@@ -30,7 +30,7 @@ namespace Forum.Controllers {
 
 		[ActionLog]
 		[HttpGet]
-		public async Task<IActionResult> Index() {
+		public IActionResult Index() {
 			var records = DbContext.StrippedUrls.ToList();
 
 			var items = new List<ViewModels.IndexItem>();
@@ -46,7 +46,7 @@ namespace Forum.Controllers {
 				StrippedUrls = items
 			};
 
-			return await ForumViewResult.ViewResult(this, viewModel);
+			return View(viewModel);
 		}
 
 		[HttpPost]
@@ -118,7 +118,7 @@ namespace Forum.Controllers {
 				StrippedUrls = strippedUrls
 			};
 
-			return await ForumViewResult.ViewResult(this, viewModel);
+			return View(viewModel);
 		}
 
 		[HttpGet]

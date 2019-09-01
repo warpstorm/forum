@@ -68,29 +68,20 @@ namespace Forum.Controllers {
 					notification.TargetUser = users.FirstOrDefault(r => r.Id == notification.TargetUserId)?.DecoratedName ?? "User";
 				}
 
-				notification.Text = notificationText(notification);
+				notification.Text = notification.Type switch {
+					ENotificationType.Quote => $"{notification.TargetUser} quoted you.",
+					ENotificationType.Reply => $"{notification.TargetUser} replied to your topic.",
+					ENotificationType.Thought => $"{notification.TargetUser} thought about your post.",
+					ENotificationType.Mention => $"{notification.TargetUser} mentioned you.",
+					_ => $"Unknown notification type. {notification.Id} | {notification.Type}"
+				};
 			}
 
 			var viewModel = new ViewModels.Notifications.IndexPage {
 				Notifications = notifications
 			};
 
-			return await ForumViewResult.ViewResult(this, viewModel);
-
-			string notificationText(ViewModels.Notifications.IndexItem notification) {
-				switch (notification.Type) {
-					case ENotificationType.Quote:
-						return $"{notification.TargetUser} quoted you.";
-					case ENotificationType.Reply:
-						return $"{notification.TargetUser} replied to your topic.";
-					case ENotificationType.Thought:
-						return $"{notification.TargetUser} thought about your post.";
-					case ENotificationType.Mention:
-						return $"{notification.TargetUser} mentioned you.";
-					default:
-						return $"Unknown notification type. {notification.Id} | {notification.Type}";
-				}
-			}
+			return View(viewModel);
 		}
 
 		[HttpGet]

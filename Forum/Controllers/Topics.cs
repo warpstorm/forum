@@ -78,7 +78,7 @@ namespace Forum.Controllers {
 				MorePages = morePages
 			};
 
-			return await ForumViewResult.ViewResult(this, viewModel);
+			return View(viewModel);
 		}
 
 		[HttpGet]
@@ -119,7 +119,7 @@ namespace Forum.Controllers {
 				MorePages = morePages
 			};
 
-			return await ForumViewResult.ViewResult(this, viewModel);
+			return View(viewModel);
 		}
 
 		[ActionLog("is starting a new topic.")]
@@ -146,7 +146,7 @@ namespace Forum.Controllers {
 				SelectedBoards = new List<int> { id }
 			};
 
-			return await ForumViewResult.ViewResult(this, viewModel);
+			return View(viewModel);
 		}
 
 		[HttpPost]
@@ -173,7 +173,7 @@ namespace Forum.Controllers {
 
 				ModelState.ClearValidationState(input.Body);
 
-				return await ForumViewResult.ViewResult(this, "EditEvent", editEventViewModel);
+				return View("EditEvent", editEventViewModel);
 			}
 
 			if (ModelState.IsValid) {
@@ -194,12 +194,12 @@ namespace Forum.Controllers {
 				End = input.End
 			};
 
-			return await ForumViewResult.ViewResult(this, viewModel);
+			return View(viewModel);
 		}
 
 		[ActionLog("is adding an event to a topic.")]
 		[HttpGet]
-		public async Task<IActionResult> CreateEvent(int id = -1) {
+		public IActionResult CreateEvent(int id = -1) {
 			var topicRecord = DbContext.Topics.FirstOrDefault(item => item.Id == id);
 
 			if (topicRecord is null) {
@@ -217,7 +217,7 @@ namespace Forum.Controllers {
 				TopicId = id
 			};
 
-			return await ForumViewResult.ViewResult(this, "EditEvent", viewModel);
+			return View("EditEvent", viewModel);
 		}
 
 		[ActionLog("is adding an event to a topic.")]
@@ -258,7 +258,7 @@ namespace Forum.Controllers {
 						SelectedBoards = JsonConvert.DeserializeObject<List<int>>(input.SelectedBoards)
 					};
 
-					return await ForumViewResult.ViewResult(this, nameof(Create), createTopicViewModel);
+					return View(nameof(Create), createTopicViewModel);
 				}
 			}
 
@@ -273,12 +273,12 @@ namespace Forum.Controllers {
 				SelectedBoards = JsonConvert.SerializeObject(input.SelectedBoards)
 			};
 
-			return await ForumViewResult.ViewResult(this, "EditEvent", editEventViewModel);
+			return View("EditEvent", editEventViewModel);
 		}
 
 		[ActionLog("is editing an event.")]
 		[HttpGet]
-		public async Task<IActionResult> EditEvent(int id) {
+		public IActionResult EditEvent(int id) {
 			var topicRecord = DbContext.Topics.Find(id);
 			var eventRecord = DbContext.Events.FirstOrDefault(item => item.TopicId == id);
 
@@ -306,7 +306,7 @@ namespace Forum.Controllers {
 				TopicId = id
 			};
 
-			return await ForumViewResult.ViewResult(this, editEventViewModel);
+			return View(editEventViewModel);
 		}
 
 		[HttpPost]
@@ -350,7 +350,7 @@ namespace Forum.Controllers {
 				AllDay = input.AllDay,
 			};
 
-			return await ForumViewResult.ViewResult(this, editEventViewModel);
+			return View(editEventViewModel);
 		}
 
 		[ActionLog("is viewing their bookmarks.")]
@@ -364,7 +364,7 @@ namespace Forum.Controllers {
 				Topics = topicPreviews
 			};
 
-			return await ForumViewResult.ViewResult(this, viewModel);
+			return View(viewModel);
 		}
 
 		[HttpGet]
@@ -430,7 +430,7 @@ namespace Forum.Controllers {
 			await loadTopicBoards();
 			await loadEventDetails();
 
-			return await ForumViewResult.ViewResult(this, viewModel);
+			return View(viewModel);
 
 			async Task isBookmarked() {
 				viewModel.IsBookmarked = await BookmarkRepository.IsBookmarked(topic.Id);
@@ -497,7 +497,7 @@ namespace Forum.Controllers {
 				Messages = messages
 			};
 
-			return await ForumViewResult.ViewResult(this, "DisplayPartial", viewModel);
+			return View("DisplayPartial", viewModel);
 		}
 
 		[HttpGet]

@@ -11,11 +11,7 @@ namespace Forum.Controllers.Annotations {
 	public class ActionLogAttribute : ActionFilterAttribute {
 		public string Description { get; set; }
 
-		public ActionLogAttribute(
-			string description = "is doing stuff."
-		) {
-			Description = description;
-		}
+		public ActionLogAttribute(string description = "is doing stuff.") => Description = description;
 
 		public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next) {
 			var service = context.HttpContext.RequestServices.GetRequiredService<ActionLogService>();

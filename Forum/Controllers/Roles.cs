@@ -77,14 +77,14 @@ namespace Forum.Controllers {
 				});
 			}
 
-			return await ForumViewResult.ViewResult(this, viewModel);
+			return View(viewModel);
 		}
 
 		[ActionLog]
 		[HttpGet]
-		public async Task<IActionResult> Create() {
+		public IActionResult Create() {
 			var viewModel = new ViewModels.Roles.CreatePage();
-			return await ForumViewResult.ViewResult(this, viewModel);
+			return View(viewModel);
 		}
 
 		[HttpPost]
@@ -92,26 +92,26 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> Create(InputModels.CreateRoleInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await RoleRepository.Create(input);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, failSync: FailureCallback);
 			}
 
-			return await FailureCallback();
+			return FailureCallback();
 
-			async Task<IActionResult> FailureCallback() {
+			IActionResult FailureCallback() {
 				var viewModel = new ViewModels.Roles.CreatePage() {
 					Name = input.Name,
 					Description = input.Description
 				};
 
-				return await ForumViewResult.ViewResult(this, viewModel);
+				return View(viewModel);
 			}
 		}
 
 		[ActionLog]
 		[HttpGet]
-		public async Task<IActionResult> Edit(string id) {
+		public IActionResult Edit(string id) {
 			var viewModel = GetEditPageModel(id);
-			return await ForumViewResult.ViewResult(this, viewModel);
+			return View(viewModel);
 		}
 
 		[HttpPost]
@@ -119,18 +119,18 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> Edit(InputModels.EditRoleInput input) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await RoleRepository.Edit(input);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, failSync: FailureCallback);
 			}
 
-			return await FailureCallback();
+			return FailureCallback();
 
-			async Task<IActionResult> FailureCallback() {
+			IActionResult FailureCallback() {
 				var viewModel = GetEditPageModel(input.Id);
 
 				viewModel.Name = input.Name;
 				viewModel.Description = input.Description;
 
-				return await ForumViewResult.ViewResult(this, viewModel);
+				return View(viewModel);
 			}
 		}
 
@@ -147,21 +147,21 @@ namespace Forum.Controllers {
 		[HttpGet]
 		public async Task<IActionResult> UserList(string id) {
 			var viewModel = await RoleRepository.UserList(id);
-			return await ForumViewResult.ViewResult(this, viewModel);
+			return View(viewModel);
 		}
 
 		[HttpGet]
 		public async Task<IActionResult> AddUser(string id, string user) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await RoleRepository.AddUser(id, user);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, failSync: FailureCallback);
 			}
 
-			return await FailureCallback();
+			return FailureCallback();
 
-			async Task<IActionResult> FailureCallback() {
+			IActionResult FailureCallback() {
 				var viewModel = GetEditPageModel(id);
-				return await ForumViewResult.ViewResult(this, nameof(Edit), viewModel);
+				return View(nameof(Edit), viewModel);
 			}
 		}
 
@@ -169,14 +169,14 @@ namespace Forum.Controllers {
 		public async Task<IActionResult> RemoveUser(string id, string user) {
 			if (ModelState.IsValid) {
 				var serviceResponse = await RoleRepository.RemoveUser(id, user);
-				return await ForumViewResult.RedirectFromService(this, serviceResponse, FailureCallback);
+				return await ForumViewResult.RedirectFromService(this, serviceResponse, failSync: FailureCallback);
 			}
 
-			return await FailureCallback();
+			return FailureCallback();
 
-			async Task<IActionResult> FailureCallback() {
+			IActionResult FailureCallback() {
 				var viewModel = GetEditPageModel(id);
-				return await ForumViewResult.ViewResult(this, nameof(Edit), viewModel);
+				return View(nameof(Edit), viewModel);
 			}
 		}
 

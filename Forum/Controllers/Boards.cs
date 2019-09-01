@@ -36,7 +36,7 @@ namespace Forum.Controllers {
 				return RedirectToAction(nameof(Administration.Install), nameof(Administration));
 			}
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return View(viewModel);
 		}
 
 		[ActionLog("is managing the board index.")]
@@ -47,7 +47,7 @@ namespace Forum.Controllers {
 				Categories = await BoardRepository.CategoryIndex()
 			};
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return View(viewModel);
 		}
 
 		[ActionLog("is creating a board.")]
@@ -58,7 +58,7 @@ namespace Forum.Controllers {
 				Categories = await BoardRepository.CategoryPickList()
 			};
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return View(viewModel);
 		}
 
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
@@ -83,7 +83,7 @@ namespace Forum.Controllers {
 					viewModel.Categories.First(item => item.Value == input.Category).Selected = true;
 				}
 
-				return ForumViewResult.ViewResult(this, viewModel);
+				return View(viewModel);
 			}
 		}
 
@@ -104,7 +104,7 @@ namespace Forum.Controllers {
 
 			viewModel.Categories.First(item => item.Text == category.Name).Selected = true;
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return View(viewModel);
 		}
 
 		[Authorize(Roles = Constants.InternalKeys.Admin)]
@@ -133,7 +133,7 @@ namespace Forum.Controllers {
 					viewModel.Categories.First(item => item.Value == input.Category).Selected = true;
 				}
 
-				return ForumViewResult.ViewResult(this, viewModel);
+				return View(viewModel);
 			}
 		}
 

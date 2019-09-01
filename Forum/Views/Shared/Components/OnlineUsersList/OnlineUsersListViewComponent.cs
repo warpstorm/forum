@@ -14,19 +14,16 @@ namespace Forum.Views.Shared.Components.OnlineUsersList {
 
 	public class OnlineUsersListViewComponent : ViewComponent {
 		ApplicationDbContext DbContext { get; }
-		UserContext UserContext { get; }
 		AccountRepository AccountRepository { get; }
 		IUrlHelper UrlHelper { get; }
 
 		public OnlineUsersListViewComponent(
 			ApplicationDbContext dbContext,
-			UserContext userContext,
 			AccountRepository accountRepository,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory
 		) {
 			DbContext = dbContext;
-			UserContext = userContext;
 			AccountRepository = accountRepository;
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 		}

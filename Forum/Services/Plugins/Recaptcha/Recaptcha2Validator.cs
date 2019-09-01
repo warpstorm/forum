@@ -3,7 +3,6 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -44,7 +43,7 @@ namespace Forum.Services.Plugins.Recaptcha {
 
 			if (!validatorResponse.Success) {
 				var exceptionMessage = $"There was a problem validating the recaptcha. Error code(s) were:\n{string.Join("\n", validatorResponse.ErrorCodes)}\n";
-				throw new HttpBadRequestError(validatorResponse.ErrorCodes.FirstOrDefault());
+				throw new HttpBadRequestError(exceptionMessage);
 			}
 		}
 	}

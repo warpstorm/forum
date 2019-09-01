@@ -70,7 +70,7 @@ namespace Forum.Controllers {
 				Messages = messages
 			};
 
-			return ForumViewResult.ViewResult(this, "../Topics/DisplayPartial", viewModel);
+			return View("../Topics/DisplayPartial", viewModel);
 		}
 
 		[HttpGet]
@@ -86,7 +86,7 @@ namespace Forum.Controllers {
 				ElementId = $"message-reply-{id}"
 			};
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return View(viewModel);
 		}
 
 		[HttpPost]
@@ -128,7 +128,7 @@ namespace Forum.Controllers {
 				ElementId = $"message-reply-{input.Id}"
 			};
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return View(viewModel);
 		}
 
 		[SideLoad]
@@ -147,7 +147,7 @@ namespace Forum.Controllers {
 				FormAction = nameof(XhrReply)
 			};
 
-			return ForumViewResult.ViewResult(this, "_MessageForm", viewModel);
+			return View("_MessageForm", viewModel);
 		}
 
 		[SideLoad]
@@ -200,7 +200,7 @@ namespace Forum.Controllers {
 				ElementId = $"edit-message-{id}"
 			};
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return View(viewModel);
 		}
 
 		[HttpPost]
@@ -238,7 +238,7 @@ namespace Forum.Controllers {
 				ElementId = $"edit-message-{input.Id}"
 			};
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return View(viewModel);
 		}
 
 		[SideLoad]
@@ -261,7 +261,7 @@ namespace Forum.Controllers {
 				FormAction = nameof(XhrEdit)
 			};
 
-			return ForumViewResult.ViewResult(this, "_MessageForm", viewModel);
+			return View("_MessageForm", viewModel);
 		}
 
 		[SideLoad]
@@ -315,11 +315,10 @@ namespace Forum.Controllers {
 				var topic = await DbContext.Topics.SingleAsync(m => m.Id == message.TopicId);
 
 				if (topic.FirstMessageId == message.Id) {
-					redirectPath = base.Url.Action(nameof(Topics.Delete), nameof(Controllers.Topics), new { topic.Id });
+					redirectPath = base.Url.Action(nameof(Topics.Delete), nameof(Topics), new { topic.Id });
 				}
 				else {
-					await MessageRepository.DeleteMessageFromTopic(message, topic);
-
+					await MessageRepository.DeleteMessageFromTopic(message);
 					await TopicRepository.RebuildTopicReplies(topic);
 					await DbContext.SaveChangesAsync();
 
@@ -393,7 +392,7 @@ namespace Forum.Controllers {
 				Messages = messages,
 			};
 
-			return ForumViewResult.ViewResult(this, viewModel);
+			return View(viewModel);
 		}
 	}
 }

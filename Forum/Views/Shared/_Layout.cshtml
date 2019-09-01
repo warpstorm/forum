@@ -1,5 +1,9 @@
 ﻿@inject UserContext UserContext
 
+@{
+	var withSidebar = UserContext.IsAuthenticated;
+}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -26,9 +30,11 @@
 	<br class="clear" />
 
 	<div role="main" class="margin-center">
-		<vc:sidebar />
+		@if (withSidebar) {
+			<vc:sidebar />
+		}
 
-		<main class="align-center">
+		<main class="align-center @(withSidebar ? "with-sidebar" : "")">
 			<header>
 				@await RenderSectionAsync("Header", required: false)
 			</header>

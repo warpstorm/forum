@@ -7,11 +7,7 @@ namespace Forum.Services.Plugins.Recaptcha {
 	public class ValidateRecaptcha3ActionFilter : IAsyncAuthorizationFilter {
 		IRecaptcha3Validator RecaptchaValidator { get; }
 
-		public ValidateRecaptcha3ActionFilter(
-			IRecaptcha3Validator recaptchaValidator
-		) {
-			RecaptchaValidator = recaptchaValidator;
-		}
+		public ValidateRecaptcha3ActionFilter(IRecaptcha3Validator recaptchaValidator) => RecaptchaValidator = recaptchaValidator;
 
 		public async Task OnAuthorizationAsync(AuthorizationFilterContext context) {
 			if (!context.HttpContext.Request.IsLocal()) {

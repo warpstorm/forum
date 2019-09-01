@@ -6,17 +6,13 @@ namespace Forum.TagHelpers {
 	public class CancelButtonTagHelper : TagHelper {
 		HttpContext HttpContext { get; }
 
-		public CancelButtonTagHelper(
-			IActionContextAccessor actionContextAccessor
-		) {
-			HttpContext = actionContextAccessor.ActionContext.HttpContext;
-		}
+		public CancelButtonTagHelper(IActionContextAccessor actionContextAccessor) => HttpContext = actionContextAccessor.ActionContext.HttpContext;
 
 		public override void Process(TagHelperContext context, TagHelperOutput output) {
 			output.TagName = "a";
 
 			if (output.Attributes.ContainsName("class")) {
-				var currentClasses = output.Attributes.TryGetAttribute("class", out var classes);				
+				output.Attributes.TryGetAttribute("class", out var classes);
 				var newClasses = $"{classes.Value} button cancel-button";
 				output.Attributes.SetAttribute("class", newClasses);
 			}

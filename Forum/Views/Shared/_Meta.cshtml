@@ -1,24 +1,36 @@
-﻿<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+﻿@using Microsoft.AspNetCore.Http.Extensions;
+@using System.Text.RegularExpressions;
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+
+@{
+	var requestUrl = HttpContextAccessor.HttpContext.Request.GetEncodedUrl();
+
+	var baseUrlMatch = Regex.Match(requestUrl, @"(https?:\/\/.*?\/)");
+	var baseUrl = baseUrlMatch.Success ? baseUrlMatch.Groups[1].Value : string.Empty;
+	var imageUrl = $"{baseUrl}images/logos/planet.png";
+}
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta charset="utf-8" />
 <meta http-equiv="Content-Language" content="en" />
 
-<meta name="image" content="@ViewData["Image"]" />
-<meta name="thumbnail" content="@ViewData["Image"]" />
-<meta name="url" content="@ViewData["Url"]" />
+<meta name="image" content="@imageUrl" />
+<meta name="thumbnail" content="@imageUrl" />
+<meta name="url" content="@requestUrl" />
 
-<meta name="msapplication-starturl" content="@ViewData["BaseUrl"]" />
+<meta name="msapplication-starturl" content="@baseUrl" />
 
 <meta name="description" content="@ViewData["Title"]" />
 
 <meta property="og:type" content="website" />
-<meta property="og:url" content="@ViewData["Url"]" />
+<meta property="og:url" content="@requestUrl" />
 <meta property="og:title" content="@ViewData["Title"] - Warpstorm" />
-<meta property="og:image" content="@ViewData["Image"]">
+<meta property="og:image" content="@imageUrl">
 <meta property="og:description" content="@ViewData["Title"]">
 
-<meta property="twitter:url" content="@ViewData["Url"]" />
+<meta property="twitter:url" content="@requestUrl" />
 <meta property="twitter:title" content="@ViewData["Title"] - Warpstorm" />
-<meta property="twitter:image" content="@ViewData["Image"]">
+<meta property="twitter:image" content="@imageUrl">
 <meta property="twitter:image:alt" content="@ViewData["Title"] - Warpstorm">
 <meta property="twitter:description" content="@ViewData["Title"]">
 <meta property="twitter:card" content="summary_large_image">

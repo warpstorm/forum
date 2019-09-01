@@ -60,7 +60,7 @@ namespace Forum {
 				options.Filters.Add(new AuthorizeFilter(policy));
 			});
 
-			services.AddForum(Configuration);
+			services.AddForum();
 			services.AddPlugins(Configuration);
 
 			services.AddDistributedMemoryCache();

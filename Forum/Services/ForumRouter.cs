@@ -35,15 +35,15 @@ namespace Forum.Services {
 				var frontPage = EFrontPage.Boards;
 
 				if (context.HttpContext.User.Identity.IsAuthenticated) {
-					using (var serviceScope = Builder.ApplicationServices.CreateScope()) {
-						var id = context.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-						var dbContext = serviceScope.ServiceProvider.GetService<ApplicationDbContext>();
+					using var serviceScope = Builder.ApplicationServices.CreateScope();
 
-						user = dbContext.Users.FirstOrDefault(r => r.Id == id);
+					var id = context.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+					var dbContext = serviceScope.ServiceProvider.GetService<ApplicationDbContext>();
 
-						if (!(user is null)) {
-							frontPage = user.FrontPage;
-						}
+					user = dbContext.Users.FirstOrDefault(r => r.Id == id);
+
+					if (!(user is null)) {
+						frontPage = user.FrontPage;
 					}
 				}
 

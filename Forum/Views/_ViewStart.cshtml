@@ -2,7 +2,9 @@
 @inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
 
 @{
-	if (HttpContextAccessor.HttpContext.Request.Headers["X-Requested-With"] == "XMLHttpRequest") {
+	var request = HttpContextAccessor.HttpContext.Request;
+
+	if (request.Headers["X-Requested-With"] == "XMLHttpRequest") {
 		Layout = "_LayoutEmpty";
 	}
 	else {
@@ -10,4 +12,20 @@
 	}
 
 	ViewData["Categories"] = await BoardRepository.CategoryIndex();
+
+	request.Query.TryGetValue("ReturnUrl", out var referrer);
+
+	if (string.IsNullOrEmpty(referrer)) {
+		request.Query.TryGetValue("Referer", out referrer);
+	}
+
+	if (string.IsNullOrEmpty(referrer)) {
+		referrer = request.Headers["Referer"].ToString();
+	}
+
+	if (string.IsNullOrEmpty(referrer)) {
+		referrer = "/";
+	}
+
+	ViewData["Referrer"] = referrer;
 }

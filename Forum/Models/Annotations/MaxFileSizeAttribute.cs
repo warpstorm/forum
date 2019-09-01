@@ -7,14 +7,10 @@ namespace Forum.Models.Annotations {
 	public class MaxFileSizeAttribute : ValidationAttribute {
 		int MaxFileSize { get; }
 
-		public MaxFileSizeAttribute(int maxFileSize) {
-			MaxFileSize = maxFileSize * 1024;
-		}
+		public MaxFileSizeAttribute(int maxFileSize) => MaxFileSize = maxFileSize * 1024;
 
 		public override bool IsValid(object value) {
-			var file = value as IFormFile;
-
-			if (file is null) {
+			if (!(value is IFormFile file)) {
 				return false;
 			}
 

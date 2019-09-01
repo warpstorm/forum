@@ -10,11 +10,7 @@ namespace Forum.Services.Plugins.ImageStore {
 	public class ImageStore : IImageStore {
 		CloudBlobClient CloudBlobClient { get; }
 
-		public ImageStore(
-			CloudBlobClient cloudBlobClient
-		) {
-			CloudBlobClient = cloudBlobClient;
-		}
+		public ImageStore(CloudBlobClient cloudBlobClient) => CloudBlobClient = cloudBlobClient;
 
 		public async Task<string> Save(ImageStoreSaveOptions options) {
 			var container = CloudBlobClient.GetContainerReference(options.ContainerName);
@@ -57,29 +53,24 @@ namespace Forum.Services.Plugins.ImageStore {
 		}
 
 		async Task StoreResizedImage(ImageStoreSaveOptions options, CloudBlockBlob blobReference) {
-			using (var src = Image.FromStream(options.InputStream)) {
-				var largestDimension = src.Width > src.Height ? src.Width : src.Height;
+			using var src = Image.FromStream(options.InputStream);
+			var largestDimension = src.Width > src.Height ? src.Width : src.Height;
+			var ratio = 1D * options.MaxDimension / largestDimension;
+			var destinationWidth = Convert.ToInt32(src.Width * ratio);
+			var destinationHeight = Convert.ToInt32(src.Height * ratio);
 
-				var ratio = 1D * options.MaxDimension / largestDimension;
+			using var targetImage = new Bitmap(destinationWidth, destinationHeight);
 
-				var destinationWidth = Convert.ToInt32(src.Width * ratio);
-				var destinationHeight = Convert.ToInt32(src.Height * ratio);
+			using var graphics = Graphics.FromImage(targetImage);
+			graphics.SmoothingMode = SmoothingMode.AntiAlias;
+			graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+			graphics.DrawImage(src, 0, 0, targetImage.Width, targetImage.Height);
 
-				using (var targetImage = new Bitmap(destinationWidth, destinationHeight)) {
-					using (var g = Graphics.FromImage(targetImage)) {
-						g.SmoothingMode = SmoothingMode.AntiAlias;
-						g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-						g.DrawImage(src, 0, 0, targetImage.Width, targetImage.Height);
-					}
+			using var memoryStream = new MemoryStream();
+			targetImage.Save(memoryStream, ImageFormat.Png);
+			memoryStream.Position = 0;
 
-					using (var memoryStream = new MemoryStream()) {
-						targetImage.Save(memoryStream, ImageFormat.Png);
-						memoryStream.Position = 0;
-
-						await blobReference.UploadFromStreamAsync(memoryStream);
-					}
-				}
-			}
+			await blobReference.UploadFromStreamAsync(memoryStream);
 		}
 	}
 }

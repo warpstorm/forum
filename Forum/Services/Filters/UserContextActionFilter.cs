@@ -6,11 +6,7 @@ namespace Forum.Services.Filters {
 	public class UserContextActionFilter : IAsyncActionFilter {
 		UserContextLoader UserContextLoader { get; }
 
-		public UserContextActionFilter(
-			UserContextLoader userContextLoader
-		) {
-			UserContextLoader = userContextLoader;
-		}
+		public UserContextActionFilter(UserContextLoader userContextLoader) => UserContextLoader = userContextLoader;
 
 		public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next) {
 			try {

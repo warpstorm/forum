@@ -1,7 +1,6 @@
 ﻿using Forum.Services.Contexts;
 using Forum.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,8 +25,7 @@ namespace Forum.Services.Repositories {
 			ApplicationDbContext dbContext,
 			UserContext userContext,
 			AccountRepository accountRepository,
-			MessageRepository messageRepository,
-			ILogger<BookmarkRepository> log
+			MessageRepository messageRepository
 		) {
 			DbContext = dbContext;
 			UserContext = userContext;

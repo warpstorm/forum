@@ -630,16 +630,16 @@ namespace Forum.Services.Repositories {
 
 				var webRequest = WebRequest.Create(faviconUri);
 
-				using (var webResponse = webRequest.GetResponse())
-				using (var inputStream = webResponse.GetResponseStream()) {
-					return await ImageStore.Save(new ImageStoreSaveOptions {
-						ContainerName = "favicons",
-						FileName = $"{domain}.png",
-						ContentType = "image/png",
-						InputStream = inputStream,
-						MaxDimension = 16
-					});
-				}
+				using var webResponse = webRequest.GetResponse();
+				using var inputStream = webResponse.GetResponseStream();
+
+				return await ImageStore.Save(new ImageStoreSaveOptions {
+					ContainerName = "favicons",
+					FileName = $"{domain}.png",
+					ContentType = "image/png",
+					InputStream = inputStream,
+					MaxDimension = 16
+				});
 			}
 			catch (Exception ex) {
 				Log.LogError(ex, $"{nameof(CacheFavicon)} threw an exception.");
@@ -802,7 +802,7 @@ namespace Forum.Services.Repositories {
 			await DbContext.SaveChangesAsync();
 		}
 
-		public async Task DeleteMessageFromTopic(DataModels.Message message, DataModels.Topic topic) {
+		public async Task DeleteMessageFromTopic(DataModels.Message message) {
 			var directRepliesQuery = from m in DbContext.Messages
 									 where m.ReplyId == message.Id
 									 where !m.Deleted

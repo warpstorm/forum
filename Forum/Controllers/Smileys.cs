@@ -54,14 +54,14 @@ namespace Forum.Controllers {
 				});
 			}
 
-			return await ForumViewResult.ViewResult(this, viewModel);
+			return View(viewModel);
 		}
 
 		[ActionLog]
 		[HttpGet]
-		public async Task<IActionResult> Create() {
+		public IActionResult Create() {
 			var viewModel = new ViewModels.CreatePage();
-			return await ForumViewResult.ViewResult(this, viewModel);
+			return View(viewModel);
 		}
 
 		[HttpPost]
@@ -119,7 +119,7 @@ namespace Forum.Controllers {
 				Thought = input.Thought
 			};
 
-			return await ForumViewResult.ViewResult(this, viewModel);
+			return View(viewModel);
 		}
 
 		[HttpPost]

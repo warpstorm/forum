@@ -83,12 +83,12 @@ div[role="main"] {
     MAIN CONTENT
 */
 
-main {
+main.with-sidebar {
 	margin-right: 20%;
 }
 
 @media only screen and (max-width: 900px) {
-	main {
+	main.with-sidebar {
 		margin-right: 0;
 	}
 }

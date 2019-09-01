@@ -26,7 +26,7 @@ namespace Forum.Controllers {
 		[HttpGet]
 		public async Task<IActionResult> Index() {
 			var viewModel = await QuoteRepository.Index();
-			return await ForumViewResult.ViewResult(this, viewModel);
+			return View(viewModel);
 		}
 
 		[HttpGet]
