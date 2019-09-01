@@ -34,7 +34,7 @@ namespace Forum.Services.Repositories {
 		UserManager<DataModels.ApplicationUser> UserManager { get; }
 		SignInManager<DataModels.ApplicationUser> SignInManager { get; }
 		ImgurClient ImgurClient { get; }
-		IHttpContextAccessor HttpContextAccessor { get; }
+		HttpContext HttpContext { get; }
 		IUrlHelper UrlHelper { get; }
 		IEmailSender EmailSender { get; }
 		IImageStore ImageStore { get; }
@@ -60,7 +60,7 @@ namespace Forum.Services.Repositories {
 			SignInManager = signInManager;
 			ImgurClient = imgurClient;
 
-			HttpContextAccessor = httpContextAccessor;
+			HttpContext = httpContextAccessor.HttpContext;
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
 
 			EmailSender = emailSender;
@@ -640,10 +640,10 @@ namespace Forum.Services.Repositories {
 		}
 
 		public async Task SignOut() {
-			HttpContextAccessor.HttpContext.Session.Remove(Constants.InternalKeys.UserId);
+			HttpContext.Session.Remove(Constants.InternalKeys.UserId);
 
 			await Task.WhenAll(new[] {
-				HttpContextAccessor.HttpContext.Session.CommitAsync(),
+				HttpContext.Session.CommitAsync(),
 				SignInManager.SignOutAsync()
 			});
 		}
