@@ -1,17 +1,4 @@
-﻿@{
-	var siteAge = DateTime.Now.Year - 2000;
-
-	var timerOutput = string.Empty;
-
-	if (Context.Items["PageTimer"] is System.Diagnostics.Stopwatch pageTimer) {
-		pageTimer.Stop();
-		var pageTimerSeconds = 1D * pageTimer.ElapsedMilliseconds / 1000;
-
-		timerOutput = $"Loaded in {pageTimerSeconds} seconds";
-	}
-}
-
-<br class="clear" />
+﻿<br class="clear" />
 
 <footer id="page-footer" class="align-center">
 	@if (User.Identity.IsAuthenticated) {
@@ -22,8 +9,8 @@
 		</ul>
 	}
 
-	<p class="font-small small-pad"><span id="easter-egg">Bringing disorder to chaos for @siteAge years.</span></p>
-	<p class="font-tiny subdued-text">@timerOutput</p>
+	<p class="font-small small-pad"><span id="easter-egg">Bringing disorder to chaos for @(DateTime.Now.Year - 2000) years.</span></p>
+	<vc:page-timer />
 	<p class="font-tiny subdued-text"><a href="http://nrrd.io/forum/commits/master" title="Click here for what's changed">v@(Constants.Versions.Code)</a></p>
 	<div id="danger-sign" class="hidden">
 		<img src="~/images/dangerSign.png" />
