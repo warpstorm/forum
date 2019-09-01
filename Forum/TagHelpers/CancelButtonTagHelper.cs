@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 
-namespace Forum.ViewHelpers {
+namespace Forum.TagHelpers {
 	public class CancelButtonTagHelper : TagHelper {
 		HttpContext HttpContext { get; }
 
@@ -16,7 +16,7 @@ namespace Forum.ViewHelpers {
 			output.TagName = "a";
 
 			if (output.Attributes.ContainsName("class")) {
-				var currentClasses = output.Attributes.TryGetAttribute("class", out var classes);
+				var currentClasses = output.Attributes.TryGetAttribute("class", out var classes);				
 				var newClasses = $"{classes.Value} button cancel-button";
 				output.Attributes.SetAttribute("class", newClasses);
 			}
