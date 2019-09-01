@@ -40,14 +40,14 @@
 			</header>
 
 			<nav class="actions float-right">
-				<ul class="inline">
+				<ul class="inline inline-children">
 					@await RenderSectionAsync("PageActions", required: false)
 				</ul>
 			</nav>
 
 			<div class="align-left">
 				@if (!string.IsNullOrEmpty(TempData[Constants.InternalKeys.StatusMessage]?.ToString())) {
-					<div class="content-box pad gap error">@TempData[Constants.InternalKeys.StatusMessage]</div>
+					<div class="content-box pad small-gap error">@TempData[Constants.InternalKeys.StatusMessage]</div>
 				}
 
 				@RenderBody()

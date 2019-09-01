@@ -81,7 +81,7 @@ namespace Forum.Controllers {
 					ModelState.AddModelError(nameof(input.Code), "Another smiley exists with that code.");
 				}
 
-				if (!ModelState.IsValid) {
+				if (ModelState.IsValid) {
 					var smileyRecord = new DataModels.Smiley {
 						Code = input.Code,
 						Thought = input.Thought,
@@ -101,9 +101,7 @@ namespace Forum.Controllers {
 					}
 
 					await DbContext.SaveChangesAsync();
-				}
 
-				if (ModelState.IsValid) {
 					TempData[Constants.InternalKeys.StatusMessage] = $"Smiley '{input.File.FileName}' was added with code '{input.Code}'.";
 
 					var referrer = this.GetReferrer();
@@ -137,7 +135,7 @@ namespace Forum.Controllers {
 					smileySortOrder.Add(smileyRecord.Id, smileyRecord.SortOrder);
 				}
 
-				if (!ModelState.IsValid) {
+				if (ModelState.IsValid) {
 					foreach (var smileyInput in input.Smileys) {
 						var newSortOrder = (smileyInput.Column * 1000) + smileyInput.Row;
 
@@ -170,9 +168,7 @@ namespace Forum.Controllers {
 					}
 
 					await DbContext.SaveChangesAsync();
-				}
 
-				if (ModelState.IsValid) {
 					TempData[Constants.InternalKeys.StatusMessage] = $"Smileys were updated.";
 
 					var referrer = this.GetReferrer();

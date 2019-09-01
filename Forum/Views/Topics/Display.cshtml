@@ -8,7 +8,7 @@
 		</span>
 
 		<nav class="float-right">
-			<ul class="inline">
+			<ul class="inline inline-children">
 				@if (Model.IsOwner || Model.IsAdmin) {
 					<li class="open-menu open-menu-hover">
 						<span class="small-button">Boards</span>
@@ -68,7 +68,7 @@
 				}
 			</span>
 		</p>
-		<ul class="inline pages">
+		<ul class="inline inline-children pages">
 			<li class="hidden pointer unhide-pages more-pages-before">&#8230;</li>
 			@for (var i = 1; i <= Model.TotalPages; i++) {
 				if (Model.CurrentPage == i) {
@@ -110,7 +110,7 @@
 <div id="loading-message" class="hidden pad-bottom font-small"><img src="~/images/loadingDots.gif" alt="Loading new message" title="Loading new message" /> Loading messages...</div>
 
 <footer id="topic-footer" class="pad-left">
-	<ul class="inline pages">
+	<ul class="inline inline-children pages">
 		<li class="hidden pointer unhide-pages more-pages-before">&#8230;</li>
 		@for (var i = 1; i <= Model.TotalPages; i++) {
 			if (Model.CurrentPage == i) {

@@ -56,7 +56,7 @@ export class SmileySelector {
 		}, 50);
 	}
 
-	eventShowSmileySelector = (event: Event): void => {
+    eventShowSmileySelector = (event: Event): void => {
 		let target = <HTMLElement>event.currentTarget;
 
 		this.smileySelectorTargetTextArea = (<HTMLFormElement>target.closest('form')).querySelector('textarea');

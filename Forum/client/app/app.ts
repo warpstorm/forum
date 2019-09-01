@@ -44,7 +44,7 @@ export class App {
 
 		this.bbCode.init();
 		this.easterEgg.init();
-		this.navigation.addListeners();
+		this.navigation.init();
 		this.smileySelector.init();
 		this.passedTimeMonitor.init();
 		this.whosOnlineMonitor.init();

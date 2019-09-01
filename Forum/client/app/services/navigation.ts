@@ -7,11 +7,18 @@ export class Navigation {
 		this.win = <Window>doc.defaultView;
 	}
 
-	addListeners(): void {
+	init(): void {
+        this.showScriptFunctionality();
 		this.addListenerOpenMenu();
 		this.addListenerClickableLinkParent();
-		this.setupPageNavigators();
+        this.setupPageNavigators();
 	}
+
+    showScriptFunctionality(): void {
+        document.querySelectorAll('.requires-javascript').forEach(element => {
+            element.classList.remove('hidden');
+        });
+    }
 
 	addListenerOpenMenu(): void {
 		this.doc.querySelectorAll('.open-menu').forEach(element => {

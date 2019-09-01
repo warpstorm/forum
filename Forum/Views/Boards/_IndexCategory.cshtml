@@ -1,6 +1,6 @@
 @model ViewModels.Boards.IndexCategory
 
-<div class="content-box pad gap overflow-hidden mobile-hide">
+<div class="content-box pad small-gap overflow-hidden mobile-hide">
 	<div>
 		<div class="board-last-post float-right">Last Post</div>
 		<div class="board-name"><h3>@Model.Name</h3></div>
@@ -10,7 +10,7 @@
 	}
 </div>
 
-<div class="content-box pad gap overflow-hidden mobile-only">
+<div class="content-box pad small-gap overflow-hidden mobile-only">
 	@foreach (var board in Model.Boards) {
 		<partial name="_IndexBoard" for="@board" />
 	}

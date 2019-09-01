@@ -1,15 +1,15 @@
 ﻿@model List<List<ViewModels.Smileys.IndexItem>>
 
-<div class="hidden" data-component="smiley-selector">
-	<div class="content-box overflow-scroll-y">
-		@foreach (var smileyColumn in Model) {
-			<ul>
-				@foreach (var smiley in smileyColumn) {
-					<li><img src="@smiley.Path" smiley-id="@smiley.Id" code="@smiley.Code" alt="@smiley.Thought" title="@smiley.Thought" /></li>
-				}
-			</ul>
-		}
-	</div>
+<div class="drop-down-menu content-box overflow-scroll-y hidden" data-component="smiley-selector">
+    <div class="flex flex-justify-start">
+        @foreach (var smileyColumn in Model)
+        {
+            <ul>
+                @foreach (var smiley in smileyColumn)
+                {
+                    <li class="align-center"><img src="@smiley.Path" smiley-id="@smiley.Id" code="@smiley.Code" alt="@smiley.Thought" title="@smiley.Thought" /></li>
+                }
+            </ul>
+        }
+    </div>
 </div>
-
-<link rel="stylesheet" href="~/styles/smiley-selector.css" asp-append-version="true" />

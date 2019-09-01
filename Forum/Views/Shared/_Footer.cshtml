@@ -2,7 +2,7 @@
 
 <footer id="page-footer" class="align-center">
 	@if (User.Identity.IsAuthenticated) {
-		<ul class="inline pad-bottom">
+		<ul class="inline inline-children pad-bottom">
 			<li clickable-link-parent><a class="small-button" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)" asp-route-id="0">All Topics</a></li>
 			<li clickable-link-parent><a class="small-button" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)" asp-route-id="0" asp-route-unread="1">Unread</a></li>
 			<li clickable-link-parent><a class="small-button" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)" asp-route-id="0" asp-route-unread="2">Replies</a></li>
