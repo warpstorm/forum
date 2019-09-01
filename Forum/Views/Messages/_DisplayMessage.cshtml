@@ -25,7 +25,7 @@
 			@if (Model.ShowControls) {
 				<aside class="float-right pad-bottom font-small">
 					@if (Model.CanThought) {
-						<span class="thought-button small-pad-left small-pad-right pointer" message-id="@Model.Id">
+						<span class="thought-button requires-javascript hidden small-pad-left small-pad-right pointer" message-id="@Model.Id">
 							<img class="align-middle" src="~/images/smiley.png" alt="Thought" title="Thought" />
                             <vc:smiley-selector />
 						</span>
