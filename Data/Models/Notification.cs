@@ -1,8 +1,8 @@
-﻿using Forum.Models.Options;
+﻿using Forum.Core.Options;
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Forum.Models.DataModels {
+namespace Forum.Data.Models {
 	public class Notification {
 		public int Id { get; set; }
 

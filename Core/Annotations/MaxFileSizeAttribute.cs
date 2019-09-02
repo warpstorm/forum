@@ -2,7 +2,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Forum.Models.Annotations {
+namespace Forum.Core.Annotations {
 	[AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
 	public class MaxFileSizeAttribute : ValidationAttribute {
 		int MaxFileSize { get; }

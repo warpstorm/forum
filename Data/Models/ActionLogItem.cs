@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Forum.Models.DataModels {
+namespace Forum.Data.Models {
 	public class ActionLogItem {
 		public int Id { get; set; }
 		public string UserId { get; set; }

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Forum.Models.DataModels {
+namespace Forum.Data.Models {
 	public class Bookmark {
 		public int Id { get; set; }
 

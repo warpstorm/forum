@@ -1,4 +1,4 @@
-﻿using Forum.Models.DataModels;
+﻿using Forum.Data.Models;
 using Forum.Services;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;

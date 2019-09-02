@@ -1,12 +1,12 @@
-﻿using Forum.Services.Contexts;
-using Forum.Models;
+﻿using Forum.Contracts;
+using Forum.Data.Contexts;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace Forum.Services.Repositories {
-	using DataModels = Models.DataModels;
+	using DataModels = Data.Models;
 
 	public class BookmarkRepository : IRepository<DataModels.Bookmark> {
 		public async Task<List<DataModels.Bookmark>> Records() {

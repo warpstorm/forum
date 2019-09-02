@@ -1,7 +1,7 @@
-﻿using Forum.Services.Contexts;
-using Forum.Controllers;
-using Forum.Models.Options;
-using Forum.Models.DataModels;
+﻿using Forum.Controllers;
+using Forum.Core.Options;
+using Forum.Data.Contexts;
+using Forum.Data.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;

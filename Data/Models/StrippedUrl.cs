@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Forum.Models.DataModels {
+namespace Forum.Data.Models {
 	public class StrippedUrl {
 		[Key]
 		public string Url { get; set; }

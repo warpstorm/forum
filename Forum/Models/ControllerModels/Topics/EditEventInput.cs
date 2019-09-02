@@ -1,4 +1,4 @@
-﻿using Forum.Models.Annotations;
+﻿using Forum.Core.Annotations;
 using System;
 
 namespace Forum.Models.ControllerModels.Topics {

@@ -1,5 +1,5 @@
-﻿using Forum.Models.Options;
-using Forum.Models.DataModels;
+﻿using Forum.Core.Options;
+using Forum.Data.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Forum.Services.Contexts {
+namespace Forum.Data.Contexts {
 	public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, string> {
 		public DbSet<ActionLogItem> ActionLog { get; set; }
 		public DbSet<Board> Boards { get; set; }

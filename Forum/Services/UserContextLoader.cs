@@ -1,5 +1,5 @@
-﻿using Forum.Models.Options;
-using Forum.Services.Contexts;
+﻿using Forum.Core.Options;
+using Forum.Data.Contexts;
 using Forum.Services.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -11,7 +11,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace Forum.Services {
-	using DataModels = Models.DataModels;
+	using DataModels = Data.Models;
 
 	public class UserContextLoader {
 		ApplicationDbContext DbContext { get; }

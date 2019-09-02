@@ -1,6 +1,6 @@
 ﻿using Forum.Controllers;
 using Forum.Core.Models.Errors;
-using Forum.Services.Contexts;
+using Forum.Data.Contexts;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -13,7 +13,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace Forum.Services.Repositories {
-	using DataModels = Models.DataModels;
+	using DataModels = Data.Models;
 	using InputModels = Models.InputModels;
 	using ServiceModels = Models.ServiceModels;
 	using ViewModels = Models.ViewModels;

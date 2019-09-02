@@ -1,4 +1,4 @@
-﻿using Forum.Models.Options;
+﻿using Forum.Core.Options;
 using System;
 
 namespace Forum.Models.ViewModels.Notifications {

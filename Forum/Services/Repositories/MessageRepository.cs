@@ -1,11 +1,11 @@
 ﻿using Forum.Contracts;
 using Forum.Core;
 using Forum.Core.Models.Errors;
+using Forum.Core.Options;
+using Forum.Data.Contexts;
 using Forum.ExternalClients.Imgur;
 using Forum.ExternalClients.YouTube;
-using Forum.Models.Options;
 using Forum.Models.ServiceModels;
-using Forum.Services.Contexts;
 using HtmlAgilityPack;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -19,7 +19,7 @@ using System.Threading.Tasks;
 
 namespace Forum.Services.Repositories {
 	using ControllerModels = Models.ControllerModels;
-	using DataModels = Models.DataModels;
+	using DataModels = Data.Models;
 	using InputModels = Models.InputModels;
 	using ServiceModels = Models.ServiceModels;
 	using ViewModels = Models.ViewModels;

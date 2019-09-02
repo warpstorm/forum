@@ -1,4 +1,4 @@
-﻿using Forum.Models.Options;
+﻿using Forum.Core.Options;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;

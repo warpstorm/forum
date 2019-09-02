@@ -1,5 +1,5 @@
 ﻿using Forum.Core.Models.Errors;
-using Forum.Services.Contexts;
+using Forum.Data.Contexts;
 using Forum.Services.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Forum.Controllers {
 	using ControllerModels = Models.ControllerModels;
-	using DataModels = Models.DataModels;
+	using DataModels = Data.Models;
 	using InputModels = Models.InputModels;
 
 	public class Administration : Controller {
@@ -37,7 +37,7 @@ namespace Forum.Controllers {
 			AccountRepository = accountRepository;
 			TopicRepository = topicRepository;
 		}
-		
+
 		[HttpGet]
 		public IActionResult Install() {
 			CheckInstallContext();

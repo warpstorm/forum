@@ -1,4 +1,5 @@
 ﻿using Forum.Controllers;
+using Forum.Data.Contexts;
 using Forum.Extensions;
 using Forum.ExternalClients.AzureStorage;
 using Forum.ExternalClients.Imgur;
@@ -6,7 +7,6 @@ using Forum.ExternalClients.Recaptcha;
 using Forum.ExternalClients.SendGrid;
 using Forum.ExternalClients.YouTube;
 using Forum.Services;
-using Forum.Services.Contexts;
 using Forum.Services.Filters;
 using Jdenticon.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
@@ -21,7 +21,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Forum {
-	using DataModels = Models.DataModels;
+	using DataModels = Data.Models;
 
 	public class Startup {
 		IConfiguration Configuration { get; }

@@ -1,9 +1,8 @@
 ﻿using Forum.Controllers.Annotations;
 using Forum.Core.Models.Errors;
+using Forum.Core.Options;
+using Forum.Data.Contexts;
 using Forum.Extensions;
-using Forum.Models.Options;
-using Forum.Services;
-using Forum.Services.Contexts;
 using Forum.Services.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -66,7 +65,8 @@ namespace Forum.Controllers {
 					notification.TargetUser = users.FirstOrDefault(r => r.Id == notification.TargetUserId)?.DecoratedName ?? "User";
 				}
 
-				notification.Text = notification.Type switch {
+				notification.Text = notification.Type switch
+				{
 					ENotificationType.Quote => $"{notification.TargetUser} quoted you.",
 					ENotificationType.Reply => $"{notification.TargetUser} replied to your topic.",
 					ENotificationType.Thought => $"{notification.TargetUser} thought about your post.",

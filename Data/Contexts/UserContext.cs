@@ -1,7 +1,7 @@
-﻿using Forum.Models.DataModels;
+﻿using Forum.Data.Models;
 using System.Collections.Generic;
 
-namespace Forum.Services.Contexts {
+namespace Forum.Data.Contexts {
 	public class UserContext {
 		public bool IsAuthenticated { get; set; }
 		public bool IsAdmin { get; set; }

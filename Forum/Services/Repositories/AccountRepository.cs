@@ -2,11 +2,10 @@
 using Forum.Controllers;
 using Forum.Core.Extensions;
 using Forum.Core.Models.Errors;
+using Forum.Data.Contexts;
 using Forum.Extensions;
 using Forum.ExternalClients.Imgur;
-using Forum.Models;
 using Forum.Models.ServiceModels;
-using Forum.Services.Contexts;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -22,7 +21,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace Forum.Services.Repositories {
-	using DataModels = Models.DataModels;
+	using DataModels = Data.Models;
 	using InputModels = Models.InputModels;
 	using ServiceModels = Models.ServiceModels;
 

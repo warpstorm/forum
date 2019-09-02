@@ -1,5 +1,5 @@
-﻿using Forum.Services.Contexts;
-using Forum.Models;
+﻿using Forum.Contracts;
+using Forum.Data.Contexts;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Forum.Services.Repositories {
 	using ControllerModels = Models.ControllerModels;
-	using DataModels = Models.DataModels;
+	using DataModels = Data.Models;
 	using ServiceModels = Models.ServiceModels;
 	using ViewModels = Models.ViewModels;
 

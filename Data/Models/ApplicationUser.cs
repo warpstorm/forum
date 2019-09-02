@@ -1,10 +1,10 @@
-﻿using Forum.Models.Options;
+﻿using Forum.Core.Options;
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Forum.Models.DataModels {
+namespace Forum.Data.Models {
 	public class ApplicationUser : IdentityUser {
 		[Required]
 		[StringLength(64)]

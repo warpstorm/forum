@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Forum.Models.DataModels {
+namespace Forum.Data.Models {
 	public class Smiley {
 		public int Id { get; set; }
 		public int SortOrder { get; set; }

@@ -1,5 +1,5 @@
 ﻿using Forum.Controllers.Annotations;
-using Forum.Services.Contexts;
+using Forum.Data.Contexts;
 using Forum.Services.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -10,7 +10,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace Forum.Views.Shared.Components.OnlineUsersList {
-	using DataModels = Models.DataModels;
+	using DataModels = Data.Models;
 
 	public class OnlineUsersListViewComponent : ViewComponent {
 		ApplicationDbContext DbContext { get; }

@@ -1,5 +1,5 @@
-﻿using Forum.Models.DataModels;
-using Forum.Services.Contexts;
+﻿using Forum.Data.Contexts;
+using Forum.Data.Models;
 using Forum.Services.Repositories;
 using System;
 using System.Linq;

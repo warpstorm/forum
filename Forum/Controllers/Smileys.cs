@@ -1,8 +1,8 @@
 ﻿using Forum.Contracts;
 using Forum.Controllers.Annotations;
+using Forum.Data.Contexts;
 using Forum.Extensions;
 using Forum.Models.ServiceModels;
-using Forum.Services.Contexts;
 using Forum.Services.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace Forum.Controllers {
 	using ControllerModels = Models.ControllerModels;
-	using DataModels = Models.DataModels;
+	using DataModels = Data.Models;
 	using ViewModels = Models.ViewModels.Smileys;
 
 	[Authorize(Roles = Constants.InternalKeys.Admin)]

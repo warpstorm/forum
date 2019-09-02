@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 
-namespace Forum.Models.Annotations {
+namespace Forum.Core.Annotations {
 	[AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
 	public class MustBeAfterAttribute : ValidationAttribute {
 		string Target { get; }

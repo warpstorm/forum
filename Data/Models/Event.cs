@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Forum.Models.DataModels {
+namespace Forum.Data.Models {
 	public class Event {
 		public int Id { get; set; }
 		public int TopicId { get; set; }

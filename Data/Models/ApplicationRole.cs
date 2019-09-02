@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System;
 
-namespace Forum.Models.DataModels {
+namespace Forum.Data.Models {
 	public class ApplicationRole : IdentityRole {
 		public string Description { get; set; }
 		public DateTime CreatedDate { get; set; }

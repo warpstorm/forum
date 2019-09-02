@@ -1,8 +1,8 @@
 ﻿using Forum.Controllers.Annotations;
 using Forum.Core.Models.Errors;
+using Forum.Data.Contexts;
 using Forum.Extensions;
 using Forum.Services;
-using Forum.Services.Contexts;
 using Forum.Services.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -18,7 +18,7 @@ namespace Forum.Controllers {
 	using ControllerModels = Models.ControllerModels;
 	using HubModels = Models.HubModels;
 	using InputModels = Models.InputModels;
-	using Options = Models.Options;
+	using Options = Core.Options;
 	using ViewModels = Models.ViewModels;
 
 	public class Topics : Controller {

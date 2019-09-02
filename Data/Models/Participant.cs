@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Forum.Models.DataModels {
+namespace Forum.Data.Models {
 	public class Participant {
 		public int Id { get; set; }
 		public string UserId { get; set; }
