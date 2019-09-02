@@ -1,19 +1,22 @@
-﻿using Forum.Core.Models.Errors;
+﻿using Forum.Contracts;
+using Forum.Core.Models.Errors;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.WindowsAzure.Storage;
 
-namespace Forum.Services.Plugins.ImageStore {
-	public static class ImageStoreStartupExtension {
-		public static IServiceCollection AddImageStore(this IServiceCollection services, IConfiguration configuration) {
-			services.AddTransient<IImageStore, ImageStore>();
+namespace Forum.ExternalClients.AzureStorage {
+	public static class AzureStorageClientStartupExtension {
+		const string configKey = "StorageConnection";
+
+		public static IServiceCollection AddAzureStorageClient(this IServiceCollection services, IConfiguration configuration) {
+			services.AddTransient<IImageStore, AzureStorageClient>();
 
 			services.AddScoped((serviceProvider) => {
 				// Try to pull from the environment first
-				var storageConnectionString = configuration[Constants.InternalKeys.StorageConnection];
+				var storageConnectionString = configuration[configKey];
 
 				if (string.IsNullOrEmpty(storageConnectionString)) {
-					storageConnectionString = configuration.GetConnectionString(Constants.InternalKeys.StorageConnection);
+					storageConnectionString = configuration.GetConnectionString(configKey);
 				}
 
 				if (string.IsNullOrEmpty(storageConnectionString)) {

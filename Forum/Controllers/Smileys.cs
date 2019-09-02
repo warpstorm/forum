@@ -1,7 +1,8 @@
-﻿using Forum.Controllers.Annotations;
+﻿using Forum.Contracts;
+using Forum.Controllers.Annotations;
 using Forum.Extensions;
+using Forum.Models.ServiceModels;
 using Forum.Services.Contexts;
-using Forum.Services.Plugins.ImageStore;
 using Forum.Services.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

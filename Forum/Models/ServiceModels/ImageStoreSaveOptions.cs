@@ -1,7 +1,8 @@
-﻿using System.IO;
+﻿using Forum.Contracts;
+using System.IO;
 
-namespace Forum.Services.Plugins.ImageStore {
-	public class ImageStoreSaveOptions {
+namespace Forum.Models.ServiceModels {
+	public class ImageStoreSaveOptions : IImageStoreSaveOptions {
 		public string ContainerName { get; set; }
 		public Stream InputStream { get; set; }
 		public string FileName { get; set; }

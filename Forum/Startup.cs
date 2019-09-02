@@ -1,5 +1,6 @@
 ﻿using Forum.Controllers;
 using Forum.Extensions;
+using Forum.ExternalClients.AzureStorage;
 using Forum.ExternalClients.Imgur;
 using Forum.ExternalClients.Recaptcha;
 using Forum.ExternalClients.SendGrid;
@@ -7,7 +8,6 @@ using Forum.ExternalClients.YouTube;
 using Forum.Services;
 using Forum.Services.Contexts;
 using Forum.Services.Filters;
-using Forum.Services.Plugins.ImageStore;
 using Jdenticon.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -66,7 +66,7 @@ namespace Forum {
 
 			services.AddForum();
 			services.AddRecaptcha(Configuration);
-			services.AddImageStore(Configuration);
+			services.AddAzureStorageClient(Configuration);
 
 			services.AddSendGridSenderClient(Configuration);
 			services.AddImgurClient(Configuration);

@@ -1,4 +1,5 @@
-﻿using Microsoft.WindowsAzure.Storage.Blob;
+﻿using Forum.Contracts;
+using Microsoft.WindowsAzure.Storage.Blob;
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -6,13 +7,13 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace Forum.Services.Plugins.ImageStore {
-	public class ImageStore : IImageStore {
+namespace Forum.ExternalClients.AzureStorage {
+	class AzureStorageClient : IImageStore {
 		CloudBlobClient CloudBlobClient { get; }
 
-		public ImageStore(CloudBlobClient cloudBlobClient) => CloudBlobClient = cloudBlobClient;
+		public AzureStorageClient(CloudBlobClient cloudBlobClient) => CloudBlobClient = cloudBlobClient;
 
-		public async Task<string> Save(ImageStoreSaveOptions options) {
+		public async Task<string> Save(IImageStoreSaveOptions options) {
 			var container = CloudBlobClient.GetContainerReference(options.ContainerName);
 
 			if (await container.CreateIfNotExistsAsync()) {
@@ -43,7 +44,7 @@ namespace Forum.Services.Plugins.ImageStore {
 			return blobReference.Uri.AbsoluteUri;
 		}
 
-		public async Task Delete(ImageStoreDeleteOptions options) {
+		public async Task Delete(IImageStoreDeleteOptions options) {
 			var container = CloudBlobClient.GetContainerReference(options.ContainerName);
 
 			if (await container.ExistsAsync()) {
@@ -52,7 +53,7 @@ namespace Forum.Services.Plugins.ImageStore {
 			}
 		}
 
-		async Task StoreResizedImage(ImageStoreSaveOptions options, CloudBlockBlob blobReference) {
+		async Task StoreResizedImage(IImageStoreSaveOptions options, CloudBlockBlob blobReference) {
 			using var src = Image.FromStream(options.InputStream);
 			var largestDimension = src.Width > src.Height ? src.Width : src.Height;
 			var ratio = 1D * options.MaxDimension / largestDimension;

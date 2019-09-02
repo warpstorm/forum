@@ -27,7 +27,6 @@
 		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.2.3" PrivateAssets="All" />
 		<PackageReference Include="Narochno.BBCode" Version="2.1.0" />
 		<PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
-		<PackageReference Include="System.Drawing.Common" Version="4.5.1" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -35,6 +34,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="..\AzureStorage\AzureStorage.csproj" />
 	  <ProjectReference Include="..\Contracts\Contracts.csproj" />
 	  <ProjectReference Include="..\Core\Core.csproj" />
 	  <ProjectReference Include="..\Imgur\Imgur.csproj" />
