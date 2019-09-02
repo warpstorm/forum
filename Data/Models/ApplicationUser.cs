@@ -10,9 +10,6 @@ namespace Forum.Data.Models {
 		[StringLength(64)]
 		public string DisplayName { get; set; }
 
-		[StringLength(64)]
-		public string ImgurName { get; set; }
-
 		[NotMapped]
 		public string DecoratedName { get; set; }
 

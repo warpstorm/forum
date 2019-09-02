@@ -6,7 +6,7 @@ namespace Forum.ExternalClients.Imgur {
 	public static class ImgurClientStartupExtension {
 		public static IServiceCollection AddImgurClient(this IServiceCollection services, IConfiguration configuration) {
 			services.Configure<ImgurClientOptions>(configuration.GetSection("Imgur"));
-			services.AddTransient<ImgurClient>();
+			services.AddScoped<ImgurClient>();
 
 			return services;
 		}

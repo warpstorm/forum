@@ -1,183 +1,194 @@
 ﻿@inject UserContext UserContext
+@inject Microsoft.Extensions.Options.IOptions<Forum.ExternalClients.Imgur.Models.ImgurClientOptions> ImgurOptions
 @model DetailsPage
 
 <div class="content-box pad">
-	<div class="gap-bottom">
-		<form method="post" enctype="multipart/form-data"
-			  asp-action="@nameof(Account.UpdateAvatar)">
+    <div class="gap-bottom">
+        <h3>Manage Your Avatar</h3>
+        <form method="post" enctype="multipart/form-data"
+              asp-action="@nameof(Account.UpdateAvatar)">
 
-			<div asp-validation-summary="All" class="error"></div>
-			<input type="hidden" asp-for="@Model.Id" />
-			<input type="hidden" asp-for="@Model.DisplayName" />
-			@if (!string.IsNullOrEmpty(Model.AvatarPath)) {
-				<p><img src="@Model.AvatarPath" /></p>
-			}
-			<p><input asp-for="@Model.NewAvatar" /></p>
-			<p asp-validation-for="@Model.NewAvatar" class="error"></p>
+            <div asp-validation-summary="All" class="error"></div>
+            <input type="hidden" asp-for="@Model.Id" />
+            <input type="hidden" asp-for="@Model.DisplayName" />
+            @if (!string.IsNullOrEmpty(Model.AvatarPath)) {
+                <p><img src="@Model.AvatarPath" /></p>
+            }
+            <p asp-validation-for="@Model.NewAvatar" class="error"></p>
 
-			<ul>
-				<li><button>Update Avatar</button></li>
-			</ul>
-		</form>
-	</div>
-	<hr />
-	<div>
-		<form method="post"
-			  asp-action="@nameof(Account.Details)">
+            <ul>
+                <li><button>Upload</button><input asp-for="@Model.NewAvatar" /></li>
+            </ul>
+        </form>
+    </div>
+    <hr />
+    <div class="gap-bottom">
+        <h3><img src="~/images/imgur.png" /> Imgur Account <img src="~/images/thought.png" title="Linking an Imgur account will enable embedded features as they are added to the site over time." /></h3>
 
-			<div asp-validation-summary="All" class="error"></div>
+        @if (Model.IsImgurLinked) {
+            <p>Your Imgur account is linked! <a class="font-small subdued-text" asp-action="@nameof(Account.UnlinkImgur)" asp-controller="@nameof(Account)">(Unlink)</a></p>
+        }
+        else {
+            <p>
+                <span id="link-imgur-account-button" class="button">Link Account</span>
+            </p>
 
-			<input type="hidden" asp-for="@Model.Id" />
+            <script>
+                window.imgurClientId = '@ImgurOptions.Value.ClientId';
+            </script>
+        }
+    </div>
+    <hr />
+    <div>
+        <h3><img src="~/images/logos/planet16.png" /> Warpstorm Account</h3>
+        <form method="post"
+              asp-action="@nameof(Account.Details)">
 
-			<dl>
-				<dt>Display Name</dt>
-				<dd><input asp-for="@Model.DisplayName" /></dd>
-				<dd><span asp-validation-for="@Model.DisplayName" class="error"></span></dd>
-			</dl>
+            <div asp-validation-summary="All" class="error"></div>
 
-			<dl>
-				<dt>
-					Email
-					<img src="~/images/thought.png" title="Your email address is only used to reset your password. Consider using a temporary mailbox provider that doesn't require registration, like mailinator.com." />
-				</dt>
-				<dd><input asp-for="@Model.NewEmail" /></dd>
-				@if (!Model.EmailConfirmed) {
-					<dd>
-						<p class="error">Your email address has not been verified. You might not receive password reset emails.</p>
-						<a asp-action="@nameof(Account.SendVerificationEmail)" class="button">Send verification email</a>
-					</dd>
-				}
-				<dd><span asp-validation-for="@Model.NewEmail" class="error"></span></dd>
-			</dl>
+            <input type="hidden" asp-for="@Model.Id" />
 
-			<dl>
-				<dt>
-					<img src="~/images/imgur.png" title="imgur.com" /> imgur.com Display Name
-					<img src="~/images/thought.png" title="This does not allow Warpstorm to login for you. It simply helps build certain imgur functionality into the site like pulling your favorites for the reactions menu." />
-				</dt>
-				<dd><input asp-for="@Model.ImgurName" /></dd>
-			</dl>
+            <dl>
+                <dt>Display Name</dt>
+                <dd><input asp-for="@Model.DisplayName" /></dd>
+                <dd><span asp-validation-for="@Model.DisplayName" class="error"></span></dd>
+            </dl>
 
-			<dl>
-				<dt>Put a birthday cake by your name?</dt>
-				<dd>
-					<input asp-for="@Model.ShowBirthday" class="birthday-toggle" />
-				</dd>
+            <dl>
+                <dt>
+                    Email
+                    <img src="~/images/thought.png" title="Your email address is only used to reset your password. Consider using a temporary mailbox provider that doesn't require registration, like mailinator.com." />
+                </dt>
+                <dd><input asp-for="@Model.NewEmail" /></dd>
+                @if (!Model.EmailConfirmed) {
+                    <dd>
+                        <p class="error">Unverified email.</p>
+                        <a asp-action="@nameof(Account.SendVerificationEmail)" class="small-button">Resend verification email</a>
+                    </dd>
+                }
+                <dd><span asp-validation-for="@Model.NewEmail" class="error"></span></dd>
+            </dl>
 
-				@{
-					var birthdaySelectorClasses = "birthday-selectors";
+            <dl>
+                <dt>Put a birthday cake by your name?</dt>
+                <dd>
+                    <input asp-for="@Model.ShowBirthday" class="birthday-toggle" />
+                </dd>
 
-					if (!Model.ShowBirthday) {
-						birthdaySelectorClasses += " hidden";
-					}
-				}
+                @{
+                    var birthdaySelectorClasses = "birthday-selectors";
 
-				<dt class="@birthdaySelectorClasses">What day should the cake appear?</dt>
-				<dd class="@birthdaySelectorClasses">
-					<select asp-for="@Model.BirthdayDay" asp-items="@Model.BirthdayDays"></select>
-					<select asp-for="@Model.BirthdayMonth" asp-items="@Model.BirthdayMonths"></select>
-				</dd>
-			</dl>
+                    if (!Model.ShowBirthday) {
+                        birthdaySelectorClasses += " hidden";
+                    }
+                }
 
-			<dl>
-				<dt>
-					Front page
-					<img src="~/images/thought.png" title="Choose your landing page when you visit the main site." />
-				</dt>
-				<dd>
-					<select asp-for="@Model.FrontPage" asp-items="@Model.FrontPageOptions"></select>
-				</dd>
-				<dd><span asp-validation-for="@Model.FrontPage" class="error"></span></dd>
-			</dl>
+                <dt class="@birthdaySelectorClasses">What day should the cake appear?</dt>
+                <dd class="@birthdaySelectorClasses">
+                    <select asp-for="@Model.BirthdayDay" asp-items="@Model.BirthdayDays"></select>
+                    <select asp-for="@Model.BirthdayMonth" asp-items="@Model.BirthdayMonths"></select>
+                </dd>
+            </dl>
 
-			<dl>
-				<dt>
-					Messages per page
-					<img src="~/images/thought.png" title="Limits how many messages per page are displayed in a topic." />
-				</dt>
-				<dd>
-					<input asp-for="@Model.MessagesPerPage" />
-				</dd>
-				<dd><span asp-validation-for="@Model.MessagesPerPage" class="error"></span></dd>
-			</dl>
+            <dl>
+                <dt>
+                    Front page
+                    <img src="~/images/thought.png" title="Choose your landing page when you visit the main site." />
+                </dt>
+                <dd>
+                    <select asp-for="@Model.FrontPage" asp-items="@Model.FrontPageOptions"></select>
+                </dd>
+                <dd><span asp-validation-for="@Model.FrontPage" class="error"></span></dd>
+            </dl>
 
-			<dl>
-				<dt>
-					Topics per page
-					<img src="~/images/thought.png" title="Limits how many topics per page are displayed in a board." />
-				</dt>
-				<dd>
-					<input asp-for="@Model.TopicsPerPage" />
-				</dd>
-				<dd><span asp-validation-for="@Model.TopicsPerPage" class="error"></span></dd>
-			</dl>
+            <dl>
+                <dt>
+                    Messages per page
+                    <img src="~/images/thought.png" title="Limits how many messages per page are displayed in a topic." />
+                </dt>
+                <dd>
+                    <input asp-for="@Model.MessagesPerPage" />
+                </dd>
+                <dd><span asp-validation-for="@Model.MessagesPerPage" class="error"></span></dd>
+            </dl>
 
-			<dl>
-				<dt>
-					Popularity limit
-					<img src="~/images/thought.png" title="Changes how many posts a topic must have to be considered popular." />
-				</dt>
-				<dd>
-					<input asp-for="@Model.PopularityLimit" />
-				</dd>
-				<dd><span asp-validation-for="@Model.PopularityLimit" class="error"></span></dd>
-			</dl>
+            <dl>
+                <dt>
+                    Topics per page
+                    <img src="~/images/thought.png" title="Limits how many topics per page are displayed in a board." />
+                </dt>
+                <dd>
+                    <input asp-for="@Model.TopicsPerPage" />
+                </dd>
+                <dd><span asp-validation-for="@Model.TopicsPerPage" class="error"></span></dd>
+            </dl>
 
-			<dl>
-				<dt>
-					Show favicons
-					<img src="~/images/thought.png" title="Show icons by links in post bodies." />
-				</dt>
-				<dd>
-					<input asp-for="@Model.ShowFavicons" />
-				</dd>
-				<dd><span asp-validation-for="@Model.ShowFavicons" class="error"></span></dd>
-			</dl>
+            <dl>
+                <dt>
+                    Popularity limit
+                    <img src="~/images/thought.png" title="Changes how many posts a topic must have to be considered popular." />
+                </dt>
+                <dd>
+                    <input asp-for="@Model.PopularityLimit" />
+                </dd>
+                <dd><span asp-validation-for="@Model.PopularityLimit" class="error"></span></dd>
+            </dl>
 
-			@if (UserContext.IsAdmin) {
-				<dl>
-					<dt>
-						Poseys
-						<img src="~/images/thought.png" title="User is posey'd." />
-					</dt>
-					<dd>
-						<input asp-for="@Model.Poseys" />
-					</dd>
-					<dd><span asp-validation-for="@Model.Poseys" class="error"></span></dd>
-				</dl>
-			}
+            <dl>
+                <dt>
+                    Show favicons
+                    <img src="~/images/thought.png" title="Show icons by links in post bodies." />
+                </dt>
+                <dd>
+                    <input asp-for="@Model.ShowFavicons" />
+                </dd>
+                <dd><span asp-validation-for="@Model.ShowFavicons" class="error"></span></dd>
+            </dl>
 
-			<dl>
-				<dt>New Password <span class="font-small subdued-text">(Optional)</span></dt>
-				<dd><input asp-for="@Model.NewPassword" /></dd>
-				<dd><span asp-validation-for="@Model.NewPassword" class="error"></span></dd>
-			</dl>
+            @if (UserContext.IsAdmin) {
+                <dl>
+                    <dt>
+                        Poseys
+                        <img src="~/images/thought.png" title="User is posey'd." />
+                    </dt>
+                    <dd>
+                        <input asp-for="@Model.Poseys" />
+                    </dd>
+                    <dd><span asp-validation-for="@Model.Poseys" class="error"></span></dd>
+                </dl>
+            }
 
-			<dl>
-				<dt>Current Password <span class="font-small subdued-text">(Required for all changes)</span></dt>
-				<dd><input asp-for="@Model.Password" /></dd>
-				<dd><span asp-validation-for="@Model.Password" class="error"></span></dd>
-			</dl>
+            <dl>
+                <dt>New Password <span class="font-small subdued-text">(Optional)</span></dt>
+                <dd><input asp-for="@Model.NewPassword" /></dd>
+                <dd><span asp-validation-for="@Model.NewPassword" class="error"></span></dd>
+            </dl>
 
-			<ul class="inline-children">
-				<li><button>Save Details</button></li>
-				<li><cancel-button /></li>
+            <dl>
+                <dt>Current Password <span class="font-small subdued-text">(Required for all changes)</span></dt>
+                <dd><input asp-for="@Model.Password" /></dd>
+                <dd><span asp-validation-for="@Model.Password" class="error"></span></dd>
+            </dl>
 
-				@if (UserContext.IsAdmin) {
-					<li class="pad-left"><a class="button" asp-action="@nameof(Account.Merge)" asp-route-userId="@Model.Id">Merge into another account</a></li>
-				}
-			</ul>
-		</form>
+            <ul class="inline-children">
+                <li><button>Save Details</button></li>
+                <li><cancel-button /></li>
 
-		<p class="gap-top"><a class="font-small subdued-text" asp-action="@nameof(Account.Delete)" asp-route-userId="@Model.Id" onclick="return confirm('Delete your account? Are you really sure??');">Delete Account</a></p>
-	</div>
+                @if (UserContext.IsAdmin) {
+                    <li class="pad-left"><a class="button" asp-action="@nameof(Account.Merge)" asp-route-userId="@Model.Id">Merge into another account</a></li>
+                }
+            </ul>
+        </form>
+
+        <p class="gap-top"><a class="font-small subdued-text" asp-action="@nameof(Account.Delete)" asp-route-userId="@Model.Id" onclick="return confirm('Delete your account? Are you really sure??');">Delete Account</a></p>
+    </div>
 </div>
 
 @{ ViewData["Title"] = $"{Model.DisplayName}'s Account Details"; }
 @section Header {@ViewData["Title"]}
 
 @section scripts {
-	<script>
-		window.pageActions = 'account-details';
-	</script>
+    <script>
+        window.pageActions = 'account-details';
+    </script>
 }

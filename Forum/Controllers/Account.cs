@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -70,11 +71,12 @@ namespace Forum.Controllers {
 
 			AccountRepository.CanEdit(userRecord.Id);
 
+			var imgurLink = await DbContext.ImgurLinks.FirstOrDefaultAsync(item => item.LocalUserId == UserContext.Id);
+
 			var viewModel = new ViewModels.Account.DetailsPage {
 				AvatarPath = userRecord.AvatarPath,
 				Id = userRecord.Id,
 				DisplayName = userRecord.DisplayName,
-				ImgurName = userRecord.ImgurName,
 				NewEmail = userRecord.Email,
 				EmailConfirmed = userRecord.EmailConfirmed,
 				BirthdayDays = DayPickList(userRecord.Birthday.Day),
@@ -88,7 +90,8 @@ namespace Forum.Controllers {
 				Poseys = userRecord.Poseys,
 				ShowFavicons = userRecord.ShowFavicons ?? true,
 				TopicsPerPage = userRecord.TopicsPerPage,
-				ShowBirthday = userRecord.ShowBirthday
+				ShowBirthday = userRecord.ShowBirthday,
+				IsImgurLinked = !(imgurLink is null)
 			};
 
 			ModelState.Clear();
@@ -108,6 +111,7 @@ namespace Forum.Controllers {
 
 			async Task<IActionResult> FailureCallback() {
 				var userRecord = (await AccountRepository.Records()).First(item => item.Id == input.Id);
+				var imgurLink = await DbContext.ImgurLinks.FirstOrDefaultAsync(item => item.LocalUserId == UserContext.Id);
 
 				AccountRepository.CanEdit(userRecord.Id);
 
@@ -127,7 +131,8 @@ namespace Forum.Controllers {
 					PopularityLimit = userRecord.PopularityLimit,
 					Poseys = userRecord.Poseys,
 					ShowFavicons = userRecord.ShowFavicons ?? true,
-					TopicsPerPage = userRecord.TopicsPerPage
+					TopicsPerPage = userRecord.TopicsPerPage,
+					IsImgurLinked = !(imgurLink is null)
 				};
 
 				return View(viewModel);
@@ -489,6 +494,47 @@ namespace Forum.Controllers {
 			await AccountRepository.MergeAccounts(sourceId, targetId, false);
 
 			return RedirectToAction(nameof(Account.Details), nameof(Account), new { id = targetId });
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> LinkImgur(InputModels.ImgurInput input) {
+			var record = await DbContext.ImgurLinks.FirstOrDefaultAsync(item => item.LocalUserId == UserContext.Id);
+
+			if (record is null) {
+				record = new DataModels.ImgurLink {
+					AccessToken = input.AccessToken,
+					AccessTokenExpiration = DateTime.Now.AddSeconds(input.ExpiresIn - 60),
+					RefreshToken = input.RefreshToken,
+					ImgurUserId = input.Id,
+					ImgurUserName = input.Username,
+					LocalUserId = UserContext.Id,
+				};
+
+				DbContext.Add(record);
+			}
+			else {
+				record.AccessToken = input.AccessToken;
+				record.AccessTokenExpiration = DateTime.Now.AddSeconds(input.ExpiresIn - 60);
+				record.RefreshToken = input.RefreshToken;
+
+				DbContext.Update(record);
+			}
+
+			await DbContext.SaveChangesAsync();
+
+			return RedirectToAction(nameof(Details));
+		}
+
+		[HttpGet]
+		public async Task<IActionResult> UnlinkImgur() {
+			var record = await DbContext.ImgurLinks.FirstOrDefaultAsync(item => item.LocalUserId == UserContext.Id);
+
+			if (!(record is null)) {
+				DbContext.Remove(record);
+				await DbContext.SaveChangesAsync();
+			}
+
+			return RedirectToAction(nameof(Details));
 		}
 
 		public IEnumerable<SelectListItem> DayPickList(int selected = -1) {

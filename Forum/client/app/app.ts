@@ -14,7 +14,7 @@ import { EventEdit } from './pages/event-edit';
 import { AccountDetails } from './pages/account-details';
 import { Process } from './pages/process';
 
-import * as SignalR from "@aspnet/signalr";
+import * as SignalR from '@aspnet/signalr';
 
 window.onload = function () {
 	let app = new App();
@@ -22,6 +22,8 @@ window.onload = function () {
 };
 
 export class App {
+	baseUrl: string = '';
+
 	hub?: SignalR.HubConnection = undefined;
 	bbCode: BBCode;
 	easterEgg: EasterEgg;
@@ -32,6 +34,8 @@ export class App {
 	whosOnlineMonitor: WhosOnlineMonitor;
 
 	constructor() {
+		this.baseUrl = `${window.location.protocol}//${window.location.host}`;
+
 		this.bbCode = new BBCode(document);
 		this.easterEgg = new EasterEgg(document);
 		this.navigation = new Navigation(document);
@@ -87,7 +91,7 @@ export class App {
 				break;
 
 			case 'account-details':
-				let accountDetails = new AccountDetails();
+				let accountDetails = new AccountDetails(this);
 				accountDetails.init();
 				break;
 		}

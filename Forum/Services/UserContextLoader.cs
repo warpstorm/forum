@@ -57,6 +57,8 @@ namespace Forum.Services {
 
 					await LoadUserRoles(UserContext);
 					await LoadViewLogs(UserContext);
+
+					UserContext.Imgur = await DbContext.ImgurLinks.FirstOrDefaultAsync(item => item.LocalUserId == UserContext.Id);
 				}
 			}
 		}

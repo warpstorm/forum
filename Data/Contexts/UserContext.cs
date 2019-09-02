@@ -8,6 +8,7 @@ namespace Forum.Data.Contexts {
 		public List<string> Roles { get; set; }
 		public List<ViewLog> ViewLogs { get; set; }
 		public ApplicationUser ApplicationUser { get; set; }
+		public ImgurLink Imgur { get; set; }
 		public string Id => IsAuthenticated ? ApplicationUser.Id : string.Empty;
 	}
 }

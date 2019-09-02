@@ -15,6 +15,7 @@ namespace Forum.Data.Contexts {
 		public DbSet<Bookmark> Bookmarks { get; set; }
 		public DbSet<Category> Categories { get; set; }
 		public DbSet<Event> Events { get; set; }
+		public DbSet<ImgurLink> ImgurLinks { get; set; }
 		public DbSet<Message> Messages { get; set; }
 		public DbSet<MessageThought> MessageThoughts { get; set; }
 		public DbSet<Notification> Notifications { get; set; }

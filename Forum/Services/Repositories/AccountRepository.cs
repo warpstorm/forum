@@ -5,7 +5,6 @@ using Forum.Core.Models.Errors;
 using Forum.Data.Contexts;
 using Forum.Extensions;
 using Forum.ExternalClients.Imgur;
-using Forum.Models.ServiceModels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -146,7 +145,6 @@ namespace Forum.Services.Repositories {
 			CanEdit(userRecord.Id);
 
 			await updateDisplayName();
-			updateImgurName();
 			updateBirthday();
 			updateFrontPage();
 			updateMessagesPerPage();
@@ -179,25 +177,7 @@ namespace Forum.Services.Repositories {
 					}
 				}
 			}
-
-			void updateImgurName() {
-				if (serviceResponse.Success && input.ImgurName != userRecord.ImgurName) {
-					var usernameCheck = ImgurClient.CheckUserName(input.ImgurName);
-
-					if (usernameCheck) {
-						userRecord.ImgurName = input.ImgurName;
-						DbContext.Update(userRecord);
-
-						Log.LogInformation($"Imgur name was modified by '{UserContext.ApplicationUser.DisplayName}' for account '{userRecord.DisplayName}'.");
-					}
-					else {
-						var message = $"The imgur name '{input.ImgurName}' seems invalid.";
-						serviceResponse.Error(message);
-						Log.LogWarning(message);
-					}
-				}
-			}
-
+			
 			void updateBirthday() {
 				if (serviceResponse.Success) {
 					if (input.ShowBirthday != userRecord.ShowBirthday) {
@@ -377,7 +357,7 @@ namespace Forum.Services.Repositories {
 			using (var inputStream = input.NewAvatar.OpenReadStream()) {
 				inputStream.Position = 0;
 
-				userRecord.AvatarPath = await ImageStore.Save(new ImageStoreSaveOptions {
+				userRecord.AvatarPath = await ImageStore.Save(new ServiceModels.ImageStoreSaveOptions {
 					ContainerName = Constants.InternalKeys.AvatarContainer,
 					FileName = $"avatar{userRecord.Id}.png",
 					ContentType = "image/png",
