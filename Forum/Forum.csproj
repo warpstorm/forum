@@ -34,14 +34,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\AzureStorage\AzureStorage.csproj" />
 	  <ProjectReference Include="..\Contracts\Contracts.csproj" />
 	  <ProjectReference Include="..\Core\Core.csproj" />
 	  <ProjectReference Include="..\Data\Data.csproj" />
-	  <ProjectReference Include="..\Imgur\Imgur.csproj" />
-	  <ProjectReference Include="..\Recaptcha\Recaptcha.csproj" />
-	  <ProjectReference Include="..\SendGrid\SendGrid.csproj" />
-	  <ProjectReference Include="..\YouTube\YouTube.csproj" />
+	  <ProjectReference Include="..\ExternalClients\ExternalClients.csproj" />
 	</ItemGroup>
 
 </Project>
