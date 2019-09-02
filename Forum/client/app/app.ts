@@ -3,6 +3,7 @@ import { EasterEgg } from './services/easter-egg';
 import { Navigation } from './services/navigation';
 import { PassedTimeMonitor } from './services/passed-time-monitor';
 import { SmileySelector } from './services/smiley-selector';
+import { ReactionSelector } from './services/reaction-selector';
 import { WhosOnlineMonitor } from './services/whos-online-monitor';
 
 import { TopicIndex } from './pages/topic-index';
@@ -27,6 +28,7 @@ export class App {
 	navigation: Navigation;
 	passedTimeMonitor: PassedTimeMonitor;
 	smileySelector: SmileySelector;
+	reactionSelector: ReactionSelector;
 	whosOnlineMonitor: WhosOnlineMonitor;
 
 	constructor() {
@@ -34,6 +36,7 @@ export class App {
 		this.easterEgg = new EasterEgg(document);
 		this.navigation = new Navigation(document);
 		this.smileySelector = new SmileySelector(document);
+		this.reactionSelector = new ReactionSelector(document);
 
 		this.passedTimeMonitor = new PassedTimeMonitor(document);
 		this.whosOnlineMonitor = new WhosOnlineMonitor(document, this);
@@ -46,6 +49,7 @@ export class App {
 		this.easterEgg.init();
 		this.navigation.init();
 		this.smileySelector.init();
+		this.reactionSelector.init();
 		this.passedTimeMonitor.init();
 		this.whosOnlineMonitor.init();
 
