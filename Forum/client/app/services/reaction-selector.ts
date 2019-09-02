@@ -1,4 +1,4 @@
-﻿import { insertAtCaret, show, hide } from '../helpers';
+﻿import { insertAtCaret, show, hide, toggle } from '../helpers';
 import { ReactionSelectorSettings } from '../models/page-settings/reaction-selector-settings';
 
 function getSettings(): ReactionSelectorSettings {
@@ -21,8 +21,8 @@ export class ReactionSelector {
 	// Used in message forms to insert smileys into textareas.
 	init(): void {
 		this.doc.querySelectorAll('.add-reaction').forEach(element => {
-			element.removeEventListener('click', this.eventShowSelector);
-			element.addEventListener('click', this.eventShowSelector);
+			element.removeEventListener('click', this.eventToggleSelector);
+			element.addEventListener('click', this.eventToggleSelector);
 
 			element.querySelectorAll('[data-component="reaction-image"]').forEach(imgElement => {
 				imgElement.removeEventListener('click', this.eventInsertReaction);
@@ -31,13 +31,14 @@ export class ReactionSelector {
 		});
 	}
 
-	eventShowSelector = (event: Event): void => {
+	eventToggleSelector = (event: Event): void => {
 		event.stopPropagation();
 
 		let self = this;
 		let target = <HTMLElement>event.currentTarget;
 		let selectorElement = target.querySelector('[data-component="reaction-selector"]');
-		show(selectorElement);
+
+		toggle(selectorElement);
 
 		if (self.settings.imgurName) {
 

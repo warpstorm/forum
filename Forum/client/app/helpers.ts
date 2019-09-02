@@ -162,6 +162,25 @@ export function show(element: any): void {
 	}
 };
 
+export function toggle(element: any): void {
+	if (!element) {
+		return;
+	}
+
+	if (element instanceof Element) {
+		if (!element.classList) {
+			throw new Error('Element does not contain a class list.');
+		}
+
+		if (element.classList.contains('hidden')) {
+			element.classList.remove('hidden');
+		}
+		else {
+			element.classList.add('hidden');
+		}
+	}
+}
+
 export function clear(element: any): void {
 	if (isString(element)) {
 		document.querySelectorAll(element).forEach(elem => {
