@@ -2,13 +2,13 @@
 using HtmlAgilityPack;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace Forum.Core {
 	public class GzipWebClient : WebClient {
-		public HtmlDocument DownloadDocument(string remoteUrl) {
-			var data = GetRemoteData(remoteUrl);
+		public async Task<HtmlDocument> DownloadDocument(string remoteUrl) {
+			var data = await DownloadStringSafe(remoteUrl);
 
 			HtmlDocument returnObject = null;
 
@@ -20,26 +20,41 @@ namespace Forum.Core {
 			return returnObject;
 		}
 
-		public T DownloadJSObject<T>(string remoteUrl, Dictionary<HttpRequestHeader, string> headers = null) {
-			remoteUrl = CleanUrl(remoteUrl);
-
-			foreach (var header in headers) {
-				Headers.Set(header.Key, header.Value);
-			}
-
-			var data = GetRemoteData(remoteUrl);
+		public async Task<T> DownloadJSObject<T>(string remoteUrl, JsonConverter jsonConverter = null) {
+			var data = await DownloadStringSafe(remoteUrl);
 
 			var returnObject = default(T);
 
 			if (!string.IsNullOrEmpty(data)) {
 				try {
-					returnObject = JsonConvert.DeserializeObject<T>(data);
+					if (jsonConverter is null) {
+						returnObject = JsonConvert.DeserializeObject<T>(data);
+					}
+					else {
+						returnObject = JsonConvert.DeserializeObject<T>(data, jsonConverter);
+					}
 				}
 				catch (JsonSerializationException) { }
 				catch (JsonReaderException) { }
 			}
 
 			return returnObject;
+		}
+
+		public async Task<string> DownloadStringSafe(string remoteUrl) {
+			remoteUrl = CleanUrl(remoteUrl);
+
+			var data = string.Empty;
+
+			try {
+				data = await DownloadStringTaskAsync(remoteUrl);
+			}
+			catch (UriFormatException) { }
+			catch (AggregateException) { }
+			catch (ArgumentException) { }
+			catch (WebException) { }
+
+			return data;
 		}
 
 		protected override WebRequest GetWebRequest(Uri remoteUri) {
@@ -60,22 +75,6 @@ namespace Forum.Core {
 		string CleanUrl(string remoteUrl) {
 			remoteUrl.ThrowIfNull(nameof(remoteUrl));
 			return remoteUrl.Split('#')[0];
-		}
-
-		string GetRemoteData(string remoteUrl) {
-			remoteUrl = CleanUrl(remoteUrl);
-
-			var data = string.Empty;
-
-			try {
-				data = DownloadString(remoteUrl);
-			}
-			catch (UriFormatException) { }
-			catch (AggregateException) { }
-			catch (ArgumentException) { }
-			catch (WebException) { }
-
-			return data;
 		}
 	}
 }

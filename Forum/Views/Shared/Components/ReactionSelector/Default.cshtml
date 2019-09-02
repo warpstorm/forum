@@ -1,10 +1,19 @@
 ﻿@inject UserContext UserContext
+@model Forum.Views.Shared.Components.ReactionSelector.ReactionSelectorViewComponent.ReactionSelectorViewModel
 
-<div class="drop-down-menu content-box overflow-scroll-y hidden" data-component="reaction-selector">
+<div class='drop-down-menu content-box overflow-scroll-y hidden' data-component='reaction-selector'>
     @if (UserContext.Imgur is null) {
-        <div class="pad">
-            <p>It looks like you haven't linked your Imgur account yet in <a class="underline" asp-controller="@nameof(Account)" asp-action="@nameof(Account.Details)" target="_blank">account settings</a>.</p>
-            <p class="small-pad-top">When you link your Imgur account, Warpstorm will pull your favorites into this box for <span style="color: red">f</span><span style="color: orange">a</span><span style="color: green">n</span><span style="color: blue">c</span><span style="color: purple">y</span> reactions.</p>
+        <div class='pad'>
+            <p>It looks like you haven't linked your Imgur account yet in <a class='underline' asp-controller='@nameof(Account)' asp-action='@nameof(Account.Details)' target='_blank'>account settings</a>.</p>
+            <p class='small-pad-top'>When you link your Imgur account, Warpstorm will pull your favorites into this box for <span style='color: red'>f</span><span style='color: orange'>a</span><span style='color: green'>n</span><span style='color: blue'>c</span><span style='color: purple'>y</span> reactions.</p>
+        </div>
+    }
+    else {
+        <h4>@UserContext.Imgur.ImgurUserName's Favorites (updated @UserContext.Imgur.FavoritesUpdate.ToPassedTimeString())</h4>
+        <div class='flex inline-children small-gap-top'>
+            @foreach (var item in Model.Images) {
+				<div class='reaction-selector-item'><video autoplay loop><source src='@item' type='video/mp4' /></video></div>
+            }
         </div>
     }
 </div>

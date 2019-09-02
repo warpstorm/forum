@@ -1,10 +1,12 @@
 ﻿using Forum.Core.Options;
 using Forum.Data.Contexts;
+using Forum.ExternalClients.Imgur.Models;
 using Forum.Services.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,6 +24,7 @@ namespace Forum.Services {
 		SignInManager<DataModels.ApplicationUser> SignInManager { get; }
 		UserManager<DataModels.ApplicationUser> UserManager { get; }
 		IHttpContextAccessor HttpContextAccessor { get; }
+		IOptions<ImgurClientOptions> ImgurClientOptions { get; }
 
 		public UserContextLoader(
 			ApplicationDbContext dbContext,
@@ -31,7 +34,8 @@ namespace Forum.Services {
 			IHubContext<ForumHub> forumHub,
 			SignInManager<DataModels.ApplicationUser> signInManager,
 			UserManager<DataModels.ApplicationUser> userManager,
-			IHttpContextAccessor httpContextAccessor
+			IHttpContextAccessor httpContextAccessor,
+			IOptions<ImgurClientOptions> imgurClientOptions
 		) {
 			DbContext = dbContext;
 			UserContext = userContext;
@@ -41,6 +45,7 @@ namespace Forum.Services {
 			SignInManager = signInManager;
 			UserManager = userManager;
 			HttpContextAccessor = httpContextAccessor;
+			ImgurClientOptions = imgurClientOptions;
 		}
 
 		public async Task Invoke() {
@@ -58,7 +63,7 @@ namespace Forum.Services {
 					await LoadUserRoles(UserContext);
 					await LoadViewLogs(UserContext);
 
-					UserContext.Imgur = await DbContext.ImgurLinks.FirstOrDefaultAsync(item => item.LocalUserId == UserContext.Id);
+					UserContext.Imgur = await DbContext.ImgurDetails.FirstOrDefaultAsync(item => item.LocalUserId == UserContext.Id);
 				}
 			}
 		}

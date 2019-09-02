@@ -5,7 +5,6 @@ using Forum.Core.Options;
 using Forum.Data.Contexts;
 using Forum.ExternalClients.Imgur;
 using Forum.ExternalClients.YouTube;
-using Forum.Models.ServiceModels;
 using HtmlAgilityPack;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -410,20 +409,21 @@ namespace Forum.Services.Repositories {
 				favicon = $"<img class='link-favicon' src='{remotePageDetails.Favicon}' /> ";
 			}
 
+			var replacement = YouTubeClient.GetReplacement(remoteUrl, remotePageDetails.Title, favicon);
 
-			if (YouTubeClient.TryGetReplacement(remoteUrl, remotePageDetails.Title, favicon, out var replacement)) {
-				return replacement;
+			if (replacement is null) {
+				replacement = await ImgurClient.GetReplacement(remoteUrl, favicon);
 			}
 
-			if (ImgurClient.TryGetReplacement(remoteUrl, remotePageDetails.Title, favicon, out replacement)) {
-				return replacement;
+			if (replacement is null) {
+				// replace the URL with the HTML
+				replacement = new ServiceModels.UrlReplacement {
+					ReplacementText = $"<a target='_blank' href='{remoteUrl}'>{favicon}{remotePageDetails.Title}</a>",
+					Card = remotePageDetails.Card ?? string.Empty
+				};
 			}
 
-			// replace the URL with the HTML
-			return new UrlReplacement {
-				ReplacementText = $"<a target='_blank' href='{remoteUrl}'>{favicon}{remotePageDetails.Title}</a>",
-				Card = remotePageDetails.Card ?? string.Empty
-			};
+			return replacement;
 		}
 
 		/// <summary>
@@ -451,7 +451,7 @@ namespace Forum.Services.Repositories {
 			var faviconPath = $"{remoteUrlAuthority}/favicon.ico";
 			var faviconStoragePath = await CacheFavicon(domain, uri.GetLeftPart(UriPartial.Path), faviconPath);
 
-			var document = WebClient.DownloadDocument(remoteUrl);
+			var document = await WebClient.DownloadDocument(remoteUrl);
 
 			if (document is null) {
 				return returnResult;
@@ -636,7 +636,7 @@ namespace Forum.Services.Repositories {
 				using var webResponse = webRequest.GetResponse();
 				using var inputStream = webResponse.GetResponseStream();
 
-				return await ImageStore.Save(new ImageStoreSaveOptions {
+				return await ImageStore.Save(new ServiceModels.ImageStoreSaveOptions {
 					ContainerName = "favicons",
 					FileName = $"{domain}.png",
 					ContentType = "image/png",

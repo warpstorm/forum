@@ -71,7 +71,7 @@ namespace Forum.Controllers {
 
 			AccountRepository.CanEdit(userRecord.Id);
 
-			var imgurLink = await DbContext.ImgurLinks.FirstOrDefaultAsync(item => item.LocalUserId == UserContext.Id);
+			var imgurLink = await DbContext.ImgurDetails.FirstOrDefaultAsync(item => item.LocalUserId == UserContext.Id);
 
 			var viewModel = new ViewModels.Account.DetailsPage {
 				AvatarPath = userRecord.AvatarPath,
@@ -111,7 +111,7 @@ namespace Forum.Controllers {
 
 			async Task<IActionResult> FailureCallback() {
 				var userRecord = (await AccountRepository.Records()).First(item => item.Id == input.Id);
-				var imgurLink = await DbContext.ImgurLinks.FirstOrDefaultAsync(item => item.LocalUserId == UserContext.Id);
+				var imgurLink = await DbContext.ImgurDetails.FirstOrDefaultAsync(item => item.LocalUserId == UserContext.Id);
 
 				AccountRepository.CanEdit(userRecord.Id);
 
@@ -498,10 +498,10 @@ namespace Forum.Controllers {
 
 		[HttpPost]
 		public async Task<IActionResult> LinkImgur(InputModels.ImgurInput input) {
-			var record = await DbContext.ImgurLinks.FirstOrDefaultAsync(item => item.LocalUserId == UserContext.Id);
+			var record = await DbContext.ImgurDetails.FirstOrDefaultAsync(item => item.LocalUserId == UserContext.Id);
 
 			if (record is null) {
-				record = new DataModels.ImgurLink {
+				record = new DataModels.ImgurDetails {
 					AccessToken = input.AccessToken,
 					AccessTokenExpiration = DateTime.Now.AddSeconds(input.ExpiresIn - 60),
 					RefreshToken = input.RefreshToken,
@@ -527,7 +527,7 @@ namespace Forum.Controllers {
 
 		[HttpGet]
 		public async Task<IActionResult> UnlinkImgur() {
-			var record = await DbContext.ImgurLinks.FirstOrDefaultAsync(item => item.LocalUserId == UserContext.Id);
+			var record = await DbContext.ImgurDetails.FirstOrDefaultAsync(item => item.LocalUserId == UserContext.Id);
 
 			if (!(record is null)) {
 				DbContext.Remove(record);

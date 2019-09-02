@@ -2,9 +2,9 @@
 using System.Text.RegularExpressions;
 
 namespace Forum.ExternalClients.YouTube {
-	public class YouTubeClient : IUrlReplacementClient {
-		public bool TryGetReplacement(string remoteUrl, string pageTitle, string favicon, out IUrlReplacement replacement) {
-			replacement = null;
+	public class YouTubeClient {
+		public IUrlReplacement GetReplacement(string remoteUrl, string pageTitle, string favicon) {
+			IUrlReplacement replacement = null;
 
 			var match = Regex.Match(remoteUrl, @"(?:https?:\/\/)?(?:www\.)?(?:(?:(?:youtube.com\/watch\?[^?]*v=|youtu.be\/)([\w\-]+))(?:[^\s?]+)?)", RegexOptions.Compiled | RegexOptions.Multiline);
 
@@ -18,7 +18,7 @@ namespace Forum.ExternalClients.YouTube {
 				};
 			}
 
-			return !(replacement is null);
+			return replacement;
 		}
 	}
 }
