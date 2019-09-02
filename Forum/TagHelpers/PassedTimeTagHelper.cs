@@ -1,4 +1,4 @@
-﻿using Forum.Extensions;
+﻿using Forum.Core.Extensions;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using System;
 

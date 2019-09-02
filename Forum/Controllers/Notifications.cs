@@ -1,6 +1,6 @@
 ﻿using Forum.Controllers.Annotations;
+using Forum.Core.Models.Errors;
 using Forum.Extensions;
-using Forum.Models.Errors;
 using Forum.Models.Options;
 using Forum.Services;
 using Forum.Services.Contexts;

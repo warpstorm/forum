@@ -1,12 +1,12 @@
-﻿using Forum.Controllers;
+﻿using Forum.Contracts;
+using Forum.Controllers;
+using Forum.Core.Extensions;
+using Forum.Core.Models.Errors;
 using Forum.Extensions;
+using Forum.ExternalClients.Imgur;
 using Forum.Models;
-using Forum.Models.Errors;
 using Forum.Services.Contexts;
-using Forum.Services.Helpers;
-using Forum.Services.Plugins.EmailSender;
 using Forum.Services.Plugins.ImageStore;
-using Forum.Services.Plugins.UrlReplacement;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;

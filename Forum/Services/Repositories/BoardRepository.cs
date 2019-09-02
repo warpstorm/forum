@@ -1,5 +1,5 @@
-﻿using Forum.Models;
-using Forum.Models.Errors;
+﻿using Forum.Core.Models.Errors;
+using Forum.Models;
 using Forum.Services.Contexts;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;

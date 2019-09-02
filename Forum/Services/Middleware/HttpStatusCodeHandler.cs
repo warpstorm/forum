@@ -1,5 +1,5 @@
-﻿using Forum.Models.Errors;
-using Forum.Extensions;
+﻿using Forum.Core.Extensions;
+using Forum.Core.Models.Errors;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Threading.Tasks;

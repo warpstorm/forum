@@ -1,9 +1,8 @@
 ﻿using Forum.Controllers.Annotations;
+using Forum.Core.Models.Errors;
 using Forum.Extensions;
-using Forum.Models.Errors;
 using Forum.Services;
 using Forum.Services.Contexts;
-using Forum.Services.Helpers;
 using Forum.Services.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -114,7 +113,7 @@ namespace Forum.Controllers {
 						MessageId = result.MessageId
 					});
 
-					var redirectPath = base.Url.DisplayMessage(result.TopicId, result.MessageId);
+					var redirectPath = Url.DisplayMessage(result.TopicId, result.MessageId);
 					return Redirect(redirectPath);
 				}
 			}

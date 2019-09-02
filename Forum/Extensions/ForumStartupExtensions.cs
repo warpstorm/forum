@@ -1,4 +1,5 @@
-﻿using Forum.Services;
+﻿using Forum.Core;
+using Forum.Services;
 using Forum.Services.Contexts;
 using Forum.Services.Middleware;
 using Forum.Services.Repositories;

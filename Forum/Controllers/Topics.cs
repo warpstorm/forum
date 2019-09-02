@@ -1,9 +1,8 @@
 ﻿using Forum.Controllers.Annotations;
+using Forum.Core.Models.Errors;
 using Forum.Extensions;
-using Forum.Models.Errors;
 using Forum.Services;
 using Forum.Services.Contexts;
-using Forum.Services.Helpers;
 using Forum.Services.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,8 +18,8 @@ namespace Forum.Controllers {
 	using ControllerModels = Models.ControllerModels;
 	using HubModels = Models.HubModels;
 	using InputModels = Models.InputModels;
-	using ViewModels = Models.ViewModels;
 	using Options = Models.Options;
+	using ViewModels = Models.ViewModels;
 
 	public class Topics : Controller {
 		ApplicationDbContext DbContext { get; }
@@ -231,7 +230,7 @@ namespace Forum.Controllers {
 					if (input.Start is null) {
 						return RedirectToAction(nameof(Topics.Display), new { id = topicRecord.Id });
 					}
-					
+
 					var isOwner = topicRecord.FirstMessagePostedById == CurrentUser.Id;
 					var isAdmin = CurrentUser.IsAdmin;
 

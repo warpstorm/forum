@@ -1,4 +1,4 @@
-﻿using Forum.Models.Errors;
+﻿using Forum.Core.Models.Errors;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.WindowsAzure.Storage;

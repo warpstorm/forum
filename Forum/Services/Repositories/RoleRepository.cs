@@ -1,6 +1,6 @@
-﻿using Forum.Services.Contexts;
-using Forum.Controllers;
-using Forum.Models.Errors;
+﻿using Forum.Controllers;
+using Forum.Core.Models.Errors;
+using Forum.Services.Contexts;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;

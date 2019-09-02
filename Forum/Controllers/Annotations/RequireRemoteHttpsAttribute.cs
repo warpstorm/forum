@@ -1,9 +1,7 @@
-﻿using Forum.Extensions;
-using Forum.Services.Helpers;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace Forum.Controllers.Annotations {
+namespace Forum.Core.Extensions {
 	/// <summary>
 	/// Allows local requests to not use HTTPS (i.e. development)
 	/// </summary>

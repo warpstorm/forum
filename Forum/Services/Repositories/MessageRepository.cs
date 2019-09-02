@@ -1,8 +1,12 @@
-﻿using Forum.Models.Errors;
+﻿using Forum.Contracts;
+using Forum.Core;
+using Forum.Core.Models.Errors;
+using Forum.ExternalClients.Imgur;
+using Forum.ExternalClients.YouTube;
 using Forum.Models.Options;
+using Forum.Models.ServiceModels;
 using Forum.Services.Contexts;
 using Forum.Services.Plugins.ImageStore;
-using Forum.Services.Plugins.UrlReplacement;
 using HtmlAgilityPack;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -397,7 +401,7 @@ namespace Forum.Services.Repositories {
 		/// <summary>
 		/// Attempt to replace the ugly URL with a human readable title.
 		/// </summary>
-		public async Task<UrlReplacement> GetRemoteUrlReplacement(string remoteUrl) {
+		public async Task<IUrlReplacement> GetRemoteUrlReplacement(string remoteUrl) {
 			var remotePageDetails = await GetRemotePageDetails(remoteUrl);
 			remotePageDetails.Title = remotePageDetails.Title.Replace("$", "&#36;");
 

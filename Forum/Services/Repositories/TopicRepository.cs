@@ -1,5 +1,5 @@
 ﻿using Forum.Controllers;
-using Forum.Models.Errors;
+using Forum.Core.Models.Errors;
 using Forum.Models.Options;
 using Forum.Services.Contexts;
 using Microsoft.AspNetCore.Mvc;

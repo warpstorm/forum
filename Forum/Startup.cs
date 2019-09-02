@@ -1,9 +1,13 @@
 ﻿using Forum.Controllers;
 using Forum.Extensions;
+using Forum.ExternalClients.Imgur;
+using Forum.ExternalClients.Recaptcha;
+using Forum.ExternalClients.SendGrid;
+using Forum.ExternalClients.YouTube;
 using Forum.Services;
 using Forum.Services.Contexts;
 using Forum.Services.Filters;
-using Forum.Services.Plugins;
+using Forum.Services.Plugins.ImageStore;
 using Jdenticon.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -61,7 +65,12 @@ namespace Forum {
 			});
 
 			services.AddForum();
-			services.AddPlugins(Configuration);
+			services.AddRecaptcha(Configuration);
+			services.AddImageStore(Configuration);
+
+			services.AddSendGridSenderClient(Configuration);
+			services.AddImgurClient(Configuration);
+			services.AddYouTubeClient();
 
 			services.AddDistributedMemoryCache();
 			services.AddSession();

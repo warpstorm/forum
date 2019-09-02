@@ -1,4 +1,4 @@
-﻿using Forum.Models.Errors;
+﻿using Forum.Core.Models.Errors;
 using Forum.Services.Contexts;
 using Forum.Services.Repositories;
 using Microsoft.AspNetCore.Mvc;

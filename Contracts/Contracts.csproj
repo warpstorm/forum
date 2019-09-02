@@ -1,0 +1,10 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <AssemblyName>Forum.Contracts</AssemblyName>
+    <RootNamespace>Forum.Contracts</RootNamespace>
+    <LangVersion>8.0</LangVersion>
+  </PropertyGroup>
+
+</Project>

@@ -1,24 +1,24 @@
-﻿using Forum.Extensions;
+﻿using Forum.Core.Extensions;
 using Microsoft.AspNetCore.Http;
 using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace Forum.Services.Middleware {
 	public class PageTimer {
-		RequestDelegate _next { get; }
+		RequestDelegate Next { get; }
 
 		public PageTimer(
 			RequestDelegate next
 		) {
 			next.ThrowIfNull(nameof(next));
-			_next = next;
+			Next = next;
 		}
 
 		public async Task Invoke(HttpContext context) {
 			var stopwatch = new Stopwatch();
 			stopwatch.Start();
 			context.Items["PageTimer"] = stopwatch;
-			await _next(context);
+			await Next(context);
 		}
 	}
 }
