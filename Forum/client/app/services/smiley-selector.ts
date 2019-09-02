@@ -10,8 +10,8 @@ export class SmileySelector {
 	// Used in message forms to insert smileys into textareas.
 	init(): void {
 		this.doc.querySelectorAll('.add-smiley').forEach(element => {
-			element.removeEventListener('click', this.eventShowSmileySelector);
-			element.addEventListener('click', this.eventShowSmileySelector);
+			element.removeEventListener('click', this.eventShowSelector);
+			element.addEventListener('click', this.eventShowSelector);
 
 			element.querySelectorAll('[data-component="smiley-image"]').forEach(imgElement => {
 				imgElement.removeEventListener('click', this.eventInsertSmileyCode);
@@ -20,26 +20,26 @@ export class SmileySelector {
 		});
 	}
 
-	eventShowSmileySelector = (event: Event): void => {
+	eventShowSelector = (event: Event): void => {
 		event.stopPropagation();
 
 		let self = this;
 		let target = <HTMLElement>event.currentTarget;
-		let smileySelector = target.querySelector('[data-component="smiley-selector"]');
-		show(smileySelector);
+		let selectorElement = target.querySelector('[data-component="smiley-selector"]');
+		show(selectorElement);
 
 		setTimeout(function () {
-			self.body.addEventListener('click', self.eventCloseSmileySelector);
+			self.body.addEventListener('click', self.eventCloseSelector);
 		}, 50);
 	}
 
-	eventCloseSmileySelector = (): void => {
+	eventCloseSelector = (): void => {
 		document.querySelectorAll('[data-component="smiley-selector"]').forEach(element => {
 			hide(element);
 		});
 
 		let self = this;
-		self.body.removeEventListener('click', self.eventCloseSmileySelector);
+		self.body.removeEventListener('click', self.eventCloseSelector);
 	}
 
 	eventInsertSmileyCode = (event: Event): void => {
@@ -59,6 +59,6 @@ export class SmileySelector {
 
 		insertAtCaret(targetTextArea, smileyCode);
 
-		self.eventCloseSmileySelector();
+		self.eventCloseSelector();
 	}
 }
