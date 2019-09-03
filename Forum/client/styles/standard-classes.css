@@ -441,8 +441,17 @@ br.clear-right {
         max-width: 70%;
     }
 
-.user-avatar-tiny {
+.user-avatar-small {
     width: 18px;
+}
+
+    .user-avatar-small img, .user-avatar-small canvas {
+        max-width: 100%;
+        vertical-align: sub;
+    }
+
+.user-avatar-tiny {
+    width: 10px;
 }
 
     .user-avatar-tiny img, .user-avatar-tiny canvas {

@@ -6,7 +6,17 @@
 	<ul class='inline inline-children'>
 		@if (UserContext.IsAuthenticated) {
 			<li class='open-menu open-menu-hover'>
-				<span class='small-button pointer'>@UserContext.ApplicationUser.DisplayName</span>
+                <div class='small-button pointer'>
+                    <div class="user-avatar-tiny inline">
+                        @if (string.IsNullOrEmpty(UserContext.ApplicationUser.AvatarPath)) {
+                            <img identicon-value="@UserContext.Id" alt="Identicon" />
+                        }
+                        else {
+                            <img src="@UserContext.ApplicationUser.AvatarPath" />
+                        }
+                    </div>
+                    @UserContext.ApplicationUser.DisplayName
+                </div>
 				<div class='menu-wrapper hidden align-left'>
 					<ul class='drop-down-menu content-box small-pad overflow-scroll-y'>
 						<li class='hover-highlight small-pad-left small-pad-right' clickable-link-parent><a asp-controller='@nameof(Messages)' asp-action='@nameof(Messages.History)'>History</a></li>
