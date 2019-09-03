@@ -485,8 +485,10 @@ namespace Forum.Controllers {
 			var messageIds = MessageRepository.GetMessageIds(id, latestTime);
 			var messages = await MessageRepository.GetMessages(messageIds);
 
-			var latestMessageTime = messages.Max(r => r.RecordTime);
-			await TopicRepository.MarkRead(id, latestMessageTime, messageIds);
+			if (messages.Any()) {
+				var latestMessageTime = messages.Max(r => r.RecordTime);
+				await TopicRepository.MarkRead(id, latestMessageTime, messageIds);
+			}
 
 			var viewModel = new ViewModels.Topics.TopicDisplayPartialPage {
 				Latest = DateTime.Now.Ticks,

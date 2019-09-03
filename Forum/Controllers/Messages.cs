@@ -164,7 +164,13 @@ namespace Forum.Controllers {
 				ModelState.AddModelErrors(result.Errors);
 
 				if (ModelState.IsValid) {
-					await ForumHub.Clients.All.SendAsync("new-reply", new HubModels.Message {
+					var hubAction = "new-reply";
+
+					if (result.Merged) {
+						hubAction = "updated-message";
+					}
+
+					await ForumHub.Clients.All.SendAsync(hubAction, new HubModels.Message {
 						TopicId = result.TopicId,
 						MessageId = result.MessageId
 					});
