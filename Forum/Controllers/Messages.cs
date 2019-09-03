@@ -79,6 +79,7 @@ namespace Forum.Controllers {
 
 			var viewModel = new ViewModels.Messages.ReplyForm {
 				Id = id.ToString(),
+				TopicId = message.TopicId.ToString(),
 				ElementId = $"message-reply-{id}"
 			};
 
