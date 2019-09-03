@@ -558,9 +558,10 @@ input[type="checkbox"].scripted {
         input[type="checkbox"].scripted:checked + label:after {
             content: '\2714';
             position: absolute;
-            top: -6px;
+            top: -3px;
             left: -1px;
             color: #1d2737;
             font-family: "Segoe UI Symbol";
             font-weight: bold;
+            line-height: 1em;
         }
