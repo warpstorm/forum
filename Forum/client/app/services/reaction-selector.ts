@@ -35,7 +35,7 @@ export class ReactionSelector {
 		let selectorElement = <HTMLElement>target.querySelector('[data-component="reaction-selector"]');
 		let imageList = <HTMLElement>selectorElement.querySelector('[data-component="reaction-image-list"]');
 
-		if (imageList.getAttribute('data-loaded') == '0') {
+		if (imageList && imageList.getAttribute('data-loaded') == '0') {
 			self.settings.reactionImages.forEach(image => {
 				imageList.innerHTML += `<div class='reaction-image' data-id="${image.id}"><video autoplay loop muted><source src='${image.path}' type='video/mp4' /></video></div>`;
 			});
