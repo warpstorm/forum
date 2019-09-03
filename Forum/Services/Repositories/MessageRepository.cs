@@ -806,6 +806,14 @@ namespace Forum.Services.Repositories {
 		}
 
 		public async Task DeleteMessageFromTopic(DataModels.Message message) {
+			var notificationsQuery = from notification in DbContext.Notifications
+									 where notification.MessageId == message.Id
+									 select notification;
+
+			foreach (var notification in notificationsQuery) {
+				DbContext.Remove(notification);
+			}
+
 			var directRepliesQuery = from m in DbContext.Messages
 									 where m.ReplyId == message.Id
 									 where !m.Deleted
@@ -824,6 +832,7 @@ namespace Forum.Services.Repositories {
 
 			message.Deleted = true;
 			DbContext.Update(message);
+
 			await DbContext.SaveChangesAsync();
 		}
 

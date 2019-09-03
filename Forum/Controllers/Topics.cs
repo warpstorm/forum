@@ -387,10 +387,15 @@ namespace Forum.Controllers {
 			var messageIds = MessageRepository.GetMessageIds(topic.Id);
 
 			if (target >= 0) {
-				var targetPage = MessageRepository.GetPageNumber(target, messageIds);
+				if (messageIds.Contains(target)) {
+					var targetPage = MessageRepository.GetPageNumber(target, messageIds);
 
-				if (targetPage != page) {
-					return Redirect(GetRedirectPath(id, targetPage, target));
+					if (targetPage != page) {
+						return Redirect(GetRedirectPath(id, targetPage, target));
+					}
+				}
+				else {
+					return Redirect(GetRedirectPath(id, 1, topic.FirstMessageId));
 				}
 			}
 
