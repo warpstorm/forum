@@ -2,29 +2,16 @@
 
 <div id="sidebar-notifications">
 	<h4>Events</h4>
-	<ul class="gap-bottom font-small subdued-text">
+	<ul class="gap-bottom subdued-text">
 		@if (Model.Any()) {
 			@foreach (var item in Model) {
-				var classes = "small-gap-bottom small-pad";
-
-				if (item.AllDay) {
-					if (item.Start.Date <= DateTime.Now.Date && item.End.Date >= DateTime.Now.Date) {
-						classes += " glow-left glow-left-dark";
-					}
-				}
-				else {
-					if (item.Start <= DateTime.Now && item.End >= DateTime.Now) {
-						classes += " glow-left glow-left-dark";
-					}
-				}
-
-				<li class="@classes" clickable-link-parent>
-					<p>
+				<li class="small-gap-bottom small-pad" clickable-link-parent>
+					<p class="font-small">
 						<a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Latest)" asp-route-id="@item.TopicId">
 							@Html.Raw(item.Title)
 						</a>
 					</p>
-					<p>
+					<p class="font-tiny">
 						<span>@(item.AllDay ? item.Start.ToString("MMM dd") : item.Start.ToString("MMM dd h:mm tt"))</span>
 						@if (item.Start != item.End) {
 							<span>to</span>
