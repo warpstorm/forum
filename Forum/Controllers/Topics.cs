@@ -376,7 +376,8 @@ namespace Forum.Controllers {
 			var topic = await DbContext.Topics.FindAsync(id);
 
 			if (topic is null || topic.Deleted) {
-				throw new HttpNotFoundError();
+				TempData[Constants.InternalKeys.StatusMessage] = "That topic was not found, or was deleted.";
+				return Redirect(Url.Action(nameof(Index)));
 			}
 
 			if (page < 1) {
