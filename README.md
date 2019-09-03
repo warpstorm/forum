@@ -14,7 +14,9 @@ Instructions for setup can be found [here](https://github.com/jyarbro/forum/wiki
 * Avatar and smiley image support using Azure Storage, with identicon fallback.
 * One-touch simple responses to messages called "thoughts".
 * Topic bookmarks, global topic pinning, and marking topics as unread allows users to revisit topics later.
-* Imgur and YouTube integration enable simplified mobile usage and image sharing.
+* YouTube integration enable simplified mobile usage and image sharing.
+* Imgur account linking to quickly post from your Imgur favorites list.
+* Imgur integration enables auto-embedding of large galleries with one link.
 * ASP.NET Identity and Role integration.
 * Individualized account settings, allowing users to pick their default landing page, number of messages per page, etc.
 * Modular design allowing much of the code to be easily replaced or customized without significant impact to other areas.
