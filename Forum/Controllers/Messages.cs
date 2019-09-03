@@ -127,7 +127,8 @@ namespace Forum.Controllers {
 			var viewModel = new ViewModels.Messages.ReplyForm {
 				Id = input.Id.ToString(),
 				Body = input.Body,
-				ElementId = $"message-reply-{input.Id}"
+				ElementId = $"message-reply-{input.Id}",
+				DisableMerging = input.DisableMerging
 			};
 
 			return View(viewModel);

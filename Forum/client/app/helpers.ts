@@ -194,3 +194,10 @@ export function clear(element: any): void {
 		}
 	}
 }
+
+// Source: https://stackoverflow.com/a/4793630/2621693
+export function insertAfter(newNode: Node, referenceNode: Node) {
+	if (referenceNode && referenceNode.parentNode) {
+		referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
+	}
+}

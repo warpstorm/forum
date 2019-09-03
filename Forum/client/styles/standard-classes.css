@@ -527,3 +527,40 @@ br.clear-right {
         white-space: nowrap;
         min-width: 10%;
     }
+
+input[type="checkbox"].scripted {
+    display: none;
+}
+
+    input[type="checkbox"].scripted + label {
+        display: inline-block;
+        background-color: #1d2737;
+        border: 2px solid #e1edf3;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05), inset 0px -15px 10px -12px rgba(0,0,0,0.05);
+        padding: .36em;
+        border-radius: 2px;
+        position: relative;
+        cursor: pointer;
+        vertical-align: sub;
+    }
+
+        input[type="checkbox"].scripted + label:active, input[type="checkbox"].scripted:checked + label:active {
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05), inset 0px 1px 3px rgba(0,0,0,0.1);
+        }
+
+    input[type="checkbox"].scripted:checked + label {
+        background-color: #e1edf3;
+        border: 2px solid #e1edf3;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05), inset 0px -15px 10px -12px rgba(0,0,0,0.05), inset 15px 10px -12px rgba(255,255,255,0.1);
+        color: #92abba;
+    }
+
+        input[type="checkbox"].scripted:checked + label:after {
+            content: '\2714';
+            position: absolute;
+            top: -6px;
+            left: -1px;
+            color: #1d2737;
+            font-family: "Segoe UI Symbol";
+            font-weight: bold;
+        }

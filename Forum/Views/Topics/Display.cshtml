@@ -13,21 +13,21 @@
 					<li class="open-menu open-menu-hover">
 						<span class="small-button">Boards</span>
 						<div class="menu-wrapper hidden">
-							<ul class="drop-down-menu content-box">
+							<ul class="drop-down-menu content-box small-pad">
 								@foreach (var category in Model.Categories) {
 									<li class="small-pad-bottom">
 										<p class="font-small subdued-text small-pad-bottom">@category.Name</p>
 										<ul>
 											@foreach (var board in category.Boards) {
-												<li class="hover-highlight" toggle-board board-id="@board.Id">
-													@if (Model.AssignedBoards.Any(b => b.Id == board.Id)) {
-														<img src="~/images/checkbox_checked.png" board-flag="@board.Id" />
-													}
-													else {
-														<img src="~/images/checkbox_unchecked.png" board-flag="@board.Id" />
-													}
-													@board.Name
-												</li>
+                                            <li class="hover-highlight" toggle-board board-id="@board.Id">
+                                                @{ var checkedBox = Model.AssignedBoards.Any(b => b.Id == board.Id); }
+                                                <input type="checkbox" board-flag="@board.Id" id="toggle@(board.Id)"
+                                                    @if (checkedBox) {
+                                                        @: checked
+                                                    }
+                                                />
+                                                <span>@board.Name</span>
+                                            </li>
 											}
 										</ul>
 									</li>

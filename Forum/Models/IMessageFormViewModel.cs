@@ -15,6 +15,7 @@ namespace Forum.Models {
 		string FormAction { get; }
 		string FormController { get; }
 		string ElementId { get; }
+		bool DisableMerging { get; }
 
 		DisplayMessage ReplyMessage { get; }
 	}

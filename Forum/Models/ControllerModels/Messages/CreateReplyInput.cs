@@ -10,5 +10,7 @@ namespace Forum.Models.ControllerModels.Messages {
 		[Required]
 		[Range(0, int.MaxValue)]
 		public int TopicId { get; set; }
+
+		public bool DisableMerging { get; set; }
 	}
 }

@@ -1,4 +1,4 @@
-﻿import { isFirefox, hide, show } from '../helpers';
+﻿import { isFirefox, hide, show, insertAfter } from '../helpers';
 
 export class Navigation {
 	private win: Window;
@@ -17,7 +17,19 @@ export class Navigation {
     showScriptFunctionality(): void {
         document.querySelectorAll('.requires-javascript').forEach(element => {
             element.classList.remove('hidden');
-        });
+		});
+
+		document.querySelectorAll('input[type="checkbox"]').forEach(element => {
+			if (!element.classList.contains('scripted')) {
+				element.classList.add('scripted');
+
+				let label = document.createElement('label');
+				label.htmlFor = element.id;
+				insertAfter(label, element);
+
+				label.addEventListener('click', this.eventToggleCheckBox);
+			}
+		});
     }
 
 	addListenerOpenMenu(): void {
@@ -210,6 +222,18 @@ export class Navigation {
 		});
 
 		this.doc.getElementsByTagName('body')[0].removeEventListener('click', this.eventCloseMenu);
+	}
+
+	eventToggleCheckBox = (event: Event) => {
+		event.preventDefault();
+		event.stopPropagation();
+
+		let targetElement = <HTMLLabelElement>event.currentTarget;
+		let checkbox = <HTMLInputElement>document.getElementById(targetElement.htmlFor);
+
+		if (checkbox) {
+			checkbox.checked = !checkbox.checked;
+		}
 	}
 
 	private eventPreventDefault = (event: Event) => {

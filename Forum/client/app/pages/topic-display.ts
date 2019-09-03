@@ -236,11 +236,13 @@ export class TopicDisplay {
 
 		let idElement = form.querySelector('[name=Id]') as HTMLInputElement;
 		let topicIdElement = form.querySelector('[name=TopicId]') as HTMLInputElement;
+		let disableMergingElement = form.querySelector('[name="ReplyForm.DisableMerging"]') as HTMLInputElement;
 
 		let requestBodyValues = {
 			id: idElement ? idElement.value : '',
 			topicId: topicIdElement ? topicIdElement.value : '',
-			body: bodyElement ? bodyElement.value : ''
+			body: bodyElement ? bodyElement.value : '',
+			disableMerging: disableMergingElement ? disableMergingElement.checked : false
 		};
 
 		self.submitting = true;
@@ -276,6 +278,7 @@ export class TopicDisplay {
 		}
 
 		bodyElement.removeAttribute('disabled');
+		disableMergingElement.checked = false;
 
 		form.querySelectorAll('.button').forEach(element => {
 			element.removeAttribute('disabled');
@@ -713,7 +716,7 @@ export class TopicDisplay {
 	eventToggleBoard = async (event: Event) => {
 		event.stopPropagation();
 
-		let target = <Element>event.currentTarget;
+		let target = <HTMLElement>event.currentTarget;
 		let toggling = target.getAttribute('toggling');
 
 		if (toggling) {
@@ -732,26 +735,13 @@ export class TopicDisplay {
 			return;
 		}
 
-		let boardFlag = document.querySelector(`[board-flag="${boardId}"]`);
+		let boardFlag = <HTMLInputElement>document.querySelector(`[board-flag="${boardId}"]`);
 
 		if (!boardFlag) {
 			return;
 		}
 
-		let assignedBoardIndex: number = this.settings.assignedBoards.indexOf(boardId, 0);
-
-		let imgSrc = boardFlag.getAttribute('src') || '';
-
-		if (assignedBoardIndex > -1) {
-			this.settings.assignedBoards.splice(assignedBoardIndex, 1);
-			imgSrc = imgSrc.replace('checked', 'unchecked');
-		}
-		else {
-			this.settings.assignedBoards.push(boardId);
-			imgSrc = imgSrc.replace('unchecked', 'checked');
-		}
-
-		boardFlag.setAttribute('src', imgSrc);
+		boardFlag.checked = boardFlag.checked ? false : true;
 
 		let requestOptions = new XhrOptions({
 			url: `${(<any>window).togglePath}&BoardId=${boardId}`

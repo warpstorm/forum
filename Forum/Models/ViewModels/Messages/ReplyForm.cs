@@ -7,6 +7,7 @@
 		public string FormAction { get; set; } = nameof(Controllers.Messages.Reply);
 		public string FormController { get; } = nameof(Controllers.Messages);
 		public string ElementId { get; set; }
+		public bool DisableMerging { get; set; }
 		public DisplayMessage ReplyMessage { get; set; }
 	}
 }

@@ -101,15 +101,18 @@ namespace Forum.Services.Repositories {
 
 			var replyTargetMessage = await DbContext.Messages.FirstOrDefaultAsync(m => m.Id == input.Id);
 
-			var previousMessage = await DbContext.Messages.FirstOrDefaultAsync(m =>
-				m.Id == topic.LastMessageId
-				&& m.PostedById == CurrentUser.Id);
-
 			var now = DateTime.Now;
-			var recentReply = (now - topic.LastMessageTimePosted) < (now - now.AddSeconds(-300));
 
-			if (recentReply && !(previousMessage is null) && input.Id == previousMessage.ReplyId) {
-				return await CreateMergedReply(topic.LastMessageId, input);
+			if (!input.DisableMerging) {
+				var previousMessage = await DbContext.Messages.FirstOrDefaultAsync(m =>
+					m.Id == topic.LastMessageId
+					&& m.PostedById == CurrentUser.Id);
+
+				var recentReply = (now - topic.LastMessageTimePosted) < (now - now.AddSeconds(-300));
+
+				if (recentReply && !(previousMessage is null) && input.Id == previousMessage.ReplyId) {
+					return await CreateMergedReply(topic.LastMessageId, input);
+				}
 			}
 
 			if (result.Errors.Any()) {
