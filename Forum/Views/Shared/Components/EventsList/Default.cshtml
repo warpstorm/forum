@@ -20,7 +20,7 @@
 
 				<li class="@classes" clickable-link-parent>
 					<p>
-						<a asp-action="@nameof(Topics.Latest)" asp-route-id="@item.TopicId">
+						<a asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Latest)" asp-route-id="@item.TopicId">
 							@Html.Raw(item.Title)
 						</a>
 					</p>
