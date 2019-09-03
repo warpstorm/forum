@@ -1,4 +1,5 @@
-﻿@model Forum.Models.IMessageFormViewModel
+﻿@inject UserContext UserContext
+@model Forum.Models.IMessageFormViewModel
 
 @if (!(Model.ReplyMessage is null)) {
     <p>In response to this message:</p>
@@ -19,11 +20,24 @@
         <div>
             <partial name="../Messages/_MessageFormButtons" />
 
-            <p class="pad-top">
+            <p class="gap-top">
                 <span class="warning font-small"></span>
                 <span class="error" data-valmsg-for="@nameof(Model.Body)"></span>
             </p>
-            <p class="pad-top"><textarea asp-for="@Model.Body" name="body"></textarea></p>
+
+            <div class="gap-top">
+                Posting as
+                <div class="user-avatar-tiny inline">
+                    @if (string.IsNullOrEmpty(UserContext.ApplicationUser.AvatarPath)) {
+                        <img identicon-value="@UserContext.Id" alt="Identicon" />
+                    }
+                    else {
+                        <img src="@UserContext.ApplicationUser.AvatarPath" />
+                    }
+                </div>
+                @UserContext.ApplicationUser.DisplayName
+            </div>
+            <p><textarea asp-for="@Model.Body" name="body"></textarea></p>
         </div>
 
         <p>

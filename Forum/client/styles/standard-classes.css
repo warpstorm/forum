@@ -428,6 +428,28 @@ br.clear-right {
     background-color: #516169;
 }
 
+.user-avatar {
+    padding: 12px 0;
+    width: 115px;
+}
+
+    .user-avatar img {
+        max-width: 100%;
+    }
+
+    .user-avatar canvas {
+        max-width: 70%;
+    }
+
+.user-avatar-tiny {
+    width: 18px;
+}
+
+    .user-avatar-tiny img, .user-avatar-tiny canvas {
+        max-width: 100%;
+        vertical-align: sub;
+    }
+
 .menu-wrapper {
     position: relative;
 }

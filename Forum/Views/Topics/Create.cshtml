@@ -1,87 +1,101 @@
+@inject UserContext UserContext
 @model ViewModels.Topics.CreateTopicForm
 
 <div id="board-selector" class="float-right content-box pad">
-	<ul>
-		@if (ViewData["Categories"] is List<ViewModels.Boards.IndexCategory>) {
-			foreach (var category in ViewData["Categories"] as List<ViewModels.Boards.IndexCategory>) {
-				<li class="gap-bottom">
-					<span class="font-small subdued-text">@category.Name</span>
-					<ul>
-						@for (var i = 0; i < category.Boards.Count; i++) {
-							var checkbox = Model.SelectedBoards.Contains(category.Boards[i].Id) ? "checked" : "unchecked";
+    <ul>
+        @if (ViewData["Categories"] is List<ViewModels.Boards.IndexCategory>) {
+            foreach (var category in ViewData["Categories"] as List<ViewModels.Boards.IndexCategory>) {
+                <li class="gap-bottom">
+                    <span class="font-small subdued-text">@category.Name</span>
+                    <ul>
+                        @for (var i = 0; i < category.Boards.Count; i++) {
+                            var checkbox = Model.SelectedBoards.Contains(category.Boards[i].Id) ? "checked" : "unchecked";
 
-							<li class="hover-highlight pointer" toggle-board board-id="@category.Boards[i].Id" title="@category.Boards[i].Description">
-								<img src="~/images/checkbox_@(checkbox).png" board-flag="@category.Boards[i].Id" />
-								@category.Boards[i].Name
-							</li>
-						}
-					</ul>
-				</li>
-			}
-		}
-	</ul>
-	<hr />
-	<p class="font-small subdued-text">Select which boards your topic will appear in.</p>
+                            <li class="hover-highlight pointer" toggle-board board-id="@category.Boards[i].Id" title="@category.Boards[i].Description">
+                                <img src="~/images/checkbox_@(checkbox).png" board-flag="@category.Boards[i].Id" />
+                                @category.Boards[i].Name
+                            </li>
+                        }
+                    </ul>
+                </li>
+            }
+        }
+    </ul>
+    <hr />
+    <p class="font-small subdued-text">Select which boards your topic will appear in.</p>
 </div>
 
 <div class="form content-box pad">
-	<div asp-validation-summary="All" class="error gap-bottom"></div>
+    <div asp-validation-summary="All" class="error gap-bottom"></div>
 
-	<form method="post"
-		  asp-action="@nameof(Forum.Controllers.Topics.Create)"
-		  asp-controller="@nameof(Forum.Controllers.Topics)"
-		  asp-route-returnurl="@ViewData["Referrer"]">
+    <form method="post"
+          asp-action="@nameof(Forum.Controllers.Topics.Create)"
+          asp-controller="@nameof(Forum.Controllers.Topics)"
+          asp-route-returnurl="@ViewData["Referrer"]">
 
-		@if (ViewData["Categories"] is List<ViewModels.Boards.IndexCategory>) {
-			@foreach (var category in ViewData["Categories"] as List<ViewModels.Boards.IndexCategory>) {
-				@foreach (var board in category.Boards) {
-					<input type="hidden" name="Selected_@board.Id" value="@(Model.SelectedBoards.Contains(board.Id) ? "True" : "False")" />
-				}
-			}
-		}
+        @if (ViewData["Categories"] is List<ViewModels.Boards.IndexCategory>) {
+            @foreach (var category in ViewData["Categories"] as List<ViewModels.Boards.IndexCategory>) {
+                @foreach (var board in category.Boards) {
+                    <input type="hidden" name="Selected_@board.Id" value="@(Model.SelectedBoards.Contains(board.Id) ? "True" : "False")" />
+                }
+            }
+        }
 
-		@if (Model.Start is null) {
-			<div class="pad-bottom">
-				<button class="save-button" name="action" value="@ECreateTopicSaveAction.AddEvent">Add Optional Event Details</button>
-			</div>
-		}
-		else {
-			<div class="pad-bottom">
-				<input asp-for="Start" />
-				<input asp-for="End" />
-				<input asp-for="AllDay" />
+        @if (Model.Start is null) {
+            <div class="pad-bottom">
+                <button class="save-button" name="action" value="@ECreateTopicSaveAction.AddEvent">Add Optional Event Details</button>
+            </div>
+        }
+        else {
+            <div class="pad-bottom">
+                <input asp-for="Start" />
+                <input asp-for="End" />
+                <input asp-for="AllDay" />
 
-				<h4>Event Details:</h4>
-				<section class="pad-left pad-bottom">
-					<p>Start: @(Model.AllDay ? Model.Start?.ToString("M/d/yyyy") : Model.Start?.ToString())</p>
-					<p>End: @(Model.AllDay ? Model.End?.ToString("M/d/yyyy") : Model.End?.ToString())</p>
-					<p>All Day: @Model.AllDay</p>
-				</section>
-				<button class="save-button" name="action" value="@ECreateTopicSaveAction.AddEvent">Edit Event Details</button>
-			</div>
-		}
+                <h4>Event Details:</h4>
+                <section class="pad-left pad-bottom">
+                    <p>Start: @(Model.AllDay ? Model.Start?.ToString("M/d/yyyy") : Model.Start?.ToString())</p>
+                    <p>End: @(Model.AllDay ? Model.End?.ToString("M/d/yyyy") : Model.End?.ToString())</p>
+                    <p>All Day: @Model.AllDay</p>
+                </section>
+                <button class="save-button" name="action" value="@ECreateTopicSaveAction.AddEvent">Edit Event Details</button>
+            </div>
+        }
 
-		<div>
-			<partial name="../Messages/_MessageFormButtons" />
-			<p class="pad-top"><textarea asp-for="@Model.Body" name="body"></textarea></p>
-		</div>
+        <div>
+            <partial name="../Messages/_MessageFormButtons" />
 
-		<p>
-			<button class="save-button" name="action" value="@ECreateTopicSaveAction.Save">Save Message</button>
-		</p>
-	</form>
+            <div class="gap-top">
+                Posting as
+                <div class="user-avatar-tiny inline">
+                    @if (string.IsNullOrEmpty(UserContext.ApplicationUser.AvatarPath)) {
+                        <img identicon-value="@UserContext.Id" alt="Identicon" />
+                    }
+                    else {
+                        <img src="@UserContext.ApplicationUser.AvatarPath" />
+                    }
+                </div>
+                @UserContext.ApplicationUser.DisplayName
+            </div>
+            <p><textarea asp-for="@Model.Body" name="body"></textarea></p>
+        </div>
+
+        <p>
+            <button class="save-button" name="action" value="@ECreateTopicSaveAction.Save">Save Message</button>
+        </p>
+    </form>
 </div>
 
 @{ViewData["Title"] = "Create a Topic";}
 @section Header {@ViewData["Title"]}
 
 @section scripts {
-	<script>
+    <script>
 		window.assignedBoards = ['@string.Join("', '", Model.SelectedBoards)'];
 		window.pageActions = 'message-create';
-	</script>
+    </script>
 }
 
 @section styles {
-	<link rel="stylesheet" href="~/styles/message-create.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/styles/message-create.css" asp-append-version="true" />
 }
