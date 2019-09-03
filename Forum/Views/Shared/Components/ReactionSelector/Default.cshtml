@@ -1,6 +1,18 @@
 ﻿@inject UserContext UserContext
 @model Forum.Views.Shared.Components.ReactionSelector.ReactionSelectorViewComponent.ReactionSelectorViewModel
 
+<style>
+    .reaction-image {
+        max-width: 170px;
+    }
+
+    [data-component="reaction-selector"] {
+        min-width: 200px;
+        max-width: 400px;
+        padding: 15px;
+    }
+</style>
+
 <div class='drop-down-menu content-box overflow-scroll-y hidden' data-component='reaction-selector'>
     @if (UserContext.Imgur is null) {
         <div class='pad'>
@@ -9,11 +21,10 @@
         </div>
     }
     else {
-        <h4>@UserContext.Imgur.ImgurUserName's Favorites (updated @UserContext.Imgur.FavoritesUpdate.ToPassedTimeString())</h4>
-        <div class='flex inline-children small-gap-top'>
-            @foreach (var item in Model.Images) {
-				<div class='reaction-selector-item'><video autoplay loop><source src='@item' type='video/mp4' /></video></div>
-            }
+        <h4>@UserContext.Imgur.ImgurUserName's Favorites</h4>
+        <p class="font-small">updated @UserContext.Imgur.FavoritesUpdate.ToPassedTimeString()</p>
+        <div class='flex inline-children small-gap-top' data-component="reaction-image-list" data-loaded="0">
+            @*<div class='reaction-image' data - id="@item.Id"> <video autoplay loop muted><source src='@item.Path' type='video/mp4' /></video></div>*@
         </div>
     }
 </div>
@@ -22,6 +33,12 @@
     <script>
         if (!window.imgurName) {
             window.imgurName = '@UserContext.Imgur.ImgurUserName';
+
+            window.reactionImages = [
+                @foreach (var item in Model.Images) {
+                    <text>{ id: '@item.Id', path: '@item.Path' },</text>
+                }
+            ];
         }
     </script>
 }

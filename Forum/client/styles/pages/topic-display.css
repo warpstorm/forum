@@ -188,20 +188,3 @@ blockquote.card {
 .forum-reaction {
 	max-width: 256px;
 }
-
-[data-component="reaction-selector"] {
-    min-width: 200px;
-    max-width: 400px;
-    padding: 15px;
-}
-
-    [data-component="reaction-selector"] img {
-        border: 1px solid transparent;
-        border-radius: 2px;
-    }
-
-        [data-component="reaction-selector"] img:hover {
-            background-color: #253248;
-            border-color: #7090c6;
-            cursor: pointer;
-        }

@@ -1,5 +1,4 @@
 ﻿using Forum.Data.Contexts;
-using Forum.Data.Models;
 using Forum.ExternalClients.Imgur;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -44,11 +43,14 @@ namespace Forum.Views.Shared.Components.ReactionSelector {
 				DbContext.Update(UserContext.Imgur);
 				await DbContext.SaveChangesAsync();
 			}
-			
-			var images = new List<string>();
+
+			var images = new List<ReactionSelectorItem>();
 
 			foreach (var item in UserContext.Imgur.Favorites) {
-				images.Add($"https://i.imgur.com/{item}.mp4");
+				images.Add(new ReactionSelectorItem {
+					Id = item,
+					Path = $"https://i.imgur.com/{item}.mp4"
+				});
 			}
 
 			var viewModel = new ReactionSelectorViewModel {
@@ -59,7 +61,12 @@ namespace Forum.Views.Shared.Components.ReactionSelector {
 		}
 
 		public class ReactionSelectorViewModel {
-			public List<string> Images { get; set; }
+			public List<ReactionSelectorItem> Images { get; set; }
+		}
+
+		public class ReactionSelectorItem {
+			public string Id { get; set; }
+			public string Path { get; set; }
 		}
 	}
 }

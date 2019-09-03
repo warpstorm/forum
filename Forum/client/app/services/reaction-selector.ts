@@ -5,7 +5,8 @@ function getSettings(): ReactionSelectorSettings {
 	let genericWindow = <any>window;
 
 	return new ReactionSelectorSettings({
-		imgurName: genericWindow.imgurName
+		imgurName: genericWindow.imgurName,
+		reactionImages: genericWindow.reactionImages
 	});
 }
 
@@ -23,11 +24,6 @@ export class ReactionSelector {
 		this.doc.querySelectorAll('.add-reaction').forEach(element => {
 			element.removeEventListener('click', this.eventToggleSelector);
 			element.addEventListener('click', this.eventToggleSelector);
-
-			element.querySelectorAll('[data-component="reaction-image"]').forEach(imgElement => {
-				imgElement.removeEventListener('click', this.eventInsertReaction);
-				imgElement.addEventListener('click', this.eventInsertReaction);
-			});
 		});
 	}
 
@@ -36,13 +32,23 @@ export class ReactionSelector {
 
 		let self = this;
 		let target = <HTMLElement>event.currentTarget;
-		let selectorElement = target.querySelector('[data-component="reaction-selector"]');
+		let selectorElement = <HTMLElement>target.querySelector('[data-component="reaction-selector"]');
+		let imageList = <HTMLElement>selectorElement.querySelector('[data-component="reaction-image-list"]');
+
+		if (imageList.getAttribute('data-loaded') == '0') {
+			self.settings.reactionImages.forEach(image => {
+				imageList.innerHTML += `<div class='reaction-image' data-id="${image.id}"><video autoplay loop muted><source src='${image.path}' type='video/mp4' /></video></div>`;
+			});
+
+			imageList.setAttribute('data-loaded', '1');
+
+			imageList.querySelectorAll('.reaction-image').forEach(imgElement => {
+				imgElement.removeEventListener('click', this.eventInsertReaction);
+				imgElement.addEventListener('click', this.eventInsertReaction);
+			});
+		}
 
 		toggle(selectorElement);
-
-		if (self.settings.imgurName) {
-
-		}
 
 		setTimeout(function () {
 			self.body.addEventListener('click', self.eventCloseSelector);
@@ -64,16 +70,18 @@ export class ReactionSelector {
 		let self = this;
 
 		let eventTarget = <Element>event.currentTarget
-		let smileyCode = eventTarget.getAttribute('code') || '';
+		let result = eventTarget.getAttribute('data-id') || '';
 
 		let form = <HTMLFormElement>eventTarget.closest('form');
 		let targetTextArea = <HTMLTextAreaElement>form.querySelector('textarea');
 
+		result = `[reaction]https://i.imgur.com/${result}.gifv[/reaction]`;
+
 		if (targetTextArea.value !== '') {
-			smileyCode = ` ${smileyCode} `;
+			result = ` ${result} `;
 		}
 
-		insertAtCaret(targetTextArea, smileyCode);
+		insertAtCaret(targetTextArea, result);
 
 		self.eventCloseSelector();
 	}

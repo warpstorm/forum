@@ -44,7 +44,7 @@ namespace Forum.ExternalClients.Imgur {
 
 			var albumMatch = Regex.Match(remoteUrl, @"imgur.com\/a\/([a-zA-Z0-9]+)?$", RegexOptions.Compiled | RegexOptions.Multiline);
 			var galleryMatch = Regex.Match(remoteUrl, @"imgur.com\/gallery\/([a-zA-Z0-9]+)?$", RegexOptions.Compiled | RegexOptions.Multiline);
-			var imageMatch = Regex.Match(remoteUrl, @"imgur.com\/([a-zA-Z0-9]+)?$", RegexOptions.Compiled | RegexOptions.Multiline);
+			var imageMatch = Regex.Match(remoteUrl, @"imgur.com\/([a-zA-Z0-9]+)?\.", RegexOptions.Compiled | RegexOptions.Multiline);
 			var favoriteMatch = Regex.Match(remoteUrl, @"imgur.com\/.+favorites.+\/([a-zA-Z0-9]+)?$", RegexOptions.Compiled | RegexOptions.Multiline);
 
 			IUrlReplacement replacement = null;
@@ -89,7 +89,7 @@ namespace Forum.ExternalClients.Imgur {
 				string imageMarkup;
 
 				if (!string.IsNullOrEmpty(image.Mp4)) {
-					imageMarkup = $@"<video autoplay loop controls><source src='{image.Mp4}' type='video/mp4' /></video>";
+					imageMarkup = $@"<video autoplay loop controls muted><source src='{image.Mp4}' type='video/mp4' /></video>";
 				}
 				else {
 					imageMarkup = $@"<img src='{image.Link}' />";
@@ -144,7 +144,6 @@ namespace Forum.ExternalClients.Imgur {
 		public async Task<Image> GetImage(string hash) {
 			WebClient.Headers.Clear();
 			WebClient.Headers.Add(HttpRequestHeader.Authorization, $"Client-ID {ClientId}");
-			WebClient.Headers.Add(HttpRequestHeader.Authorization, $"Bearer {UserContext.Imgur.AccessToken}");
 
 			var requestUrl = $"{endpoint}/image/{hash}";
 			var response = await WebClient.DownloadJSObject<Response<Image>>(requestUrl);
@@ -154,7 +153,6 @@ namespace Forum.ExternalClients.Imgur {
 		public async Task<Album> GetAlbum(string hash) {
 			WebClient.Headers.Clear();
 			WebClient.Headers.Add(HttpRequestHeader.Authorization, $"Client-ID {ClientId}");
-			WebClient.Headers.Add(HttpRequestHeader.Authorization, $"Bearer {UserContext.Imgur.AccessToken}");
 
 			var requestUrl = $"{endpoint}/album/{hash}";
 			var response = await WebClient.DownloadJSObject<Response<Album>>(requestUrl);
@@ -164,7 +162,6 @@ namespace Forum.ExternalClients.Imgur {
 		public async Task<GalleryAlbum> GetGalleryAlbum(string hash) {
 			WebClient.Headers.Clear();
 			WebClient.Headers.Add(HttpRequestHeader.Authorization, $"Client-ID {ClientId}");
-			WebClient.Headers.Add(HttpRequestHeader.Authorization, $"Bearer {UserContext.Imgur.AccessToken}");
 
 			var requestUrl = $"{endpoint}/gallery/album/{hash}";
 			var response = await WebClient.DownloadJSObject<Response<GalleryAlbum>>(requestUrl);
@@ -174,7 +171,6 @@ namespace Forum.ExternalClients.Imgur {
 		public async Task<List<Image>> GetAlbumImages(string hash) {
 			WebClient.Headers.Clear();
 			WebClient.Headers.Add(HttpRequestHeader.Authorization, $"Client-ID {ClientId}");
-			WebClient.Headers.Add(HttpRequestHeader.Authorization, $"Bearer {UserContext.Imgur.AccessToken}");
 
 			var requestUrl = $"{endpoint}/album/{hash}/images";
 			var response = await WebClient.DownloadJSObject<Response<List<Image>>>(requestUrl);
@@ -184,6 +180,7 @@ namespace Forum.ExternalClients.Imgur {
 		public async Task<List<string>> GetFavorites() {
 			WebClient.Headers.Clear();
 			WebClient.Headers.Add(HttpRequestHeader.Authorization, $"Client-ID {ClientId}");
+			//WebClient.Headers.Add(HttpRequestHeader.Authorization, $"Bearer {UserContext.Imgur.AccessToken}");
 
 			var requestUrl = $"{endpoint}/account/{UserContext.Imgur.ImgurUserName}/favorites/";
 			return await WebClient.DownloadJSObject<List<string>>(requestUrl, new FavoriteIdsConverter());
@@ -225,7 +222,7 @@ namespace Forum.ExternalClients.Imgur {
 
 				if (!string.IsNullOrEmpty(image.Mp4)) {
 					card += $@"<div class='embedded-video'>
-								<p><video autoplay loop controls><source src='{image.Mp4}' type='video/mp4' /></video></p>
+								<p><video loop controls muted><source src='{image.Mp4}' type='video/mp4' /></video></p>
 								<p>{image.Description}</p>
 							</div>";
 				}

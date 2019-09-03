@@ -417,8 +417,10 @@ export class TopicDisplay {
 
 		hide(workingDots);
 
-		this.app.bbCode.init();
-		this.app.smileySelector.init();
+		self.app.navigation.showScriptFunctionality();
+		self.app.bbCode.init();
+		self.app.smileySelector.init();
+		self.app.reactionSelector.init();
 
 		let saveButton = document.querySelector(`#edit-message-${messageId} .save-button`);
 
@@ -513,8 +515,10 @@ export class TopicDisplay {
 
 		hide(workingDots);
 
-		this.app.bbCode.init();
-		this.app.smileySelector.init();
+		self.app.navigation.showScriptFunctionality();
+		self.app.bbCode.init();
+		self.app.smileySelector.init();
+		self.app.reactionSelector.init();
 
 		let saveButton = document.querySelector(`#message-reply-${messageId} .save-button`);
 
