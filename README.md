@@ -2,7 +2,7 @@
 
 A light-weight and mobile-friendly message board solution intended for small communities hosted in Microsoft Azure.<sup>[[1]](#notes)</sup>
 
-Instructions for setup can be found [here](https://github.com/jyarbro/forum/wiki/Setup).
+Instructions for setup can be found [here](https://github.com/jyarbro/forum/wiki/Development-Environment-Setup).
 
 ## Features
 
