@@ -20,6 +20,13 @@
             <p class='pad-top'><a class='underline' asp-controller='@nameof(Account)' asp-action='@nameof(Account.Details)' target='_blank'>Open account settings</a>.</p>
         </div>
     }
+    else if (Model.Images is null || !Model.Images.Any()) {
+        <div class='pad'>
+            <p>Congrats, you've successfully linked your Imgur account!</p>
+            <p class='pad-top'>Warpstorm will pull your favorites into this box for <span style='color: red'>f</span><span style='color: orange'>a</span><span style='color: green'>n</span><span style='color: blue'>c</span><span style='color: purple'>y</span> reactions.</p>
+            <p class='pad-top'><a class='underline' href="https://help.imgur.com/hc/en-us/articles/215012063-Add-Posts-to-Favorites" target='_blank'>How do I add favorites</a>?</p>
+        </div>
+    }
     else {
         <h4>@UserContext.Imgur.ImgurUserName's Favorites</h4>
         <p class="font-small">updated @UserContext.Imgur.FavoritesUpdate.ToPassedTimeString()</p>
@@ -30,15 +37,17 @@
 </div>
 
 @if (!(UserContext.Imgur is null)) {
-    <script>
+<script>
         if (!window.imgurName) {
             window.imgurName = '@UserContext.Imgur.ImgurUserName';
 
             window.reactionImages = [
-                @foreach (var item in Model.Images) {
-                    <text>{ id: '@item.Id', path: '@item.Path' },</text>
+                @if (!(Model.Images is null) && Model.Images.Any()) {
+                    foreach (var item in Model.Images) {
+                        @: { id: '@item.Id', path: '@item.Path' },
+                    }
                 }
             ];
         }
-    </script>
+</script>
 }
