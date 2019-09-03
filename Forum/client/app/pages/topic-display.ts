@@ -211,7 +211,7 @@ export class TopicDisplay {
 		window.location.hash = `message${firstMessageId}`;
 	}
 
-	async saveMessage(form: HTMLFormElement, success: () => void): Promise<void> {
+	async saveMessage(form: HTMLFormElement, success: () => void, fail: () => void): Promise<void> {
 		throwIfNull(form, 'form');
 
 		let self = this;
@@ -227,8 +227,6 @@ export class TopicDisplay {
 		}
 
 		bodyElement.setAttribute('disabled', 'disabled');
-
-		form.classList.add('faded');
 
 		form.querySelectorAll('.button').forEach(element => {
 			element.setAttribute('disabled', 'disabled');
@@ -255,36 +253,51 @@ export class TopicDisplay {
 
 		submitRequestOptions.headers['RequestVerificationToken'] = await self.getToken(form);
 
-		let xhrResult = await Xhr.request(submitRequestOptions);
+		try {
+			let xhrResult = await Xhr.request(submitRequestOptions);
 
-		if (xhrResult.status == 200) {
-			success();
-		}
-		else {
-			try {
-				let modelErrors = JSON.parse(xhrResult.responseText);
+			if (xhrResult.status == 200) {
+				success();
+			}
+			else {
+				try {
+					let modelErrors = JSON.parse(xhrResult.responseText);
 
-				for (let i = 0; i < modelErrors.length; i++) {
-					let modelErrorField = form.querySelector(`[data-valmsg-for="${modelErrors[i].propertyName}"]`);
+					for (let i = 0; i < modelErrors.length; i++) {
+						let modelErrorField = form.querySelector(`[data-valmsg-for="${modelErrors[i].propertyName}"]`);
 
-					if (modelErrorField) {
-						modelErrorField.textContent = modelErrors[i].errorMessage;
+						if (modelErrorField) {
+							modelErrorField.textContent = modelErrors[i].errorMessage;
+						}
 					}
 				}
+				catch {
+					console.log(xhrResult.responseText);
+				}
+
+				form.querySelectorAll('.error').forEach(element => {
+					element.innerHTML += `<p>${xhrResult.responseText}</p>`;
+				});
+
+				fail();
 			}
-			catch {
-				console.log(xhrResult.responseText);
-			}
+		}
+		catch (exception) {
+			form.querySelectorAll('.error').forEach(element => {
+				element.innerHTML += `<p>${exception}</p>`;
+			});
+
+			fail();
 		}
 
 		bodyElement.removeAttribute('disabled');
-		disableMergingElement.checked = false;
-
 		form.querySelectorAll('.button').forEach(element => {
 			element.removeAttribute('disabled');
 		});
 
-		form.classList.remove('faded');
+		if (disableMergingElement) {
+			disableMergingElement.checked = false;
+		}
 
 		self.submitting = false;
 	}
@@ -473,21 +486,29 @@ export class TopicDisplay {
 		event.preventDefault();
 
 		let button = <HTMLElement>event.currentTarget;
+
 		let form = <HTMLFormElement>button.closest('form');
+		form.classList.add('faded');
+
 		let messageId = button.getAttribute('message-id');
 
 		let workingDots = document.querySelector(`#working-${messageId}`);
 		show(workingDots);
 
 		let onSuccess = () => {
-			let form = document.querySelector(`#edit-message-${messageId}`) as HTMLElement;
+			form.classList.remove('faded');
 			clear(form);
 			hide(form);
 
 			hide(workingDots);
 		};
 
-		await self.saveMessage(form, onSuccess);
+		let onFail = () => {
+			form.classList.remove('faded');
+			hide(workingDots);
+		}
+
+		await self.saveMessage(form, onSuccess, onFail);
 	}
 
 	eventShowReplyForm = async (event: Event): Promise<void> => {
@@ -571,6 +592,8 @@ export class TopicDisplay {
 
 		let button = <HTMLElement>event.currentTarget;
 		let form = <HTMLFormElement>button.closest('form');
+		form.classList.add('faded');
+
 		let bodyElement = form.querySelector('[name=body]') as HTMLTextAreaElement;
 		let messageId = button.getAttribute('message-id');
 
@@ -578,7 +601,6 @@ export class TopicDisplay {
 		show(workingDots);
 
 		let onSuccess = () => {
-			let form = document.querySelector(`#message-reply-${messageId}`) as HTMLElement;
 			clear(form);
 			hide(form);
 
@@ -599,7 +621,12 @@ export class TopicDisplay {
 			hide(workingDots);
 		};
 
-		await self.saveMessage(form, onSuccess);
+		let onFail = () => {
+			form.classList.remove('faded');
+			hide(workingDots);
+		}
+
+		await self.saveMessage(form, onSuccess, onFail);
 	}
 
 	eventSaveTopicReplyForm = async (event: Event): Promise<void> => {
@@ -613,6 +640,7 @@ export class TopicDisplay {
 
 		let button = <HTMLElement>event.currentTarget;
 		let form = <HTMLFormElement>button.closest('form');
+		form.classList.add('faded');
 
 		let onSuccess = () => {
 			let bodyElement = form.querySelector('[name=body]') as HTMLTextAreaElement;
@@ -622,7 +650,11 @@ export class TopicDisplay {
 			}
 		};
 
-		await self.saveMessage(form, onSuccess);
+		let onFail = () => {
+			form.classList.remove('faded');
+		}
+
+		await self.saveMessage(form, onSuccess, onFail);
 	}
 
 	eventShowThoughtSelector = (event: Event) => {

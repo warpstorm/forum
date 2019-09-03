@@ -535,38 +535,30 @@ namespace Forum.Services.Repositories {
 		}
 
 		ServiceModels.OgDetails GetWarpstormOgDetails(string remoteUrl) {
-			var topicIdMatch = Regex.Match(remoteUrl, @"Topics\/(Display|Latest)\/(\d+)\/?(\d+|)\/?(\d+|)(#message(\d+))?");
+			var topicIdMatch = Regex.Match(remoteUrl, @"Topics\/(Display|Latest)\/(\d+)");
 
 			if (!topicIdMatch.Success) {
 				return null;
 			}
 
-			var messageId = 0;
+			var topicId = 0;
 
-			if (string.IsNullOrEmpty(topicIdMatch.Groups[6].Value)) {
-				messageId = Convert.ToInt32(topicIdMatch.Groups[2].Value);
-			}
-			else {
-				messageId = Convert.ToInt32(topicIdMatch.Groups[6].Value);
-			}
+				topicId = Convert.ToInt32(topicIdMatch.Groups[2].Value);
 
-			var messageRecordQuery = from message in DbContext.Messages
-									 where message.Id == messageId
-									 where !message.Deleted
-									 select new {
-										 message.ShortPreview,
-										 message.LongPreview
-									 };
+			var topicRecordQuery = from topic in DbContext.Topics
+									 where topic.Id == topicId
+									 where !topic.Deleted
+									 select topic.FirstMessageShortPreview;
 
-			var messageRecord = messageRecordQuery.FirstOrDefault();
+			var topicPreview = topicRecordQuery.FirstOrDefault();
 
-			if (messageRecord is null) {
+			if (topicPreview is null) {
 				return null;
 			}
 
 			return new ServiceModels.OgDetails {
-				Title = messageRecord.ShortPreview,
-				Description = messageRecord.LongPreview,
+				Title = topicPreview,
+				Description = String.Empty,
 				Image = "/images/logos/planet.png",
 				SiteName = "Warpstorm"
 			};
