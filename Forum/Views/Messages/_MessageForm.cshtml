@@ -1,31 +1,36 @@
 ﻿@model Forum.Models.IMessageFormViewModel
 
+@if (!(Model.ReplyMessage is null)) {
+    <p>In response to this message:</p>
+    <partial name="_DisplayMessage" model="Model.ReplyMessage" />
+}
+
 <div asp-validation-summary="ModelOnly" class="error"></div>
 
 <div @Html.Raw(!string.IsNullOrEmpty(Model.ElementId) ? $@"id=""{Model.ElementId}""" : string.Empty)>
-	<form method="post"
-		  asp-action="@Model.FormAction"
-		  asp-controller="@Model.FormController"
-		  asp-route-returnurl="@ViewData["Referrer"]">
+    <form method="post"
+          asp-action="@Model.FormAction"
+          asp-controller="@Model.FormController"
+          asp-route-returnurl="@ViewData["Referrer"]">
 
-		<input type="hidden" name="Id" value="@Model.Id" />
-		<input type="hidden" name="TopicId" value="@Model.TopicId" />
+        <input type="hidden" name="Id" value="@Model.Id" />
+        <input type="hidden" name="TopicId" value="@Model.TopicId" />
 
-		<div>
-			<partial name="../Messages/_MessageFormButtons" />
+        <div>
+            <partial name="../Messages/_MessageFormButtons" />
 
-			<p class="pad-top">
-				<span class="warning font-small"></span>
-				<span class="error" data-valmsg-for="@nameof(Model.Body)"></span>
-			</p>
-			<p class="pad-top"><textarea asp-for="@Model.Body" name="body"></textarea></p>
-		</div>
+            <p class="pad-top">
+                <span class="warning font-small"></span>
+                <span class="error" data-valmsg-for="@nameof(Model.Body)"></span>
+            </p>
+            <p class="pad-top"><textarea asp-for="@Model.Body" name="body"></textarea></p>
+        </div>
 
-		<p>
-			<button class="save-button" message-id="@Model.Id">Save Message</button>
-			@if (Model.Id != "0") {
-				<cancel-button />
-			}
-		</p>
-	</form>
+        <p>
+            <button class="save-button" message-id="@Model.Id">Save Message</button>
+            @if (Model.Id != "0") {
+                <cancel-button />
+            }
+        </p>
+    </form>
 </div>

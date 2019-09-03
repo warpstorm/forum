@@ -77,10 +77,15 @@ namespace Forum.Controllers {
 				throw new HttpNotFoundError();
 			}
 
+			var replyMessages = await MessageRepository.GetMessages(new List<int> { message.Id });
+			var replyMessage = replyMessages.First();
+			replyMessage.ShowControls = false;
+
 			var viewModel = new ViewModels.Messages.ReplyForm {
 				Id = id.ToString(),
 				TopicId = message.TopicId.ToString(),
-				ElementId = $"message-reply-{id}"
+				ElementId = $"message-reply-{id}",
+				ReplyMessage = replyMessage
 			};
 
 			return View(viewModel);

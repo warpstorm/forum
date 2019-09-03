@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Forum.Models.ViewModels.Messages;
+using System.ComponentModel.DataAnnotations;
 
 namespace Forum.Models {
 	public interface IMessageFormViewModel {
@@ -14,5 +15,7 @@ namespace Forum.Models {
 		string FormAction { get; }
 		string FormController { get; }
 		string ElementId { get; }
+
+		DisplayMessage ReplyMessage { get; }
 	}
 }

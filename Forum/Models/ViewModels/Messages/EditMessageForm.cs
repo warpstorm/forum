@@ -7,5 +7,6 @@
 		public string FormAction { get; set; } = nameof(Controllers.Messages.Edit);
 		public string FormController { get; } = nameof(Controllers.Messages);
 		public string ElementId { get; set; }
+		public DisplayMessage ReplyMessage { get; }
 	}
 }
