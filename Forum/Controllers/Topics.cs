@@ -23,7 +23,7 @@ namespace Forum.Controllers {
 
 	public class Topics : Controller {
 		ApplicationDbContext DbContext { get; }
-		UserContext CurrentUser { get; }
+		UserContext UserContext { get; }
 		BoardRepository BoardRepository { get; }
 		BookmarkRepository BookmarkRepository { get; }
 		MessageRepository MessageRepository { get; }
@@ -40,7 +40,7 @@ namespace Forum.Controllers {
 			IHubContext<ForumHub> forumHub
 		) {
 			DbContext = applicationDbContext;
-			CurrentUser = userContext;
+			UserContext = userContext;
 
 			BoardRepository = boardRepository;
 			BookmarkRepository = bookmarkRepository;
@@ -56,7 +56,7 @@ namespace Forum.Controllers {
 			var topicIds = await TopicRepository.GetIndexIds(id, page, unread);
 			var morePages = true;
 
-			if (topicIds.Count < CurrentUser.ApplicationUser.TopicsPerPage) {
+			if (topicIds.Count < UserContext.ApplicationUser.TopicsPerPage) {
 				morePages = false;
 			}
 
@@ -89,7 +89,7 @@ namespace Forum.Controllers {
 			var topicIds = await TopicRepository.GetIndexIds(0, page, 0);
 			var morePages = true;
 
-			if (topicIds.Count < CurrentUser.ApplicationUser.TopicsPerPage) {
+			if (topicIds.Count < UserContext.ApplicationUser.TopicsPerPage) {
 				morePages = false;
 			}
 
@@ -202,8 +202,8 @@ namespace Forum.Controllers {
 				throw new HttpNotFoundError();
 			}
 
-			var isOwner = topicRecord.FirstMessagePostedById == CurrentUser.Id;
-			var isAdmin = CurrentUser.IsAdmin;
+			var isOwner = topicRecord.FirstMessagePostedById == UserContext.Id;
+			var isAdmin = UserContext.IsAdmin;
 
 			if (!isOwner && !isAdmin) {
 				throw new HttpForbiddenError();
@@ -231,8 +231,8 @@ namespace Forum.Controllers {
 						return RedirectToAction(nameof(Topics.Display), new { id = topicRecord.Id });
 					}
 
-					var isOwner = topicRecord.FirstMessagePostedById == CurrentUser.Id;
-					var isAdmin = CurrentUser.IsAdmin;
+					var isOwner = topicRecord.FirstMessagePostedById == UserContext.Id;
+					var isAdmin = UserContext.IsAdmin;
 
 					if (!isOwner && !isAdmin) {
 						throw new HttpForbiddenError();
@@ -286,8 +286,8 @@ namespace Forum.Controllers {
 				return RedirectToAction(nameof(CreateEvent), new { id });
 			}
 
-			var isOwner = topicRecord.FirstMessagePostedById == CurrentUser.Id;
-			var isAdmin = CurrentUser.IsAdmin;
+			var isOwner = topicRecord.FirstMessagePostedById == UserContext.Id;
+			var isAdmin = UserContext.IsAdmin;
 
 			if (!isOwner && !isAdmin) {
 				throw new HttpForbiddenError();
@@ -315,8 +315,8 @@ namespace Forum.Controllers {
 					throw new HttpNotFoundError();
 				}
 
-				var isOwner = topicRecord.FirstMessagePostedById == CurrentUser.Id;
-				var isAdmin = CurrentUser.IsAdmin;
+				var isOwner = topicRecord.FirstMessagePostedById == UserContext.Id;
+				var isAdmin = UserContext.IsAdmin;
 
 				if (!isOwner && !isAdmin) {
 					throw new HttpForbiddenError();
@@ -394,7 +394,7 @@ namespace Forum.Controllers {
 				}
 			}
 
-			var take = CurrentUser.ApplicationUser.MessagesPerPage;
+			var take = UserContext.ApplicationUser.MessagesPerPage;
 			var skip = take * (page - 1);
 			var totalPages = Convert.ToInt32(Math.Ceiling(1.0 * messageIds.Count / take));
 			var pageMessageIds = messageIds.Skip(skip).Take(take).ToList();
@@ -404,11 +404,11 @@ namespace Forum.Controllers {
 				FirstMessageId = topic.FirstMessageId,
 				Subject = string.IsNullOrEmpty(topic.FirstMessageShortPreview) ? "No subject" : topic.FirstMessageShortPreview,
 				AssignedBoards = new List<ViewModels.Boards.IndexBoard>(),
-				IsAuthenticated = CurrentUser.IsAuthenticated,
-				IsOwner = topic.FirstMessagePostedById == CurrentUser.Id,
-				IsAdmin = CurrentUser.IsAdmin,
+				IsAuthenticated = UserContext.IsAuthenticated,
+				IsOwner = topic.FirstMessagePostedById == UserContext.Id,
+				IsAdmin = UserContext.IsAdmin,
 				IsPinned = topic.Pinned,
-				ShowFavicons = CurrentUser.ApplicationUser.ShowFavicons ?? true,
+				ShowFavicons = UserContext.ApplicationUser.ShowFavicons ?? true,
 				TotalPages = totalPages,
 				ReplyCount = topic.ReplyCount,
 				ViewCount = topic.ViewCount,
@@ -555,12 +555,15 @@ namespace Forum.Controllers {
 		}
 
 		[HttpGet]
-		[Authorize(Roles = Constants.InternalKeys.Admin)]
 		public async Task<IActionResult> Delete(int id) {
 			var redirectPath = this.GetReferrer();
 
 			if (ModelState.IsValid) {
 				var topic = await DbContext.Topics.SingleAsync(m => m.Id == id);
+
+				if (topic.FirstMessagePostedById != UserContext.ApplicationUser.Id && !UserContext.IsAdmin) {
+					throw new HttpForbiddenError();
+				}
 
 				await TopicRepository.RemoveTopic(topic);
 				await DbContext.SaveChangesAsync();

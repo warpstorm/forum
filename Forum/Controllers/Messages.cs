@@ -311,7 +311,7 @@ namespace Forum.Controllers {
 				var topic = await DbContext.Topics.SingleAsync(m => m.Id == message.TopicId);
 
 				if (topic.FirstMessageId == message.Id) {
-					redirectPath = base.Url.Action(nameof(Topics.Delete), nameof(Topics), new { topic.Id });
+					redirectPath = Url.Action(nameof(Topics.Delete), nameof(Topics), new { topic.Id });
 				}
 				else {
 					await MessageRepository.DeleteMessageFromTopic(message);
