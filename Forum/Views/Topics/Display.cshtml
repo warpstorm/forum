@@ -126,10 +126,11 @@
 
 <div class="topic-reply-form @(Model.TotalPages == Model.CurrentPage ? "" : "hidden")">
 	<p class="gap-top">Reply to this topic:</p>
-	<div class="content-box pad">
-		<div asp-validation-summary="All" class="error"></div>
-		<partial name="../Messages/_MessageForm" for="@Model.ReplyForm" />
-	</div>
+    <div class="content-box pad">
+        <div asp-validation-summary="All" class="error"></div>
+        <partial name="../Messages/_MessageForm" for="@Model.ReplyForm" />
+        <div class="hidden font-small pad-top" id="working-topic-reply"><img src="~/images/loadingDots.gif" alt="Working" title="Working" /> Working...</div>
+    </div>
 </div>
 
 @{ViewData["Title"] = Html.Raw(Model.Subject);}

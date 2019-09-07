@@ -618,6 +618,7 @@ export class TopicDisplay {
 				bodyElement.value = '';
 			}
 
+			form.classList.remove('faded');
 			hide(workingDots);
 		};
 
@@ -642,16 +643,23 @@ export class TopicDisplay {
 		let form = <HTMLFormElement>button.closest('form');
 		form.classList.add('faded');
 
+		let workingDots = document.querySelector('#working-topic-reply');
+		show(workingDots);
+
 		let onSuccess = () => {
 			let bodyElement = form.querySelector('[name=body]') as HTMLTextAreaElement;
 
 			if (bodyElement) {
 				bodyElement.value = '';
 			}
+
+			form.classList.remove('faded');
+			hide(workingDots);
 		};
 
 		let onFail = () => {
 			form.classList.remove('faded');
+			hide(workingDots);
 		}
 
 		await self.saveMessage(form, onSuccess, onFail);
