@@ -715,6 +715,14 @@ export class TopicDisplay {
 	}
 
 	eventDeleteMessage = async (event: Event): Promise<void> => {
+		var confirmation = confirm('HEY WAIT: Do you want to delete this message?');
+
+		if (!confirmation) {
+			event.preventDefault();
+
+			return;
+		}
+
 		// Only send an XHR if we anticipate the update will be posted via the hub.
 		if (this.app.hub && this.app.hub.state == HubConnectionState.Connected) {
 			event.preventDefault();
