@@ -96,7 +96,7 @@
 
 			<div class="float-right font-small subdued-text">
 				@if (Model.CanQuote) {
-					<a class="pad-right" asp-controller="@nameof(Quotes)" asp-action="@nameof(Quotes.Create)" asp-route-id="@Model.Id">
+					<a class="pad-right" asp-controller="@nameof(Quotes)" asp-action="@nameof(Quotes.Create)" asp-route-id="@Model.Id" onclick="return confirm('HEY WAIT: Did you want to submit this post as a quote of the moment? (QOTM)');">
 						QOTM
 					</a>
 				}
