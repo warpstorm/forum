@@ -10,12 +10,12 @@
 	margin-right: 230px;
 }
 
-@media only screen and (max-width: 768px) {
-	#board-selector {
-		display: none;
-	}
+@media only screen and (max-width: 500px) {
+    #board-selector {
+        display: none;
+    }
 
-	.form {
-		margin-right: 0;
-	}
+    .form {
+        margin-right: 0;
+    }
 }

@@ -16,29 +16,29 @@ main > header,
 	margin-left: 115px;
 }
 
-@media only screen and (max-width: 768px) {
-	.user-avatar {
-		padding: 0;
-		width: 25px;
-		height: 25px;
-	}
+@media only screen and (max-width: 900px) {
+    .user-avatar {
+        padding: 0;
+        width: 25px;
+        height: 25px;
+    }
 
-		.user-avatar img {
-			max-width: 25px;
-			max-height: 25px;
-		}
+        .user-avatar img {
+            max-width: 25px;
+            max-height: 25px;
+        }
 
-	.message-container {
-		border-top-color: #7090c6;
-	}
+    .message-container {
+        border-top-color: #7090c6;
+    }
 
-	.topic-header,
-	#topic-footer,
-	main > header,
-	.message-container,
-	#loading-message {
-		margin-left: 0;
-	}
+    .topic-header,
+    #topic-footer,
+    main > header,
+    .message-container,
+    #loading-message {
+        margin-left: 0;
+    }
 }
 
 .message-header {
@@ -128,11 +128,11 @@ blockquote.card {
 		max-height: 728px;
 	}
 
-@media only screen and (max-width: 768px) {
-	.embedded-video, .imgur-image {
-		padding: 5px;
-		margin: 15px 0;
-	}
+@media only screen and (max-width: 500px) {
+    .embedded-video, .imgur-image {
+        padding: 5px;
+        margin: 15px 0;
+    }
 }
 
 .card-image {

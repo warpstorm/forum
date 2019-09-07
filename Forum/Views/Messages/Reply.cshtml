@@ -1,7 +1,19 @@
 @model ViewModels.Messages.ReplyForm
 
+<style>
+    @@media only screen and (max-width: 900px) {
+        nav.actions, main.with-sidebar {
+            margin-right: 0;
+        }
+
+        [data-component="side-bar"] {
+            display: none;
+        }
+    }
+</style>
+
 <div class="content-box pad">
-	<partial name="_MessageForm" for="@Model" />
+    <partial name="_MessageForm" for="@Model" />
 </div>
 
 @{ViewData["Title"] = "Reply";}

@@ -4,7 +4,13 @@
 		clear: right;
 	}
 
-	@@media only screen and (max-width: 900px) {
+    @@media only screen and (max-width: 900px) {
+		[data-component="side-bar"] {
+		    width: 30%;
+		}
+	}
+
+	@@media only screen and (max-width: 500px) {
 		nav.actions {
 			margin-right: 0;
 		}
@@ -21,7 +27,7 @@
 </style>
 
 <div data-component="side-bar" class="pad overflow-hidden float-right">
-	<vc:quote />
+    <vc:quote />
 	<vc:notifications-list />
 	<vc:events-list />
 	<vc:online-users-list />

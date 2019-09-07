@@ -2,12 +2,18 @@
     display: none;
 }
 
-@media only screen and (max-width: 768px) {
+@media only screen and (max-width: 900px) {
     .mobile-only {
         display: inherit;
     }
 
     .mobile-hide {
+        display: none !important;
+    }
+}
+
+@media only screen and (max-width: 500px) {
+    .small-mobile-hide {
         display: none !important;
     }
 }
@@ -119,6 +125,12 @@ a.borderless * {
 
 .clear-right {
     clear: right;
+}
+
+@media only screen and (max-width: 500px) {
+    .clear-right-small-mobile {
+        clear: right;
+    }
 }
 
 br.clear,
@@ -299,7 +311,7 @@ br.clear-right {
     margin-right: 10px;
 }
 
-@media only screen and (max-width: 768px) {
+@media only screen and (max-width: 500px) {
     .gap {
         margin: 8px 0;
     }
@@ -341,7 +353,7 @@ br.clear-right {
     padding-right: 20px;
 }
 
-@media only screen and (max-width: 768px) {
+@media only screen and (max-width: 500px) {
     .pad {
         padding: 10px 15px;
     }

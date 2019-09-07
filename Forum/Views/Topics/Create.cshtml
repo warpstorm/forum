@@ -1,6 +1,18 @@
 @inject UserContext UserContext
 @model ViewModels.Topics.CreateTopicForm
 
+<style>
+    @@media only screen and (max-width: 900px) {
+        nav.actions, main.with-sidebar {
+            margin-right: 0;
+        }
+
+        [data-component="side-bar"] {
+            display: none;
+        }
+    }
+</style>
+
 <div id="board-selector" class="float-right content-box pad">
     <ul>
         @if (ViewData["Categories"] is List<ViewModels.Boards.IndexCategory>) {

@@ -1,21 +1,35 @@
 ﻿<br class="clear" />
 
 <footer id="page-footer" class="align-center">
-	@if (User.Identity.IsAuthenticated) {
-		<ul class="inline inline-children pad-bottom">
-			<li clickable-link-parent><a class="small-button" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)" asp-route-id="0">All Topics</a></li>
-			<li clickable-link-parent><a class="small-button" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)" asp-route-id="0" asp-route-unread="1">Unread</a></li>
-			<li clickable-link-parent><a class="small-button" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)" asp-route-id="0" asp-route-unread="2">Replies</a></li>
-		</ul>
-	}
+    @if (User.Identity.IsAuthenticated) {
+        <div class="mobile-hide">
+            <ul class="inline inline-children pad-bottom">
+                <li clickable-link-parent><a class="small-button" asp-controller='@nameof(Topics)' asp-action='@nameof(Topics.Bookmarks)'>Bookmarks</a></li>
+                <li clickable-link-parent><a class="small-button" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)" asp-route-id="0">All Topics</a></li>
+                <li clickable-link-parent><a class="small-button" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)" asp-route-id="0" asp-route-unread="1">Unread</a></li>
+                <li clickable-link-parent><a class="small-button" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)" asp-route-id="0" asp-route-unread="2">Replies</a></li>
+            </ul>
+        </div>
 
-	<p class="font-small small-pad"><span id="easter-egg">Bringing disorder to chaos for @(DateTime.Now.Year - 2000) years.</span></p>
+        <div class="mobile-only margin-center align-center gap-bottom">
+            <div><a class="button highlight" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Create)" asp-route-id="@Model">Create Topic</a></div>
+            
+            <ul class="inline inline-children mobile-only align-center gap-top">
+                <li clickable-link-parent><a class="small-button" asp-controller='@nameof(Topics)' asp-action='@nameof(Topics.Bookmarks)'>Bookmarks</a></li>
+                <li clickable-link-parent><a class="small-button" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)" asp-route-id="0">All</a></li>
+                <li clickable-link-parent><a class="small-button" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)" asp-route-id="0" asp-route-unread="1">Unread</a></li>
+                <li clickable-link-parent><a class="small-button" asp-controller="@nameof(Topics)" asp-action="@nameof(Topics.Index)" asp-route-id="0" asp-route-unread="2">Replies</a></li>
+            </ul>
+        </div>
+    }
+
+    <p class="font-small small-pad"><span id="easter-egg">Bringing disorder to chaos for @(DateTime.Now.Year - 2000) years.</span></p>
     <page-timer class="font-tiny subdued-text">Loaded in 0 seconds</page-timer>
-	<p class="font-tiny subdued-text"><a href="http://nrrd.io/forum/commits/master" title="Click here for what's changed">v@(Constants.Versions.Code)</a></p>
-	<div id="danger-sign" class="hidden">
-		<img src="~/images/dangerSign.png" />
-	</div>
-	<p class="font-tiny dark-text small-pad"><a href="http://nrrd.io/forum/wikis/Legal-Statements">Legal Stuff</a></p>
+    <p class="font-tiny subdued-text"><a href="http://nrrd.io/forum/commits/master" title="Click here for what's changed">v@(Constants.Versions.Code)</a></p>
+    <div id="danger-sign" class="hidden">
+        <img src="~/images/dangerSign.png" />
+    </div>
+    <p class="font-tiny dark-text small-pad"><a href="http://nrrd.io/forum/wikis/Legal-Statements">Legal Stuff</a></p>
 </footer>
 
 <br class="clear" />

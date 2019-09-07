@@ -80,3 +80,10 @@ a.subdued-button {
 	box-shadow: none;
 	background: transparent;
 }
+
+@media only screen and (max-width: 900px) {
+    .subdued-button,
+    a.subdued-button {
+        border-color: #2a3951;
+    }
+}

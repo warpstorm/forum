@@ -4,7 +4,7 @@
 
 <partial name="_TopicNav" model="@(Model.BoardId > 0 ? Model.BoardId : 1)" />
 
-<section id="topic-list">
+<section id="topic-list" class="clear-right-small-mobile">
 	@if (Model.Topics.Any()) {
 		@foreach (var item in Model.Topics) {
 			if (item.Pinned) {
@@ -22,7 +22,7 @@
 	}
 </section>
 
-<footer id="topic-index-footer">
+<footer id="topic-index-footer" class="small-gap-left">
 	<ul class="inline inline-children pages">
 		<li class="font-small subdued-text">Pages:</li>
 		<li class="hidden pointer unhide-pages more-pages-before">&#8230;</li>

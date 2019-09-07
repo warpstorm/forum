@@ -63,10 +63,15 @@
 div[role="main"] {
 	width: 90%;
 	max-width: 1600px;
-	min-width: 250px;
 }
 
-@media only screen and (max-width: 768px) {
+@media only screen and (max-width: 900px) {
+    div[role="main"] {
+        width: 98%;
+    }
+}
+
+@media only screen and (max-width: 500px) {
 	div[role="main"] {
 		width: 100%;
 	}
@@ -88,6 +93,12 @@ main.with-sidebar {
 }
 
 @media only screen and (max-width: 900px) {
+    main.with-sidebar {
+        margin-right: 30%;
+    }
+}
+
+@media only screen and (max-width: 500px) {
 	main.with-sidebar {
 		margin-right: 0;
 	}

@@ -9,10 +9,10 @@
 	margin-right: 300px;
 }
 
-@media only screen and (max-width: 768px) {
-	.board-name {
-		margin-right: 0;
-	}
+@media only screen and (max-width: 900px) {
+    .board-name {
+        margin-right: 0;
+    }
 }
 
 .board-last-post {
@@ -23,8 +23,8 @@
 	clear: right;
 }
 
-@media only screen and (max-width: 768px) {
-	.board-last-post {
-		width: 100%;
-	}
+@media only screen and (max-width: 900px) {
+    .board-last-post {
+        width: 100%;
+    }
 }

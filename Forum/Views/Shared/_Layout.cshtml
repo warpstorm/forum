@@ -23,11 +23,9 @@
 	@await RenderSectionAsync("HeadScripts", required: false)
 </head>
 <body>
-	<header id="page-header" class="margin-center pad">
+	<header id="page-header" class="margin-center pad-left pad-right">
 		<partial name="_Header" />
 	</header>
-
-	<br class="clear" />
 
 	<div role="main" class="margin-center">
 		@if (withSidebar) {
@@ -35,7 +33,7 @@
 		}
 
 		<main class="align-center @(withSidebar ? "with-sidebar" : "")">
-			<header>
+			<header class="gap-top">
 				@await RenderSectionAsync("Header", required: false)
 			</header>
 
