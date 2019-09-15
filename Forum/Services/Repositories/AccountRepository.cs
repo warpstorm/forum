@@ -4,7 +4,6 @@ using Forum.Core.Extensions;
 using Forum.Core.Models.Errors;
 using Forum.Data.Contexts;
 using Forum.Extensions;
-using Forum.ExternalClients.Imgur;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -29,7 +28,6 @@ namespace Forum.Services.Repositories {
 		UserContext UserContext { get; }
 		UserManager<DataModels.ApplicationUser> UserManager { get; }
 		SignInManager<DataModels.ApplicationUser> SignInManager { get; }
-		ImgurClient ImgurClient { get; }
 		HttpContext HttpContext { get; }
 		IUrlHelper UrlHelper { get; }
 		IEmailSender EmailSender { get; }
@@ -41,7 +39,6 @@ namespace Forum.Services.Repositories {
 			UserContext userContext,
 			UserManager<DataModels.ApplicationUser> userManager,
 			SignInManager<DataModels.ApplicationUser> signInManager,
-			ImgurClient imgurClient,
 			IHttpContextAccessor httpContextAccessor,
 			IActionContextAccessor actionContextAccessor,
 			IUrlHelperFactory urlHelperFactory,
@@ -54,7 +51,6 @@ namespace Forum.Services.Repositories {
 
 			UserManager = userManager;
 			SignInManager = signInManager;
-			ImgurClient = imgurClient;
 
 			HttpContext = httpContextAccessor.HttpContext;
 			UrlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
@@ -177,7 +173,7 @@ namespace Forum.Services.Repositories {
 					}
 				}
 			}
-			
+
 			void updateBirthday() {
 				if (serviceResponse.Success) {
 					if (input.ShowBirthday != userRecord.ShowBirthday) {
