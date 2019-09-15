@@ -11,7 +11,7 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
-		<TypeScriptToolsVersion>3.5</TypeScriptToolsVersion>
+		<TypeScriptToolsVersion>Latest</TypeScriptToolsVersion>
 		<TypeScriptCompileBlocked>True</TypeScriptCompileBlocked>
 		<LangVersion>8.0</LangVersion>
 	</PropertyGroup>

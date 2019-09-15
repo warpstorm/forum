@@ -1,19 +1,11 @@
 {
-	"scripts": {
-		"test": "mocha --require ts-node/register client/spec/*.spec.ts"
-	},
 	"dependencies": {
 		"@aspnet/signalr": "^1.1.4",
 		"flatpickr": "4.5.7"
 	},
 	"devDependencies": {
-		"@types/chai": "^4.1.7",
 		"@types/flatpickr": "3.1.2",
-		"@types/jsdom": "^12.2.3",
-		"@types/mocha": "^5.2.7",
 		"browserify": "^16.2.3",
-		"cached-path-relative": "1.0.2",
-		"chai": "^4.2.0",
 		"del": "^3.0.0",
 		"gulp": "^4.0.2",
 		"gulp-concat": "^2.6.1",
@@ -21,11 +13,8 @@
 		"gulp-typescript": "^5.0.1",
 		"gulp-uglify-es": "1.0.4",
 		"gulp-uglifycss": "1.1.0",
-		"jsdom": "^13.2.0",
 		"lodash": "^4.17.15",
 		"minimatch": "^3.0.4",
-		"mocha": "^5.2.0",
-		"parse5": "5.1.0",
 		"ts-node": "^7.0.1",
 		"tsify": "^4.0.1",
 		"typescript": "^3.5.1",
