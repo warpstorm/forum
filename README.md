@@ -1,12 +1,13 @@
 # nrrdio's Forum
 
-A light-weight and mobile-friendly message board solution intended for small communities hosted in Microsoft Azure.<sup>[[1]](#notes)</sup>
+A message board solution intended for small communities hosted in Microsoft Azure.<sup>[[1]](#notes)</sup>
 
 Instructions for setup can be found [here](https://github.com/jyarbro/forum/wiki/Development-Environment-Setup).
 
 ## Features
 
 * Standard forum functionality such as boards, topics, messages, and user accounts.
+* Mobile-friendly responsive design.
 * Robust client-side functionality using XHRs to enhance interactivity.
 * Emphasis on progressive enhancement over graceful degradation.<sup>[[2]](#notes)</sup>
 * Double posting and rapid posting spam prevention.
