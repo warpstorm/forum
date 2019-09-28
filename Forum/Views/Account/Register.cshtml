@@ -4,49 +4,6 @@
 	<p><a class="button" asp-action="@nameof(Account.Login)" asp-route-returnurl="@ViewData["Referrer"]">Already registered?</a></p>
 
 	<form method="post"
-		  class="mobile-only"
-		  asp-controller="@nameof(Account)"
-		  asp-action="@nameof(Account.Register)"
-		  asp-route-returnurl="@ViewData["Referrer"]">
-
-		<div asp-validation-summary="All" class="error gap-top"></div>
-
-		<p class="gap-top"><b>Privacy first!</b></p>
-		<p class="font-small small-pad-left">
-			Your email address does <b>not</b> need to be real, and is <b>only</b> used for logging in and password resets. It's not sold,
-			shared, or visible to anyone except Warpstorm admins. If you don't trust us (hah!), then use a free
-			<a class="underline" href="https://www.mailinator.com/" target="_blank" tabindex="-1">Mailinator</a> temporary address. You can always change
-			your login email later in your account settings.
-		</p>
-
-		<dl>
-			<dt>Email Address</dt>
-			<dd><input asp-for="@Model.Email" /></dd>
-
-			<dt>Password</dt>
-			<dd><input asp-for="@Model.Password" /></dd>
-
-			<dt>Display Name <img src="~/images/thought.png" title="Special characters are allowed." /></dt>
-			<dd><input asp-for="@Model.DisplayName" /></dd>
-		</dl>
-
-		<dl>
-			<dd>
-				<input asp-for="@Model.ConfirmThirteen" />
-				<span class="font-small">I am at least 13 years old.</span>
-			</dd>
-		</dl>
-
-		<partial name="_Recaptcha2" />
-
-		<ul>
-			<li><button>Register</button></li>
-			<li><cancel-button /></li>
-		</ul>
-	</form>
-
-	<form method="post"
-		  class="mobile-hide"
 		  asp-controller="@nameof(Account)"
 		  asp-action="@nameof(Account.Register)"
 		  asp-route-returnurl="@ViewData["Referrer"]">
@@ -54,6 +11,16 @@
 		<div asp-validation-summary="All" class="error small-gap"></div>
 
 		<div class="half inline align-top border-right">
+            <div class="mobile-only">
+                <p class="gap-top"><b>Privacy first!</b></p>
+                <p class="font-small small-pad-left">
+                    Your email address does <b>not</b> need to be real, and is <b>only</b> used for logging in and password resets. It's not sold,
+                    shared, or visible to anyone except Warpstorm admins. If you don't trust us (hah!), then use a free
+                    <a class="underline" href="https://www.mailinator.com/" target="_blank" tabindex="-1">Mailinator</a> temporary address. You can always change
+                    your login email later in your account settings.
+                </p>
+            </div>
+
 			<dl>
 				<dt>Email Address</dt>
 				<dd><input asp-for="@Model.Email" /></dd>
@@ -73,7 +40,7 @@
 			</dl>
 		</div>
 
-		<div class="half inline pad">
+		<div class="half inline pad mobile-hide">
 			<p><b>Privacy first!</b></p>
 			<p class="font-small small-pad-left">
 				Your email address does <b>not</b> need to be real, and is <b>only</b> used for logging in and password resets. It's not sold,
@@ -87,7 +54,6 @@
 
 		<ul>
 			<li><button>Register</button></li>
-			<li><cancel-button /></li>
 		</ul>
 	</form>
 </section>
