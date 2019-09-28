@@ -1,20 +1,28 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
 	<PropertyGroup>
-		<TargetFramework>netcoreapp2.2</TargetFramework>
-		<UserSecretsId>aspnet-Forum3.Netcore2-D5ED8B40-B6D7-4B31-ABC2-9390741510C9</UserSecretsId>
-		<Authors>Jim Yarbro</Authors>
-		<Company>Warpstorm.com</Company>
-		<AssemblyName>Forum</AssemblyName>
-		<RootNamespace>Forum</RootNamespace>
-		<AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
-	</PropertyGroup>
+    <UserSecretsId>aspnet-Forum3.Netcore2-D5ED8B40-B6D7-4B31-ABC2-9390741510C9</UserSecretsId>
+    <Authors>Jim Yarbro</Authors>
+    <Company>Warpstorm.com</Company>
+    <AssemblyName>Forum</AssemblyName>
+    <RootNamespace>Forum</RootNamespace>
+  </PropertyGroup>
 
-	<PropertyGroup>
-		<TypeScriptToolsVersion>Latest</TypeScriptToolsVersion>
-		<TypeScriptCompileBlocked>True</TypeScriptCompileBlocked>
-		<LangVersion>8.0</LangVersion>
-	</PropertyGroup>
+  <!-- Settings -->
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <TypeScriptToolsVersion>Latest</TypeScriptToolsVersion>
+    <LangVersion>8.0</LangVersion>
+    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <!-- tsconfig -->
+  <PropertyGroup>
+    <TypeScriptCompileBlocked>True</TypeScriptCompileBlocked>
+    <TypeScriptCompileOnSaveEnabled>False</TypeScriptCompileOnSaveEnabled>
+    <TypeScriptNoImplicitAny>True</TypeScriptNoImplicitAny>
+    <TypeScriptAlwaysStrict>True</TypeScriptAlwaysStrict>
+  </PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Jdenticon.AspNetCore" Version="2.2.1" />
