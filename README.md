@@ -1,4 +1,4 @@
-# nrrdio's Forum
+# Forum
 
 A message board solution intended for small communities hosted in Microsoft Azure.<sup>[[1]](#notes)</sup>
 
@@ -25,11 +25,9 @@ Instructions for setup can be found [here](https://github.com/jyarbro/forum/wiki
 
 ## Unlicensing
 
-Anything in this project is open and free under the terms of the Unlicense, so you're welcome to use it however you want. See [the license](https://github.com/jyarbro/forum/blob/master/UNLICENSE) for specifics.
+Anything in this project is open and free under the terms of the Unlicense, so you're welcome to use it however you want. See [the license](https://github.com/warpstorm/forum/blob/master/UNLICENSE) for specifics.
 
 ## Notes
-
-0: yarbro@outlook.com
 
 1: If you would like to use this software on another hosting platform besides Azure Web Applications, please submit an issue with specifics, or submit pull requests with modified code.
 
