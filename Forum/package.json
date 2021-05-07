@@ -14,7 +14,7 @@
 		"gulp-typescript": "^5.0.1",
 		"gulp-uglify-es": "1.0.4",
 		"gulp-uglifycss": "1.1.0",
-		"lodash": "^4.17.15",
+		"lodash": "^4.17.21",
 		"minimatch": "^3.0.4",
 		"ts-node": "^7.0.1",
 		"tsify": "^4.0.1",
